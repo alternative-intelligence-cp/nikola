@@ -1,0 +1,4 @@
+Source files only in src directory!
+Compilation should use build folder and sub folders.
+Tests and demos should be done in tests folder, not root or src!
+Documentation should be stored in docs folder. Usage guides, designs, etc should go in docs/info. Any research we do or have done should go in docs/research.
