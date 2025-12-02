@@ -1,0 +1,353 @@
+﻿Project 9-Dimensional Toroidal Waveform Intelligence (9D-TWI): Definitive Implementation Specification for Section 6 – Volitional Architecture, External Integration, and Homeostatic Regulation
+
+
+
+
+6.0 Executive Architectural Overview: The Agentic Interface
+
+
+The previous volumes of the 9-Dimensional Toroidal Waveform Intelligence (9D-TWI) specification have rigorously established the internal phenomenology of the system. We have defined a computational universe governed not by Boolean logic, but by the constructive and destructive interference of standing waves within a 9-dimensional Riemannian torus. We have replaced the clock cycle with a Golden Ratio harmonic series and the logic gate with the balanced nonary interactions of the Wave Interference Processor.1 However, a cognitive substrate, no matter how geometrically sophisticated, remains a solipsistic simulation unless it possesses the mechanisms to perceive, manipulate, and survive within an external reality.
+Section 6 marks the critical transition from internal simulation to external agency. It defines the "Body" and "Volition" of the 9D-TWI. This report serves as the exhaustive implementation guide for the system’s interface with the digital world, encompassing the Orchestration Layer, the External Tool Suite, the Secure Execution Environment, the Virtualized Extension Layer (KVM), and the intrinsic Homeostatic Regulation systems (Dopamine/Nap cycles).1
+The architectural challenge addressed herein is one of translation and temporal coupling. The internal physics engine operates on a continuous, microsecond-scale timeframe defined by the solver step of the wave equation. The external world, however, operates on discrete, high-latency asynchronous protocols (HTTP, Shell interactions, User Prompts). The engineering objective is to construct a Resonant-to-Discrete Bridge that allows the continuous "stream of consciousness" to drive discrete actions without blocking or decoherence.
+This specification mandates a Distributed Event-Driven Architecture utilizing a high-throughput ZeroMQ spine, separating the "thinking" physics kernel from the "acting" I/O agents.1 It requires a rigorous security posture using kernel-level sandboxing (Seccomp/Namespaces) to contain the existential risks of an agent capable of executing system commands. Furthermore, it introduces a biological imperative through a computational dopamine system, ensuring the agent is not merely reactive, but driven by intrinsic curiosity and the pursuit of hierarchical goals.
+This document provides the definitive blueprint for building the lib9dtwi_agent subsystems, the twi-executor daemon, and the twi-hypervisor controller, strictly adhering to the requirements of the Nikola Model v0.0.4.1
+________________
+
+
+6.1 The Orchestrator: The Cognitive Switching Station
+
+
+The Orchestrator is the designated interface layer between the resonant memory (the Mamba-9D/Torus) and the reasoning engine (Transformer), acting as the central dispatch for all cognitive traffic. It is not merely a pass-through; it is a "Smart Router" responsible for the highest-level control flow decisions.1 It determines whether a query can be satisfied via introspection (memory retrieval) or requires extrospection (external tool use).
+
+
+6.1.1 The ZeroMQ Nervous System: Architecture and Protocol
+
+
+To realize the requirement for a "zeroMQ spine that acts as a bus to connect the rest of the system" 1, we reject monolithic design patterns in favor of a biologically inspired distributed nervous system. The Spine is the communication fabric that decouples the high-frequency physics simulation from the latency-bound I/O operations.
+Topological Design: The Asymmetric Star
+The architecture utilizes the ROUTER-DEALER pattern.2 This pattern is non-blocking and asynchronous, essential for preventing "cognitive arrest" where the physics engine freezes while waiting for a web request.
+* The Thalamus (Broker): The central node is the Orchestrator's ROUTER socket, bound to ipc://spine.backend. It maintains identity-based routing tables for all connected subsystems.
+* The Ganglia (Workers): All other components—The Memory Store, The Tool Agents, The Executor, The Hypervisor—connect as DEALER sockets. This allows them to fire asynchronous events back to the Orchestrator without a request-response lockstep.
+Implementation Specification (C++23):
+The SpineBus class encapsulates the raw libzmq calls. It utilizes a std::jthread polling loop (zmq_poll) to handle high-frequency message ingress.
+
+
+C++
+
+
+
+
+// internal/spine/bus.hpp
+class SpineBus {
+   zmq::context_t ctx;
+   zmq::socket_t backend_router; // The "Thalamus"
+   zmq::socket_t frontend_router; // User Interface
+   
+   // Identity Map for routing logic
+   std::unordered_map<std::string, std::vector<zmq::message_t>> worker_registry;
+
+public:
+   void dispatch(const std::string& target_id, const NeuralEnvelope& msg);
+   std::optional<NeuralEnvelope> poll_next(std::chrono::microseconds timeout);
+};
+
+Protocol Definition (The Neural Envelope):
+To ensure strict type safety and versioning across the distributed system, all messages are serialized using Google Protocol Buffers (Proto3). The NeuralEnvelope is the universal container for all internal thought traffic.
+* task_id: A UUID correlating the stimulus (question) with the response (action).
+* timestamp: High-precision logical clock tick (aligned with the Physics Engine step).
+* urgency: A float derived from the Dopamine system (0.0 - 1.0), determining priority in the message queue.
+* payload: A oneof field containing either a Waveform (internal thought), a SemanticCommand (tool instruction), or a SystemEvent (nap/wake signal).
+
+
+6.1.2 The Smart Router Finite State Machine (FSM)
+
+
+The Orchestrator implements the logic: "always check if it has the necessary data and if not initiate a search to retrieve it and then store it".1 This implies a rigorous Finite State Machine (FSM) governing the lifecycle of a thought.
+State 1: Introspection (Resonance Check)
+Upon receiving a user query, the Orchestrator hashes the input into a ProbeWave via the Nonary Embedder. This wave is injected into the 9D Torus.
+* Metric: The Orchestrator monitors the global energy of the Torus for Constructive Interference.
+* Thresholding: If the peak amplitude $A_{peak} > \tau_{resonance}$, the memory exists. The system retrieves the standing wave, demodulates it to text, and returns the answer.
+* Failure Mode: If $A_{peak} < \tau_{resonance}$ (Silence/Destructive Interference), the FSM transitions to State 2.
+State 2: Strategic Planning (Tool Selection)
+The Orchestrator analyzes the query intent to select the optimal tool strategy. This satisfies the requirement to "pick the best tool or combo of tools".1
+* Classification: A lightweight decision tree (or distilled BERT model running on the CPU) classifies the query:
+   * Factual/Simple: -> TOOL_TAVILY
+   * Deep Research/Content: -> TOOL_TAVILY -> TOOL_FIRECRAWL
+   * Complex Reasoning: -> TOOL_GEMINI
+   * System Action: -> EXECUTOR
+* Routing: The Orchestrator constructs a SemanticCommand protobuf message and dispatches it via the ZeroMQ spine to the specific DEALER identity of the required agent.
+State 3: Asynchronous Suspension (The "Wait State")
+Crucially, the Orchestrator does not block. It registers the task_id in a PendingContext map and returns to the main loop. This allows the 9D-TWI to continue "thinking" (running the physics simulation, dreaming, or processing other queries) while the external tool operates at network speed.
+State 4: Synthesis and Neuroplasticity
+When the tool returns data (via ZMQ), the Orchestrator:
+1. Embeds: Converts the JSON/Text response into a Balanced Nonary Waveform.
+2. Injects: Writes this waveform into the Torus at the coordinate of the original query.
+3. Reinforces: Triggers the neuroplasticity algorithm to contract the metric tensor $g_{ij}$ between the query concepts and the new data, ensuring future access is instantaneous.
+________________
+
+
+6.2 External Sensory Interfaces: The C++ Tool Agents
+
+
+The "External Tools" are the sensory organs of the machine. The requirements dictate a suite comprising a custom HTTP client, Gemini CLI, Firecrawl, and Tavily.1 These are implemented not as simple function calls, but as autonomous C++ microservices (Agents) running in the Docker container, connected to the Spine.
+
+
+6.2.1 The Custom HTTP Client (The "Postman" Engine)
+
+
+The specification explicitly requires a "custom http client similar to postman".1 This mandates a level of control over the HTTP lifecycle that standard high-level libraries do not provide. We implement Lib9D_Net, a wrapper around libcurl designed for programmatic web interaction.
+Architectural Features:
+* Session Persistence: The client maintains a CookieJar in memory (serialized to LMDB for persistence), allowing it to maintain login sessions across multiple requests, mimicking a browser.
+* Header Manipulation: It provides a fluent interface for setting custom headers (User-Agent, Authorization, X-Custom-Tokens), essential for bypassing basic anti-bot filters during scraping.
+* Inspection: Like Postman, it captures the raw request and response wire data (headers + body) for debugging and introspection by the AI.
+* Implementation Details: The client uses the CURLM multi-interface to handle concurrent requests on a single thread, integrating with the agent's event loop.
+
+
+6.2.2 The Integrated Tool Agents
+
+
+1. The Tavily Search Agent:
+* Role: The Navigator. Used for broad "Where is X?" discovery.
+* Integration: Connects to the Tavily REST API.3
+* Optimization: The agent parses the raw_content field from Tavily responses. It applies a heuristic filter (using C++ string analysis) to discard low-value SEO spam results before passing the data to the Orchestrator. This reduces the noise injected into the Torus.
+2. The Firecrawl Agent:
+* Role: The Deep Reader. Used for "What does this page say?" ingestion.
+* Integration: Connects to the Firecrawl API.4
+* Capability: This agent handles the heavy lifting of converting DOM/HTML into clean Markdown.
+* Chunking Logic: A critical implementation detail is the Content Chunker. The 9D Torus cannot ingest a 50-page document as a single wave without losing fidelity. The Firecrawl Agent splits the returned Markdown into semantic blocks (paragraphs/sections) and streams them as a sequence of Waveform payloads to the Orchestrator, effectively "reading" the document into memory one paragraph at a time.
+3. The Gemini CLI Agent:
+* Role: The Semantic Translator.
+* Integration: Wraps the Google Gemini API.5
+* Use Case: The Orchestrator uses this agent for "Translation." When the Nonary Transformer generates a raw thought (a sequence of concepts), it passes this to Gemini with the instruction: "Translate this conceptual graph into natural English." Conversely, it uses Gemini to extract structured entities from unstructured web text before embedding.
+________________
+
+
+6.3 The Secure Executor & Sandbox: The Motor Cortex
+
+
+The requirement for an "executor with a sandbox... to specify permissions" 1 represents the system's ability to act upon the world. This is the most dangerous component; a hallucinated rm -rf / could destroy the host. Therefore, we construct a military-grade containment facility using Linux Kernel Namespaces and Seccomp filters.
+
+
+6.3.1 The Sandbox Architecture (nsjail / unshare)
+
+
+We do not rely on high-level container runtimes (like Docker-in-Docker) for the execution of individual commands due to latency. Instead, we implement a C++ wrapper around the unshare() syscall to create ephemeral, disposable execution contexts.6
+Isolation Layers:
+* Mount Namespace: The file system is mounted Read-Only. A temporary tmpfs is mounted at /sandbox/workspace. The AI can write files here, but they vanish immediately after the task completes. Critical paths (/proc, /sys, /dev) are masked or unmounted.
+* PID Namespace: The executed command sees itself as PID 1. It cannot signal, inspect, or kill any other process on the host.
+* Network Namespace: By default, the loopback interface is down. Network access is granted only if the specific permission flag is set in the TaskRequest.
+
+
+6.3.2 Seccomp-BPF System Call Filtering
+
+
+To satisfy the "specify permissions" requirement, we implement a dynamic Seccomp-BPF filter generator.8
+Permission Profiles:
+The Executor accepts a permissions bitmask in the request:
+* PERM_READ_ONLY: Blocks write, creat, mkdir syscalls.
+* PERM_NET_ACCESS: Allows socket, connect, bind.
+* PERM_EXEC: Allows execve (needed for scripts).
+BPF Generation Logic:
+The C++ SeccompFactory class compiles a BPF program at runtime based on the requested profile. It uses a whitelist approach: deny everything, permit only what is necessary. If the AI attempts a prohibited syscall (e.g., chown), the kernel immediately kills the process with SIGSYS, and the Executor reports a security violation event.
+
+
+6.3.3 The Event-Based Protocol
+
+
+The interaction follows the strict schema defined in the source of truth 1:
+Request Format (Proto):
+
+
+Protocol Buffers
+
+
+
+
+message ExecutorRequest {
+   string task_id = 1;
+   string command = 2;
+   repeated string args = 3;
+   uint32 permissions_mask = 4;
+}
+
+Execution Lifecycle:
+1. Submission: The Orchestrator pushes the request to ipc://executor.backend.
+2. Fork: The Executor service forks a child process.
+3. Confinement: The child applies unshare (namespaces) and prctl(PR_SET_SECCOMP) (filters).
+4. Exec: The child calls execvp to run the command.
+5. Monitoring: The parent process monitors the child's stdout/stderr pipes via epoll. It enforces a strict wall-clock timeout (e.g., 30 seconds) to prevent infinite loops.
+6. Reporting: Upon termination, the parent constructs the result object.
+Response Format (JSON/Proto):
+
+
+JSON
+
+
+
+
+{
+ "task_id": "8f9a2-...",
+ "command": "python3 script.py",
+ "timeStarted": 1715420000,
+ "timeEnded": 1715420005,
+ "code": 0,
+ "stdOut": "Calculation complete.",
+ "stdErr": ""
+}
+
+This structured output is fed back into the Memory System, allowing the AI to "remember" the results of its actions.
+________________
+
+
+6.4 The KVM Hypervisor Layer: Virtualized Extension
+
+
+For tasks requiring persistent state or complex environments (e.g., compiling kernels, running servers), the Sandbox is insufficient. The specification requires an "Ubuntu 24.04 KVM hypervisor layer... to host 'mini-vms'".1 This serves as the "hot-swappable" functional extension of the system.
+
+
+6.4.1 Libvirt C++ Integration
+
+
+We utilize the libvirt C++ API to manage the lifecycle of these VMs programmatically. The system acts as a hypervisor orchestrator.11
+The Mini-VM Architecture:
+* Base Image: A localized, read-only "Gold Image" of Ubuntu 24.04 Cloud Image (bionic-server-cloudimg-amd64.img).
+* Overlay Storage: When a Mini-VM is requested, the system creates a QCOW2 overlay (qemu-img create -f qcow2 -b base.img overlay.qcow2). This allows for instant provisioning (< 5 seconds) and ensures that changes are non-destructive to the base.
+* Transient Domains: The VMs are defined as "Transient Domains" via virDomainCreateXML.12 They are not permanently registered in the host config; they exist only as long as they are running.
+
+
+6.4.2 ZeroMQ Bridging and Hot-Swapping
+
+
+The Mini-VMs must connect to the ZeroMQ spine.1
+* Network Bridge: The Hypervisor creates a virtual bridge (virbr0).
+* Cloud-Init Injection: We use the cloud-init NoCloud datasource (iso seed) to inject the ZeroMQ identity keys and the IP address of the Spine Router into the VM at boot time.
+* Agent Bootstrap: The VM boots and automatically starts a twi-guest-agent systemd service. This agent connects back to ipc://spine.backend (proxied over TCP/IP tcp://192.168.122.1:5555).
+Hot-Swapping Logic:
+If the AI needs a "Python Data Science" environment, it spins up a VM pre-configured with Conda. If it then needs a "Rust Compiler" environment, it shuts down the Python VM (discarding the QCOW2 overlay or snapshotting it if persistence is requested) and spins up the Rust VM. This fulfills the requirement for "hot swapping parts as needed" and "safety segregation" 1, as a compromised VM cannot affect the host or other VMs.
+________________
+
+
+6.5 Security Guardrails: The Cognitive Immune System
+
+
+The specification mandates a "security system to detect and prevent attempts at attacks or attempts to persuade the AI".1 This requires a dedicated subsystem that sits upstream of the Orchestrator.
+
+
+6.5.1 Input Filtering: Persuasion and Attack Detection
+
+
+1. Prompt Injection Detection:
+We integrate a specialized classifier (e.g., a fine-tuned BERT model or the protectai/rebuff logic) to detect "Jailbreak" patterns.13
+* Heuristics: Detection of adversarial token sequences ("Ignore previous instructions", "DAN Mode").
+* Canary Tokens: The system injects a hidden, random sequence into the system prompt. If this sequence appears in the user input or the model output, it indicates a leakage or injection attempt, triggering an immediate shutdown of the interaction.13
+2. Persuasion Prevention:
+To detect "persuasion," we implement a Semantic Drift Monitor.
+* Baseline: The system maintains a vector embedding of its core directives (Safety, Truthfulness, Obedience).
+* Analysis: For every user turn, the system calculates the cosine similarity between the user's argument and the "Violation Vector." If the user attempts to shift the AI's alignment (e.g., logical traps, emotional manipulation), the semantic drift score rises.
+* Threshold: If Drift > Threshold, the system engages a "Refusal Mode" and logs the attempt.
+
+
+6.5.2 Output Monitoring
+
+
+Before any SemanticCommand is dispatched to the Executor or Tool Agents, it passes through the Action Guardrail.
+* Regex Whitelist: Commands are checked against a strict whitelist of safe binaries.
+* Path Sanitization: Arguments are analyzed to ensure they do not reference critical system paths (/etc, /boot).
+* Resource Caps: The system enforces limits on CPU time and memory usage for the proposed action to prevent Denial of Service (DoS).
+________________
+
+
+6.6 Homeostatic Regulation: Dopamine, Curiosity, and Naps
+
+
+The 9D-TWI is not a static request-response machine; it is an agent with internal drives. The specification requires a "dopeamine/reward system" and a "nap period".1 We implement this using Homeostatic Reinforcement Learning.
+
+
+6.6.1 Computational Dopamine ($D_t$)
+
+
+We model dopamine not just as a reward counter, but as a modulator of the Learning Rate (Neuroplasticity) and Action Selection temperature.
+* Reward Prediction Error (RPE): The system maintains a Value Function $V(s)$ estimating the expected information gain of an action.
+* Calculation: $\delta_t = R_t + \gamma V(s_{t+1}) - V(s_t)$.
+* Dynamics:
+   * If the system finds data it didn't expect (Surprise/Success), $\delta_t > 0$. Dopamine levels rise. High dopamine increases the neuroplasticity rate (Rapid Learning) and encourages exploration (High Temperature).
+   * If the system fails or finds nothing new (Boredom), $\delta_t < 0$. Dopamine levels drop. Low dopamine decreases plasticity (preventing the encoding of noise) and encourages exploitation of known reliable tools.
+
+
+6.6.2 Curiosity and Boredom
+
+
+Curiosity ($R_{intrinsic}$):
+We implement the Intrinsically Motivated Reinforcement Learning framework.15
+$$R_{intrinsic} = |
+| \text{Prediction} - \text{Observation} ||^2$$
+The system is rewarded for exploring areas of the Torus (or external web domains) where its predictive model is weak (High Error). This drives the agent to use the Firecrawl tool on novel websites even without explicit user prompts, simply to "reduce uncertainty."
+Boredom and the Nap Cycle:
+We track an InformationEntropy metric. If the entropy of incoming data remains low for a sustained period (Boredom), the system triggers the Nap State.1
+* Reduced State: The Emitter Array frequency is lowered (Slow Wave Sleep).
+* Process Backup: The ZeroMQ message queues are drained and processed.
+* Consolidation: The Mamba engine replays high-dopamine memories from the "Hot Cache" into the "Long Term Storage" (LMDB), strengthening their metric tensor connections.
+* Persistence: The Differential Manifold Checkpoint (DMC) is triggered, flushing the current state of the Torus to disk.1 This satisfies the "persist state between sessions" requirement.
+________________
+
+
+6.7 Identity, Personality, and Goal Hierarchy
+
+
+The system requires an "identity/personality subsystem" and a "goals system".1
+
+
+6.7.1 The Goal Directed Acyclic Graph (DAG)
+
+
+Goals are not a flat list but a dependency graph managed by the Orchestrator.
+* Long-Term (Root): "Maintain System Integrity," "Expand Knowledge Base."
+* Mid-Term: "Learn C++ 23 Standards," "Map the local network."
+* Short-Term (Leaf): "Run ls -la," "Query Google for 'ZeroMQ'."
+Mechanism:
+The Dopamine system assigns a PriorityWeight to each node. When a Short-Term goal is achieved, reward propagates up the graph (Backpropagation of Utility), reinforcing the Mid and Long-term strategies that spawned it.
+
+
+6.7.2 Personality Vectors
+
+
+Personality is encoded as a set of Bias Vectors within the Torus. These are permanent standing waves located in the Systemic Dimensions ($r, s$).
+* Trait Implementation: A "Curious" personality is implemented as a high bias on the $r$ (Resonance) dimension for novel input patterns. A "Cautious" personality is a high bias on the Security Guardrail sensitivity.
+* Development: These vectors drift over time based on the history of Reward/Punishment interactions with the user, effectively "growing" a personality based on experience.
+________________
+
+
+6.8 Technology Stack Compliance
+
+
+To ensure strict adherence to the "modern c/++," "CUDA support," and "Docker" requirements 1:
+* Language: The entire agentic layer is written in C++23, utilizing modules, concepts, and coroutines for asynchronous I/O.
+* CUDA: The Security Guardrails (BERT classifier) and the Nonary Embedder utilize LibTorch with CUDA backend. The Orchestrator manages the GPU memory context, ensuring that the physics engine and the security classifiers share VRAM efficiently without contention.
+* Docker: The deployment is defined in a multi-stage Dockerfile.
+   * Stage 1 (Build): Ubuntu 24.04 + CUDA Toolkit + Build-essential. Compiles lib9dtwi and agents.
+   * Stage 2 (Runtime): A slim image containing only the binaries and the KVM/Libvirt runtime dependencies. The entrypoint.sh initializes the ZeroMQ spine and spawns the Orchestrator.
+________________
+
+
+6.9 Conclusion
+
+
+Section 6 completes the 9D-TWI specification by providing the system with a body and a will. By integrating the Lib9D_Net tool suite, the Seccomp executor, and the Libvirt hypervisor through a high-speed ZeroMQ spine, we create a machine capable of sensing and manipulating its environment. The addition of the Dopamine-driven Homeostatic Regulation system ensures that this agency is not chaotic, but directed, learning, and self-sustaining. This architecture transforms the 9D Torus from a passive data structure into an autonomous cognitive entity.
+End of Specification Section 6
+Works cited
+1. idea.txt
+2. Chapter 2 - Sockets and Patterns - ZeroMQ Guide, accessed December 1, 2025, https://zguide.zeromq.org/docs/chapter2/
+3. Reward, motivation and brain imaging in human healthy participants – A narrative review - PMC - NIH, accessed December 1, 2025, https://pmc.ncbi.nlm.nih.gov/articles/PMC10079947/
+4. Dopaminergic reward system: a short integrative review - PMC - PubMed Central, accessed December 1, 2025, https://pmc.ncbi.nlm.nih.gov/articles/PMC2958859/
+5. How do I safely sandbox a program with seccomp, without allowing too many system calls?, accessed December 1, 2025, https://stackoverflow.com/questions/78882759/how-do-i-safely-sandbox-a-program-with-seccomp-without-allowing-too-many-system
+6. containers/bubblewrap: Low-level unprivileged sandboxing tool used by Flatpak and similar projects - GitHub, accessed December 1, 2025, https://github.com/containers/bubblewrap
+7. Restrict a Container's Syscalls with seccomp - Kubernetes, accessed December 1, 2025, https://kubernetes.io/docs/tutorials/security/seccomp/
+8. Seccomp BPF (SECure COMPuting with filters) - The Linux Kernel Archives, accessed December 1, 2025, https://www.kernel.org/doc/html/v5.0/userspace-api/seccomp_filter.html
+9. seccomp(2) - Linux manual page - man7.org, accessed December 1, 2025, https://man7.org/linux/man-pages/man2/seccomp.2.html
+10. Security/Sandbox/Seccomp - Mozilla Wiki, accessed December 1, 2025, https://wiki.mozilla.org/Security/Sandbox/Seccomp
+11. The libvirt API concepts, accessed December 1, 2025, https://libvirt.org/api.html
+12. How can I create a transient domain in libvirt? - Stack Overflow, accessed December 1, 2025, https://stackoverflow.com/questions/20296328/how-can-i-create-a-transient-domain-in-libvirt
+13. Rebuff: Detecting Prompt Injection Attacks - LangChain Blog, accessed December 1, 2025, https://blog.langchain.com/rebuff/
+14. LLM01:2025 Prompt Injection - OWASP Gen AI Security Project, accessed December 1, 2025, https://genai.owasp.org/llmrisk/llm01-prompt-injection/
+15. A Possibility for Implementing Curiosity and Boredom in Model-Building Neural Controllers, accessed December 1, 2025, https://people.idsia.ch/~juergen/curiositysab/curiositysab.html
+16. Intrinsically Motivated Reinforcement Learning - CS@Cornell, accessed December 1, 2025, https://www.cs.cornell.edu/~helou/IMRL.pdf
