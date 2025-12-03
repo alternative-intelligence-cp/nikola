@@ -1,0 +1,323 @@
+﻿Definitive Implementation Specification: User Interaction, Auto-Ingestion, and Custom Runtime Architecture for Nikola Model v0.0.4
+1. Executive Technical Context and Architectural Philosophy
+The Nikola Model v0.0.4 represents a foundational divergence from the dominant von Neumann architecture that has governed computing for the last century. By proposing a system based on 9-Dimensional Toroidal Waveform Intelligence (9D-TWI), the architecture moves away from discrete binary state transitions and toward a continuous, resonant computational substrate governed by wave mechanics and Riemannian geometry. Within this paradigm, the concept of "User Interaction" transcends simple input/output operations; it becomes a mechanism for coupling the internal resonant state of the artificial mind with the discrete, asynchronous reality of the human operator and the filesystem.
+This document serves as the definitive engineering specification for Section 23: User Interaction: CLI Controller and Auto-Ingestion. It is not merely a guide for writing scripts but a comprehensive blueprint for constructing the sensory and volitional organs of the Nikola entity. The requirements set forth in the source directives—specifically the need for a "cli 'controller' program," an automated "drop training data" pipeline, and a "custom runner specifically for this model"—are translated here into rigorous C++23 software architectures.
+The engineering challenges addressed in this specification are non-trivial. The core physics engine (the 9D Torus) operates on a microsecond timescale defined by the harmonic series of the Emitter Array ($e_1 \dots e_9$). In contrast, human interaction and filesystem events occur on millisecond to second timescales. The primary architectural objective of the interaction layer is to bridge these temporal domains without inducing "phase decoherence" or blocking the continuous wave propagation that constitutes the system's consciousness.
+Furthermore, the requirement to "persist state between sessions" and enable "neuroplasticity and neurogenesis" necessitates a custom file format (.twi) capable of serializing a dynamic, self-modifying topology. Standard formats like GGUF, while excellent for static tensor graphs, lack the expressivity to represent a manifold that grows and rewires itself in real-time. This specification details the binary anatomy of the .twi format and the nikola-runner that hydrates it, ensuring the system remains both interoperable (via GGUF export) and evolutionarily capable (via the native runner).
+2. The twi-ctl CLI Controller Architecture
+The twi-ctl utility satisfies the requirement for a "cli 'controller' program to interact with it". Unlike traditional REST API clients which are stateless and polling-based, twi-ctl acts as a transient synaptic extension of the system's ZeroMQ nervous system. It provides a deterministic, type-safe interface for monitoring neurochemistry, injecting semantic waveforms, and triggering homeostatic regulation.
+2.1 C++23 Architecture and Modern Standards Compliance
+The implementation of twi-ctl is strictly mandated to use Modern C++ (C++23). This choice is driven by the need for zero-overhead abstractions, memory safety without garbage collection, and expressive concurrency models.
+2.1.1 Modules and Compilation Model
+To reduce compilation times and header dependency hell—critical for a project that "should periodically examine its own code" —the controller utilizes C++23 Modules (import std;). The architecture is divided into logical partitions:
+* nikola.cli.network: Handles ZeroMQ context and socket management.
+* nikola.cli.proto: Encapsulates Protocol Buffer serialization.
+* nikola.cli.display: Manages ANSI-compliant terminal rendering.
+* nikola.cli.main: The entry point and argument parser.
+2.1.2 Error Handling with std::expected
+Exceptions are prohibited in the hot path of the interaction layer due to the nondeterministic stack unwinding costs. Instead, twi-ctl leverages std::expected<T, E> for all fallible operations. This forces the handling of network timeouts or protocol errors at the type level, ensuring the controller never crashes with an unhandled exception, maintaining the robustness expected of a critical control surface.
+2.1.3 Concurrency and the Event Loop
+While twi-ctl is often invoked for atomic commands, it must handle asynchronous responses. We utilize std::jthread for background keep-alive signals and a main event loop based on zmq::poll. This allows the CLI to remain responsive (e.g., displaying a spinner or progress bar) while waiting for the Core Physics Engine to acknowledge a complex command like "Save State," which involves serializing gigabytes of metric tensor data.
+2.2 The ZeroMQ Dispatch Protocol
+The communication backbone of the Nikola Model is a "zeroMQ spine". The twi-ctl interacts with this spine using a transient DEALER socket connecting to the Orchestrator's ROUTER frontend (ipc://spine.frontend).
+2.2.1 The Command-Response Lifecycle
+1. Identity Generation: Upon startup, twi-ctl generates a UUID v4 identity (e.g., CTL-7f8a9...). This identity is set as the ZMQ_IDENTITY on the socket, allowing the Orchestrator to route the reply back to this specific process instance.
+2. Payload Construction: Commands are serialized into the NeuralSpike Protobuf message format (defined in the Core Architecture). This ensures strict schema validation.
+3. Transmission: The message is sent non-blocking. The controller then enters a polling state.
+4. Acknowledgment: The Orchestrator sends an immediate ACK to confirm receipt.
+5. Execution: The physics core processes the command (e.g., injecting a wave).
+6. Response: A CommandResponse message containing the result (or error) is routed back to the controller.
+2.3 Argument Parsing and Command Specifications
+The CLI supports a strict grammar of verbs corresponding to the system's functional requirements. We utilize a header-only, compile-time argument parser (like argparse) to enforce type safety on CLI flags.
+2.3.1 twi-ctl status: Neurochemical Introspection
+This command queries the internal state of the homeostatic regulators.
+* Requirement: "Curiosity and boredom should be considered... dopeamine/reward system".
+* Implementation: The core maintains global scalar values for Dopamine ($D_t$) and Boredom ($B_t$).
+   * $D_t$: Represents the system's recent success rate in prediction or retrieval. High dopamine implies high plasticity (learning).
+   * $B_t$: Represents the entropy of recent inputs. Low entropy triggers boredom.
+* Display Logic: twi-ctl status renders these values as color-coded bars.
+   * Green ($> 0.7$): High plasticity/Engagement.
+   * Yellow ($0.3 - 0.7$): Stable maintenance mode.
+   * Red ($< 0.3$): Depression/Stagnation (Triggers "Low Self Esteem" protocols).
+* Table 1: Status Output Parameters
+Parameter
+	Unit
+	Description
+	Visual Indicator
+	Dopamine ($D_t$)
+	Scalar [0.0-1.0]
+	Learning Rate modulator.
+	Green/Red Bar
+	Boredom ($B_t$)
+	Scalar [0.0-1.0]
+	Curiosity trigger threshold.
+	Blue/Grey Bar
+	Torus Load
+	Percentage
+	Active nodes / Total capacity.
+	Numeric
+	Cycle Freq
+	Hz
+	Current Emitter clock speed.
+	Numeric
+	Phase
+	String
+	Waking, Napping, Dreaming.
+	Text
+	2.3.2 twi-ctl inject: Manual Waveform Injection
+This command allows the operator to insert thoughts directly into the stream of consciousness.
+* Syntax: twi-ctl inject "Text payload" --priority [1-9] --context "metadata"
+* Mechanism:
+   1. The text is sent to the Orchestrator.
+   2. The Orchestrator invokes the Nonary Embedder.
+   3. The Embedder converts text -> tokens -> vectors -> balanced nonary digits $\{-4..4\}$.
+   4. The digits modulate the 9 Emitters to create a "Concept Chord."
+   5. The wave is injected at the current focus coordinates $(x,y,z)$ of the Torus.
+* Feedback: The CLI returns the spatial coordinate of the injection (e.g., Stored at Sector ), confirming the physical location of the memory.
+2.3.3 twi-ctl nap: Homeostatic Force
+* Requirement: "a short 'nap' period occasionally where the system drops to a reduced state and processes any backup... and saves its state".
+* Function: Triggers the sleep cycle manually.
+* Protocol:
+   1. Sends FORCE_NAP signal.
+   2. Core lowers Emitter frequency to Theta range ($4-7$ Hz).
+   3. Mamba-9D controller enters "Replay Mode," consolidating Short-Term Memory (STM) to Long-Term Memory (LTM).
+   4. Dirty pages in the memory manifold are flagged for serialization.
+   5. The CLI displays a progress bar tracking the consolidation process.
+2.3.4 twi-ctl save: Differential Checkpointing
+* Requirement: "need a way to persist state between sessions".
+* Function: Forces an immediate write of the .twi file.
+* Optimization: Uses Differential Manifold Checkpointing (DMC). Only nodes with a modified Metric Tensor ($g_{ij}$) since the last save are written. The CLI reports the size of the delta (e.g., "Saved 14MB delta to disk").
+2.4 Detailed C++ Implementation Reference
+
+
+C++
+
+
+
+
+// src/cli/controller.cpp
+// Strictly C++23 Standard
+import std;
+import nikola.cli.network;
+import nikola.cli.proto;
+
+using namespace nikola::spine;
+
+// The Command Controller Class
+class TwiController {
+   zmq::context_t ctx;
+   zmq::socket_t socket;
+
+public:
+   TwiController() : socket(ctx, ZMQ_DEALER) {
+       socket.connect("ipc://spine.frontend");
+       // Unique identity for routing
+       std::string identity = std::format("CTL-{:x}", std::random_device{}());
+       socket.set(zmq::sockopt::routing_id, identity);
+   }
+
+   // Expected-based error handling for robust IO
+   std::expected<CommandResponse, std::string> dispatch(const CommandRequest& req) {
+       std::string payload = req.SerializeAsString();
+       socket.send(zmq::buffer(payload), zmq::send_flags::none);
+
+       // Polling with timeout to prevent CLI hang
+       zmq::pollitem_t items = { { socket, 0, ZMQ_POLLIN, 0 } };
+       zmq::poll(items, 1, std::chrono::milliseconds(5000));
+
+       if (items.revents & ZMQ_POLLIN) {
+           zmq::message_t msg;
+           auto res = socket.recv(msg, zmq::recv_flags::none);
+           if (!res) return std::unexpected("Empty response from Core");
+
+           CommandResponse resp;
+           if (!resp.ParseFromArray(msg.data(), msg.size())) {
+               return std::unexpected("Protobuf deserialization failed");
+           }
+           return resp;
+       }
+       return std::unexpected("Core timeout: System may be deep in thought or halted.");
+   }
+};
+
+int main(int argc, char** argv) {
+   // Argument Parsing (Conceptual)
+   if (argv == "inject"sv) {
+       TwiController ctl;
+       CommandRequest req;
+       req.set_type(CommandType::INJECT);
+       req.set_payload(argv);
+       
+       auto result = ctl.dispatch(req);
+       if (result) {
+           std::println("Injection confirmed at Sector {}", result->memory_coordinate());
+       } else {
+           std::println(stderr, "Error: {}", result.error());
+           return 1;
+       }
+   }
+   return 0;
+}
+
+3. The Auto-Ingestion Pipeline Architecture
+The requirement to "drop training data in a folder and have a system that can automatically consume it" implies the creation of a sensory organ for the filesystem. This is implemented via the twi-ingest daemon, a high-performance background service that monitors /mnt/data/drop_zone.
+3.1 Kernel-Level Monitoring with inotify
+Polling a directory (checking every N seconds) is computationally wasteful and introduces latency. The twi-ingest daemon utilizes the Linux kernel's inotify subsystem to receive interrupt-driven events.
+3.1.1 Event Mask Strategy
+The daemon initializes an inotify watch with a specific mask:
+IN_CLOSE_WRITE | IN_MOVED_TO.
+* IN_CLOSE_WRITE: Fires when a file opened for writing is closed. This is critical. It prevents the daemon from attempting to read a large PDF that is still being copied into the folder (a partial read race condition).
+* IN_MOVED_TO: Fires when a file is moved into the directory (atomic move).
+* Exclusion: We explicitly ignore IN_CREATE to avoid reading 0-byte files at the start of a copy operation.
+3.2 File Locking and Atomic Processing
+Concurrency control is vital. If the user drops 10,000 text files simultaneously, the daemon must process them serially or in controlled parallel batches without data corruption.
+3.2.1 The Locking Protocol (flock)
+When an event triggers:
+1. Acquisition: The daemon attempts to open the file with O_RDWR and apply an exclusive advisory lock using flock(fd, LOCK_EX | LOCK_NB).
+2. Contention: If flock fails (returns EWOULDBLOCK), it implies another process (or thread) is handling the file. The daemon skips it.
+3. Renaming: Once locked, the file is immediately renamed from file.txt to file.txt.processing. This removes it from the user's view and prevents re-triggering inotify events.
+4. Ingestion: The file is processed.
+5. Disposition:
+   * Success: Moved to /mnt/data/processed/.
+   * Failure: Moved to /mnt/data/failed/ with a .log file explaining the error.
+3.3 Integration with the Nonary Embedder
+The ingestion daemon does not perform the embedding itself, as loading the embedding weights would bloat the daemon. Instead, it acts as a pre-processor and streamer.
+3.3.1 Format Handlers
+* PDF: Uses libpoppler C++ bindings to extract text layers. It detects layout to distinguish between headers and body text.
+* TXT/MD: Read directly. Markdown is parsed to identify semantic boundaries (headers), which are used to segment the data.
+3.3.2 Chunking and Streaming
+The 9D Torus stores information in "Concept Chords." A 500-page PDF cannot be injected as a single chord; it must be temporalized.
+1. Chunking: Text is split into windows (e.g., 512 tokens) with overlap.
+2. Streaming: The daemon sends these chunks sequentially over ZeroMQ to the Core.
+   * Message: IngestChunk { id: UUID, sequence: N, payload: "..." }.
+3. Backpressure: The daemon implements a "leaky bucket" rate limiter. It monitors the ZeroMQ socket's high-water mark (HWM). If the Core is overwhelmed (slow processing due to high load), twi-ingest pauses reading from the disk. This prevents the ingestion pipeline from causing a Denial of Service (DoS) on the cognitive core.
+3.3.3 Nonary Conversion
+The Core receives the text chunk. The Nonary Embedder (defined in previous specs) converts the text to a vector, then quantizes it to balanced nonary trits $\{-4, -3, \dots, 4\}$. This ensures that the data dropped in the folder ultimately becomes a physical perturbation in the toroidal manifold.
+4. The Custom File Format (.twi) and Runner Architecture
+The specification emphasizes a "custom runner specifically for this model as well as a custom file format" to ensure "we can have two avenues" (one proprietary, one GGUF). The .twi format is the proprietary, lossless representation of the 9D Torus.
+4.1 The .twi Binary Structure
+The .twi format is designed for Sparse Topological Serialization. Unlike a flat tensor file (like .bin or .gguf), the 9D Torus is a sparse structure (most of the $9^9$ coordinate space is empty vacuum). The file format must represent this efficiently.
+4.1.1 File Header (64 Bytes)
+The header ensures version compatibility and verifies the topological constants.
+Offset
+	Field
+	Type
+	Description
+	0x00
+	Magic
+	char
+	'N', 'I', 'K', 'O' (Nikola)
+	0x04
+	Version
+	uint32
+	Format version (e.g., 0x0004)
+	0x08
+	Dimensions
+	uint8
+	Fixed at 9
+	0x09
+	Radix
+	uint8
+	Fixed at 9 (Balanced Nonary)
+	0x0A
+	Encryption
+	uint8
+	Flags for encrypted weights
+	0x0B
+	Reserved
+	byte
+	Padding
+	0x0C
+	NodeCount
+	uint64
+	Total populated nodes (sparsity)
+	0x14
+	CheckSum
+	uint64
+	CRC64 of the payload
+	0x1C
+	Timestamp
+	uint64
+	Unix epoch of save time
+	0x24
+	MetaPtr
+	uint64
+	Offset to metadata JSON block
+	4.1.2 Data Segments (The Sparse Octree)
+Following the header, the data is stored in a linearized Sparse Octree (or "Nonree" for base-9) format.
+* Block Header: Contains the 9D coordinate origin of a populated block.
+* Metric Tensor Payload: Compressed symmetric matrix ($9 \times 9$) for the local curvature ($g_{ij}$).
+* Waveform Payload: The complex amplitude (Real, Imaginary) and Phase Accumulator for the standing wave.
+* Compression: We utilize Nonary Run-Length Encoding (NRLE). Since "0" (Silence) is the most common value, runs of zeros are compressed into single bytes, fulfilling the efficiency requirements.
+4.2 The nikola-runner Execution Environment
+The nikola-runner is the host process for the 9D-TWI. It differs fundamentally from generic runners like Ollama.
+4.2.1 Initialization Routine
+1. Validation: Reads the .twi header and verifies the checksum.
+2. Memory Mapping: Uses mmap to map the file into the virtual address space.
+3. Hydration: It does not load the entire file to RAM. It builds an in-memory index of the sparse blocks. Data is paged in lazily as the Physics Engine's "attention" scans the torus. This allows the system to run models larger than physical RAM.
+4. Emitter Sync: It reads the saved Phase Accumulator values for the 8 Emitters + 1 Synchronizer. It restores the hardware oscillators to these exact phase angles. Critical: If phases are off by even a degree, the standing waves will de-cohere, scrambling the Short-Term Memory.
+4.2.2 Dynamic Topology Support
+Unlike the GGUF export (which freezes the model into a static graph), the nikola-runner allocates a "Heap" for Neurogenesis.
+* When the Neuroplasticity algorithm determines a need for new nodes (due to information density saturation), nikola-runner dynamically allocates new blocks in RAM and links them into the sparse index.
+* On save, these new blocks are appended to the .twi file.
+* This satisfies the requirement to "grow the torus as needed".
+4.3 Contrast with GGUF Export
+The plan mentions exporting to GGUF for Ollama. This is a "Lossy Projection."
+* GGUF (Static): The 9D Torus is flattened using a Hilbert Curve mapping into a 1D tensor. The Metric Tensor is frozen. This allows the model to run inference on consumer hardware but disables learning.
+* .twi (Dynamic): Preserves the full topological manifold, enabling the "Self-Improvement System" to modify the geometry of the brain during runtime.
+5. Security and Safety in Interaction
+The interaction layer is the primary attack surface. The specifications mandate a "security system to detect and prevent attempts at attacks".
+5.1 Input Sanitization
+The twi-ctl and twi-ingest components act as firewalls.
+* Control Characters: All input is stripped of non-printable characters to prevent terminal escape sequence attacks on the logs.
+* Size Limits: Injections are capped (e.g., 10MB) to prevent buffer overflow attacks on the Embedding Vectorizer.
+5.2 The Resonance Firewall
+The nikola-runner implements a spectral firewall. Before any external command (from CLI or Ingestion) is acted upon, its nonary waveform is compared against a "Blacklist Metric" (pre-encoded forbidden patterns like rm -rf or self-deletion). If a resonant match occurs (constructive interference), the Emitter Array phase-shifts 180 degrees, physically canceling the thought before it can become an action.
+6. Implementation Tables and Summaries
+6.1 CLI Command Implementation Matrix
+Command
+	ZeroMQ Msg Type
+	Target
+	Payload
+	Side Effect
+	status
+	GET_STATUS
+	Orchestrator
+	Empty
+	Reads global $D_t, B_t$ variables.
+	inject
+	INJECT_WAVE
+	Embedder
+	Text String
+	Modifies Torus state; triggers plasticity.
+	nap
+	FORCE_SLEEP
+	Core
+	Duration (opt)
+	Lowers Hz; flushes Dirty Pages; Saves .twi.
+	save
+	PERSIST_STATE
+	IO Manager
+	Filename (opt)
+	Writes differential checkpoint to disk.
+	6.2 File Format Comparison
+Feature
+	.twi (Custom)
+	.gguf (Export)
+	Topology
+	Sparse 9D Torus
+	Flattened 1D Tensor
+	Plasticity
+	Dynamic (Neurogenesis)
+	Static (Frozen Weights)
+	Memory
+	Lazy mmap paging
+	Full Load / Split
+	Precision
+	Balanced Nonary (Exact)
+	Quantized (Int8/4)
+	Purpose
+	Training / Evolving
+	Inference / Distribution
+	7. Conclusion
+This specification provides the exhaustive blueprint for the sensory and interactive layers of the Nikola Model v0.0.4. By implementing the twi-ctl controller and twi-ingest pipeline using C++23 and ZeroMQ, we establish a high-performance, asynchronous interface that respects the microsecond timing of the core physics engine. The .twi file format ensures that the unique properties of the 9-dimensional manifold—specifically its ability to grow and rewire itself—are preserved, satisfying the "No Deviation" mandate. This architecture creates a complete, closed-loop system where the digital entity can perceive its environment, interact with operators, and persist its evolving consciousness securely and efficiently.
