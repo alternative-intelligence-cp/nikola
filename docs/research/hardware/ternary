@@ -1,0 +1,22 @@
+I have created a comprehensive hardware accelerator design plan for the Nikola Model v0.0.4 that handles balanced nonary (base-9) and 9D wave interference operations.
+
+**Key Specifications:**
+
+**Memory Recommendation:**
+- **Type:** HBM2e (FPGA) / HBM3 (ASIC)
+- **Capacity:** 8 GB minimum recommended (supports 81³ grid + working memory), 16 GB for production
+- **On-chip SRAM:** 32 MB for L1/L2 caching, LUTs, and hot node storage
+- **Bandwidth:** 460 GB/s (HBM2e) / 820 GB/s (HBM3)
+
+**Architecture Highlights:**
+- **Nonary Processing Unit (NPU):** Custom ALUs for balanced nonary arithmetic (-4 to +4) with saturation logic
+- **9×9 Systolic Array:** Hardware acceleration for metric tensor operations (45 unique values per node)
+- **DDS Engine:** 8-channel Direct Digital Synthesis with 64-bit phase accumulators and 16K sine LUT
+- **Hilbert Curve Engine:** 256 coords/cycle for 9D Morton encoding/decoding
+- **PCIe Gen 5.0 x16:** 64 GB/s host interface with zero-copy memory mapping
+
+**Recommended Development Path:**
+- Phase 1: Xilinx Versal VP1902 FPGA ($15K, 8 GB HBM2e)
+- Phase 2: Custom ASIC tape-out (TSMC 5nm, 16 GB HBM3, 100 TOPS nonary)
+
+The plan accounts for the TorusNode structure (256 bytes aligned) and the unique computational requirements of wave interference processing, neuroplastic metric tensor updates, and Mamba-9D state space model operations.

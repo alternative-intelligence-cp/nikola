@@ -1,0 +1,401 @@
+# COMPUTATIONAL NEUROCHEMISTRY
+
+## 14.1 Dopamine System
+
+**Dopamine** ($D_t$) is a global scalar variable that modulates learning rate and exploration.
+
+### Update Rule
+
+$$D(t+1) = D(t) + \beta \cdot \delta_t - \lambda_{\text{decay}} \cdot (D(t) - D_{\text{baseline}})$$
+
+Where:
+- $\delta_t$: Reward prediction error (TD error)
+- $\beta$: Dopamine sensitivity (typically 0.1)
+- $\lambda_{\text{decay}}$: Decay constant (typically 0.01)
+- $D_{\text{baseline}}$: Homeostatic baseline (typically 0.5)
+
+### Reward Prediction Error
+
+$$\delta_t = R_t + \gamma V(S_{t+1}) - V(S_t)$$
+
+Where:
+- $R_t$: Immediate reward (1 for success, -1 for failure, 0 otherwise)
+- $\gamma$: Discount factor (0.99)
+- $V(S_t)$: Value estimate of current state
+
+### Effects of Dopamine
+
+| Dopamine Level | Effect | Behavior |
+|----------------|--------|----------|
+| High ($> 0.7$) | ↑ Learning rate, ↑ Exploration | Risk-taking, rapid learning |
+| Medium ($0.3-0.7$) | Balanced | Normal operation |
+| Low ($< 0.3$) | ↓ Learning rate, ↑ Exploitation | Conservative, slow learning |
+
+### Implementation
+
+```cpp
+class DopamineSystem {
+    double level = 0.5;  // Baseline
+    double baseline = 0.5;
+    double beta = 0.1;
+    double lambda_decay = 0.01;
+    double gamma = 0.99;
+
+public:
+    void update(double reward, double value_current, double value_next) {
+        // Compute TD error
+        double delta = reward + gamma * value_next - value_current;
+
+        // Update dopamine
+        level += beta * delta - lambda_decay * (level - baseline);
+
+        // Clamp to [0, 1]
+        level = std::clamp(level, 0.0, 1.0);
+    }
+
+    double get_learning_rate(double base_lr = 0.001) const {
+        // Modulate learning rate
+        return base_lr * (1.0 + std::tanh(level - baseline));
+    }
+
+    double get_exploration_temp() const {
+        // Higher dopamine → higher temperature → more exploration
+        return 0.5 + level;
+    }
+
+    double get_level() const { return level; }
+};
+```
+
+## 14.2 Boredom and Curiosity
+
+**Boredom** ($B_t$) accumulates when information entropy is low.
+
+### Boredom Update
+
+$$B(t+1) = B(t) + \frac{\alpha}{H(\Psi(t)) + \epsilon} - \kappa \cdot D(t)$$
+
+Where:
+- $H(\Psi)$: Shannon entropy of wavefunction distribution
+- $\alpha$: Boredom accumulation rate (0.01)
+- $\epsilon$: Small constant to prevent division by zero (0.001)
+- $\kappa$: Dopamine suppression factor (0.05)
+
+### Entropy Calculation
+
+$$H(\Psi) = -\sum_i p_i \log_2 p_i$$
+
+Where $p_i = \frac{|\Psi_i|^2}{\sum_j |\Psi_j|^2}$ (probability distribution from wavefunction amplitudes).
+
+### Curiosity Trigger
+
+When $B(t) > B_{\text{critical}}$ (typically 5.0), trigger curiosity routine:
+
+1. Select random high-entropy topic from knowledge graph
+2. Query Tavily for that topic
+3. Ingest and embed results
+4. Reset boredom: $B(t) \leftarrow 0$
+
+### Implementation
+
+```cpp
+class BoredomCuriositySystem {
+    double boredom = 0.0;
+    double critical_threshold = 5.0;
+    double alpha = 0.01;
+    double kappa = 0.05;
+
+public:
+    void update(const TorusManifold& torus, double dopamine) {
+        // Compute entropy
+        double entropy = compute_entropy(torus);
+
+        // Update boredom
+        boredom += alpha / (entropy + 0.001) - kappa * dopamine;
+
+        // Clamp
+        boredom = std::max(0.0, boredom);
+    }
+
+    bool should_explore() const {
+        return boredom > critical_threshold;
+    }
+
+    void reset_boredom() {
+        boredom = 0.0;
+    }
+
+private:
+    double compute_entropy(const TorusManifold& torus) {
+        std::vector<double> probabilities;
+        double total = 0.0;
+
+        // Collect amplitudes
+        for (const auto& [coord, node] : torus.get_active_nodes()) {
+            double amp_sq = std::norm(node.wavefunction);
+            probabilities.push_back(amp_sq);
+            total += amp_sq;
+        }
+
+        // Normalize
+        for (auto& p : probabilities) {
+            p /= total;
+        }
+
+        // Compute entropy
+        double entropy = 0.0;
+        for (double p : probabilities) {
+            if (p > 1e-10) {
+                entropy -= p * std::log2(p);
+            }
+        }
+
+        return entropy;
+    }
+};
+```
+
+## 14.3 Goal System
+
+Goals are organized in a **Directed Acyclic Graph (DAG)** with three tiers:
+
+```
+Long-Term Goal
+    ├── Mid-Term Goal 1
+    │       ├── Short-Term Task 1.1
+    │       └── Short-Term Task 1.2
+    └── Mid-Term Goal 2
+            ├── Short-Term Task 2.1
+            └── Short-Term Task 2.2
+```
+
+### Goal Structure
+
+```cpp
+struct Goal {
+    std::string id;
+    std::string description;
+    GoalTier tier;
+    double reward_value;
+    std::vector<std::string> prerequisites;  // Child goal IDs
+    bool completed = false;
+};
+
+enum class GoalTier {
+    SHORT_TERM,   // Minutes to hours
+    MID_TERM,     // Hours to days
+    LONG_TERM     // Days to weeks
+};
+```
+
+### Goal Graph
+
+```cpp
+class GoalSystem {
+    std::unordered_map<std::string, Goal> goals;
+    std::string current_goal_id;
+
+public:
+    void add_goal(const Goal& goal) {
+        goals[goal.id] = goal;
+    }
+
+    void complete_goal(const std::string& goal_id, DopamineSystem& dopamine) {
+        auto& goal = goals.at(goal_id);
+        goal.completed = true;
+
+        // Release dopamine
+        dopamine.update(goal.reward_value, 0.0, 0.0);
+
+        // Check if parent goals can be completed
+        propagate_completion(goal_id, dopamine);
+    }
+
+private:
+    void propagate_completion(const std::string& child_id, DopamineSystem& dopamine) {
+        // Find parent goals
+        for (auto& [id, goal] : goals) {
+            if (std::find(goal.prerequisites.begin(), goal.prerequisites.end(), child_id)
+                != goal.prerequisites.end()) {
+
+                // Check if all prerequisites completed
+                bool all_done = true;
+                for (const auto& prereq_id : goal.prerequisites) {
+                    if (!goals.at(prereq_id).completed) {
+                        all_done = false;
+                        break;
+                    }
+                }
+
+                if (all_done && !goal.completed) {
+                    complete_goal(id, dopamine);  // Recursive
+                }
+            }
+        }
+    }
+};
+```
+
+## 14.4 Reward Mechanisms
+
+### Reward Sources
+
+| Event | Reward | Trigger |
+|-------|--------|---------|
+| Query answered from memory | +0.5 | Resonance found |
+| Query required external tool | +0.1 | Tool success |
+| External tool failed | -0.3 | Tool error |
+| Goal completed (short-term) | +0.5 | Goal system |
+| Goal completed (mid-term) | +1.0 | Goal system |
+| Goal completed (long-term) | +2.0 | Goal system |
+| Prediction correct | +0.2 | Transformer training |
+| Prediction wrong | -0.1 | Transformer training |
+| Nap completed | +0.05 | Persistence system |
+
+**IMPORTANT:** Negative rewards are ONLY for grave instances. Most feedback is positive or neutral.
+
+## 14.5 Implementation
+
+### Neurochemistry Manager
+
+```cpp
+class NeurochemistryManager {
+    DopamineSystem dopamine;
+    BoredomCuriositySystem boredom;
+    GoalSystem goals;
+
+public:
+    void update(const TorusManifold& torus) {
+        // Update boredom
+        boredom.update(torus, dopamine.get_level());
+
+        // Check if should explore
+        if (boredom.should_explore()) {
+            trigger_curiosity();
+        }
+    }
+
+    double get_learning_rate() const {
+        return dopamine.get_learning_rate();
+    }
+
+    void reward(double value) {
+        dopamine.update(value, 0.0, 0.0);
+    }
+
+    void complete_goal(const std::string& goal_id) {
+        goals.complete_goal(goal_id, dopamine);
+    }
+
+private:
+    void trigger_curiosity() {
+        // Select random topic
+        std::vector<std::string> topics = {
+            "recent breakthroughs in quantum computing",
+            "unsolved problems in mathematics",
+            "novel materials science discoveries"
+        };
+
+        std::string topic = topics[rand() % topics.size()];
+
+        // Trigger external search (would connect to orchestrator)
+        std::cout << "[CURIOSITY] Exploring: " << topic << std::endl;
+
+        boredom.reset_boredom();
+    }
+};
+```
+
+## 14.6 Extended Neurochemical Gating System (ENGS)
+
+**Status:** MANDATORY - Required for system stability
+
+### Serotonin ($S_t$): Metric Elasticity Regulator
+
+**Function:** Controls the stability/plasticity trade-off in the Riemannian manifold.
+
+**Physical Mapping:**
+
+$$S_t \rightarrow \lambda(t) = \lambda_{\text{base}} \cdot (0.5 + 0.5 \cdot \tanh(S_t - 0.5))$$
+
+Where $\lambda$ is the elastic relaxation constant in the neuroplasticity equation:
+
+$$\frac{\partial g_{ij}}{\partial t} = -\eta(D_t) \cdot \text{Re}(\Psi_i \cdot \Psi_j^*) + \lambda(S_t)(g_{ij} - \delta_{ij})$$
+
+**Effect:**
+
+- **High $S_t$ (> 0.7):** $\lambda$ increases → Metric tensor resists deformation → System "crystallizes" learned patterns → Exploitation mode
+- **Low $S_t$ (< 0.3):** $\lambda$ decreases → Metric becomes highly plastic → Rapid restructuring → Exploration mode
+
+### Norepinephrine ($N_t$): Global Arousal Regulator
+
+**Function:** Controls the refractive index (State dimension $s$) globally, modulating "thinking speed."
+
+**Physical Mapping:**
+
+$$s_{\text{global}}(t) = s_{\text{local}} \cdot \frac{1}{1 + N_t}$$
+
+**Effect:**
+
+- **High $N_t$ (> 0.8):** Reduces $s$ globally → Increases wave velocity $c = c_0 / (1 + s)$ → Fast, shallow processing
+- **Low $N_t$ (< 0.2):** $s$ remains high → Slow wave propagation → Deep, nuanced resonance
+
+### Implementation
+
+```cpp
+class ExtendedNeurochemistry {
+    DopamineSystem dopamine;
+    BoredomCuriositySystem boredom;
+
+    // NEW: Extended neurochemicals
+    double serotonin = 0.5;       // Stability
+    double norepinephrine = 0.5;  // Arousal
+
+    const double S_baseline = 0.5;
+    const double N_baseline = 0.5;
+
+public:
+    void update(const TorusManifold& torus, double dt) {
+        // Update base systems
+        dopamine.update(...);
+        boredom.update(torus, dopamine.get_level());
+
+        // Serotonin homeostasis (slow decay to baseline)
+        double S_decay = 0.01 * (S_baseline - serotonin);
+        serotonin += S_decay * dt;
+        serotonin = std::clamp(serotonin, 0.0, 1.0);
+
+        // Norepinephrine homeostasis (faster decay)
+        double N_decay = 0.05 * (N_baseline - norepinephrine);
+        norepinephrine += N_decay * dt;
+        norepinephrine = std::clamp(norepinephrine, 0.0, 1.0);
+    }
+
+    double get_metric_elasticity() const {
+        double lambda_base = 0.01;
+        return lambda_base * (0.5 + 0.5 * std::tanh(serotonin - 0.5));
+    }
+
+    double get_global_refractive_index() const {
+        return 1.0 / (1.0 + norepinephrine);
+    }
+
+    void on_nap_complete() {
+        serotonin += 0.2;
+        serotonin = std::clamp(serotonin, 0.0, 1.0);
+    }
+
+    void on_security_alert() {
+        norepinephrine = 1.0;  // Immediate spike
+        serotonin -= 0.5;      // Emergency plasticity
+    }
+};
+```
+
+---
+
+**Cross-References:**
+- See Section 3.4 for Neuroplasticity mathematics
+- See Section 15 for Training Systems that use these signals
+- See Section 22 for Nap System integration
+- See Section 17 for Self-Improvement triggers
