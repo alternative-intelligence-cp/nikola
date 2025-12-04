@@ -221,8 +221,9 @@ private:
         SSMParams params;
 
         // A matrix: derived from Christoffel symbols of metric tensor
-        params.A = Eigen::MatrixXd::Identity(9, 9) +
-                   0.01 * node.metric_tensor;  // Small perturbation from flat space
+        // Convert upper-triangular storage (45 elements) to full 9x9 matrix
+        Eigen::MatrixXd metric_matrix = reconstruct_metric_matrix(node.metric_tensor);
+        params.A = Eigen::MatrixXd::Identity(9, 9) + 0.01 * metric_matrix;
 
         // B vector: modulated by resonance dimension
         params.B = Eigen::VectorXd::Constant(9, node.resonance_r);
@@ -231,6 +232,23 @@ private:
         params.Delta = 1.0 / (1.0 + node.state_s);
 
         return params;
+    }
+
+    // Helper: Reconstruct full 9x9 symmetric matrix from upper-triangular storage
+    static Eigen::MatrixXd reconstruct_metric_matrix(const std::array<float, 45>& compressed) {
+        Eigen::MatrixXd expanded(9, 9);
+
+        // Upper-triangular storage formula: index(i,j) = i*9 - i*(i+1)/2 + j (for i <= j)
+        int idx = 0;
+        for (int i = 0; i < 9; ++i) {
+            for (int j = i; j < 9; ++j) {
+                expanded(i, j) = compressed[idx];
+                expanded(j, i) = compressed[idx];  // Symmetric
+                ++idx;
+            }
+        }
+
+        return expanded;
     }
 };
 ```

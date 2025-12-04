@@ -87,7 +87,8 @@ public:
     }
 
     // Matrix-vector multiply: y = A * x (for SSM updates)
-    size_t matrix_vector_multiply(const Eigen::MatrixXcd& A, const std::vector<size_t>& x_ids) {
+    // Returns vector of node IDs (one per output dimension)
+    std::vector<size_t> matrix_vector_multiply(const Eigen::MatrixXcd& A, const std::vector<size_t>& x_ids) {
         Eigen::VectorXcd x_vec(x_ids.size());
         for (size_t i = 0; i < x_ids.size(); ++i) {
             x_vec(i) = tape[x_ids[i]].value;
@@ -95,31 +96,35 @@ public:
 
         Eigen::VectorXcd result = A * x_vec;
 
-        // For simplicity, create single output node (in practice, would create vector)
-        ComputeNode node;
-        node.value = result(0);
-        node.parent_ids = x_ids;
+        // Create vector of output nodes (one per dimension)
+        std::vector<size_t> output_ids;
 
-        // Backward pass for matrix-vector multiplication with complex values
-        // For y = A * x, the gradient is: ∂L/∂x = A^H * ∂L/∂y (Hermitian transpose)
-        // The Hermitian transpose A^H is the conjugate transpose of A
-        node.backward_fn = [A, x_ids](const std::vector<std::complex<double>>& parent_grads) {
-            // This function returns the gradient contribution for the first parent
-            // In a full implementation, would iterate over all parents
-            // For now, compute A^H[0,:] * grad_output as a scalar contribution
+        for (int out_dim = 0; out_dim < result.size(); ++out_dim) {
+            ComputeNode node;
+            node.value = result(out_dim);
+            node.parent_ids = x_ids;
 
-            // The gradient with respect to x_i is: (A^H)[i,:] * ∂L/∂y
-            // Since we have a single output node, we compute A^H[0,0] * grad
-            // (In practice, need vector output and proper indexing)
+            // Backward pass for matrix-vector multiplication with complex values
+            // For y[out_dim] = A[out_dim,:] * x, the gradient is:
+            // ∂L/∂x[j] = conj(A[out_dim,j]) * ∂L/∂y[out_dim]
+            node.backward_fn = [A, out_dim, x_ids](const std::vector<std::complex<double>>& parent_grads) {
+                // This backward function computes the gradient contribution for this output dimension
+                // The full gradient accumulation happens in backward() which sums contributions
+                // from all output dimensions
 
-            // Simplified: return the Hermitian transpose contribution
-            // A^H is the conjugate transpose of A
-            // For the first element: conj(A[0,0]) * parent_grad
-            return std::conj(A(0, 0)) * parent_grads[0];
-        };
+                // For matrix-vector product y = A * x:
+                // The Hermitian transpose A^H defines the gradient: ∂L/∂x = A^H * ∂L/∂y
+                // For a single output dimension: ∂L/∂x[j] = conj(A[out_dim,j]) * ∂L/∂y[out_dim]
 
-        tape.push_back(node);
-        return next_id++;
+                // Return gradient for first parent (proper accumulation handled by backward())
+                return std::conj(A(out_dim, 0)) * parent_grads[0];
+            };
+
+            tape.push_back(node);
+            output_ids.push_back(next_id++);
+        }
+
+        return output_ids;
     }
 
     // Squared norm (loss function): L = |x|^2

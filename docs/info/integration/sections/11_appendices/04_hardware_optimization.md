@@ -52,11 +52,20 @@ void EmitterArray::tick_avx512(double* outputs) {
     // Store back
     _mm512_storeu_epi64(phases.data(), phases_vec);
 
-    // Lookup sine values (8 parallel lookups)
-    for (int i = 0; i < 8; ++i) {
-        uint32_t lut_index = phases[i] >> 18;  // Top 14 bits
-        outputs[i] = sine_lut[lut_index];
-    }
+    // Extract LUT indices (top 14 bits of each 64-bit phase)
+    __m256i indices_32 = _mm512_cvtepi64_epi32(
+        _mm512_srli_epi64(phases_vec, 18)  // Shift right by 18 bits
+    );
+
+    // AVX-512 Gather: Load 8 sine values from LUT in parallel
+    __m512d sine_values = _mm512_i32gather_pd(
+        indices_32,                     // Indices (32-bit)
+        sine_lut,                       // Base pointer
+        8                               // Scale factor (8 bytes per double)
+    );
+
+    // Store results
+    _mm512_storeu_pd(outputs, sine_values);
 }
 #endif
 ```

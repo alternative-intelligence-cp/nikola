@@ -275,6 +275,10 @@ public:
         configure_curve_server(frontend, broker_keys);
         configure_curve_server(backend, broker_keys);
 
+        // Configure ZAP domain for authentication
+        frontend.set(zmq::sockopt::zap_domain, "nikola");
+        backend.set(zmq::sockopt::zap_domain, "nikola");
+
         // Bind sockets
         frontend.bind("ipc:///tmp/nikola/spine_frontend.ipc");
         backend.bind("ipc:///tmp/nikola/spine_backend.ipc");
