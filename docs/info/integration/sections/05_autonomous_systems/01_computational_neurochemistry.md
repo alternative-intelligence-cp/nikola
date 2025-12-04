@@ -289,24 +289,147 @@ public:
     }
 
 private:
+    // PRODUCTION: Dynamic curiosity topic generation based on Knowledge Frontier
+    // Analyzes high-entropy regions in the torus to identify unexplored conceptual spaces
     void trigger_curiosity() {
-        // Select random topic using C++11 random
-        std::vector<std::string> topics = {
-            "recent breakthroughs in quantum computing",
-            "unsolved problems in mathematics",
-            "novel materials science discoveries"
-        };
+        // Query Knowledge Frontier from torus for high-entropy regions
+        // High entropy indicates conceptual boundaries where new information is needed
+        std::vector<KnowledgeFrontier> frontiers = identify_knowledge_frontiers();
 
-        static std::random_device rd;
-        static std::mt19937 gen(rd());
-        std::uniform_int_distribution<size_t> dist(0, topics.size() - 1);
+        if (frontiers.empty()) {
+            // Fallback: If no frontiers identified, use meta-learning strategy
+            std::cout << "[CURIOSITY] No knowledge frontiers found, using meta-exploration" << std::endl;
 
-        std::string topic = topics[dist(gen)];
+            // Generate meta-level exploration queries
+            std::vector<std::string> meta_topics = {
+                "connections between existing knowledge domains",
+                "contradictions in current understanding requiring resolution",
+                "gaps in causal models based on observed patterns"
+            };
 
-        // Trigger external search (would connect to orchestrator)
-        std::cout << "[CURIOSITY] Exploring: " << topic << std::endl;
+            static std::random_device rd;
+            static std::mt19937 gen(rd());
+            std::uniform_int_distribution<size_t> dist(0, meta_topics.size() - 1);
+            std::string topic = meta_topics[dist(gen)];
+
+            std::cout << "[CURIOSITY] Exploring meta-topic: " << topic << std::endl;
+        } else {
+            // Select frontier with highest entropy (maximum uncertainty)
+            auto max_frontier = std::max_element(
+                frontiers.begin(), frontiers.end(),
+                [](const KnowledgeFrontier& a, const KnowledgeFrontier& b) {
+                    return a.entropy < b.entropy;
+                }
+            );
+
+            // Generate natural language query from frontier region
+            std::string curiosity_query = generate_query_from_frontier(*max_frontier);
+
+            std::cout << "[CURIOSITY] Exploring frontier region (entropy="
+                      << max_frontier->entropy << "): " << curiosity_query << std::endl;
+
+            // Mark frontier as being explored
+            mark_frontier_explored(max_frontier->region_id);
+        }
 
         boredom.reset_boredom();
+    }
+
+    // Knowledge Frontier: Region in manifold with high gradient/uncertainty
+    struct KnowledgeFrontier {
+        uint64_t region_id;           // Hilbert index of region center
+        double entropy;                // Shannon entropy of local patterns
+        std::vector<std::string> related_concepts;  // Known concepts nearby
+        double exploration_recency;    // Time since last explored (for decay)
+    };
+
+    // Identify high-entropy regions indicating knowledge boundaries
+    std::vector<KnowledgeFrontier> identify_knowledge_frontiers() {
+        std::vector<KnowledgeFrontier> frontiers;
+
+        // Scan active regions of torus for high-gradient boundaries
+        // High gradient = sharp transition between learned and unknown
+        for (const auto& [coord, node] : torus.get_active_nodes()) {
+            // Calculate local entropy using neighbor divergence
+            double local_entropy = calculate_local_entropy(coord);
+
+            // Threshold for "frontier" status (high uncertainty)
+            const double FRONTIER_THRESHOLD = 2.5;  // Bits of entropy
+
+            if (local_entropy > FRONTIER_THRESHOLD) {
+                KnowledgeFrontier frontier;
+                frontier.region_id = HilbertMapper::encode(coord.to_array(), 10);
+                frontier.entropy = local_entropy;
+
+                // Query nearby concepts from database
+                frontier.related_concepts = db.query_nearby_concepts(frontier.region_id);
+
+                // Check if recently explored (avoid repetition)
+                frontier.exploration_recency = db.get_exploration_recency(frontier.region_id);
+
+                // Only include if not explored recently (decay > 24 hours)
+                if (frontier.exploration_recency > 24.0) {
+                    frontiers.push_back(frontier);
+                }
+            }
+        }
+
+        return frontiers;
+    }
+
+    // Calculate Shannon entropy of local neighborhood
+    double calculate_local_entropy(const Coord9D& coord) {
+        auto neighbors = torus.get_neighbors(coord);
+
+        // Collect wavefunction amplitudes
+        std::vector<double> amplitudes;
+        for (const auto& neighbor : neighbors) {
+            amplitudes.push_back(std::abs(neighbor.wavefunction));
+        }
+
+        // Normalize to probability distribution
+        double total = std::accumulate(amplitudes.begin(), amplitudes.end(), 0.0);
+        if (total < 1e-10) return 0.0;
+
+        std::vector<double> probabilities;
+        for (double amp : amplitudes) {
+            probabilities.push_back(amp / total);
+        }
+
+        // Shannon entropy: H = -Σ(p * log2(p))
+        double entropy = 0.0;
+        for (double p : probabilities) {
+            if (p > 1e-10) {
+                entropy -= p * std::log2(p);
+            }
+        }
+
+        return entropy;
+    }
+
+    // Generate natural language query from frontier context
+    std::string generate_query_from_frontier(const KnowledgeFrontier& frontier) {
+        // Use related concepts to formulate exploration query
+        if (frontier.related_concepts.empty()) {
+            return "explore unknown conceptual space at frontier region "
+                   + std::to_string(frontier.region_id);
+        }
+
+        // Construct query connecting known concepts (knowledge gap)
+        std::string query = "explore connections between ";
+        for (size_t i = 0; i < std::min(frontier.related_concepts.size(), size_t(3)); ++i) {
+            query += frontier.related_concepts[i];
+            if (i < frontier.related_concepts.size() - 1) {
+                query += " and ";
+            }
+        }
+
+        return query;
+    }
+
+    // Mark frontier as explored to prevent redundant curiosity
+    void mark_frontier_explored(uint64_t region_id) {
+        db.update_exploration_timestamp(region_id, std::time(nullptr));
     }
 };
 ```

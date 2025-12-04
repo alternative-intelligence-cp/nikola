@@ -13,21 +13,130 @@ The **Custom Nonary Embedder** converts text to waveforms.
 
 ### Implementation
 
+**PRODUCTION: TinyTransformer with ONNX Runtime**
+
+The encoder uses a distilled BERT-Tiny model (4-layer, 128-dim) loaded via ONNX Runtime C++ API for efficient inference.
+
+```cpp
+// File: include/nikola/reasoning/tiny_transformer.hpp
+#pragma once
+
+#include <onnxruntime/core/session/onnxruntime_cxx_api.h>
+#include <vector>
+#include <string>
+#include <memory>
+
+namespace nikola::reasoning {
+
+class TinyTransformer {
+private:
+    std::unique_ptr<Ort::Env> env;
+    std::unique_ptr<Ort::Session> session;
+    Ort::MemoryInfo memory_info;
+    Ort::AllocatorWithDefaultOptions allocator;
+
+    // Model metadata
+    std::vector<const char*> input_names{"input_ids", "attention_mask"};
+    std::vector<const char*> output_names{"last_hidden_state"};
+
+    // Model dimensions (BERT-Tiny: 4 layers, 128 hidden, 2 attn heads, 512 seq len)
+    static constexpr int64_t HIDDEN_DIM = 128;
+    static constexpr int64_t MAX_SEQ_LEN = 512;
+
+public:
+    TinyTransformer(const std::string& model_path)
+        : memory_info(Ort::MemoryInfo::CreateCpu(OrtArenaAllocator, OrtMemTypeDefault)) {
+
+        // Initialize ONNX Runtime environment
+        env = std::make_unique<Ort::Env>(ORT_LOGGING_LEVEL_WARNING, "NikolaTinyTransformer");
+
+        // Configure session options for CPU inference
+        Ort::SessionOptions session_options;
+        session_options.SetIntraOpNumThreads(4);  // Parallel execution within ops
+        session_options.SetGraphOptimizationLevel(GraphOptimizationLevel::ORT_ENABLE_ALL);
+
+        // Load ONNX model
+        session = std::make_unique<Ort::Session>(*env, model_path.c_str(), session_options);
+
+        std::cout << "[TinyTransformer] Loaded ONNX model from " << model_path << std::endl;
+        std::cout << "[TinyTransformer] Architecture: BERT-Tiny (4L/128H/2A)" << std::endl;
+    }
+
+    // Forward pass: tokens → 128-dim embeddings
+    std::vector<float> forward(const std::vector<int64_t>& token_ids) {
+        // Prepare input tensors
+        size_t seq_len = std::min(token_ids.size(), static_cast<size_t>(MAX_SEQ_LEN));
+
+        // Input IDs tensor [batch_size=1, seq_len]
+        std::vector<int64_t> input_ids(seq_len);
+        std::copy(token_ids.begin(), token_ids.begin() + seq_len, input_ids.begin());
+
+        // Attention mask tensor [batch_size=1, seq_len] (all 1s for valid tokens)
+        std::vector<int64_t> attention_mask(seq_len, 1);
+
+        // Create input tensors
+        std::array<int64_t, 2> input_shape{1, static_cast<int64_t>(seq_len)};
+
+        Ort::Value input_ids_tensor = Ort::Value::CreateTensor<int64_t>(
+            memory_info, input_ids.data(), input_ids.size(),
+            input_shape.data(), input_shape.size()
+        );
+
+        Ort::Value attention_mask_tensor = Ort::Value::CreateTensor<int64_t>(
+            memory_info, attention_mask.data(), attention_mask.size(),
+            input_shape.data(), input_shape.size()
+        );
+
+        // Run inference
+        std::vector<Ort::Value> input_tensors;
+        input_tensors.push_back(std::move(input_ids_tensor));
+        input_tensors.push_back(std::move(attention_mask_tensor));
+
+        auto output_tensors = session->Run(
+            Ort::RunOptions{nullptr},
+            input_names.data(), input_tensors.data(), input_tensors.size(),
+            output_names.data(), output_names.size()
+        );
+
+        // Extract output: [batch_size=1, seq_len, hidden_dim=128]
+        // Use [CLS] token embedding (first token) as sentence representation
+        float* output_data = output_tensors[0].GetTensorMutableData<float>();
+
+        // Copy [CLS] embedding (first HIDDEN_DIM floats)
+        std::vector<float> cls_embedding(output_data, output_data + HIDDEN_DIM);
+
+        return cls_embedding;
+    }
+};
+
+} // namespace nikola::reasoning
+```
+
+**NonaryEmbedder with TinyTransformer Integration:**
+
 ```cpp
 class NonaryEmbedder {
     BPETokenizer tokenizer;
-    TinyTransformer encoder;  // Distilled model
+    nikola::reasoning::TinyTransformer encoder;
 
 public:
+    NonaryEmbedder(const std::string& tokenizer_path, const std::string& model_path)
+        : tokenizer(tokenizer_path),
+          encoder(model_path) {
+        std::cout << "[NonaryEmbedder] Initialized with ONNX TinyTransformer" << std::endl;
+    }
+
     std::vector<Nit> embed(const std::string& text) {
-        // 1. Tokenize
+        // 1. Tokenize text to BPE token IDs
         auto tokens = tokenizer.encode(text);
 
-        // 2. Vectorize (get 768-dim float vector)
+        // 2. Vectorize using TinyTransformer (128-dim embedding)
         auto vector = encoder.forward(tokens);
 
-        // 3. Quantize to balanced nonary
+        // 3. Quantize to balanced nonary (128 floats → 128 Nits)
         std::vector<Nit> nonary_vector;
+        nonary_vector.reserve(vector.size());
+
         for (float val : vector) {
             nonary_vector.push_back(quantize_to_nit(val));
         }
@@ -40,7 +149,7 @@ private:
         // Normalize with tanh to [-1, 1]
         float normalized = std::tanh(val);
 
-        // Scale to [-4, 4]
+        // Scale to [-4, 4] for balanced nonary
         int quantized = static_cast<int>(std::round(normalized * 4.0));
 
         return static_cast<Nit>(std::clamp(quantized, -4, 4));

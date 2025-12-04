@@ -56,19 +56,113 @@ ExternalTool select_tool(const std::string& query) {
     return ExternalTool::TAVILY;
 }
 
-bool is_factual_query(const std::string& query) {
-    // Simple heuristics (can be ML-based later)
-    std::vector<std::string> factual_patterns = {
-        "what is", "where is", "who is", "when did", "how many"
-    };
+// PRODUCTION: Intent classification using Gemini zero-shot classifier
+// Replaces brittle string matching with robust NLU
+class IntentClassifier {
+private:
+    GeminiClient& gemini;
 
-    for (const auto& pattern : factual_patterns) {
-        if (query.find(pattern) != std::string::npos) {
-            return true;
+    // Classification prompt for zero-shot intent detection
+    static constexpr const char* CLASSIFICATION_PROMPT = R"(
+Classify the user query into exactly ONE of these intent categories:
+
+1. FACTUAL_LOOKUP - Requesting specific facts, definitions, or entity information
+   Examples: "What is quantum entanglement?", "Who invented the transistor?"
+
+2. URL_EXTRACTION - Needs to scrape/extract content from a specific website
+   Examples: "Get the text from https://example.com", "Summarize this article: [URL]"
+
+3. SEMANTIC_REASONING - Requires understanding, analysis, translation, or synthesis
+   Examples: "Explain the connection between X and Y", "Translate this to French"
+
+4. API_REQUEST - Direct HTTP/API call with technical parameters
+   Examples: "GET https://api.example.com/data", "POST to webhook with JSON payload"
+
+5. INTERNAL_QUERY - Query answerable from internal knowledge (no external tools)
+   Examples: "What did we discuss earlier?", "Show my saved notes"
+
+User query: "{query}"
+
+Respond with ONLY the category name (e.g., "FACTUAL_LOOKUP"). No explanation.)";
+
+public:
+    IntentClassifier(GeminiClient& g) : gemini(g) {}
+
+    ExternalTool classify_intent(const std::string& query) {
+        // Prepare classification prompt
+        std::string prompt = CLASSIFICATION_PROMPT;
+        size_t pos = prompt.find("{query}");
+        if (pos != std::string::npos) {
+            prompt.replace(pos, 7, query);
+        }
+
+        // Call Gemini for zero-shot classification
+        std::string intent_category;
+        try {
+            intent_category = gemini.generate_text(prompt);
+
+            // Trim whitespace
+            intent_category.erase(0, intent_category.find_first_not_of(" \t\n\r"));
+            intent_category.erase(intent_category.find_last_not_of(" \t\n\r") + 1);
+
+        } catch (const std::exception& e) {
+            std::cerr << "[IntentClassifier] Gemini call failed: " << e.what() << std::endl;
+            // Fallback to simple pattern matching
+            return fallback_classify(query);
+        }
+
+        // Map intent category to tool
+        if (intent_category == "FACTUAL_LOOKUP") {
+            return ExternalTool::TAVILY;
+        } else if (intent_category == "URL_EXTRACTION") {
+            return ExternalTool::FIRECRAWL;
+        } else if (intent_category == "SEMANTIC_REASONING") {
+            return ExternalTool::GEMINI;
+        } else if (intent_category == "API_REQUEST") {
+            return ExternalTool::HTTP_CLIENT;
+        } else if (intent_category == "INTERNAL_QUERY") {
+            return ExternalTool::NONE;  // Handle internally
+        } else {
+            // Unknown category, default to Tavily
+            std::cerr << "[IntentClassifier] Unknown category: " << intent_category << std::endl;
+            return ExternalTool::TAVILY;
         }
     }
 
-    return false;
+private:
+    // Fallback classifier using lightweight patterns (if Gemini unavailable)
+    ExternalTool fallback_classify(const std::string& query) {
+        // URL detection
+        if (query.find("http://") != std::string::npos ||
+            query.find("https://") != std::string::npos) {
+            return ExternalTool::FIRECRAWL;
+        }
+
+        // API request patterns
+        if (query.find("GET ") == 0 || query.find("POST ") == 0 ||
+            query.find("PUT ") == 0 || query.find("DELETE ") == 0) {
+            return ExternalTool::HTTP_CLIENT;
+        }
+
+        // Simple factual patterns (last resort)
+        std::vector<std::string> factual_patterns = {
+            "what is", "where is", "who is", "when did", "how many", "define"
+        };
+
+        for (const auto& pattern : factual_patterns) {
+            if (query.find(pattern) != std::string::npos) {
+                return ExternalTool::TAVILY;
+            }
+        }
+
+        // Default: semantic reasoning via Gemini
+        return ExternalTool::GEMINI;
+    }
+};
+
+// Updated tool selection using IntentClassifier
+ExternalTool select_tool(const std::string& query, IntentClassifier& classifier) {
+    return classifier.classify_intent(query);
 }
 ```
 
