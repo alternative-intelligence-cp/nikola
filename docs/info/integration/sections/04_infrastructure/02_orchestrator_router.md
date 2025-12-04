@@ -74,104 +74,15 @@ bool is_factual_query(const std::string& query) {
 
 ## 11.4 Implementation
 
-### 11.4.1 Reference Synchronous Implementation (DO NOT USE IN PRODUCTION)
+### 11.4.1 Asynchronous Orchestrator Architecture
 
-**WARNING:** The following synchronous implementation is provided for reference and testing only. It blocks the main thread during physics propagation and tool dispatch, preventing concurrent query processing. **Production systems must use the AsyncOrchestrator (Section 11.4.2).**
+**Core Design Principle:**
 
-```cpp
-class SynchronousOrchestrator {  // Reference implementation only
-    ComponentClient spine_client;
-    TorusManifold torus;
-    NonaryEmbedder embedder;
-    EmitterArray emitters;
-    ExternalToolManager tool_manager;
-
-    enum class State {
-        IDLE, EMBEDDING, INJECTION, PROPAGATION,
-        RESONANCE_CHECK, TOOL_DISPATCH, TOOL_WAIT,
-        STORAGE, REINFORCEMENT, RESPONSE
-    };
-
-    State current_state = State::IDLE;
-
-public:
-    Orchestrator()
-        : spine_client(ComponentID::ORCHESTRATOR, load_broker_public_key()) {
-    }
-
-    std::string process_query(const std::string& query) {
-        current_state = State::EMBEDDING;
-
-        // 1. Embed
-        auto waveform = embedder.embed(query);
-
-        // 2. Inject
-        current_state = State::INJECTION;
-        Coord9D pos = compute_injection_point(query);
-        torus.inject_wave(pos, waveform_to_complex(waveform));
-
-        // 3. Propagate
-        current_state = State::PROPAGATION;
-        run_propagation_cycles(100);
-
-        // 4. Check resonance
-        current_state = State::RESONANCE_CHECK;
-        auto peak = torus.find_resonance_peak();
-
-        if (peak.amplitude > RESONANCE_THRESHOLD) {
-            // Data found in memory
-            current_state = State::RESPONSE;
-            auto data = torus.retrieve_at(peak.location);
-            current_state = State::IDLE;
-            return decode_to_text(data);
-        } else {
-            // Need external tool
-            current_state = State::TOOL_DISPATCH;
-            ExternalTool tool = select_tool(query);
-
-            auto tool_response = dispatch_tool(tool, query);
-
-            // Store response
-            current_state = State::STORAGE;
-            store_in_torus(tool_response);
-
-            // Reinforce
-            current_state = State::REINFORCEMENT;
-            reinforce_pathway(query, tool_response);
-
-            current_state = State::IDLE;
-            return tool_response;
-        }
-    }
-
-private:
-    void run_propagation_cycles(int count) {
-        for (int i = 0; i < count; ++i) {
-            // Tick emitters
-            std::array<double, 9> emitter_outputs;
-            emitters.tick(emitter_outputs.data());
-
-            // Inject emitter signals
-            for (int e = 0; e < 8; ++e) {
-                torus.apply_emitter(e, emitter_outputs[e]);
-            }
-
-            // Update wave physics
-            torus.propagate(0.01);  // dt = 10ms
-        }
-    }
-};
-```
-
-### 11.4.2 Production Asynchronous Implementation (MANDATORY)
-
-**Asynchronous Architecture Requirement:**
-
-The orchestrator must run asynchronously to prevent blocking the entire system during physics propagation (100ms) and tool dispatch (potentially seconds). Synchronous implementations cause:
-- Complete system freeze during query processing
-- Inability to handle concurrent requests
-- Blocking of API, CLI, and ZMQ message handling
-- Failure to process incoming sensor data (audio, video)
+The orchestrator runs asynchronously with a dedicated background physics thread and thread pool for query processing. This architecture prevents blocking and enables:
+- Continuous wave propagation independent of query processing
+- Concurrent handling of multiple queries
+- Non-blocking external tool dispatch
+- Real-time processing of sensor data (audio, video)
 
 **Production-Grade Implementation:**
 
@@ -529,21 +440,27 @@ ProductionOrchestrator orchestrator(torus, emitters, embedder, tool_manager, num
 orchestrator.run();
 ```
 
-### 11.4.3 Deployment Recommendation
+### 11.4.2 Deployment Configuration
 
-**Production systems MUST:**
-1. Use `AsyncOrchestrator` (Section 11.4.2) as the primary orchestrator
+**All systems MUST:**
+1. Use `AsyncOrchestrator` or `ProductionOrchestrator` as the primary orchestrator
 2. Run `start_physics_loop()` at system startup to enable continuous background wave propagation
 3. Use `process_query_async()` for all query processing, returning futures immediately
 4. Configure thread pool size based on available CPU cores (default: 4 threads)
 
-**Testing/Development systems MAY:**
-1. Use `SynchronousOrchestrator` (Section 11.4.1) for single-threaded debugging
-2. Accept the performance penalty for simplified call stack analysis
+**For development/debugging:**
+- Use `thread_pool_size=1` to simulate single-threaded behavior while maintaining async architecture
+- Enable TRACE level logging to see detailed execution flow
 
-**NEVER:**
-1. Deploy `SynchronousOrchestrator` to production environments
-2. Mix synchronous and asynchronous orchestrators in the same process
+**Configuration example:**
+```cpp
+// Production: Full parallelism
+ProductionOrchestrator prod_orch(torus, emitters, embedder, tool_manager,
+                                  std::thread::hardware_concurrency());
+
+// Development: Single-threaded for debugging
+ProductionOrchestrator dev_orch(torus, emitters, embedder, tool_manager, 1);
+```
 
 ## 11.5 Structured Logging with spdlog
 

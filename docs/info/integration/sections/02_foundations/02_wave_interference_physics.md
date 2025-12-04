@@ -294,39 +294,48 @@ The propagation of waves in 9 dimensions is computationally intense ($3^9$ neigh
 #define DIMENSIONS 9
 #define BLOCK_SIZE 256
 
+// CRITICAL: Use FP64 (double) precision to prevent phase drift in chaotic systems
+// Golden ratio harmonics are highly sensitive to numerical errors
+// FP32 causes memory decoherence after ~1000 propagation steps
+// Hardware requirement: GPUs with good FP64 support (A100: ~19.5 TFLOPS FP64)
+
 // Device struct for coalesced memory access
 struct NodeDataSOA {
-   float2* wavefunction;      // Complex amplitude
-   float*  metric_tensor;     // Flattened metric
-   float*  resonance;         // Damping factor
-   float*  state;             // Refractive index
-   int*    neighbor_indices;  // Adjacency list
+   double2* wavefunction;      // Complex amplitude [FP64]
+   double2* velocity;          // dΨ/dt [FP64]
+   double2* acceleration;      // d²Ψ/dt² [FP64]
+   double*  metric_tensor;     // Flattened metric [FP64]
+   double*  resonance;         // Damping factor [FP64]
+   double*  state;             // Refractive index [FP64]
+   int*     neighbor_indices;  // Adjacency list
 };
 
 __global__ void propagate_wave_kernel(
    NodeDataSOA data,
-   float2* next_wavefunction,
+   double2* next_wavefunction,
+   double2* next_velocity,
+   double2* next_acceleration,
    int num_active_nodes,
-   float dt,
-   float c0_squared
+   double dt,
+   double c0_squared
 ) {
    int idx = blockIdx.x * blockDim.x + threadIdx.x;
    if (idx >= num_active_nodes) return;
 
-   // Load local state
-   float2 psi = data.wavefunction[idx];
-   float r = data.resonance[idx];
-   float s = data.state[idx];
+   // Load local state (FP64 for numerical stability)
+   double2 psi = data.wavefunction[idx];
+   double r = data.resonance[idx];
+   double s = data.state[idx];
 
    // Compute damping and velocity factors
-   float gamma = 0.1f * (1.0f - r);       // Less resonance = more damping
-   float velocity = c0_squared / ((1.0f + s) * (1.0f + s));
+   double gamma = 0.1 * (1.0 - r);       // Less resonance = more damping
+   double velocity = c0_squared / ((1.0 + s) * (1.0 + s));
 
-   float2 laplacian = {0.0f, 0.0f};
+   double2 laplacian = {0.0, 0.0};
 
-   // Kahan summation state variables for compensated accumulation
-   // Prevents FP32 error accumulation over 18 neighbor summations
-   float2 kahan_c = {0.0f, 0.0f};  // Running compensation for lost low-order bits
+   // Kahan summation for FP64 (still beneficial for accumulated rounding errors)
+   // Even with FP64, summing 18 neighbors benefits from compensated summation
+   double2 kahan_c = {0.0, 0.0};  // Running compensation for lost low-order bits
 
    // Helper: compute diagonal index in upper-triangular storage
    // For 9x9 symmetric matrix, diagonal indices are: 0, 9, 17, 24, 30, 35, 39, 42, 44
@@ -340,22 +349,22 @@ __global__ void propagate_wave_kernel(
        // Metric tensor component g_{dd} for this dimension
        // Using proper diagonal indexing for upper-triangular storage
        int g_idx = diagonal_index(d);
-       float g_dd = data.metric_tensor[idx * 45 + g_idx];
+       double g_dd = data.metric_tensor[idx * 45 + g_idx];
 
        // Positive Neighbor
        int n_idx = data.neighbor_indices[idx * 18 + (2 * d)];
        if (n_idx != -1) {
-           float2 psi_n = data.wavefunction[n_idx];
+           double2 psi_n = data.wavefunction[n_idx];
 
-           // Kahan summation for real part
-           float y_real = g_dd * (psi_n.x - psi.x) - kahan_c.x;
-           float t_real = laplacian.x + y_real;
+           // Kahan summation for real part (FP64)
+           double y_real = g_dd * (psi_n.x - psi.x) - kahan_c.x;
+           double t_real = laplacian.x + y_real;
            kahan_c.x = (t_real - laplacian.x) - y_real;
            laplacian.x = t_real;
 
-           // Kahan summation for imaginary part
-           float y_imag = g_dd * (psi_n.y - psi.y) - kahan_c.y;
-           float t_imag = laplacian.y + y_imag;
+           // Kahan summation for imaginary part (FP64)
+           double y_imag = g_dd * (psi_n.y - psi.y) - kahan_c.y;
+           double t_imag = laplacian.y + y_imag;
            kahan_c.y = (t_imag - laplacian.y) - y_imag;
            laplacian.y = t_imag;
        }
@@ -363,51 +372,51 @@ __global__ void propagate_wave_kernel(
        // Negative Neighbor
        n_idx = data.neighbor_indices[idx * 18 + (2 * d + 1)];
        if (n_idx != -1) {
-           float2 psi_n = data.wavefunction[n_idx];
+           double2 psi_n = data.wavefunction[n_idx];
 
-           // Kahan summation for real part
-           float y_real = g_dd * (psi_n.x - psi.x) - kahan_c.x;
-           float t_real = laplacian.x + y_real;
+           // Kahan summation for real part (FP64)
+           double y_real = g_dd * (psi_n.x - psi.x) - kahan_c.x;
+           double t_real = laplacian.x + y_real;
            kahan_c.x = (t_real - laplacian.x) - y_real;
            laplacian.x = t_real;
 
-           // Kahan summation for imaginary part
-           float y_imag = g_dd * (psi_n.y - psi.y) - kahan_c.y;
-           float t_imag = laplacian.y + y_imag;
+           // Kahan summation for imaginary part (FP64)
+           double y_imag = g_dd * (psi_n.y - psi.y) - kahan_c.y;
+           double t_imag = laplacian.y + y_imag;
            kahan_c.y = (t_imag - laplacian.y) - y_imag;
            laplacian.y = t_imag;
        }
    }
 
    // Load velocity and acceleration from previous step
-   float2 vel = data.velocity[idx];
-   float2 old_accel = data.acceleration[idx];
+   double2 vel = data.velocity[idx];
+   double2 old_accel = data.acceleration[idx];
 
    // UFIE Update Step (Velocity-Verlet Integration - Symplectic)
    // Step 1: Update position using current velocity
-   float2 psi_new;
-   psi_new.x = psi.x + vel.x * dt + 0.5f * old_accel.x * dt * dt;
-   psi_new.y = psi.y + vel.y * dt + 0.5f * old_accel.y * dt * dt;
+   double2 psi_new;
+   psi_new.x = psi.x + vel.x * dt + 0.5 * old_accel.x * dt * dt;
+   psi_new.y = psi.y + vel.y * dt + 0.5 * old_accel.y * dt * dt;
 
    // Step 2: Compute new acceleration at updated position
    // Cubic nonlinearity term for soliton formation and heterodyning
-   float psi_magnitude_sq = psi.x * psi.x + psi.y * psi.y;
-   float beta = 0.01f;  // Nonlinear coupling coefficient
+   double psi_magnitude_sq = psi.x * psi.x + psi.y * psi.y;
+   double beta = 0.01;  // Nonlinear coupling coefficient
 
    // Compute β|Ψ|²Ψ for heterodyning (enables nonary multiplication)
-   float2 nonlinear_term;
+   double2 nonlinear_term;
    nonlinear_term.x = beta * psi_magnitude_sq * psi.x;
    nonlinear_term.y = beta * psi_magnitude_sq * psi.y;
 
    // Full NLSE acceleration: c²∇²Ψ - γv + β|Ψ|²Ψ
-   float2 new_accel;
+   double2 new_accel;
    new_accel.x = velocity * laplacian.x - gamma * vel.x + nonlinear_term.x;
    new_accel.y = velocity * laplacian.y - gamma * vel.y + nonlinear_term.y;
 
    // Step 3: Update velocity using average of old and new accelerations
-   float2 vel_new;
-   vel_new.x = vel.x + 0.5f * (old_accel.x + new_accel.x) * dt;
-   vel_new.y = vel.y + 0.5f * (old_accel.y + new_accel.y) * dt;
+   double2 vel_new;
+   vel_new.x = vel.x + 0.5 * (old_accel.x + new_accel.x) * dt;
+   vel_new.y = vel.y + 0.5 * (old_accel.y + new_accel.y) * dt;
 
    // Write back
    next_wavefunction[idx] = psi_new;

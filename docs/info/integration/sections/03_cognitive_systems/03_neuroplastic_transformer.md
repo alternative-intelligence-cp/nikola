@@ -242,11 +242,61 @@ private:
         return output;
     }
 
+    // Hebbian-Riemannian Learning Rule (Section 3.4)
+    // Formula: ∂g_ij/∂t = -η(D_t) · Re(Ψ_i · Ψ_j*) + λ(g_ij - δ_ij)
     void update_manifold_plasticity(TorusManifold& torus,
                                      const std::vector<std::complex<double>>& activations) {
-        // Update metric tensor based on activation correlations
-        // (Called during training only)
-        torus.trigger_neuroplasticity_update(activations);
+        // Hyperparameters
+        const double ETA_BASE = 0.001;   // Baseline learning rate
+        const double LAMBDA = 0.01;      // Elastic relaxation constant
+        const double DT = 0.001;         // Time step for Euler integration
+
+        // Get current dopamine level for learning rate modulation
+        double dopamine = torus.get_dopamine_level();
+        double eta = ETA_BASE * (1.0 + std::tanh(dopamine));
+
+        // Get active nodes (nodes with recent wave activity)
+        auto active_nodes = torus.get_active_nodes();
+
+        for (auto& [coord, node] : active_nodes) {
+            // Get local wavefunction Ψ (9D vector, one component per dimension)
+            std::array<std::complex<double>, 9> psi;
+            for (int dim = 0; dim < 9; ++dim) {
+                psi[dim] = torus.get_wavefunction_component(coord, dim);
+            }
+
+            // Update metric tensor g_ij using Hebbian-Riemannian rule
+            for (int i = 0; i < 9; ++i) {
+                for (int j = i; j < 9; ++j) {  // Upper triangular only (symmetric)
+                    // 1. Contraction term: -η · Re(Ψ_i · Ψ_j*)
+                    //    When waves are correlated, metric contracts (distance decreases)
+                    std::complex<double> correlation = psi[i] * std::conj(psi[j]);
+                    double hebbian_term = -eta * correlation.real();
+
+                    // 2. Relaxation term: λ(g_ij - δ_ij)
+                    //    Pulls metric back toward Euclidean identity (prevents collapse)
+                    double current_g_ij = node.get_metric_component(i, j);
+                    double delta_ij = (i == j) ? 1.0 : 0.0;  // Kronecker delta
+                    double relaxation_term = LAMBDA * (current_g_ij - delta_ij);
+
+                    // 3. Euler integration: g_ij(t+dt) = g_ij(t) + (∂g_ij/∂t) * dt
+                    double dg_ij_dt = hebbian_term + relaxation_term;
+                    double new_g_ij = current_g_ij + dg_ij_dt * DT;
+
+                    // 4. Enforce positive-definiteness (metric must be valid Riemannian)
+                    //    Clamp diagonal elements to prevent metric singularity
+                    if (i == j && new_g_ij < 0.1) {
+                        new_g_ij = 0.1;  // Minimum diagonal value
+                    }
+
+                    // 5. Update node's metric tensor (thread-safe via node-level locking)
+                    node.set_metric_component(i, j, new_g_ij);
+                    if (i != j) {
+                        node.set_metric_component(j, i, new_g_ij);  // Symmetric
+                    }
+                }
+            }
+        }
     }
 };
 ```

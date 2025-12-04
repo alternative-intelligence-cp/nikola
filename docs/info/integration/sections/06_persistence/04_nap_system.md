@@ -44,26 +44,102 @@ class NapController {
     bool in_nap = false;
 
 public:
-    void enter_nap(TorusManifold& torus, BacklogProcessor& backlog, PersistenceManager& persistence) {
+    void enter_nap(TorusManifold& torus, BacklogProcessor& backlog,
+                   PersistenceManager& persistence, DreamWeaveEngine& dream_weave) {
         std::cout << "[NAP] Entering nap state..." << std::endl;
 
         in_nap = true;
 
-        // 1. Slow emitters
+        // 1. Slow emitters (reduce cognitive activity)
         torus.set_emitter_speed(0.1);
 
-        // 2. Process backlog
+        // 2. Process backlog (handle deferred queries)
         backlog.process_during_nap();
 
-        // 3. Save state
+        // 3. MEMORY CONSOLIDATION: Transfer high-resonance patterns to long-term storage
+        //    This prevents RAM exhaustion and preserves critical context across restarts
+        //    Implementation: Identify high-resonance nodes and serialize to LSM
+        consolidate_memories(torus, persistence);
+
+        // 4. DreamWeave: Run counterfactual simulations on high-loss interactions
+        //    Reinforces pathways that could have led to better outcomes
+        dream_weave.run_dream_cycle(torus, mamba, NUM_DREAM_SIMULATIONS);
+
+        // 5. Save state (checkpoint entire torus to disk)
         persistence.trigger_nap(torus);
 
-        // 4. Resume
+        // 6. Resume (restore full cognitive activity)
         torus.set_emitter_speed(1.0);
 
         in_nap = false;
 
         std::cout << "[NAP] Awake and refreshed." << std::endl;
+    }
+
+private:
+    // Memory Consolidation: Transfer high-resonance short-term patterns to long-term storage
+    // This implements the biological process of memory consolidation during sleep
+    void consolidate_memories(TorusManifold& torus, PersistenceManager& persistence) {
+        std::cout << "[CONSOLIDATION] Transferring short-term memories to long-term storage..." << std::endl;
+
+        // Configuration
+        const double HIGH_RESONANCE_THRESHOLD = 0.7;  // r > 0.7 indicates important memory
+        const double MIN_AMPLITUDE_THRESHOLD = 0.5;   // Minimum amplitude to be worth saving
+        const size_t MAX_CONSOLIDATE_PER_NAP = 1000;  // Prevent I/O overload
+
+        // 1. Identify high-resonance nodes (important short-term memories)
+        std::vector<std::pair<Coord9D, TorusNode>> consolidation_candidates;
+
+        for (const auto& [coord, node] : torus.get_active_nodes()) {
+            // Criteria for consolidation:
+            // - High resonance (r > 0.7): Low damping → important pattern
+            // - Significant amplitude: Not just noise
+            // - Currently in RAM but not yet in LSM
+            if (node.resonance_r > HIGH_RESONANCE_THRESHOLD &&
+                std::abs(node.wavefunction) > MIN_AMPLITUDE_THRESHOLD &&
+                !persistence.is_in_long_term_storage(coord)) {
+
+                consolidation_candidates.push_back({coord, node});
+            }
+        }
+
+        // 2. Sort by importance (amplitude × resonance)
+        std::sort(consolidation_candidates.begin(), consolidation_candidates.end(),
+                  [](const auto& a, const auto& b) {
+                      double importance_a = std::abs(a.second.wavefunction) * a.second.resonance_r;
+                      double importance_b = std::abs(b.second.wavefunction) * b.second.resonance_r;
+                      return importance_a > importance_b;
+                  });
+
+        // 3. Transfer top N candidates to long-term storage (LSM)
+        size_t num_consolidated = 0;
+        for (const auto& [coord, node] : consolidation_candidates) {
+            if (num_consolidated >= MAX_CONSOLIDATE_PER_NAP) {
+                break;
+            }
+
+            // Serialize node state to LMDB (persistent key-value store)
+            // Key: Hilbert curve index (uint64_t) for spatial locality
+            // Value: Serialized TorusNode (metric tensor, wavefunction, resonance, etc.)
+            uint64_t hilbert_key = HilbertMapper::encode(coord.to_array(), 10);
+
+            persistence.write_to_lsm(hilbert_key, node);
+
+            num_consolidated++;
+        }
+
+        // 4. Garbage collection: Prune low-resonance nodes from RAM
+        //    These are temporary patterns that didn't consolidate to long-term memory
+        size_t num_pruned = torus.prune_low_resonance_nodes(0.3);  // r < 0.3 → ephemeral
+
+        std::cout << "[CONSOLIDATION] Complete: "
+                  << num_consolidated << " patterns transferred to long-term storage, "
+                  << num_pruned << " ephemeral patterns pruned from RAM" << std::endl;
+
+        // Memory consolidation ensures:
+        // - Critical patterns survive system restarts
+        // - RAM usage remains bounded (prevents OOM)
+        // - Distinction between short-term (RAM) and long-term (disk) memory
     }
 
     bool is_napping() const { return in_nap; }
