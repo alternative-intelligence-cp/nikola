@@ -69,6 +69,15 @@ set(INTERIOR_SOURCES
     src/interior/internal_dialogue.cpp
 )
 
+# Genesis Module 7: Code Generation & Self-Improvement (Aria Language)
+set(ARIA_SOURCES
+    src/aria/compiler.cpp
+    src/aria/interpreter.cpp
+    src/aria/code_generator.cpp
+    src/aria/metaprogramming.cpp
+    src/aria/native_interface.cpp
+)
+
 # Nikola Genesis Library (stub implementations)
 add_library(nikola_genesis STATIC
     ${COGNITIVE_SOURCES}
@@ -76,6 +85,7 @@ add_library(nikola_genesis STATIC
     ${ECONOMY_SOURCES}
     ${SECURITY_SOURCES}
     ${INTERIOR_SOURCES}
+    ${ARIA_SOURCES}
     ${PROTO_SRCS}
 )
 
@@ -114,10 +124,12 @@ install(DIRECTORY include/nikola
 )
 
 # Status message
-message(STATUS "Nikola Genesis Integration - Phase 0b (Stubs)")
+message(STATUS "Nikola Genesis Integration - Phase 0c (Stubs)")
 message(STATUS "  Module 1: Cognitive Resonance - STUB")
 message(STATUS "  Module 2: Social Layer (IRSP) - STUB")
 message(STATUS "  Module 3: Economic Layer (NES) - STUB")
 message(STATUS "  Module 4: Security Layer (HSK) - STUB")
 message(STATUS "  Module 5: Interior Life & Metacognition - STUB")
+message(STATUS "  Module 7: Code Generation & Self-Improvement (Aria) - STUB")
+message(STATUS "  Module 6: Subjective Experience - PENDING (documentation only)")
 message(STATUS "Implementation deferred until Phase 1 (Audit 1 & 2) completion")

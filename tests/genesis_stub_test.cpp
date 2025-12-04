@@ -1,12 +1,12 @@
 /**
  * Genesis Stub Compilation Test
  *
- * Verifies that all Phase 0 & 0b stub files compile correctly.
+ * Verifies that all Phase 0, 0b, and 0c stub files compile correctly.
  * Does NOT test functionality (all functions are stubs).
  *
  * Purpose: Ensure build system is configured and interfaces are valid.
  *
- * @status Phase 0b verification
+ * @status Phase 0c verification
  */
 
 #include <iostream>
@@ -35,6 +35,13 @@
 #include "nikola/interior/autobiography.hpp"
 #include "nikola/interior/curiosity.hpp"
 #include "nikola/interior/internal_dialogue.hpp"
+
+// Module 7: Code Generation & Self-Improvement (Aria Language)
+#include "nikola/aria/compiler.hpp"
+#include "nikola/aria/interpreter.hpp"
+#include "nikola/aria/code_generator.hpp"
+#include "nikola/aria/metaprogramming.hpp"
+#include "nikola/aria/native_interface.hpp"
 
 int main() {
     std::cout << "=== Nikola Genesis Phase 0 Stub Test ===" << std::endl;
@@ -99,13 +106,30 @@ int main() {
         std::cout << "  ✓ InternalDialogue instantiated" << std::endl;
     }
 
+    // Module 7: Code Generation & Self-Improvement (Aria Language)
+    std::cout << std::endl;
+    std::cout << "[Module 7] Code Generation & Self-Improvement (Aria)" << std::endl;
+    {
+        nikola::aria::AriaCompiler compiler;
+        nikola::aria::AriaInterpreter interpreter;
+        nikola::aria::AriaCodeGenerator generator;
+        nikola::aria::AriaMetaprogramming metaprog;
+        nikola::aria::AriaNativeInterface interface;
+        std::cout << "  ✓ AriaCompiler instantiated" << std::endl;
+        std::cout << "  ✓ AriaInterpreter instantiated" << std::endl;
+        std::cout << "  ✓ AriaCodeGenerator instantiated" << std::endl;
+        std::cout << "  ✓ AriaMetaprogramming instantiated" << std::endl;
+        std::cout << "  ✓ AriaNativeInterface instantiated" << std::endl;
+    }
+
     std::cout << std::endl;
     std::cout << "=== All Genesis stubs compiled successfully ===" << std::endl;
     std::cout << std::endl;
-    std::cout << "Phase 0b: COMPLETE" << std::endl;
-    std::cout << "  5 modules, 15 components" << std::endl;
+    std::cout << "Phase 0c: COMPLETE" << std::endl;
+    std::cout << "  6 modules (1-5, 7), 20 components" << std::endl;
+    std::cout << "  Module 6 (Subjective Experience): Documentation only" << std::endl;
     std::cout << "Next: Complete Phase 1 (Audit 1 & 2 remediation)" << std::endl;
-    std::cout << "Implementation of Genesis modules deferred to Phases 2-6" << std::endl;
+    std::cout << "Implementation of Genesis modules deferred to Phases 2-8" << std::endl;
 
     return 0;
 }
