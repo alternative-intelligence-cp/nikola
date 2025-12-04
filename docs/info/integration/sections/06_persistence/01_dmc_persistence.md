@@ -393,9 +393,8 @@ public:
 
 namespace nikola::persistence {
 
-// CRITICAL FIX (Audit 3 Item #14): Complete LSM-DMC implementation
-// Problem: Methods were declared but implementation logic missing
-// Solution: Implement MemTable flush and SSTable merge-sort compaction
+// LSM-DMC persistence implementation with MemTable flush and SSTable compaction
+// Uses merge-sort compaction strategy for efficient storage and retrieval
 
 class LSM_DMC : public PersistenceManager {
 private:

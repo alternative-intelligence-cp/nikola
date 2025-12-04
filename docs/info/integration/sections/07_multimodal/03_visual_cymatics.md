@@ -100,10 +100,8 @@ void VisualCymaticsEngine::inject_image(const cv::Mat& image) {
             double green_amp = pixel[1] / 255.0;
             double blue_amp = pixel[0] / 255.0;
 
-            // CRITICAL FIX (Audit 4 Item #6): Remap RGB to avoid modulating Emitter 9
-            // Problem: Emitter 9 is the Synchronizer - modulating it with Blue channel
-            // destabilizes global clocking. Synchronizer must remain invariant.
-            // Solution: Map RGB to Quantum Dimensions (u, v, w / Emitters 4, 5, 6)
+            // Map RGB to Quantum Dimensions (u, v, w / Emitters 4, 5, 6)
+            // Emitter 9 (Synchronizer) remains unmodulated to maintain global clocking stability
 
             emitters.set_amplitude(4, red_amp, RED_PHASE_OFFSET);     // Red → e₄ (quantum u)
             emitters.set_amplitude(5, green_amp, GREEN_PHASE_OFFSET); // Green → e₅ (quantum v)

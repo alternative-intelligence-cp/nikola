@@ -244,14 +244,14 @@ void EmitterArray::tick(double* output) {
     // Store back
     _mm512_store_epi64(phase_accumulators.data(), phases);
 
-    // CRITICAL FIX (Audit 2 Item #8): Apply prime phase offsets for ergodicity
-    // Without these offsets, the ergodicity proof fails → resonance lock-in → hallucination
+    // Apply prime phase offsets for ergodicity
+    // Phase offsets prevent resonance lock-in and ensure ergodic state space exploration
     for (int i = 0; i < 8; ++i) {
         // Apply phase offset before LUT lookup
         uint64_t phase_with_offset = phase_accumulators[i] + phase_offset_words[i];
 
-        // CRITICAL FIX (Audit 3 Item #4): Linear interpolation for >100dB SFDR
-        // Extract index and fractional part for interpolation
+        // Linear interpolation for >100dB SFDR
+        // Extract index and fractional part for high-precision interpolation
         uint16_t idx0 = phase_with_offset >> 50;  // Top 14 bits for LUT index
         uint16_t idx1 = (idx0 + 1) & (LUT_SIZE - 1);  // Next index with wrap
 
@@ -368,4 +368,3 @@ This kernel physically implements the "Wave Interference Processor" logic on the
 **Cross-References:**
 - See Section 3.3 for Dynamic Metric Tensor mathematics
 - See Section 5 for Balanced Nonary encoding of wave amplitudes
-- See Section 8.2 (Work Package 1) for Physics Engine remediation details

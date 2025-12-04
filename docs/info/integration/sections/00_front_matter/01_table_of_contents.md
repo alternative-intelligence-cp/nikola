@@ -9,7 +9,6 @@
 ## SECTION 1: EXECUTIVE OVERVIEW
 
 - [1.1 Executive Summary](01_executive/01_executive_summary.md)
-- [1.2 Critical Defect Registry and Remediation Status](01_executive/02_defect_registry.md)
 
 ## SECTION 2: FOUNDATIONAL ARCHITECTURE
 
@@ -52,25 +51,17 @@
 - [7.2 Audio Resonance Engine](07_multimodal/02_audio_resonance.md)
 - [7.3 Visual Cymatics Engine](07_multimodal/03_visual_cymatics.md)
 
-## SECTION 8: REMEDIATION AND WORK PACKAGES
+## SECTION 8: IMPLEMENTATION GUIDE
 
-- [8.1 Dynamic Topology and GPU Synchronization (WP3)](08_remediation/01_dynamic_topology_wp3.md)
-- [8.2 Physics Engine Remediation (WP1)](08_remediation/02_physics_engine_wp1.md)
-- [8.3 Cognitive Core Implementation (WP2)](08_remediation/03_cognitive_core_wp2.md)
-- [8.4 Safety and Self-Evolution Infrastructure (WP4)](08_remediation/04_safety_evolution_wp4.md)
-- [8.5 Comprehensive Remediation Plan](08_remediation/05_comprehensive_plan.md)
+- [8.1 File Structure and Organization](09_implementation/01_file_structure.md)
+- [8.2 Development Roadmap](09_implementation/02_development_roadmap.md)
+- [8.3 Implementation Checklist](09_implementation/03_implementation_checklist.md)
+- [8.4 Build and Deployment](09_implementation/04_build_deployment.md)
 
-## SECTION 9: IMPLEMENTATION GUIDE
+## SECTION 9: PROTOCOLS AND INTERFACES
 
-- [9.1 File Structure and Organization](09_implementation/01_file_structure.md)
-- [9.2 Development Roadmap](09_implementation/02_development_roadmap.md)
-- [9.3 Implementation Checklist](09_implementation/03_implementation_checklist.md)
-- [9.4 Build and Deployment](09_implementation/04_build_deployment.md)
-
-## SECTION 10: PROTOCOLS AND INTERFACES
-
-- [10.1 RCIS Specification](10_protocols/01_rcis_specification.md)
-- [10.2 CLI Controller](10_protocols/02_cli_controller.md)
+- [9.1 RCIS Specification](10_protocols/01_rcis_specification.md)
+- [9.2 CLI Controller](10_protocols/02_cli_controller.md)
 
 ## APPENDICES
 

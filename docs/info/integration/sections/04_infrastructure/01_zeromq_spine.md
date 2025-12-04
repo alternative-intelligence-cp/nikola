@@ -190,9 +190,8 @@ public:
         whitelist.insert(public_key_z85);
     }
 
-    // CRITICAL FIX (Audit 4 Item #8): Add error handling to ZAP loop
-    // Problem: Malformed messages can cause recv to throw/hang, crashing security handler
-    // Solution: Wrap in try/catch, log errors, restart handler without killing thread
+    // Error handling for ZAP authentication loop
+    // Malformed messages are caught and logged without crashing the security handler
     void run() {
         while (true) {
             try {

@@ -202,18 +202,16 @@ $$\text{Index} = \sum_{i=0}^{63} \text{bit}_i(\text{coords}) \ll i$$
 
 namespace nikola::physics {
 
-// CRITICAL FIX (Audit 3 Item #1): Pointer Invalidation Prevention
-// Problem: std::vector<TorusNode> causes pointer invalidation when capacity exceeded
-// Solution: Use std::deque which guarantees pointer stability on growth
+// Sparse Hyper-Voxel Grid using std::deque for pointer stability
+// std::deque guarantees pointers never invalidate on growth, unlike std::vector
 
 class SparseHyperVoxelGrid {
 private:
    // Spatial Hash Map: 64-bit Morton Code -> Node Pointer
    std::unordered_map<uint64_t, TorusNode*> active_voxels;
 
-   // Memory Pool for fast allocation/deallocation
-   // FIXED: std::deque guarantees pointers never invalidate on growth
-   // Unlike std::vector, deque allocates in chunks and maintains pointer stability
+   // Memory Pool using std::deque for pointer stability
+   // std::deque allocates in chunks and maintains pointer stability on growth
    std::deque<TorusNode> node_pool;
    std::vector<size_t> free_indices;
 

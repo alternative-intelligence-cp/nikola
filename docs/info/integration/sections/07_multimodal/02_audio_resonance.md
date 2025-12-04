@@ -81,8 +81,8 @@ void AudioResonanceEngine::bin_spectrum_to_emitters(
     // Golden ratio frequencies (Hz)
     const double emitter_freqs[8] = {5.083, 8.225, 13.308, 21.532, 34.840, 56.371, 91.210, 147.58};
 
-    // CRITICAL FIX (MM-AUD-01): Dynamic folding limit instead of hardcoded 200Hz
-    // This prevents discarding male voice fundamentals (85-180Hz) and musical notes (D3-G3)
+    // Dynamic folding limit based on highest emitter frequency
+    // This preserves male voice fundamentals (85-180Hz) and musical notes (D3-G3)
     const double highest_emitter_freq = emitter_freqs[7];  // 147.58 Hz
     const double folding_limit = highest_emitter_freq * 1.5;  // ~221 Hz
 
@@ -235,9 +235,8 @@ public:
 ```cpp
 class RealTimeAudioProcessor {
     std::atomic<bool> running{true};
-    // CRITICAL FIX (Audit 4 Item #7): Make buffer size configurable
-    // Problem: Hardcoded 4-frame buffer insufficient for high-latency scenarios or GC pauses
-    // Solution: Load from config with safer default (500ms buffer ~= 50 frames at 48kHz/1024)
+    // Configurable buffer size for handling high-latency scenarios
+    // Default 50 frames (~500ms at 48kHz/1024) handles GC pauses and latency spikes
     size_t buffer_frames;
     RingBuffer<int16_t> audio_buffer;
     std::thread processing_thread;

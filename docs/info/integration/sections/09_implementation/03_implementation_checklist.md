@@ -51,14 +51,14 @@ This checklist MUST be followed file-by-file in order. Do NOT skip steps or devi
 
 - [ ] **2.3** `include/nikola/types/coord9d.hpp`
   - Define `Coord9D` struct with `std::array<int32_t, 9>`
-  - Implement `wrap()` method (GEO-TOPO-01 fix)
+  - Implement `wrap()` method for toroidal topology
   - Implement `distance_to()` for geodesic distance
   - Define hash function for use in `unordered_map`
 
 - [ ] **2.4** `include/nikola/types/torus_node.hpp`
   - Define `TorusNode` struct (256-byte aligned)
   - Include: wavefunction, metric_tensor, resonance_r, state_s
-  - **CRITICAL:** Zero padding in constructor (MEM-INIT-01 fix)
+  - **CRITICAL:** Zero padding in constructor for proper initialization
   - Verify `sizeof(TorusNode) == 256`
 
 ### Emitter Array
@@ -84,7 +84,7 @@ This checklist MUST be followed file-by-file in order. Do NOT skip steps or devi
 - [ ] **2.8** `src/physics/shvo_grid.cpp`
   - Implement sparse grid using `unordered_map<uint64_t, TorusNode*>`
   - Implement `get_or_create()` with neurogenesis trigger
-  - Implement `update_gpu_neighbor_map()` (PHY-MEM-01)
+  - Implement `update_gpu_neighbor_map()` for dynamic topology
 
 - [ ] **2.9** `include/nikola/physics/torus_manifold.hpp`
   - Define main interface
@@ -92,9 +92,9 @@ This checklist MUST be followed file-by-file in order. Do NOT skip steps or devi
   - Declare neuroplasticity/neurogenesis methods
 
 - [ ] **2.10** `src/physics/torus_manifold.cpp`
-  - Implement wave propagation (UFIE from WP1)
+  - Implement wave propagation using Unified Field Interference Equation
   - Implement neuroplasticity update (Section 3.4)
-  - Integrate with ENGS global state (PHY-CUDA-01 fix)
+  - Integrate with ENGS global state
   - **Validation:** Inject two waves, verify interference
 
 ### Wave Interference Processor
@@ -119,7 +119,7 @@ This checklist MUST be followed file-by-file in order. Do NOT skip steps or devi
 
 - [ ] **3.3** `include/nikola/mamba/ssm_kernel.hpp`
   - Define `Mamba9D` class with A, B, C matrices
-  - Implement Topological State Mapping (WP2)
+  - Implement Topological State Mapping
 
 - [ ] **3.4** `src/mamba/ssm_kernel.cpp`
   - Implement SSM forward pass
@@ -133,7 +133,7 @@ This checklist MUST be followed file-by-file in order. Do NOT skip steps or devi
   - Declare wave correlation methods
 
 - [ ] **3.6** `src/reasoning/wave_attention.cpp`
-  - Implement Wave Correlation Attention (WP2)
+  - Implement Wave Correlation Attention
   - Use complex conjugate product
   - **Validation:** Compare with standard attention
 
@@ -159,7 +159,7 @@ This checklist MUST be followed file-by-file in order. Do NOT skip steps or devi
   - Implement ZAP authentication
 
 - [ ] **4.2** `src/spine/shadow_spine.cpp`
-  - Implement A/B testing infrastructure (WP4)
+  - Implement A/B testing infrastructure
   - Add voting mechanism
   - Add promotion logic
 
@@ -179,7 +179,7 @@ This checklist MUST be followed file-by-file in order. Do NOT skip steps or devi
 - [ ] **4.5** `src/executor/kvm_executor.cpp`
   - Implement VM lifecycle management
   - Add virtio-serial communication
-  - Implement CSVP integration (WP4)
+  - Implement CSVP integration
 
 ## 28.6 Autonomy
 
@@ -187,8 +187,8 @@ This checklist MUST be followed file-by-file in order. Do NOT skip steps or devi
 
 - [ ] **5.1** `src/autonomy/engs.cpp`
   - Implement Extended Neurochemical Gating System
-  - Use exponential decay (AUTO-ENGS-01 fix)
-  - Integrate with physics kernel (PHY-CUDA-01)
+  - Use exponential decay for homeostasis
+  - Integrate with physics kernel
 
 - [ ] **5.2** `src/autonomy/dopamine.cpp`
   - Implement TD learning
@@ -210,10 +210,10 @@ This checklist MUST be followed file-by-file in order. Do NOT skip steps or devi
 
 - [ ] **5.6** `src/autonomy/dream_weave.cpp`
   - Implement counterfactual simulation
-  - Add z-score normalization (AUTO-DREAM-01)
+  - Add z-score normalization
 
 - [ ] **5.7** `src/self_improve/adversarial_dojo.cpp`
-  - Implement Red Team agent (WP4)
+  - Implement Red Team agent
   - Add attack generation
 
 ## 28.7 Persistence & Security
@@ -221,7 +221,7 @@ This checklist MUST be followed file-by-file in order. Do NOT skip steps or devi
 ### Persistence
 
 - [ ] **6.1** `src/persistence/lsm_dmc.cpp`
-  - Implement LSM-DMC (PER-LSM-01 fix)
+  - Implement LSM-DMC persistence system
   - Add compaction worker
   - Add Write-Ahead Log
 
@@ -237,7 +237,7 @@ This checklist MUST be followed file-by-file in order. Do NOT skip steps or devi
   - Load hazard database
 
 - [ ] **6.4** `src/security/csvp.cpp`
-  - Implement Code Safety Verification Protocol (WP4)
+  - Implement Code Safety Verification Protocol
   - Add static analysis hooks
   - Add physics invariant tests
 
@@ -245,11 +245,11 @@ This checklist MUST be followed file-by-file in order. Do NOT skip steps or devi
 
 - [ ] **7.1** `src/multimodal/audio_resonance.cpp`
   - Implement FFT binning
-  - Fix spectral dead zone (MM-AUD-01)
+  - Implement dynamic frequency folding
   - **Validation:** Process speech sample
 
 - [ ] **7.2** `src/multimodal/visual_cymatics.cpp`
-  - Implement holographic RGB encoding (MM-VIS-01)
+  - Implement holographic RGB encoding
   - Add phase-based color separation
   - **Validation:** Process test image
 
@@ -298,4 +298,3 @@ This checklist MUST be followed file-by-file in order. Do NOT skip steps or devi
 **Cross-References:**
 - See Section 26 for File Structure
 - See Section 27 for Development Roadmap
-- See WP1-5 for Remediation details

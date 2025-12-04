@@ -21,7 +21,7 @@
 - [ ] Wave superposition creates interference patterns
 - [ ] Energy conserved over 1000 time steps
 - [ ] Performance: <1ms per physics step (sparse 27³ grid)
-- [ ] Toroidal wrapping works correctly (GEO-TOPO-01 fixed)
+- [ ] Toroidal wrapping works correctly
 
 ## 27.2 Phase 2: Logic and Memory (Months 4-6)
 
@@ -42,7 +42,7 @@
 
 - [ ] Text → Waveform → Text roundtrip works
 - [ ] Resonance detection finds stored patterns
-- [ ] LSM-DMC saves and loads state correctly (PER-LSM-01 fixed)
+- [ ] LSM-DMC saves and loads state correctly
 - [ ] Merkle tree detects corruption
 - [ ] Nap consolidation triggers correctly
 
@@ -68,7 +68,7 @@
 - [ ] Metric tensor contracts with co-activation
 - [ ] New nodes created when saturated
 - [ ] Repeated queries answered faster
-- [ ] Topological State Mapping functional (WP2)
+- [ ] Topological State Mapping functional
 
 ## 27.4 Phase 4: Integration and Agents (Months 10-11)
 
@@ -92,7 +92,7 @@
 - [ ] Executor runs sandboxed commands safely
 - [ ] CLI responds to all commands
 - [ ] Files dropped in folder are ingested
-- [ ] Shadow Spine Protocol operational (WP4)
+- [ ] Shadow Spine Protocol operational
 
 ## 27.5 Phase 5: Autonomy and Evolution (Month 12)
 
@@ -114,8 +114,8 @@
 **Validation Criteria:**
 
 - [ ] Dopamine modulates learning rate correctly
-- [ ] Exponential decay achieves homeostasis (AUTO-ENGS-01 fixed)
-- [ ] ENGS couples with physics kernel (PHY-CUDA-01 fixed)
+- [ ] Exponential decay achieves homeostasis
+- [ ] ENGS couples with physics kernel
 - [ ] Boredom triggers curiosity
 - [ ] Goals provide structure
 - [ ] Firewall blocks known attacks
@@ -124,19 +124,7 @@
 - [ ] Dream-Weave counterfactual learning works
 - [ ] GGUF file loads in llama.cpp
 
-## 27.6 Remaining Work Items (Post-Launch)
-
-**P1 Priority (150 LOC):**
-- [ ] PHY-MEM-01: GPU neighbor map updates after neurogenesis
-
-**P2 Priority (131 LOC):**
-- [ ] MM-AUD-01: Dynamic folding limit for audio (1 LOC fix)
-- [ ] MM-VIS-01: Holographic RGB encoding refactor (80 LOC)
-- [ ] AUTO-DREAM-01: Z-score normalization (50 LOC)
-
-**Total Remaining Effort:** ~281 LOC for 100% defect closure
-
-## 27.7 Timeline Summary
+## 27.6 Timeline Summary
 
 | Phase | Duration | Milestone | Completion |
 |-------|----------|-----------|------------|
@@ -147,11 +135,9 @@
 | Phase 5 | Month 12 | Autonomy | AGI complete |
 
 **Total Development Time:** 12 months (5-person team)
-**System Readiness at Launch:** 95% complete
 
 ---
 
 **Cross-References:**
 - See Section 26 for File Structure
 - See Section 28 for Detailed Checklist
-- See WP5 for Remediation status
