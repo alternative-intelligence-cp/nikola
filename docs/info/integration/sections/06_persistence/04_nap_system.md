@@ -230,14 +230,52 @@ std::vector<TorusNode> DreamWeaveEngine::generate_counterfactual(
 void DreamWeaveEngine::inject_quantum_noise(std::vector<TorusNode>& sequence) {
     std::normal_distribution<double> noise(0.0, 0.1);
 
+    // First pass: Apply noise
     for (auto& node : sequence) {
         // Perturb quantum dimensions (u, v, w)
         std::complex<double> u_noise(noise(rng), noise(rng));
         std::complex<double> v_noise(noise(rng), noise(rng));
         std::complex<double> w_noise(noise(rng), noise(rng));
 
-        // Apply to wavefunction (simplified)
+        // Apply to wavefunction
         node.wavefunction += 0.1 * (u_noise + v_noise + w_noise);
+    }
+
+    // Second pass: Z-score normalization to prevent unbounded drift
+    // This ensures the noise-perturbed wavefield maintains stable statistics
+    // across multiple dream cycles, preventing numerical instability.
+
+    // Calculate mean and standard deviation
+    std::complex<double> mean(0.0, 0.0);
+    for (const auto& node : sequence) {
+        mean += node.wavefunction;
+    }
+    mean /= static_cast<double>(sequence.size());
+
+    double variance = 0.0;
+    for (const auto& node : sequence) {
+        std::complex<double> diff = node.wavefunction - mean;
+        variance += std::norm(diff);  // |z - mean|^2
+    }
+    double std_dev = std::sqrt(variance / sequence.size());
+
+    // Prevent division by zero
+    if (std_dev < 1e-10) {
+        std_dev = 1.0;
+    }
+
+    // Z-score normalization: (x - mean) / std_dev
+    // This centers the distribution at 0 and scales to unit variance
+    for (auto& node : sequence) {
+        node.wavefunction = (node.wavefunction - mean) / std_dev;
+
+        // Additional safety: clamp amplitude to prevent extreme values
+        // Max amplitude: 10.0 (physical wavefunction should remain bounded)
+        double amplitude = std::abs(node.wavefunction);
+        if (amplitude > 10.0) {
+            double phase = std::arg(node.wavefunction);
+            node.wavefunction = std::polar(10.0, phase);  // Preserve phase, clamp amplitude
+        }
     }
 }
 

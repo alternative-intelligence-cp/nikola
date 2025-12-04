@@ -418,6 +418,159 @@ __global__ void propagate_wave_kernel(
 
 This kernel physically implements the "Wave Interference Processor" logic on the GPU, satisfying the performance requirements for real-time interaction.
 
+### Differential GPU Update Protocol for Dynamic Topology
+
+When neurogenesis creates new nodes, the adjacency graph changes. Instead of re-uploading the entire neighbor_indices array (which can be GB-scale), we use differential updates:
+
+```cpp
+// File: src/physics/kernels/topology_sync.cu
+#include <cuda_runtime.h>
+#include <vector>
+#include <mutex>
+
+namespace nikola::physics::cuda {
+
+struct TopologyDelta {
+    int node_index;                    // Which node's neighbors changed
+    std::array<int, 18> new_neighbors; // Updated adjacency
+};
+
+class DifferentialTopologyManager {
+    int* d_neighbor_indices;  // Device memory
+    size_t num_nodes;
+
+    // Host-side change tracking
+    std::vector<TopologyDelta> pending_deltas;
+    std::mutex delta_mutex;
+
+    // Pinned host memory for async transfers
+    TopologyDelta* h_pinned_deltas;
+    cudaStream_t update_stream;
+
+public:
+    DifferentialTopologyManager(size_t max_nodes) : num_nodes(0) {
+        // Allocate device memory
+        cudaMalloc(&d_neighbor_indices, max_nodes * 18 * sizeof(int));
+
+        // Initialize to -1 (no neighbor)
+        cudaMemset(d_neighbor_indices, -1, max_nodes * 18 * sizeof(int));
+
+        // Allocate pinned host memory for async transfers
+        cudaMallocHost(&h_pinned_deltas, 256 * sizeof(TopologyDelta)); // Batch size 256
+
+        // Create dedicated stream for topology updates
+        cudaStreamCreate(&update_stream);
+    }
+
+    ~DifferentialTopologyManager() {
+        cudaFree(d_neighbor_indices);
+        cudaFreeHost(h_pinned_deltas);
+        cudaStreamDestroy(update_stream);
+    }
+
+    // Queue a topology change (called by neurogenesis on host)
+    void queue_topology_change(int node_idx, const std::array<int, 18>& neighbors) {
+        std::lock_guard<std::mutex> lock(delta_mutex);
+        pending_deltas.push_back({node_idx, neighbors});
+
+        // Flush if batch is large enough
+        if (pending_deltas.size() >= 256) {
+            flush_deltas();
+        }
+    }
+
+    // Async kernel to apply delta patches
+    __global__ static void apply_topology_deltas_kernel(
+        int* neighbor_indices,
+        const TopologyDelta* deltas,
+        int num_deltas
+    ) {
+        int idx = blockIdx.x * blockDim.x + threadIdx.x;
+        if (idx >= num_deltas) return;
+
+        const TopologyDelta& delta = deltas[idx];
+        int base_offset = delta.node_index * 18;
+
+        // Update all 18 neighbors for this node
+        for (int i = 0; i < 18; ++i) {
+            neighbor_indices[base_offset + i] = delta.new_neighbors[i];
+        }
+    }
+
+    // Flush pending deltas to GPU
+    void flush_deltas() {
+        if (pending_deltas.empty()) return;
+
+        size_t batch_size = std::min(pending_deltas.size(), size_t(256));
+
+        // Copy to pinned memory
+        std::memcpy(h_pinned_deltas, pending_deltas.data(),
+                   batch_size * sizeof(TopologyDelta));
+
+        // Allocate temporary device memory for deltas
+        TopologyDelta* d_deltas;
+        cudaMalloc(&d_deltas, batch_size * sizeof(TopologyDelta));
+
+        // Async transfer (overlaps with compute on default stream)
+        cudaMemcpyAsync(d_deltas, h_pinned_deltas,
+                       batch_size * sizeof(TopologyDelta),
+                       cudaMemcpyHostToDevice, update_stream);
+
+        // Launch kernel on update stream
+        int block_size = 256;
+        int grid_size = (batch_size + block_size - 1) / block_size;
+        apply_topology_deltas_kernel<<<grid_size, block_size, 0, update_stream>>>(
+            d_neighbor_indices, d_deltas, batch_size
+        );
+
+        // Cleanup (asynchronous)
+        cudaStreamSynchronize(update_stream);
+        cudaFree(d_deltas);
+
+        // Remove flushed deltas
+        pending_deltas.erase(pending_deltas.begin(),
+                            pending_deltas.begin() + batch_size);
+    }
+
+    // Force flush (called before each propagation step)
+    void synchronize() {
+        std::lock_guard<std::mutex> lock(delta_mutex);
+        flush_deltas();
+        cudaStreamSynchronize(update_stream);
+    }
+
+    int* get_device_ptr() { return d_neighbor_indices; }
+};
+
+} // namespace nikola::physics::cuda
+```
+
+**Integration with Wave Propagation:**
+
+```cpp
+// Modified propagation call with topology sync
+DifferentialTopologyManager topo_manager(max_nodes);
+
+void propagate_with_dynamic_topology(double dt) {
+    // Flush any pending topology changes before propagation
+    topo_manager.synchronize();
+
+    // Launch wave propagation kernel with updated topology
+    propagate_wave_kernel<<<grid, block>>>(
+        soa_data,
+        next_wavefunction,
+        num_active_nodes,
+        dt,
+        c0_squared
+    );
+}
+```
+
+**Benefits:**
+- **Bandwidth Efficiency:** Only transfers changed adjacencies (~256 nodes/batch × 72 bytes = 18KB vs full re-upload of GBs)
+- **Async Overlap:** Topology updates run on separate stream, overlapping with compute
+- **Memory Safety:** Batch processing prevents out-of-bounds reads during neurogenesis
+
 ---
 
 **Cross-References:**

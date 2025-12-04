@@ -72,7 +72,7 @@ void AudioResonanceEngine::process_audio_frame(const std::vector<int16_t>& pcm_s
 }
 ```
 
-**Spectrum Binning with Octave Folding:**
+**Spectrum Binning with Anti-Aliased Octave Mapping:**
 
 ```cpp
 void AudioResonanceEngine::bin_spectrum_to_emitters(
@@ -81,36 +81,91 @@ void AudioResonanceEngine::bin_spectrum_to_emitters(
     // Golden ratio frequencies (Hz)
     const double emitter_freqs[8] = {5.083, 8.225, 13.308, 21.532, 34.840, 56.371, 91.210, 147.58};
 
-    // Dynamic folding limit based on highest emitter frequency
-    // This preserves male voice fundamentals (85-180Hz) and musical notes (D3-G3)
-    const double highest_emitter_freq = emitter_freqs[7];  // 147.58 Hz
-    const double folding_limit = highest_emitter_freq * 1.5;  // ~221 Hz
+    // Nyquist frequency (max frequency in FFT output)
+    const double sample_rate = 44100.0;
+    const double nyquist_freq = sample_rate / 2.0;  // 22050 Hz
+    const double bin_width = sample_rate / FFT_SIZE;
 
     for (int e = 0; e < 8; ++e) {
         double target_freq = emitter_freqs[e];
         double accumulated_magnitude = 0.0;
+        double total_weight = 0.0;
 
-        // Scan through spectrum and fold octaves
+        // Scan through spectrum with anti-aliased octave accumulation
         for (int bin = 0; bin < FFT_SIZE / 2; ++bin) {
-            double freq = (double)bin * 44100.0 / FFT_SIZE;
+            double bin_freq = bin * bin_width;
 
-            // Octave folding: map high frequencies down to emitter range
-            while (freq > folding_limit) {
-                freq *= 0.5;  // Fold down by one octave
+            // Calculate which octave this bin belongs to relative to target
+            // log2(bin_freq / target_freq) gives octave distance
+            if (bin_freq < 1.0) continue;  // Skip DC and near-DC bins
+
+            double octave_ratio = bin_freq / target_freq;
+
+            // Check if this bin is harmonically related to target (within 10 octaves)
+            if (octave_ratio < 0.5 || octave_ratio > 1024.0) {
+                continue;  // Too far from target frequency
             }
 
-            // If this bin folds to our target frequency (within tolerance)
-            if (std::abs(freq - target_freq) < 2.0) {  // 2 Hz tolerance
+            // Calculate octave distance
+            double log_ratio = std::log2(octave_ratio);
+            double octave_distance = std::abs(log_ratio - std::round(log_ratio));
+
+            // Only accumulate bins that are close to octave multiples (within 5% tolerance)
+            if (octave_distance < 0.05) {  // ~3.5% frequency deviation
+                int octave = static_cast<int>(std::round(log_ratio));
+
+                // Calculate magnitude
                 double magnitude = std::sqrt(spectrum[bin][0] * spectrum[bin][0] +
                                             spectrum[bin][1] * spectrum[bin][1]);
-                accumulated_magnitude += magnitude;
+
+                // Anti-aliasing weight: exponentially decay higher octaves
+                // This prevents high-frequency noise from polluting low emitters
+                double octave_weight = std::exp(-0.3 * std::abs(octave));  // e^(-0.3|n|)
+
+                // Additional perceptual weighting: A-weighting filter approximation
+                // Compensates for human ear sensitivity (boosts 2-5kHz, attenuates low/high)
+                double a_weight = calculate_a_weighting(bin_freq);
+
+                double combined_weight = octave_weight * a_weight;
+
+                accumulated_magnitude += magnitude * combined_weight;
+                total_weight += combined_weight;
             }
         }
 
-        // Set emitter amplitude (accumulated from all octave-folded bins)
+        // Normalize by total weight to prevent loudness variation
+        if (total_weight > 1e-6) {
+            accumulated_magnitude /= total_weight;
+        }
+
+        // Set emitter amplitude with anti-aliased, octave-weighted accumulation
         emitters.set_amplitude(e, accumulated_magnitude);
     }
 }
+
+private:
+    // A-weighting filter for perceptual audio processing
+    // Approximates human ear frequency response (ITU-R 468 weighting)
+    double calculate_a_weighting(double freq) {
+        // A-weighting transfer function (simplified)
+        const double f1 = 20.6;    // Low-frequency pole
+        const double f2 = 107.7;   // Mid-frequency pole
+        const double f3 = 737.9;   // High-frequency pole
+        const double f4 = 12194.0; // Upper-frequency pole
+
+        double f_sq = freq * freq;
+        double numerator = f4 * f4 * f_sq * f_sq;
+        double denominator = (f_sq + f1 * f1) *
+                            std::sqrt((f_sq + f2 * f2) * (f_sq + f3 * f3)) *
+                            (f_sq + f4 * f4);
+
+        if (denominator < 1e-10) return 0.0;
+
+        double weight = numerator / denominator;
+
+        // Normalize to [0, 1] range (peak at ~3kHz)
+        return std::min(1.0, weight * 0.5);
+    }
 ```
 
 ## 24.1.4 Audio Input Sources

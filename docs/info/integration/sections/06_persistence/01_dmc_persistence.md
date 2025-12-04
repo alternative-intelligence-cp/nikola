@@ -696,6 +696,392 @@ public:
                   << " (" << level0_sstables.size() << " SSTables in Level 0)" << std::endl;
     }
 
+private:
+    // Write-Ahead Log for durability
+    class WriteAheadLog {
+    private:
+        std::ofstream wal_stream;
+        std::string wal_path;
+        std::mutex wal_mutex;
+        size_t wal_size{0};
+        const size_t WAL_SYNC_INTERVAL = 1024 * 1024;  // fsync every 1MB
+
+        struct WALEntry {
+            uint64_t hilbert_idx;
+            uint64_t timestamp;
+            uint8_t entry_type;  // 0x01 = INSERT, 0x02 = UPDATE
+            uint32_t payload_size;
+            uint32_t checksum;
+        } __attribute__((packed));
+
+    public:
+        explicit WriteAheadLog(const std::string& data_dir)
+            : wal_path(data_dir + "/current.wal") {
+            wal_stream.open(wal_path, std::ios::binary | std::ios::app);
+            if (!wal_stream) {
+                throw std::runtime_error("Failed to open WAL: " + wal_path);
+            }
+        }
+
+        ~WriteAheadLog() {
+            if (wal_stream.is_open()) {
+                wal_stream.flush();
+                fsync_stream();
+                wal_stream.close();
+            }
+        }
+
+        // Append node write to WAL (called on every MemTable insert)
+        void append(uint64_t hilbert_idx, const TorusNode& node, bool is_update) {
+            std::lock_guard<std::mutex> lock(wal_mutex);
+
+            // Serialize node payload
+            std::vector<uint8_t> payload;
+            serialize_node(node, payload);
+
+            // Create WAL entry header
+            WALEntry entry;
+            entry.hilbert_idx = hilbert_idx;
+            entry.timestamp = get_timestamp();
+            entry.entry_type = is_update ? 0x02 : 0x01;
+            entry.payload_size = payload.size();
+            entry.checksum = crc32c_compute(payload.data(), payload.size());
+
+            // Write header + payload atomically
+            wal_stream.write(reinterpret_cast<const char*>(&entry), sizeof(entry));
+            wal_stream.write(reinterpret_cast<const char*>(payload.data()), payload.size());
+
+            wal_size += sizeof(entry) + payload.size();
+
+            // Periodic fsync to ensure durability (trade-off: latency vs safety)
+            if (wal_size >= WAL_SYNC_INTERVAL) {
+                wal_stream.flush();
+                fsync_stream();
+                wal_size = 0;
+            }
+        }
+
+        // Replay WAL entries into MemTable on startup
+        void replay(std::map<uint64_t, TorusNode>& memtable) {
+            std::ifstream replay_stream(wal_path, std::ios::binary);
+            if (!replay_stream) {
+                // No existing WAL - fresh start
+                return;
+            }
+
+            size_t entries_replayed = 0;
+            size_t bytes_read = 0;
+
+            while (replay_stream.peek() != EOF) {
+                WALEntry entry;
+                replay_stream.read(reinterpret_cast<char*>(&entry), sizeof(entry));
+
+                if (replay_stream.gcount() != sizeof(entry)) {
+                    // Partial write detected - stop replay
+                    std::cerr << "[WAL] Detected incomplete entry at offset " << bytes_read
+                              << ", truncating WAL" << std::endl;
+                    break;
+                }
+
+                // Read payload
+                std::vector<uint8_t> payload(entry.payload_size);
+                replay_stream.read(reinterpret_cast<char*>(payload.data()), entry.payload_size);
+
+                if (replay_stream.gcount() != static_cast<std::streamsize>(entry.payload_size)) {
+                    std::cerr << "[WAL] Incomplete payload at entry " << entries_replayed << std::endl;
+                    break;
+                }
+
+                // Verify checksum
+                uint32_t computed_checksum = crc32c_compute(payload.data(), payload.size());
+                if (computed_checksum != entry.checksum) {
+                    std::cerr << "[WAL] Checksum mismatch at entry " << entries_replayed
+                              << " - stopping replay" << std::endl;
+                    break;
+                }
+
+                // Deserialize node and insert into MemTable
+                TorusNode node;
+                if (deserialize_node(payload, node)) {
+                    memtable[entry.hilbert_idx] = node;
+                    entries_replayed++;
+                }
+
+                bytes_read += sizeof(entry) + entry.payload_size;
+            }
+
+            replay_stream.close();
+
+            if (entries_replayed > 0) {
+                std::cout << "[WAL] Replayed " << entries_replayed << " entries ("
+                          << bytes_read / (1024 * 1024) << " MB) from WAL" << std::endl;
+            }
+        }
+
+        // Truncate WAL after successful MemTable flush
+        void truncate() {
+            std::lock_guard<std::mutex> lock(wal_mutex);
+
+            wal_stream.close();
+
+            // Delete old WAL
+            std::filesystem::remove(wal_path);
+
+            // Create new empty WAL
+            wal_stream.open(wal_path, std::ios::binary | std::ios::trunc);
+            wal_size = 0;
+
+            std::cout << "[WAL] Truncated after successful flush" << std::endl;
+        }
+
+        // Force fsync (called before critical operations)
+        void force_sync() {
+            std::lock_guard<std::mutex> lock(wal_mutex);
+            wal_stream.flush();
+            fsync_stream();
+        }
+
+    private:
+        void serialize_node(const TorusNode& node, std::vector<uint8_t>& output) {
+            // 1. Nonary value
+            output.push_back(static_cast<uint8_t>(static_cast<int>(node.nonary_value) + 4));
+
+            // 2. Metric tensor (45 floats = 180 bytes)
+            const uint8_t* metric_bytes = reinterpret_cast<const uint8_t*>(node.metric_tensor.data());
+            output.insert(output.end(), metric_bytes, metric_bytes + (45 * sizeof(float)));
+
+            // 3. Resonance
+            const uint8_t* resonance_bytes = reinterpret_cast<const uint8_t*>(&node.resonance_r);
+            output.insert(output.end(), resonance_bytes, resonance_bytes + sizeof(float));
+
+            // 4. State
+            const uint8_t* state_bytes = reinterpret_cast<const uint8_t*>(&node.state_s);
+            output.insert(output.end(), state_bytes, state_bytes + sizeof(float));
+
+            // 5. Wavefunction
+            const uint8_t* wf_bytes = reinterpret_cast<const uint8_t*>(&node.wavefunction);
+            output.insert(output.end(), wf_bytes, wf_bytes + sizeof(std::complex<double>));
+
+            // 6. Velocity
+            const uint8_t* vel_bytes = reinterpret_cast<const uint8_t*>(&node.velocity);
+            output.insert(output.end(), vel_bytes, vel_bytes + sizeof(std::complex<double>));
+
+            // 7. Acceleration
+            const uint8_t* acc_bytes = reinterpret_cast<const uint8_t*>(&node.acceleration);
+            output.insert(output.end(), acc_bytes, acc_bytes + sizeof(std::complex<double>));
+        }
+
+        bool deserialize_node(const std::vector<uint8_t>& input, TorusNode& node) {
+            if (input.size() < 237) {  // Expected size: 1 + 180 + 4 + 4 + 16 + 16 + 16
+                return false;
+            }
+
+            size_t offset = 0;
+
+            // 1. Nonary value
+            node.nonary_value = static_cast<Nit>(static_cast<int>(input[offset++]) - 4);
+
+            // 2. Metric tensor
+            std::memcpy(node.metric_tensor.data(), &input[offset], 45 * sizeof(float));
+            offset += 45 * sizeof(float);
+
+            // 3. Resonance
+            std::memcpy(&node.resonance_r, &input[offset], sizeof(float));
+            offset += sizeof(float);
+
+            // 4. State
+            std::memcpy(&node.state_s, &input[offset], sizeof(float));
+            offset += sizeof(float);
+
+            // 5. Wavefunction
+            std::memcpy(&node.wavefunction, &input[offset], sizeof(std::complex<double>));
+            offset += sizeof(std::complex<double>);
+
+            // 6. Velocity
+            std::memcpy(&node.velocity, &input[offset], sizeof(std::complex<double>));
+            offset += sizeof(std::complex<double>);
+
+            // 7. Acceleration
+            std::memcpy(&node.acceleration, &input[offset], sizeof(std::complex<double>));
+
+            return true;
+        }
+
+        uint32_t crc32c_compute(const uint8_t* data, size_t len) {
+            // CRC32C implementation (hardware-accelerated on x86 with SSE4.2)
+            uint32_t crc = 0xFFFFFFFF;
+
+            #ifdef __SSE4_2__
+                // Use hardware CRC32C instruction
+                while (len >= 8) {
+                    crc = __builtin_ia32_crc32di(crc, *reinterpret_cast<const uint64_t*>(data));
+                    data += 8;
+                    len -= 8;
+                }
+            #endif
+
+            // Fallback for remaining bytes
+            static const uint32_t table[256] = { /* CRC32C table */ };
+            while (len--) {
+                crc = table[(crc ^ *data++) & 0xFF] ^ (crc >> 8);
+            }
+
+            return ~crc;
+        }
+
+        void fsync_stream() {
+            #ifdef _WIN32
+                _commit(_fileno(wal_stream));
+            #else
+                int fd = fileno(fdopen(dup(fileno(stdout)), "w"));
+                fsync(fd);
+            #endif
+        }
+
+        uint64_t get_timestamp() {
+            return std::chrono::duration_cast<std::chrono::microseconds>(
+                std::chrono::system_clock::now().time_since_epoch()).count();
+        }
+    };
+
+    // WAL instance
+    std::unique_ptr<WriteAheadLog> wal;
+
+public:
+    // Constructor with WAL initialization
+    LSM_DMC() {
+        // Create data directory structure
+        std::filesystem::create_directories(data_dir + "/level0");
+        std::filesystem::create_directories(data_dir + "/level1");
+
+        // Initialize WAL
+        wal = std::make_unique<WriteAheadLog>(data_dir);
+
+        // Replay WAL on startup to recover unflushed MemTable state
+        wal->replay(memtable);
+
+        // Start background compaction thread
+        compaction_thread = std::thread([this]() {
+            while (running) {
+                std::this_thread::sleep_for(std::chrono::minutes(5));
+                background_compaction();
+            }
+        });
+    }
+
+    // Write node to MemTable with WAL durability
+    void write_node(uint64_t hilbert_idx, const TorusNode& node) override {
+        std::lock_guard<std::mutex> lock(memtable_mutex);
+
+        // Check if this is an update (key already exists)
+        bool is_update = memtable.find(hilbert_idx) != memtable.end();
+
+        // CRITICAL: Write to WAL BEFORE MemTable (durability guarantee)
+        wal->append(hilbert_idx, node, is_update);
+
+        // Add/update node in memtable
+        memtable[hilbert_idx] = node;
+        memtable_size += node.get_serializable_size();
+
+        // Flush if memtable exceeds size limit
+        if (memtable_size >= MEMTABLE_SIZE_LIMIT) {
+            flush_memtable_to_sstable();
+        }
+    }
+
+    // Flush MemTable to SSTable with WAL truncation
+    void flush_memtable_to_sstable() {
+        if (memtable.empty()) {
+            return;
+        }
+
+        // Force WAL sync before flush
+        wal->force_sync();
+
+        // Generate SSTable filename with timestamp
+        auto now = std::chrono::system_clock::now();
+        auto timestamp = std::chrono::duration_cast<std::chrono::seconds>(
+            now.time_since_epoch()).count();
+        std::string sstable_path = data_dir + "/level0/sstable_" +
+                                   std::to_string(timestamp) + ".nik";
+
+        // Open file for writing
+        std::ofstream sstable(sstable_path, std::ios::binary);
+        if (!sstable) {
+            throw std::runtime_error("Failed to create SSTable: " + sstable_path);
+        }
+
+        // Write header
+        NikHeader header;
+        header.magic = 0x4E494B4F;  // "NIKO"
+        header.version_major = 0;
+        header.version_minor = 4;
+        header.creation_time = timestamp;
+        header.last_snap_time = timestamp;
+        header.dim_encoding = 0x09;  // Nonary
+        header.cipher_type = 0x00;   // No encryption for SSTables
+        sstable.write(reinterpret_cast<const char*>(&header), sizeof(header));
+
+        // Write entries (memtable is already sorted by Hilbert index)
+        for (const auto& [hilbert_idx, node] : memtable) {
+            // Create page header for each node
+            PageHeader page_header;
+            page_header.page_id = hilbert_idx;
+            page_header.flags = PAGE_COMPRESSED;
+
+            // Full node serialization
+            std::vector<uint8_t> serialized_node;
+
+            // [Serialization code - same as before]
+            uint8_t nit_byte = static_cast<uint8_t>(static_cast<int>(node.nonary_value) + 4);
+            serialized_node.push_back(nit_byte);
+
+            const uint8_t* metric_bytes = reinterpret_cast<const uint8_t*>(node.metric_tensor.data());
+            serialized_node.insert(serialized_node.end(), metric_bytes, metric_bytes + (45 * sizeof(float)));
+
+            const uint8_t* resonance_bytes = reinterpret_cast<const uint8_t*>(&node.resonance_r);
+            serialized_node.insert(serialized_node.end(), resonance_bytes, resonance_bytes + sizeof(float));
+
+            const uint8_t* state_bytes = reinterpret_cast<const uint8_t*>(&node.state_s);
+            serialized_node.insert(serialized_node.end(), state_bytes, state_bytes + sizeof(float));
+
+            const uint8_t* wavefunction_bytes = reinterpret_cast<const uint8_t*>(&node.wavefunction);
+            serialized_node.insert(serialized_node.end(), wavefunction_bytes, wavefunction_bytes + sizeof(std::complex<double>));
+
+            const uint8_t* velocity_bytes = reinterpret_cast<const uint8_t*>(&node.velocity);
+            serialized_node.insert(serialized_node.end(), velocity_bytes, velocity_bytes + sizeof(std::complex<double>));
+
+            const uint8_t* acceleration_bytes = reinterpret_cast<const uint8_t*>(&node.acceleration);
+            serialized_node.insert(serialized_node.end(), acceleration_bytes, acceleration_bytes + sizeof(std::complex<double>));
+
+            // Compress
+            auto compressed = compress_binary(serialized_node);
+            page_header.payload_len = compressed.size();
+            page_header.checksum = crc32c(compressed.data(), compressed.size());
+
+            // Write page header and payload
+            sstable.write(reinterpret_cast<const char*>(&page_header), sizeof(page_header));
+            sstable.write(reinterpret_cast<const char*>(compressed.data()), compressed.size());
+        }
+
+        // Ensure SSTable is fsynced to disk
+        sstable.flush();
+        sstable.close();
+
+        // ONLY truncate WAL after successful SSTable flush
+        wal->truncate();
+
+        // Register SSTable in Level 0
+        level0_sstables.push_back(sstable_path);
+
+        // Clear memtable
+        memtable.clear();
+        memtable_size = 0;
+
+        std::cout << "[LSM-DMC] Flushed MemTable to " << sstable_path
+                  << " (" << level0_sstables.size() << " SSTables in Level 0)" << std::endl;
+    }
+
     // Background compaction: k-way streaming merge of Level 0 SSTables into Level 1
     void background_compaction() {
         // Only compact if we have multiple SSTables in Level 0

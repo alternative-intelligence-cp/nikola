@@ -78,7 +78,7 @@ private:
 
 ## 24.2.5 Core Function
 
-**Image Injection (Holographic Encoding):**
+**Image Injection with Local Phase Modulation:**
 
 ```cpp
 void VisualCymaticsEngine::inject_image(const cv::Mat& image) {
@@ -86,14 +86,15 @@ void VisualCymaticsEngine::inject_image(const cv::Mat& image) {
     cv::Mat resized;
     cv::resize(image, resized, cv::Size(81, 81));
 
-    // Phase offsets for holographic encoding (in radians)
-    const double RED_PHASE_OFFSET = 0.0;           // 0° for red channel
-    const double GREEN_PHASE_OFFSET = M_PI / 3.0;  // 60° for green channel
-    const double BLUE_PHASE_OFFSET = 2.0 * M_PI / 3.0;  // 120° for blue channel
+    // Base phase offsets for RGB color separation
+    const double RED_PHASE_BASE = 0.0;           // 0° for red channel
+    const double GREEN_PHASE_BASE = M_PI / 3.0;  // 60° for green channel
+    const double BLUE_PHASE_BASE = 2.0 * M_PI / 3.0;  // 120° for blue channel
 
-    // Local wave injection: Each pixel directly modifies the wave state at its spatial coordinate
-    // rather than modulating global emitter state. This preserves spatial information across
-    // the entire image during holographic encoding.
+    // Spatial frequency carrier for local phase modulation
+    // Creates spatially-varying phase field that encodes position information
+    const double SPATIAL_FREQUENCY_X = 2.0 * M_PI / 81.0;  // One cycle per grid
+    const double SPATIAL_FREQUENCY_Y = 2.0 * M_PI / 81.0;
 
     for (int y = 0; y < resized.rows; ++y) {
         for (int x = 0; x < resized.cols; ++x) {
@@ -108,24 +109,43 @@ void VisualCymaticsEngine::inject_image(const cv::Mat& image) {
             Coord9D coord;
             coord.coords = {0, 0, 0, 0, 0, 0, static_cast<int32_t>(x), static_cast<int32_t>(y), 0};
 
-            // Compute local wave interference from three phase-offset channels
-            // Each color creates a wave with specific phase and amplitude
-            std::complex<double> red_wave(red_amp * cos(RED_PHASE_OFFSET), red_amp * sin(RED_PHASE_OFFSET));
-            std::complex<double> green_wave(green_amp * cos(GREEN_PHASE_OFFSET), green_amp * sin(GREEN_PHASE_OFFSET));
-            std::complex<double> blue_wave(blue_amp * cos(BLUE_PHASE_OFFSET), blue_amp * sin(BLUE_PHASE_OFFSET));
+            // Local phase modulation: encodes spatial position into phase
+            // This creates a holographic interference pattern where position information
+            // is distributed across the entire wavefield (true holography)
+            double phase_x = SPATIAL_FREQUENCY_X * x;
+            double phase_y = SPATIAL_FREQUENCY_Y * y;
+            double local_phase = phase_x + phase_y;
 
-            // Superposition: add all three color channels
+            // Create phase-modulated carrier waves for each color channel
+            // Each pixel contributes a locally phase-modulated wave packet
+            std::complex<double> red_wave(
+                red_amp * cos(RED_PHASE_BASE + local_phase),
+                red_amp * sin(RED_PHASE_BASE + local_phase)
+            );
+
+            std::complex<double> green_wave(
+                green_amp * cos(GREEN_PHASE_BASE + local_phase),
+                green_amp * sin(GREEN_PHASE_BASE + local_phase)
+            );
+
+            std::complex<double> blue_wave(
+                blue_amp * cos(BLUE_PHASE_BASE + local_phase),
+                blue_amp * sin(BLUE_PHASE_BASE + local_phase)
+            );
+
+            // Superposition: add all three color channels with local phase encoding
             std::complex<double> combined_wave = red_wave + green_wave + blue_wave;
 
-            // Inject the combined wave LOCALLY at this coordinate
-            // This directly modifies the node.wavefunction at (x, y) without affecting global state
+            // Inject the phase-modulated wave LOCALLY at this coordinate
+            // The local phase modulation creates interference fringes that encode
+            // spatial information distributively across the hologram
             torus.inject_wave_at_coord(coord, combined_wave);
         }
     }
 
     // Propagate waves for holographic encoding
-    // The three phase-offset channels will interfere to create a holographic pattern
-    // Natural wave diffusion spreads spatial information across neighboring nodes
+    // Local phase modulation creates interference patterns that spread position
+    // information across neighboring nodes, enabling holographic reconstruction
     for (int step = 0; step < 100; ++step) {
         torus.propagate(0.01);
     }

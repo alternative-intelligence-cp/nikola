@@ -1120,9 +1120,876 @@ Each class follows the template in Section 6.8.2, ensuring consistent applicatio
 After PIMPL refactoring:
 - **Header stability test:** Modify private Impl member → verify zero dependent recompilations
 - **ABI compatibility test:** Compile module against old headers → verify runtime compatibility
-- **Performance regression test:** Benchmark critical paths → verify <2% overhead
+
+### 6.8.5 PIMPL Standardization Enforcement
+
+**Consistency Requirements:**
+
+All classes in the PIMPL target list (Section 6.8.1) MUST follow these standardized patterns:
+
+**1. Header Structure (Public Interface):**
+
+```cpp
+class TargetClass {
+public:
+    // Rule of Five (MANDATORY for PIMPL classes)
+    TargetClass(/* constructor parameters */);
+    ~TargetClass();
+    TargetClass(const TargetClass& other);
+    TargetClass& operator=(const TargetClass& other);
+    TargetClass(TargetClass&& other) noexcept;
+    TargetClass& operator=(TargetClass&& other) noexcept;
+
+    // Public API only (no public data members)
+    // ...
+
+private:
+    // MANDATORY: Forward-declared Impl struct
+    struct Impl;
+    std::unique_ptr<Impl> pimpl;  // MUST be named 'pimpl'
+};
+```
+
+**2. Implementation File (Private Implementation):**
+
+```cpp
+// MANDATORY: Define Impl structure in .cpp file
+struct TargetClass::Impl {
+    // ALL private state goes here
+    // Complex data structures, caches, mutexes, etc.
+
+    // Constructor must match public class constructor
+    Impl(/* matching parameters */) {
+        // Initialize all private state
+    }
+};
+
+// MANDATORY: Define destructor in .cpp (enables unique_ptr<Impl>)
+TargetClass::~TargetClass() = default;
+
+// MANDATORY: Implement Rule of Five
+TargetClass::TargetClass(const TargetClass& other)
+    : pimpl(std::make_unique<Impl>(*other.pimpl)) {}
+
+TargetClass& TargetClass::operator=(const TargetClass& other) {
+    if (this != &other) {
+        pimpl = std::make_unique<Impl>(*other.pimpl);
+    }
+    return *this;
+}
+
+TargetClass::TargetClass(TargetClass&& other) noexcept = default;
+TargetClass& TargetClass::operator=(TargetClass&& other) noexcept = default;
+```
+
+**3. Common Pitfalls to Avoid:**
+
+| Anti-Pattern | Issue | Fix |
+|-------------|-------|-----|
+| Inline destructor in header | `unique_ptr<Impl>` cannot compile (incomplete type) | Define `~TargetClass()` in `.cpp` file |
+| Public data members | Breaks ABI stability on changes | Move ALL data to `Impl` struct |
+| Mixed PIMPL/non-PIMPL privates | Partial ABI instability | ALL private state in `Impl`, no exceptions |
+| Impl* raw pointer | Manual memory management, leak risks | Always use `std::unique_ptr<Impl>` |
+| Forgetting Rule of Five | Copy/move operations fail or corrupt state | Implement all 5 special member functions |
+
+**4. Enforcement Checklist:**
+
+For each class in Section 6.8.1, verify:
+
+- [ ] Header contains ONLY: public API + `struct Impl;` forward declaration + `std::unique_ptr<Impl> pimpl;`
+- [ ] No `#include` of complex dependencies in header (only forward declarations)
+- [ ] Destructor defined in `.cpp` file (not inline in header)
+- [ ] Rule of Five fully implemented in `.cpp` file
+- [ ] ALL private state moved to `Impl` struct (zero private members in public class)
+- [ ] Method implementations delegate to `pimpl->method()` calls
+
+**5. Code Review Requirements:**
+
+When modifying PIMPL classes:
+
+1. **Header changes:** Only permitted for public API additions (rare)
+2. **Private state additions:** MUST go in `Impl` struct, never in public class
+3. **Binary compatibility:** Run ABI checker (`abidiff`) on `.so` files before merge
+4. **Build time verification:** Measure incremental build time after Impl changes (<10 files rebuilt)
+
+**6. Automated Verification:**
+
+```bash
+#!/bin/bash
+# File: scripts/verify_pimpl_compliance.sh
+
+# Check that PIMPL classes don't have private data members in headers
+for class in TorusManifold Mamba9D MultiHeadWaveAttention TorusDatabase \
+             Orchestrator ExternalToolManager HilbertMapper VisualCymaticsEngine; do
+    header="include/nikola/**/${class}.hpp"
+
+    # Verify 'struct Impl;' forward declaration exists
+    grep -q "struct Impl;" "$header" || echo "ERROR: $class missing Impl forward declaration"
+
+    # Verify unique_ptr<Impl> pimpl; exists
+    grep -q "std::unique_ptr<Impl> pimpl;" "$header" || echo "ERROR: $class missing pimpl member"
+
+    # Verify no private data members (except pimpl)
+    private_section=$(sed -n '/^private:/,/^public:/p' "$header")
+    private_vars=$(echo "$private_section" | grep -E '^\s+[a-zA-Z]' | grep -v pimpl)
+
+    if [ -n "$private_vars" ]; then
+        echo "ERROR: $class has private members outside Impl:"
+        echo "$private_vars"
+    fi
+done
+```
+
+This script can be integrated into CI/CD pipelines to prevent PIMPL pattern violations.
+
+## 6.9 Header Dependency Management
+
+**Status:** MANDATORY - Required for build performance and modularity
+
+### 6.9.1 Problem: Header Dependency Bloat
+
+**Common Issues:**
+
+1. **Transitive inclusion explosion:** Single `#include` pulls in 50+ headers
+2. **Template instantiation duplication:** Same template instantiated in 100+ translation units
+3. **Cascading recompilation:** Change one header → rebuild entire project
+4. **Increased binary size:** Duplicate template code in every object file
+
+**Impact Metrics:**
+
+| Issue | Without Management | With Management |
+|-------|-------------------|-----------------|
+| Clean build time | 15-30 minutes | 3-5 minutes |
+| Incremental rebuild | 5-10 minutes | <30 seconds |
+| Binary size | 200-500 MB | 50-100 MB |
+| Link time | 2-5 minutes | <30 seconds |
+
+### 6.9.2 Header Dependency Guidelines
+
+**1. Prefer Forward Declarations:**
+
+```cpp
+// BAD: Heavy include in header
+// File: include/nikola/cognitive/processor.hpp
+#include "nikola/physics/torus_manifold.hpp"  // Pulls in 20+ headers
+
+class Processor {
+    TorusManifold torus;  // Full type required
+public:
+    void process();
+};
+```
+
+```cpp
+// GOOD: Forward declaration + pointer/reference
+// File: include/nikola/cognitive/processor.hpp
+namespace nikola::physics { class TorusManifold; }  // Forward declaration only
+
+class Processor {
+    TorusManifold* torus;  // Pointer doesn't need complete type
+public:
+    void process();
+};
+```
+
+**2. Minimize Header Includes:**
+
+**Header Include Rules:**
+
+| Include Type | When to Use | Example |
+|-------------|-------------|---------|
+| Forward declaration | Pointers, references, return types | `class Foo;` |
+| Include in header | Base classes, value members, templates | `#include "base.hpp"` |
+| Include in .cpp | Implementation details only | `#include "helper.hpp"` |
+
+**3. Separate Template Declarations and Definitions:**
+
+```cpp
+// File: include/nikola/math/matrix.hpp
+#pragma once
+
+template<typename T, size_t N>
+class Matrix {
+public:
+    Matrix();
+    void multiply(const Matrix& other);
+    T determinant() const;
+
+private:
+    std::array<T, N * N> data;
+};
+
+// Template implementation in separate file (not automatically included)
+// Users must explicitly include this file only when instantiating templates
+// File: include/nikola/math/matrix.tcc
+#include "matrix.hpp"
+
+template<typename T, size_t N>
+Matrix<T, N>::Matrix() : data{} {}
+
+template<typename T, size_t N>
+void Matrix<T, N>::multiply(const Matrix& other) {
+    // Complex implementation here
+    // Only compiled when explicitly instantiated
+}
+
+template<typename T, size_t N>
+T Matrix<T, N>::determinant() const {
+    // Complex implementation
+}
+```
+
+**4. Explicit Template Instantiation:**
+
+```cpp
+// File: src/math/matrix_instantiations.cpp
+#include "nikola/math/matrix.tcc"
+
+// Explicitly instantiate common types
+template class Matrix<float, 3>;
+template class Matrix<float, 4>;
+template class Matrix<double, 3>;
+template class Matrix<double, 4>;
+template class Matrix<std::complex<double>, 9>;
+
+// Now other translation units can use these without including .tcc
+```
+
+**5. Extern Template Declarations:**
+
+```cpp
+// File: include/nikola/math/matrix.hpp
+#pragma once
+
+template<typename T, size_t N>
+class Matrix { /* ... */ };
+
+// Declare that these instantiations exist in matrix_instantiations.cpp
+extern template class Matrix<float, 3>;
+extern template class Matrix<float, 4>;
+extern template class Matrix<double, 3>;
+extern template class Matrix<double, 4>;
+extern template class Matrix<std::complex<double>, 9>;
+
+// Compiler will NOT instantiate these types in translation units that include this header
+// Instead, it will link against the pre-compiled instantiations
+```
+
+### 6.9.3 Header Organization Strategy
+
+**Standard Header Structure:**
+
+```cpp
+// File: include/nikola/cognitive/processor.hpp
+#pragma once
+
+// 1. Standard library (lightweight headers only)
+#include <cstdint>
+#include <memory>
+
+// 2. Forward declarations (prefer over includes)
+namespace nikola::physics { class TorusManifold; }
+namespace nikola::mamba { class Mamba9D; }
+
+// 3. Essential includes (only if absolutely necessary)
+#include "nikola/core/types.hpp"  // Lightweight type definitions
+
+namespace nikola::cognitive {
+
+// 4. Class declaration (interface only)
+class Processor {
+public:
+    // Public API
+    void process(TorusManifold& torus);  // Reference doesn't need complete type
+
+private:
+    // 5. PIMPL for complex private state
+    struct Impl;
+    std::unique_ptr<Impl> pimpl;
+};
+
+} // namespace nikola::cognitive
+```
+
+### 6.9.4 Dependency Audit and Enforcement
+
+**Automated Dependency Checker:**
+
+```bash
+#!/bin/bash
+# File: scripts/check_header_dependencies.sh
+
+# Check that headers don't include heavy dependencies
+HEAVY_HEADERS=(
+    "opencv2/opencv.hpp"
+    "torch/torch.h"
+    "Eigen/Dense"
+    "boost/asio.hpp"
+)
+
+for header in include/nikola/**/*.hpp; do
+    for heavy in "${HEAVY_HEADERS[@]}"; do
+        if grep -q "#include <$heavy>" "$header" || grep -q "#include \"$heavy\"" "$header"; then
+            echo "ERROR: $header includes heavy dependency: $heavy"
+            echo "  Fix: Move include to .cpp file or use forward declaration"
+        fi
+    done
+
+    # Check for circular dependencies
+    included_files=$(grep -E '^#include' "$header" | sed 's/#include [<"]\(.*\)[>"]/\1/')
+
+    for inc in $included_files; do
+        if [ -f "include/$inc" ]; then
+            # Check if included file includes us back (circular dependency)
+            inc_includes=$(grep -E '^#include' "include/$inc" | sed 's/#include [<"]\(.*\)[>"]/\1/')
+
+            for inc_inc in $inc_includes; do
+                if [ "include/$inc_inc" == "$header" ]; then
+                    echo "ERROR: Circular dependency detected: $header <-> include/$inc"
+                fi
+            done
+        fi
+    done
+done
+
+# Measure header weight (number of transitive includes)
+echo ""
+echo "Header Weight Report (transitive includes):"
+for header in include/nikola/**/*.hpp; do
+    weight=$(g++ -M -I include "$header" 2>/dev/null | wc -w)
+    echo "$header: $weight dependencies"
+
+    if [ "$weight" -gt 100 ]; then
+        echo "  WARNING: Heavy header (>100 dependencies)"
+    fi
+done
+```
+
+### 6.9.5 Build System Integration
+
+**CMake Explicit Template Instantiation:**
+
+```cmake
+# File: src/math/CMakeLists.txt
+
+# Separate template instantiation compilation unit
+add_library(nikola_math_instantiations OBJECT
+    matrix_instantiations.cpp
+    complex_utils_instantiations.cpp
+)
+
+# Link instantiations into main library
+target_link_libraries(nikola_math
+    PRIVATE nikola_math_instantiations
+)
+
+# Enable LTO for template instantiations (removes duplicates)
+set_target_properties(nikola_math_instantiations PROPERTIES
+    INTERPROCEDURAL_OPTIMIZATION TRUE
+)
+```
+
+**Precompiled Header Configuration:**
+
+```cmake
+# File: CMakeLists.txt
+
+# Create precompiled header for stable, commonly-used headers
+target_precompile_headers(nikola_core
+    PUBLIC
+        <cstdint>
+        <memory>
+        <string>
+        <vector>
+    PRIVATE
+        <algorithm>
+        <iostream>
+)
+
+# Don't precompile heavy headers (defeats incremental builds)
+# These should be included only in .cpp files that need them
+```
+
+### 6.9.6 Enforcement Checklist
+
+**For Every New Header:**
+
+- [ ] Includes ONLY lightweight standard library headers (`<cstdint>`, `<memory>`, etc.)
+- [ ] Uses forward declarations for all classes from other modules
+- [ ] No includes of heavy dependencies (OpenCV, Eigen, Boost, etc.)
+- [ ] Template implementations in separate `.tcc` file (not inline in header)
+- [ ] Explicit template instantiations provided for common types
+- [ ] Header weight <50 transitive dependencies (verify with `g++ -M`)
+
+**For Every Class:**
+
+- [ ] Uses PIMPL pattern if it has complex private state (see Section 6.8)
+- [ ] Public API uses only pointers/references to external types (no value members)
+- [ ] Implementation details (`#include` statements) in `.cpp` file only
+
+**Code Review Red Flags:**
+
+| Pattern | Issue | Action |
+|---------|-------|--------|
+| `#include <opencv2/opencv.hpp>` in header | 100+ dependencies | Move to `.cpp` file |
+| Template implementation inline in class | Code duplication across translation units | Move to `.tcc` file |
+| No forward declarations | Forces include of full headers | Add forward declarations |
+| Public data members | Requires complete type, breaks encapsulation | Make private, add accessors |
+| `#include "impl_details.hpp"` in public header | Exposes internal implementation | Use PIMPL or move to .cpp |
+
+### 6.9.7 Performance Metrics
+
+**Expected Build Time Improvements:**
+
+| Optimization | Clean Build | Incremental Build | Binary Size |
+|-------------|-------------|-------------------|-------------|
+| Baseline (no optimization) | 25 minutes | 8 minutes | 450 MB |
+| + Forward declarations | 18 minutes | 5 minutes | 450 MB |
+| + PIMPL pattern | 15 minutes | 2 minutes | 450 MB |
+| + Explicit template instantiation | 8 minutes | 1 minute | 180 MB |
+| + Precompiled headers | 5 minutes | 30 seconds | 180 MB |
+| + Link-time optimization (LTO) | 6 minutes | 30 seconds | 120 MB |
+
+**Incremental Build Test:**
+
+```bash
+# Measure incremental build time after modifying implementation
+touch src/physics/torus_manifold.cpp
+time make -j$(nproc)
+
+# Target: <30 seconds for single-file modification
+# If >2 minutes, header dependencies need refactoring
+```
+
+## 6.10 Relevance Gating Transformer
+
+**Status:** MANDATORY - Required for cognitive filtering and data quality
+
+### 6.10.1 Biological Motivation: Reticular Activating System
+
+The human brain's **Reticular Activating System (RAS)** filters sensory input before it reaches conscious awareness, preventing cognitive overload from millions of irrelevant stimuli. The Relevance Gating Transformer (RGT) implements this mechanism computationally.
+
+**Key Functions:**
+1. **Noise Suppression:** Filters irrelevant data from external sources (web searches, tool outputs)
+2. **Semantic Protection:** Prevents junk data from polluting the torus manifold's learned correlations
+3. **Resource Conservation:** Blocks low-relevance data before expensive 9D wave injection
+4. **Attention Modulation:** Dynamic filtering threshold coupled to neurochemical state
+
+**Architecture Position:**
+
+```
+External Tool → [RGT Filter] → Nonary Embedder → Torus Manifold
+    Results        (Gate)         (Quantize)        (Store)
+```
+
+### 6.10.2 Implementation
+
+**Header Definition:**
+
+```cpp
+// File: include/nikola/cognitive/relevance_filter.hpp
+#pragma once
+
+#include "nikola/reasoning/embedder.hpp"
+#include "nikola/autonomy/neurochemistry.hpp"
+#include <string>
+#include <vector>
+#include <cmath>
+
+namespace nikola::cognitive {
+
+class RelevanceGatingTransformer {
+private:
+    NonaryEmbedder& embedder;
+    ExtendedNeurochemistry& engs;
+
+    // Base threshold for relevance (cosine similarity)
+    double base_threshold;
+
+    // Logging
+    std::shared_ptr<spdlog::logger> logger;
+
+public:
+    RelevanceGatingTransformer(NonaryEmbedder& emb,
+                               ExtendedNeurochemistry& neuro,
+                               double threshold = 0.6)
+        : embedder(emb),
+          engs(neuro),
+          base_threshold(threshold),
+          logger(spdlog::get("rgt")) {
+
+        if (!logger) {
+            logger = spdlog::stdout_color_mt("rgt");
+        }
+    }
+
+    struct GatingResult {
+        bool passed;                    // True if data exceeds threshold
+        double relevance_score;         // Cosine similarity [0, 1]
+        double current_threshold;       // Dynamic threshold used
+        std::string filtered_content;   // Empty if rejected
+        std::string rejection_reason;   // Why data was filtered
+    };
+
+    // Main filtering function
+    GatingResult filter(const std::string& query, const std::string& content);
+
+    // Batch filtering for multiple results
+    std::vector<GatingResult> filter_batch(const std::string& query,
+                                          const std::vector<std::string>& results);
+
+private:
+    // Compute cosine similarity between two vectors
+    double compute_similarity(const std::vector<float>& vec_a,
+                             const std::vector<float>& vec_b);
+
+    // Calculate neurochemically-modulated threshold
+    double get_dynamic_threshold();
+};
+
+} // namespace nikola::cognitive
+```
+
+**Core Implementation:**
+
+```cpp
+// File: src/cognitive/relevance_filter.cpp
+
+#include "nikola/cognitive/relevance_filter.hpp"
+#include <numeric>
+#include <algorithm>
+
+namespace nikola::cognitive {
+
+RelevanceGatingTransformer::GatingResult
+RelevanceGatingTransformer::filter(const std::string& query, const std::string& content) {
+
+    // 1. Early rejection: empty content
+    if (content.empty() || content.size() < 10) {
+        return GatingResult{
+            .passed = false,
+            .relevance_score = 0.0,
+            .current_threshold = base_threshold,
+            .filtered_content = "",
+            .rejection_reason = "Content too short (< 10 chars)"
+        };
+    }
+
+    // 2. Vectorize Query and Content (Float precision, pre-quantization)
+    // This happens BEFORE nonary quantization to preserve similarity granularity
+    std::vector<float> query_vec = embedder.vectorize_text(query);
+    std::vector<float> content_vec = embedder.vectorize_text(content);
+
+    // 3. Compute Semantic Relevance (Cosine Similarity)
+    double relevance = compute_similarity(query_vec, content_vec);
+
+    // 4. Calculate Dynamic Threshold based on Neurochemistry
+    double dynamic_threshold = get_dynamic_threshold();
+
+    GatingResult result;
+    result.relevance_score = relevance;
+    result.current_threshold = dynamic_threshold;
+
+    // 5. Gate Data
+    if (relevance >= dynamic_threshold) {
+        result.passed = true;
+        result.filtered_content = content;
+
+        logger->info("✓ Data ACCEPTED | Score: {:.3f} >= Threshold: {:.3f} | Length: {} chars",
+                    relevance, dynamic_threshold, content.size());
+
+    } else {
+        result.passed = false;
+        result.filtered_content = "";
+        result.rejection_reason = "Low relevance: " + std::to_string(relevance) +
+                                 " < " + std::to_string(dynamic_threshold);
+
+        logger->debug("✗ Data REJECTED (Noise) | Score: {:.3f} < Threshold: {:.3f}",
+                     relevance, dynamic_threshold);
+    }
+
+    return result;
+}
+
+std::vector<RelevanceGatingTransformer::GatingResult>
+RelevanceGatingTransformer::filter_batch(const std::string& query,
+                                        const std::vector<std::string>& results) {
+    std::vector<GatingResult> filtered_results;
+    filtered_results.reserve(results.size());
+
+    // Pre-compute query vector once for batch efficiency
+    std::vector<float> query_vec = embedder.vectorize_text(query);
+    double dynamic_threshold = get_dynamic_threshold();
+
+    for (const auto& content : results) {
+        if (content.empty()) {
+            filtered_results.push_back(GatingResult{false, 0.0, dynamic_threshold, "", "Empty content"});
+            continue;
+        }
+
+        std::vector<float> content_vec = embedder.vectorize_text(content);
+        double relevance = compute_similarity(query_vec, content_vec);
+
+        GatingResult result;
+        result.relevance_score = relevance;
+        result.current_threshold = dynamic_threshold;
+
+        if (relevance >= dynamic_threshold) {
+            result.passed = true;
+            result.filtered_content = content;
+        } else {
+            result.passed = false;
+            result.rejection_reason = "Relevance too low";
+        }
+
+        filtered_results.push_back(result);
+    }
+
+    // Log batch statistics
+    size_t passed = std::count_if(filtered_results.begin(), filtered_results.end(),
+                                  [](const auto& r) { return r.passed; });
+
+    logger->info("Batch filter: {}/{} results passed ({}% acceptance rate)",
+                passed, results.size(), (passed * 100) / results.size());
+
+    return filtered_results;
+}
+
+double RelevanceGatingTransformer::compute_similarity(const std::vector<float>& vec_a,
+                                                      const std::vector<float>& vec_b) {
+    if (vec_a.size() != vec_b.size()) {
+        logger->warn("Vector dimension mismatch: {} vs {}", vec_a.size(), vec_b.size());
+        return 0.0;
+    }
+
+    if (vec_a.empty()) return 0.0;
+
+    // Dot product
+    double dot_product = std::inner_product(vec_a.begin(), vec_a.end(),
+                                           vec_b.begin(), 0.0);
+
+    // Norms
+    double norm_a = std::sqrt(std::inner_product(vec_a.begin(), vec_a.end(),
+                                                 vec_a.begin(), 0.0));
+    double norm_b = std::sqrt(std::inner_product(vec_b.begin(), vec_b.end(),
+                                                 vec_b.begin(), 0.0));
+
+    if (norm_a < 1e-10 || norm_b < 1e-10) return 0.0;
+
+    return dot_product / (norm_a * norm_b);
+}
+
+double RelevanceGatingTransformer::get_dynamic_threshold() {
+    // High Norepinephrine (Arousal/Alert) → Lower threshold (hyper-aware, catch more data)
+    // Low Norepinephrine (Calm/Sleepy) → Higher threshold (filter aggressively)
+
+    double norepinephrine = engs.get_norepinephrine_level();  // [0.0, 1.0]
+
+    // Dynamic threshold formula:
+    // Base: 0.6 (default)
+    // N=1.0 (Panic/Hyper-alert) → Threshold drops to ~0.3 (let everything in)
+    // N=0.5 (Normal) → Threshold = 0.45 (moderate filtering)
+    // N=0.0 (Sleepy) → Threshold rises to 0.75 (aggressive filtering)
+
+    double threshold = base_threshold - (norepinephrine * 0.3);
+
+    // Clamp to reasonable bounds
+    threshold = std::clamp(threshold, 0.1, 0.95);
+
+    return threshold;
+}
+
+} // namespace nikola::cognitive
+```
+
+### 6.10.3 Embedder Extension
+
+**Add vectorization method to NonaryEmbedder:**
+
+```cpp
+// File: include/nikola/reasoning/embedder.hpp
+
+class NonaryEmbedder {
+    TinyTransformer encoder;
+    Tokenizer tokenizer;
+
+public:
+    // Existing method: Full pipeline (tokenize → encode → quantize)
+    std::vector<Nit> embed(const std::string& text);
+
+    // NEW: Expose raw float vectors before quantization
+    // Required by RelevanceGatingTransformer for similarity computation
+    std::vector<float> vectorize_text(const std::string& text) {
+        auto tokens = tokenizer.encode(text);
+        return encoder.forward(tokens);  // Returns float vector
+    }
+};
+```
+
+### 6.10.4 Orchestrator Integration
+
+**Update ProductionOrchestrator to include filtering:**
+
+```cpp
+// File: include/nikola/infrastructure/orchestrator.hpp
+
+class ProductionOrchestrator {
+    TorusManifold& torus;
+    ExternalToolManager& tools;
+    NonaryEmbedder& embedder;
+    ExtendedNeurochemistry& neurochemistry;
+
+    // NEW: Relevance filter
+    RelevanceGatingTransformer relevance_filter;
+
+public:
+    ProductionOrchestrator(/* ... */)
+        : /* ... */,
+          relevance_filter(embedder, neurochemistry, 0.6) {}  // Base threshold: 0.6
+
+    std::string process_query_impl(const std::string& query) override {
+        // 1. Select appropriate tool
+        std::string tool_name = select_tool(query);
+
+        // 2. Execute tool to get raw data
+        std::string raw_data = tools.execute_tool(tool_name, query);
+
+        // 3. CRITICAL: Gate data through relevance filter
+        auto gating_result = relevance_filter.filter(query, raw_data);
+
+        if (gating_result.passed) {
+            // Data is relevant - proceed with embedding and storage
+
+            // 4. Embed filtered content into nonary
+            auto nonary_embedding = embedder.embed(gating_result.filtered_content);
+
+            // 5. Inject into torus manifold
+            store_in_torus(nonary_embedding);
+
+            // 6. Reinforce pathway (neuroplasticity)
+            reinforce_pathway(query, gating_result.filtered_content);
+
+            // 7. Update neurochemistry (reward for finding relevant data)
+            neurochemistry.reward(0.05);  // Small dopamine boost
+
+            return gating_result.filtered_content;
+
+        } else {
+            // Data rejected as noise - do NOT store, do NOT reinforce
+            // This protects the torus from semantic pollution
+
+            logger->debug("Query result filtered as irrelevant: {}",
+                         gating_result.rejection_reason);
+
+            // Optional: Return filtered response to user
+            return "Data retrieved but filtered as irrelevant (low similarity: " +
+                   std::to_string(gating_result.relevance_score) + ")";
+        }
+    }
+};
+```
+
+### 6.10.5 Performance Characteristics
+
+**Computational Complexity:**
+
+| Operation | Complexity | Time (typical) |
+|-----------|-----------|----------------|
+| Vectorization (query) | O(N) where N = text length | ~2-5ms |
+| Vectorization (result) | O(N) | ~2-5ms |
+| Cosine similarity | O(D) where D = embedding dim | ~0.1ms |
+| **Total per result** | O(N + D) | **~5-10ms** |
+
+**Comparison to Full Pipeline:**
+
+| Stage | With Filter | Without Filter |
+|-------|-------------|----------------|
+| Vectorization | 5ms | 5ms |
+| Relevance check | 0.1ms | - |
+| Nonary quantization | 1ms (if passed) | 1ms |
+| Wave injection | 10ms (if passed) | 10ms |
+| Wave propagation | 50ms (if passed) | 50ms |
+| **Total (irrelevant data)** | **5.1ms** | **66ms** |
+| **Savings** | **92% reduction** | - |
+
+**Resource Conservation:**
+
+For a batch of 10 search results where 7 are irrelevant:
+- **Without filter:** 10 × 66ms = 660ms total
+- **With filter:** 7 × 5.1ms + 3 × 66ms = 233ms total
+- **Improvement:** 65% faster processing
+
+### 6.10.6 Neurochemical Coupling
+
+**Dynamic Threshold Examples:**
+
+| Norepinephrine | State | Threshold | Behavior |
+|---------------|-------|-----------|----------|
+| 1.0 (Panic) | Hyper-alert | 0.3 | Accepts almost everything (paranoid attention) |
+| 0.8 (Alert) | Focused | 0.36 | Accepts most relevant data |
+| 0.5 (Normal) | Balanced | 0.45 | Moderate filtering (default) |
+| 0.2 (Relaxed) | Calm | 0.54 | Aggressive filtering |
+| 0.0 (Sleeping) | Drowsy | 0.6 | Extremely selective (near-unconscious) |
+
+**Adaptive Behavior:**
+
+When the system detects high uncertainty or critical queries (via ENGS), norepinephrine rises, lowering the threshold to capture more potential information. During routine operations, the threshold remains high to maintain data quality.
+
+### 6.10.7 Benefits
+
+**1. Semantic Purity:**
+
+Prevents junk data from corrupting metric tensor correlations in the torus. Only semantically relevant information creates wave patterns.
+
+**2. Computational Efficiency:**
+
+- Cosine similarity: O(D) where D ≈ 512 (embedding dimension)
+- Wave injection: O(N × P) where N = active nodes (~10⁵), P = propagation steps (~100)
+- **Efficiency gain:** ~92% reduction in wasted computation
+
+**3. Biological Plausibility:**
+
+Mirrors the RAS function in human cognition:
+- Filters irrelevant stimuli before conscious processing
+- Threshold modulated by arousal state (norepinephrine)
+- Prevents cognitive overload
+
+**4. Data Quality:**
+
+- Only high-confidence, relevant data enters long-term storage
+- Reduces false semantic associations
+- Improves retrieval precision
+
+### 6.10.8 Configuration
+
+**Tunable Parameters:**
+
+```cpp
+// File: config/relevance_filter.json
+{
+  "relevance_filter": {
+    "base_threshold": 0.6,           // Default similarity threshold
+    "min_content_length": 10,        // Minimum characters to process
+    "norepinephrine_sensitivity": 0.3, // How much NE modulates threshold
+    "batch_processing": true,        // Enable batch optimizations
+    "log_rejections": false          // Log all filtered data (debug only)
+  }
+}
+```
+
+**Threshold Tuning Guidelines:**
+
+- **Conservative (0.7-0.8):** High precision, may miss edge cases
+- **Balanced (0.5-0.6):** Recommended for most use cases
+- **Permissive (0.3-0.4):** High recall, risk of noise pollution
 
 ---
+
+**Cross-References:**
+- See Section 9 for TinyTransformer architecture
+- See Section 14 for ENGS neurochemistry system
+- See Section 11 for Orchestrator integration
+- See Section 16 for Autonomous Ingestion pipeline
 
 **Cross-References:**
 - See Section 4.4.1 (UFIE) for complete wave propagation equations
