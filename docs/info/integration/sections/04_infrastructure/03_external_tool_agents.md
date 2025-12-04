@@ -152,13 +152,14 @@ class CustomHTTPClient {
 
 public:
     CustomHTTPClient() {
-        curl_global_init(CURL_GLOBAL_DEFAULT);
+        // Note: curl_global_init() must be called once at process startup in main()
+        // It is NOT thread-safe and must not be called from multiple threads
         curl = curl_easy_init();
     }
 
     ~CustomHTTPClient() {
         curl_easy_cleanup(curl);
-        curl_global_cleanup();
+        // Note: curl_global_cleanup() should be called once at process shutdown in main()
     }
 
     // Async GET with std::future (non-blocking)

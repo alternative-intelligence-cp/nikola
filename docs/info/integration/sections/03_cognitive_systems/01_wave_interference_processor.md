@@ -111,13 +111,23 @@ Nit quantize_wave(std::complex<double> wave) {
 
 ```cpp
 void TorusManifold::wip_update(double dt) {
-    // For each active node
+    // Velocity-Verlet integration for wave equation (symplectic, energy-conserving)
+    // Step 1: Update positions (wavefunction) using current velocity
+    for (auto& [coord, node] : active_nodes) {
+        node.wavefunction += node.velocity * dt + 0.5 * node.acceleration * dt * dt;
+    }
+
+    // Step 2: Compute new accelerations at updated positions
     for (auto& [coord, node] : active_nodes) {
         std::complex<double> laplacian = compute_laplacian(coord);
-
-        // Wave equation: d²Ψ/dt² = c² ∇²Ψ
         double damping = 1.0 - node.resonance_r;  // From r dimension
-        node.wavefunction += dt * laplacian - dt * damping * node.wavefunction;
+
+        // Wave equation: d²Ψ/dt² = c² ∇²Ψ - α dΨ/dt
+        std::complex<double> old_acceleration = node.acceleration;
+        node.acceleration = laplacian - damping * node.velocity;
+
+        // Step 3: Update velocity using average of old and new accelerations
+        node.velocity += 0.5 * (old_acceleration + node.acceleration) * dt;
 
         // Quantize
         node.nonary_value = quantize_wave(node.wavefunction);

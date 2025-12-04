@@ -161,6 +161,81 @@ private:
 };
 ```
 
+### 11.2.1 Production Asynchronous Architecture
+
+**Important:** The synchronous implementation above blocks the main thread during propagation cycles (100ms) and tool dispatch (potentially seconds). For production deployment, the orchestrator must use an asynchronous event loop architecture.
+
+**Recommended Implementation Pattern:**
+
+```cpp
+#include <boost/asio.hpp>
+#include <future>
+#include <thread>
+
+class AsyncOrchestrator {
+    boost::asio::io_context io_context;
+    boost::asio::thread_pool thread_pool{4};
+
+public:
+    // Non-blocking query processing using futures
+    std::future<std::string> process_query_async(const std::string& query) {
+        return std::async(std::launch::async, [this, query]() {
+            // Embed
+            auto waveform = embedder.embed(query);
+
+            // Inject
+            Coord9D pos = compute_injection_point(query);
+            torus.inject_wave(pos, waveform_to_complex(waveform));
+
+            // Propagate asynchronously without blocking
+            auto propagation_future = std::async(std::launch::async, [this]() {
+                run_propagation_cycles(100);
+            });
+
+            // While propagating, can handle other requests
+            propagation_future.wait();
+
+            // Check resonance
+            auto peak = torus.find_resonance_peak();
+
+            if (peak.amplitude > RESONANCE_THRESHOLD) {
+                auto data = torus.retrieve_at(peak.location);
+                return decode_to_text(data);
+            } else {
+                // Async tool dispatch
+                ExternalTool tool = select_tool(query);
+                auto tool_response_future = dispatch_tool_async(tool, query);
+                auto tool_response = tool_response_future.get();
+
+                store_in_torus(tool_response);
+                reinforce_pathway(query, tool_response);
+
+                return tool_response;
+            }
+        });
+    }
+
+    // Background physics loop runs continuously
+    void start_physics_loop() {
+        std::thread([this]() {
+            while (running) {
+                std::array<double, 9> emitter_outputs;
+                emitters.tick(emitter_outputs.data());
+
+                for (int e = 0; e < 8; ++e) {
+                    torus.apply_emitter(e, emitter_outputs[e]);
+                }
+
+                torus.propagate(0.001);  // 1ms timestep
+                std::this_thread::sleep_for(std::chrono::milliseconds(1));
+            }
+        }).detach();
+    }
+};
+```
+
+This architecture allows the system to "think" (physics propagation) while simultaneously waiting for external I/O (tool responses), preventing the cognitive loop from blocking.
+
 ---
 
 **Cross-References:**

@@ -57,8 +57,9 @@ This checklist MUST be followed file-by-file in order. Do NOT skip steps or devi
 
 - [ ] **2.4** `include/nikola/types/torus_node.hpp`
   - Define `TorusNode` struct (256-byte aligned)
-  - Include: wavefunction, metric_tensor, resonance_r, state_s
+  - Include: wavefunction, velocity, acceleration, metric_tensor, resonance_r, state_s
   - **CRITICAL:** Zero padding in constructor for proper initialization
+  - Note: velocity and acceleration fields required for Velocity-Verlet integration
   - Verify `sizeof(TorusNode) == 256`
 
 ### Emitter Array
@@ -257,6 +258,9 @@ This checklist MUST be followed file-by-file in order. Do NOT skip steps or devi
 
 - [ ] **8.1** `tools/twi-ctl/main.cpp`
   - Implement CLI controller
+  - **CRITICAL:** Call `curl_global_init(CURL_GLOBAL_DEFAULT)` at program startup (before any threads)
+  - **CRITICAL:** Call `curl_global_cleanup()` at program shutdown (after all threads terminate)
+  - Note: libcurl global initialization is NOT thread-safe and must be done once per process
   - Add all commands from Section 25
   - **Validation:** Test all commands
 

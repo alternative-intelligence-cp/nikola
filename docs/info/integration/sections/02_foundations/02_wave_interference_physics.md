@@ -324,11 +324,19 @@ __global__ void propagate_wave_kernel(
 
    float2 laplacian = {0.0f, 0.0f};
 
+   // Helper: compute diagonal index in upper-triangular storage
+   // For 9x9 symmetric matrix, diagonal indices are: 0, 9, 17, 24, 30, 35, 39, 42, 44
+   // Formula: index(d,d) = d*9 - d*(d-1)/2 = d*(18-d+1)/2
+   auto diagonal_index = [](int d) -> int {
+       return d * (18 - d + 1) / 2;
+   };
+
    // Iterate over 9 dimensions (18 neighbors)
    for (int d = 0; d < DIMENSIONS; d++) {
        // Metric tensor component g_{dd} for this dimension
-       // (Simplified diagonal metric approximation for kernel speed)
-       float g_dd = data.metric_tensor[idx * 45 + d];
+       // Using proper diagonal indexing for upper-triangular storage
+       int g_idx = diagonal_index(d);
+       float g_dd = data.metric_tensor[idx * 45 + g_idx];
 
        // Positive Neighbor
        int n_idx = data.neighbor_indices[idx * 18 + (2 * d)];
@@ -347,17 +355,30 @@ __global__ void propagate_wave_kernel(
        }
    }
 
-   // UFIE Update Step (Verlet Integration)
-   // d2psi = v^2 * laplacian - gamma * dpsi
-   // psi_new = 2*psi - psi_old + acc * dt^2
-   // Note: implementation assumes we store velocity/accel state implicitly
+   // Load velocity and acceleration from previous step
+   float2 vel = data.velocity[idx];
+   float2 old_accel = data.acceleration[idx];
 
-   float2 accel;
-   accel.x = velocity * laplacian.x - gamma * psi.x;
-   accel.y = velocity * laplacian.y - gamma * psi.y;
+   // UFIE Update Step (Velocity-Verlet Integration - Symplectic)
+   // Step 1: Update position using current velocity
+   float2 psi_new;
+   psi_new.x = psi.x + vel.x * dt + 0.5f * old_accel.x * dt * dt;
+   psi_new.y = psi.y + vel.y * dt + 0.5f * old_accel.y * dt * dt;
 
-   next_wavefunction[idx].x = psi.x + accel.x * dt;
-   next_wavefunction[idx].y = psi.y + accel.y * dt;
+   // Step 2: Compute new acceleration at updated position
+   float2 new_accel;
+   new_accel.x = velocity * laplacian.x - gamma * vel.x;
+   new_accel.y = velocity * laplacian.y - gamma * vel.y;
+
+   // Step 3: Update velocity using average of old and new accelerations
+   float2 vel_new;
+   vel_new.x = vel.x + 0.5f * (old_accel.x + new_accel.x) * dt;
+   vel_new.y = vel.y + 0.5f * (old_accel.y + new_accel.y) * dt;
+
+   // Write back
+   next_wavefunction[idx] = psi_new;
+   next_velocity[idx] = vel_new;
+   next_acceleration[idx] = new_accel;
 }
 ```
 
