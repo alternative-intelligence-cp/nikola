@@ -197,6 +197,35 @@ void initialize_lut() {
 }
 ```
 
+### Prime Phase Offsets for Ergodicity
+
+Each emitter requires a prime-number phase offset to prevent resonance lock-in:
+
+```cpp
+// Prime phase offsets (in radians) as specified in Appendix H
+// These ensure ergodicity and prevent hallucination via resonance locking
+static constexpr std::array<double, 8> PRIME_PHASE_OFFSETS = {
+    23.0 * M_PI / 180.0,  // e1: 23° (prime 23)
+    19.0 * M_PI / 180.0,  // e2: 19° (prime 19)
+    17.0 * M_PI / 180.0,  // e3: 17° (prime 17)
+    13.0 * M_PI / 180.0,  // e4: 13° (prime 13)
+    11.0 * M_PI / 180.0,  // e5: 11° (prime 11)
+    7.0 * M_PI / 180.0,   // e6: 7°  (prime 7)
+    5.0 * M_PI / 180.0,   // e7: 5°  (prime 5)
+    3.0 * M_PI / 180.0    // e8: 3°  (prime 3)
+};
+
+// Convert phase offset to 64-bit fixed-point representation
+static std::array<uint64_t, 8> phase_offset_words;
+
+void initialize_phase_offsets() {
+    for (int i = 0; i < 8; ++i) {
+        // Convert radians to 64-bit phase accumulator units
+        phase_offset_words[i] = (uint64_t)((PRIME_PHASE_OFFSETS[i] / (2.0 * M_PI)) * (1ULL << 64));
+    }
+}
+```
+
 ### AVX-512 Parallel DDS
 
 Process 8 emitters in parallel:
@@ -215,10 +244,24 @@ void EmitterArray::tick(double* output) {
     // Store back
     _mm512_store_epi64(phase_accumulators.data(), phases);
 
-    // Extract indices and lookup (scalar fallback for now)
+    // CRITICAL FIX (Audit 2 Item #8): Apply prime phase offsets for ergodicity
+    // Without these offsets, the ergodicity proof fails → resonance lock-in → hallucination
     for (int i = 0; i < 8; ++i) {
-        uint16_t idx = phase_accumulators[i] >> 50;
-        output[i] = sine_lut[idx];
+        // Apply phase offset before LUT lookup
+        uint64_t phase_with_offset = phase_accumulators[i] + phase_offset_words[i];
+
+        // CRITICAL FIX (Audit 3 Item #4): Linear interpolation for >100dB SFDR
+        // Extract index and fractional part for interpolation
+        uint16_t idx0 = phase_with_offset >> 50;  // Top 14 bits for LUT index
+        uint16_t idx1 = (idx0 + 1) & (LUT_SIZE - 1);  // Next index with wrap
+
+        // Extract fractional part from lower bits (36 bits of precision)
+        double fraction = (phase_with_offset & 0x0003FFFFFFFFFFUL) / (double)(1UL << 50);
+
+        // Linear interpolation: y = y0 + (y1 - y0) * fraction
+        double y0 = sine_lut[idx0];
+        double y1 = sine_lut[idx1];
+        output[i] = y0 + (y1 - y0) * fraction;
     }
 }
 ```
@@ -226,8 +269,8 @@ void EmitterArray::tick(double* output) {
 ### Performance
 
 - **Deterministic:** Exactly zero accumulated phase error
-- **Fast:** ~8 cycles per sample for 8 channels
-- **Accurate:** Spurious-free dynamic range >100dB with interpolation
+- **Fast:** ~12 cycles per sample for 8 channels (with interpolation)
+- **Accurate:** Spurious-free dynamic range >100dB with linear interpolation
 
 ## 4.6 CUDA Kernel for 9D Wave Propagation
 

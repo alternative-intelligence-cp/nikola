@@ -72,7 +72,7 @@ void AudioResonanceEngine::process_audio_frame(const std::vector<int16_t>& pcm_s
 }
 ```
 
-**Spectrum Binning:**
+**Spectrum Binning with Octave Folding:**
 
 ```cpp
 void AudioResonanceEngine::bin_spectrum_to_emitters(
@@ -81,18 +81,34 @@ void AudioResonanceEngine::bin_spectrum_to_emitters(
     // Golden ratio frequencies (Hz)
     const double emitter_freqs[8] = {5.083, 8.225, 13.308, 21.532, 34.840, 56.371, 91.210, 147.58};
 
+    // CRITICAL FIX (MM-AUD-01): Dynamic folding limit instead of hardcoded 200Hz
+    // This prevents discarding male voice fundamentals (85-180Hz) and musical notes (D3-G3)
+    const double highest_emitter_freq = emitter_freqs[7];  // 147.58 Hz
+    const double folding_limit = highest_emitter_freq * 1.5;  // ~221 Hz
+
     for (int e = 0; e < 8; ++e) {
         double target_freq = emitter_freqs[e];
+        double accumulated_magnitude = 0.0;
 
-        // Find FFT bin closest to target frequency
-        int bin = (int)(target_freq * FFT_SIZE / 44100.0);  // Assuming 44.1kHz sample rate
+        // Scan through spectrum and fold octaves
+        for (int bin = 0; bin < FFT_SIZE / 2; ++bin) {
+            double freq = (double)bin * 44100.0 / FFT_SIZE;
 
-        // Get magnitude
-        double magnitude = std::sqrt(spectrum[bin][0] * spectrum[bin][0] +
-                                     spectrum[bin][1] * spectrum[bin][1]);
+            // Octave folding: map high frequencies down to emitter range
+            while (freq > folding_limit) {
+                freq *= 0.5;  // Fold down by one octave
+            }
 
-        // Set emitter amplitude
-        emitters.set_amplitude(e, magnitude);
+            // If this bin folds to our target frequency (within tolerance)
+            if (std::abs(freq - target_freq) < 2.0) {  // 2 Hz tolerance
+                double magnitude = std::sqrt(spectrum[bin][0] * spectrum[bin][0] +
+                                            spectrum[bin][1] * spectrum[bin][1]);
+                accumulated_magnitude += magnitude;
+            }
+        }
+
+        // Set emitter amplitude (accumulated from all octave-folded bins)
+        emitters.set_amplitude(e, accumulated_magnitude);
     }
 }
 ```
@@ -116,12 +132,110 @@ void AudioResonanceEngine::bin_spectrum_to_emitters(
 - **Hop Size:** 2048 samples (50% overlap)
 - **Buffer Strategy:** Ring buffer with double buffering
 
+**Lock-Free Ring Buffer Implementation:**
+
+```cpp
+// File: include/nikola/types/ring_buffer.hpp
+#pragma once
+
+#include <atomic>
+#include <vector>
+#include <stdexcept>
+
+template<typename T>
+class RingBuffer {
+    std::vector<T> buffer;
+    std::atomic<size_t> write_pos{0};
+    std::atomic<size_t> read_pos{0};
+    size_t capacity;
+
+public:
+    explicit RingBuffer(size_t size)
+        : buffer(size + 1),  // One extra slot to distinguish full from empty
+          capacity(size + 1) {}
+
+    // Thread-safe write (producer)
+    bool write(const T& value) {
+        size_t current_write = write_pos.load(std::memory_order_relaxed);
+        size_t next_write = (current_write + 1) % capacity;
+
+        // Check if buffer is full
+        if (next_write == read_pos.load(std::memory_order_acquire)) {
+            return false;  // Buffer full
+        }
+
+        buffer[current_write] = value;
+        write_pos.store(next_write, std::memory_order_release);
+        return true;
+    }
+
+    // Thread-safe read (consumer)
+    bool read(T& value) {
+        size_t current_read = read_pos.load(std::memory_order_relaxed);
+
+        // Check if buffer is empty
+        if (current_read == write_pos.load(std::memory_order_acquire)) {
+            return false;  // Buffer empty
+        }
+
+        value = buffer[current_read];
+        read_pos.store((current_read + 1) % capacity, std::memory_order_release);
+        return true;
+    }
+
+    // Bulk read (for FFT processing)
+    std::vector<T> read(size_t count) {
+        std::vector<T> result;
+        result.reserve(count);
+
+        size_t current_read = read_pos.load(std::memory_order_relaxed);
+        size_t current_write = write_pos.load(std::memory_order_acquire);
+
+        // Calculate available samples
+        size_t available = (current_write >= current_read)
+            ? (current_write - current_read)
+            : (capacity - current_read + current_write);
+
+        if (available < count) {
+            throw std::runtime_error("Not enough samples in buffer");
+        }
+
+        // Read samples
+        for (size_t i = 0; i < count; ++i) {
+            result.push_back(buffer[current_read]);
+            current_read = (current_read + 1) % capacity;
+        }
+
+        read_pos.store(current_read, std::memory_order_release);
+        return result;
+    }
+
+    // Query available samples (thread-safe)
+    size_t available() const {
+        size_t current_read = read_pos.load(std::memory_order_acquire);
+        size_t current_write = write_pos.load(std::memory_order_acquire);
+
+        if (current_write >= current_read) {
+            return current_write - current_read;
+        } else {
+            return capacity - current_read + current_write;
+        }
+    }
+
+    // Clear buffer
+    void clear() {
+        read_pos.store(0, std::memory_order_release);
+        write_pos.store(0, std::memory_order_release);
+    }
+};
+```
+
 **Performance Optimization:**
 
 ```cpp
 class RealTimeAudioProcessor {
     std::atomic<bool> running{true};
-    RingBuffer<int16_t> audio_buffer;
+    RingBuffer<int16_t> audio_buffer{FFT_SIZE * 4};  // 4x FFT size for buffering
     std::thread processing_thread;
 
 public:

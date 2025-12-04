@@ -197,9 +197,14 @@ $$\text{Index} = \sum_{i=0}^{63} \text{bit}_i(\text{coords}) \ll i$$
 #pragma once
 #include "torus_node.hpp"
 #include <unordered_map>
+#include <deque>
 #include <vector>
 
 namespace nikola::physics {
+
+// CRITICAL FIX (Audit 3 Item #1): Pointer Invalidation Prevention
+// Problem: std::vector<TorusNode> causes pointer invalidation when capacity exceeded
+// Solution: Use std::deque which guarantees pointer stability on growth
 
 class SparseHyperVoxelGrid {
 private:
@@ -207,7 +212,9 @@ private:
    std::unordered_map<uint64_t, TorusNode*> active_voxels;
 
    // Memory Pool for fast allocation/deallocation
-   std::vector<TorusNode> node_pool;
+   // FIXED: std::deque guarantees pointers never invalidate on growth
+   // Unlike std::vector, deque allocates in chunks and maintains pointer stability
+   std::deque<TorusNode> node_pool;
    std::vector<size_t> free_indices;
 
    // Saturation threshold for neurogenesis
@@ -220,6 +227,7 @@ public:
    uint64_t hash_coordinates(const Coord9D& pos) const;
 
    // Access or create node (Neurogenesis trigger)
+   // Returns stable pointer that won't be invalidated by subsequent insertions
    TorusNode* get_or_create(const Coord9D& pos);
 
    // Check saturation and trigger local expansion

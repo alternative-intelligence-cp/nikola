@@ -287,7 +287,6 @@ This checklist MUST be followed file-by-file in order. Do NOT skip steps or devi
 - [ ] **10.2** Run security audit
 - [ ] **10.3** Performance testing
 - [ ] **10.4** Documentation review
-- [ ] **10.5** Grant submission preparation
 
 ---
 

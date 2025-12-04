@@ -250,12 +250,40 @@ private:
     std::string create_overlay(const std::string& task_id) {
         std::string overlay_path = "/tmp/nikola/overlays/task_" + task_id + ".qcow2";
 
-        std::string cmd = "qemu-img create -f qcow2 -b " + gold_image_path +
-                           " -F qcow2 " + overlay_path;
+        // SECURITY: Use fork/execv instead of system() to prevent shell injection
+        // (Compliant with Section 17.3.1 CSVP - Code Safety Verification Protocol)
+        pid_t pid = fork();
 
-        int ret = system(cmd.c_str());
-        if (ret != 0) {
-            throw std::runtime_error("Failed to create overlay image");
+        if (pid == -1) {
+            throw std::runtime_error("Failed to fork for qemu-img");
+        }
+
+        if (pid == 0) {
+            // Child process: exec qemu-img
+            const char* argv[] = {
+                "qemu-img",
+                "create",
+                "-f", "qcow2",
+                "-b", gold_image_path.c_str(),
+                "-F", "qcow2",
+                overlay_path.c_str(),
+                nullptr
+            };
+
+            execvp("qemu-img", const_cast<char**>(argv));
+
+            // If execvp returns, it failed
+            std::cerr << "execvp failed: " << strerror(errno) << std::endl;
+            _exit(1);
+        } else {
+            // Parent process: wait for child
+            int status;
+            waitpid(pid, &status, 0);
+
+            if (!WIFEXITED(status) || WEXITSTATUS(status) != 0) {
+                throw std::runtime_error("Failed to create overlay image (qemu-img returned " +
+                                          std::to_string(WEXITSTATUS(status)) + ")");
+            }
         }
 
         return overlay_path;
@@ -308,6 +336,21 @@ private:
 void execute_command(const nlohmann::json& request) {
     std::string bin = request["bin"];
     std::vector<std::string> args = request["args"];
+
+    // CSVP COMPLIANCE: Validate binary against permissions whitelist
+    // Prevents unauthorized command execution as required by Audit 2 Item #9
+    std::vector<std::string> allowed_perms = request.value("permissions", std::vector<std::string>{});
+
+    if (std::find(allowed_perms.begin(), allowed_perms.end(), bin) == allowed_perms.end()) {
+        // Binary not in whitelist - reject execution
+        nlohmann::json error = {
+            {"status", "error"},
+            {"code", -1},
+            {"message", "CSVP: Permission denied - " + bin + " not in whitelist"}
+        };
+        std::cout << error.dump() << std::endl;
+        return;
+    }
 
     // Create pipes for stdout/stderr
     int stdout_pipe[2], stderr_pipe[2];

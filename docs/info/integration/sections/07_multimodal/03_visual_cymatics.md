@@ -78,7 +78,7 @@ private:
 
 ## 24.2.5 Core Function
 
-**Image Injection:**
+**Image Injection (Holographic Encoding):**
 
 ```cpp
 void VisualCymaticsEngine::inject_image(const cv::Mat& image) {
@@ -86,29 +86,36 @@ void VisualCymaticsEngine::inject_image(const cv::Mat& image) {
     cv::Mat resized;
     cv::resize(image, resized, cv::Size(81, 81));
 
+    // Phase offsets for holographic encoding (in radians)
+    const double RED_PHASE_OFFSET = 0.0;           // 0° for emitter 7
+    const double GREEN_PHASE_OFFSET = M_PI / 3.0;  // 60° for emitter 8
+    const double BLUE_PHASE_OFFSET = 2.0 * M_PI / 3.0;  // 120° for emitter 9
+
     for (int y = 0; y < resized.rows; ++y) {
         for (int x = 0; x < resized.cols; ++x) {
             cv::Vec3b pixel = resized.at<cv::Vec3b>(y, x);
 
-            // Map RGB to emitter amplitudes
+            // Map RGB to emitter amplitudes (normalized to [0, 1])
             double red_amp = pixel[2] / 255.0;
             double green_amp = pixel[1] / 255.0;
             double blue_amp = pixel[0] / 255.0;
 
-            // Modulate emitters
-            emitters.set_amplitude(7, red_amp);   // Emitter 7 (x-spatial)
-            emitters.set_amplitude(8, green_amp); // Emitter 8 (y-spatial)
-            emitters.set_amplitude(9, blue_amp);  // Synchronizer
+            // HOLOGRAPHIC ENCODING: Apply distinct phase offsets to each color channel
+            // This creates a 3-channel interference pattern that preserves color information
+            emitters.set_amplitude(7, red_amp, RED_PHASE_OFFSET);     // Red → e₇ (x-spatial)
+            emitters.set_amplitude(8, green_amp, GREEN_PHASE_OFFSET); // Green → e₈ (y-spatial)
+            emitters.set_amplitude(9, blue_amp, BLUE_PHASE_OFFSET);   // Blue → e₉ (synchronizer)
 
             // Inject at spatial coordinate
             Coord9D coord;
-            coord.coords = {0, 0, 0, 0, 0, 0, x, y, 0};  // (r,s,t,u,v,w,x,y,z)
+            coord.coords = {0, 0, 0, 0, 0, 0, static_cast<double>(x), static_cast<double>(y), 0};
 
             torus.apply_emitter_at_coord(coord, emitters);
         }
     }
 
     // Propagate waves for holographic encoding
+    // The three phase-offset channels will interfere to create a holographic pattern
     for (int step = 0; step < 100; ++step) {
         torus.propagate(0.01);
     }

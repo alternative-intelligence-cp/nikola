@@ -106,12 +106,15 @@ class BoredomCuriositySystem {
     double kappa = 0.05;
 
 public:
-    void update(const TorusManifold& torus, double dopamine) {
+    // CRITICAL FIX (Audit 3 Item #8): Add dt scaling for frame-rate independence
+    // Problem: Linear accumulation was frame-rate dependent (Zeno's paradox)
+    // Solution: Scale by delta time for consistent behavior regardless of tick rate
+    void update(const TorusManifold& torus, double dopamine, double dt) {
         // Compute entropy
         double entropy = compute_entropy(torus);
 
-        // Update boredom
-        boredom += alpha / (entropy + 0.001) - kappa * dopamine;
+        // Update boredom with time-step scaling (frame-rate independent)
+        boredom += (alpha / (entropy + 0.001) - kappa * dopamine) * dt;
 
         // Clamp
         boredom = std::max(0.0, boredom);

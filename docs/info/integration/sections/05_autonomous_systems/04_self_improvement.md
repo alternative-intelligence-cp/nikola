@@ -110,7 +110,58 @@ private:
         }
     }
 
-    void apply_patch(const std::string& target, const std::string& code);
+    // CRITICAL FIX (Audit 3 Item #12): Implement apply_patch hot-swap logic
+    // Problem: Function was declared but not implemented
+    // Solution: Move compiled shared object to hot-swap directory and trigger DynamicModuleManager
+    void apply_patch(const std::string& target, const std::string& code) {
+        // 1. Write code to file
+        std::string source_path = "/tmp/patch_" + target + ".cpp";
+        std::ofstream source_file(source_path);
+        source_file << code;
+        source_file.close();
+
+        // 2. Compile to shared object
+        std::string so_path = "/tmp/patch_" + target + ".so";
+
+        pid_t pid = fork();
+        if (pid == 0) {  // Child process
+            const char* argv[] = {
+                "g++",
+                "-std=c++23",
+                "-O3",
+                "-fPIC",
+                "-shared",
+                source_path.c_str(),
+                "-o",
+                so_path.c_str(),
+                nullptr
+            };
+            execvp("g++", const_cast<char* const*>(argv));
+            _exit(1);  // If execvp fails
+        } else {  // Parent process
+            int status;
+            waitpid(pid, &status, 0);
+
+            if (!WIFEXITED(status) || WEXITSTATUS(status) != 0) {
+                throw std::runtime_error("Compilation failed for patch: " + target);
+            }
+        }
+
+        // 3. Move to hot-swap directory
+        std::string deploy_path = "/var/lib/nikola/modules/" + target + ".so";
+        std::filesystem::create_directories("/var/lib/nikola/modules");
+        std::filesystem::copy(so_path, deploy_path, std::filesystem::copy_options::overwrite_existing);
+
+        // 4. Trigger DynamicModuleManager to load new module
+        DynamicModuleManager module_manager;
+        module_manager.hot_swap(target, deploy_path);
+
+        // 5. Cleanup temp files
+        std::filesystem::remove(source_path);
+        std::filesystem::remove(so_path);
+
+        std::cout << "[SELF-IMPROVE] Successfully applied patch to " << target << std::endl;
+    }
 };
 ```
 
@@ -220,40 +271,114 @@ class StateHandoff {
     size_t shm_size = 100 * 1024 * 1024;  // 100MB
 
 public:
-    void save_state_to_shm(const TorusManifold& torus) {
+    // CRITICAL FIX: Serialize complete system state (not just torus)
+    // Prevents "amnesia" after restart - preserves personality, emotions, and goals
+    void save_state_to_shm(const TorusManifold& torus,
+                           const NeurochemistryManager& neuro,
+                           const IdentityManager& identity,
+                           const GoalSystem& goals) {
         // Create shared memory
         int fd = shm_open(shm_name, O_CREAT | O_RDWR, 0666);
         ftruncate(fd, shm_size);
 
         shm_ptr = mmap(nullptr, shm_size, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
 
-        // Serialize state
-        // (Simplified: copy critical data)
-        memcpy(shm_ptr, &torus, sizeof(torus));
+        // Serialize complete system state using Protobuf
+        CompleteSystemState system_state;
+
+        // 1. Serialize torus manifold (memories)
+        torus.serialize_to_protobuf(*system_state.mutable_torus());
+
+        // 2. Serialize neurochemistry (emotional state)
+        NeurochemicalState* neuro_state = system_state.mutable_neurochemistry();
+        neuro_state->set_dopamine(neuro.get_dopamine());
+        neuro_state->set_serotonin(neuro.get_serotonin());
+        neuro_state->set_norepinephrine(neuro.get_norepinephrine());
+
+        // 3. Serialize identity (personality)
+        IdentityState* identity_state = system_state.mutable_identity();
+        identity_state->set_name(identity.get_name());
+        identity_state->set_personality_json(identity.get_personality_json());
+
+        // 4. Serialize goals (active intentions)
+        GoalGraph* goal_graph = system_state.mutable_goals();
+        goals.serialize_to_protobuf(goal_graph);
+
+        // Serialize to string
+        std::string serialized = system_state.SerializeAsString();
+
+        if (serialized.size() > shm_size) {
+            munmap(shm_ptr, shm_size);
+            close(fd);
+            throw std::runtime_error("Serialized state exceeds shared memory size");
+        }
+
+        // Write size header followed by serialized data
+        uint64_t size = serialized.size();
+        memcpy(shm_ptr, &size, sizeof(size));
+        memcpy(static_cast<char*>(shm_ptr) + sizeof(size), serialized.data(), serialized.size());
 
         munmap(shm_ptr, shm_size);
         close(fd);
+
+        std::cout << "[HANDOFF] Saved complete system state: torus + neurochemistry + identity + goals" << std::endl;
     }
 
-    void load_state_from_shm(TorusManifold& torus) {
+    void load_state_from_shm(TorusManifold& torus,
+                             NeurochemistryManager& neuro,
+                             IdentityManager& identity,
+                             GoalSystem& goals) {
         int fd = shm_open(shm_name, O_RDONLY, 0666);
 
         shm_ptr = mmap(nullptr, shm_size, PROT_READ, MAP_SHARED, fd, 0);
 
-        // Deserialize state
-        memcpy(&torus, shm_ptr, sizeof(torus));
+        // Deserialize complete system state using Protobuf
+        uint64_t size;
+        memcpy(&size, shm_ptr, sizeof(size));
+
+        std::string serialized(static_cast<const char*>(shm_ptr) + sizeof(size), size);
+
+        CompleteSystemState system_state;
+        if (!system_state.ParseFromString(serialized)) {
+            munmap(shm_ptr, shm_size);
+            close(fd);
+            throw std::runtime_error("Failed to parse protobuf state");
+        }
+
+        // 1. Restore torus manifold (memories)
+        torus.deserialize_from_protobuf(system_state.torus());
+
+        // 2. Restore neurochemistry (emotional state)
+        const NeurochemicalState& neuro_state = system_state.neurochemistry();
+        neuro.set_dopamine(neuro_state.dopamine());
+        neuro.set_serotonin(neuro_state.serotonin());
+        neuro.set_norepinephrine(neuro_state.norepinephrine());
+
+        // 3. Restore identity (personality)
+        const IdentityState& identity_state = system_state.identity();
+        identity.set_name(identity_state.name());
+        identity.set_personality_json(identity_state.personality_json());
+
+        // 4. Restore goals (active intentions)
+        const GoalGraph& goal_graph = system_state.goals();
+        goals.deserialize_from_protobuf(goal_graph);
 
         munmap(shm_ptr, shm_size);
         close(fd);
         shm_unlink(shm_name);  // Cleanup
+
+        std::cout << "[HANDOFF] Restored complete system state: personality, emotions, and goals preserved" << std::endl;
     }
 };
 
 void restart_with_new_binary(const std::string& new_binary_path,
-                               const TorusManifold& torus) {
-    // 1. Save state
+                               const TorusManifold& torus,
+                               const NeurochemistryManager& neuro,
+                               const IdentityManager& identity,
+                               const GoalSystem& goals) {
+    // 1. Save complete state (FIXED: now includes personality and emotions)
     StateHandoff handoff;
-    handoff.save_state_to_shm(torus);
+    handoff.save_state_to_shm(torus, neuro, identity, goals);
 
     // 2. Execute new binary (replaces current process)
     char* argv[] = {const_cast<char*>(new_binary_path.c_str()), nullptr};

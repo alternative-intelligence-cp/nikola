@@ -20,8 +20,34 @@ public:
     }
 
     void load_from_file(const std::string& db_path) {
-        // Load serialized patterns
-        // (Would use Protocol Buffers or similar)
+        // Load serialized patterns using Protocol Buffers
+        std::ifstream input(db_path, std::ios::binary);
+        if (!input) {
+            throw std::runtime_error("Failed to open hazardous pattern database: " + db_path);
+        }
+
+        HazardousPatternDB db_proto;
+        if (!db_proto.ParseFromIstream(&input)) {
+            throw std::runtime_error("Failed to parse protobuf database: " + db_path);
+        }
+
+        // Populate hazardous_patterns from protobuf
+        hazardous_patterns.clear();
+        hazardous_patterns.reserve(db_proto.patterns_size());
+
+        for (const auto& pattern_proto : db_proto.patterns()) {
+            std::vector<std::complex<double>> pattern;
+            pattern.reserve(pattern_proto.samples_size());
+
+            for (const auto& sample : pattern_proto.samples()) {
+                pattern.emplace_back(sample.real(), sample.imag());
+            }
+
+            hazardous_patterns.push_back(std::move(pattern));
+        }
+
+        std::cout << "[FIREWALL] Loaded " << hazardous_patterns.size()
+                  << " hazardous patterns from " << db_path << std::endl;
     }
 
     bool is_hazardous(const std::vector<std::complex<double>>& input) const {

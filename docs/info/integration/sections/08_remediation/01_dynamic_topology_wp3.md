@@ -89,16 +89,43 @@ Explicit `memset` of padding to zero in constructor.
 ```cpp
 // File: include/nikola/types/torus_node.hpp
 
+// CRITICAL FIX (Audit 2 Item #10): Explicit quantum state representation
+// The spec requires u, v, w to be distinct vector components (dimensions 4, 5, 6)
+// Previous implementation collapsed them into single complex number → violation of 9D requirement
+struct QuantumState {
+    std::complex<double> u;  // Quantum dimension 1 (driven by emitter 4)
+    std::complex<double> v;  // Quantum dimension 2 (driven by emitter 5)
+    std::complex<double> w;  // Quantum dimension 3 (driven by emitter 6)
+
+    QuantumState()
+        : u(0.0, 0.0), v(0.0, 0.0), w(0.0, 0.0) {}
+
+    // Total quantum amplitude (for backward compatibility with existing code)
+    std::complex<double> total_amplitude() const {
+        return u + v + w;
+    }
+
+    // Set from single complex value (distributes evenly across u, v, w)
+    void set_from_single(const std::complex<double>& psi) {
+        // Decompose into three components with phase offsets for diversity
+        u = psi;
+        v = psi * std::exp(std::complex<double>(0, 2.0 * M_PI / 3.0));  // 120° phase shift
+        w = psi * std::exp(std::complex<double>(0, 4.0 * M_PI / 3.0));  // 240° phase shift
+    }
+};
+
 struct TorusNode {
-    std::complex<double> wavefunction;
+    // FIXED: Explicit quantum state instead of collapsed wavefunction
+    QuantumState quantum;  // Three distinct complex numbers (u, v, w)
+
     std::array<float, 45> metric_tensor;
     float resonance_r;
     float state_s;
-    uint8_t padding[18];  // For alignment
+    uint8_t padding[2];  // Reduced padding (QuantumState is 48 bytes vs 16 bytes)
 
     // Constructor with zero initialization
     TorusNode()
-        : wavefunction(0.0, 0.0),
+        : quantum(),
           resonance_r(0.5f),
           state_s(1.0f) {
 
@@ -111,6 +138,16 @@ struct TorusNode {
 
         // CRITICAL: Zero the padding to prevent ghost charges
         std::memset(padding, 0, sizeof(padding));
+    }
+
+    // Backward compatibility: get total wavefunction
+    std::complex<double> get_wavefunction() const {
+        return quantum.total_amplitude();
+    }
+
+    // Backward compatibility: set wavefunction (distributes to u, v, w)
+    void set_wavefunction(const std::complex<double>& psi) {
+        quantum.set_from_single(psi);
     }
 };
 ```

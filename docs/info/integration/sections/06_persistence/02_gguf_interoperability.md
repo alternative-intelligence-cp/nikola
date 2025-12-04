@@ -174,7 +174,32 @@ To "be exported to GGUF", we must map the balanced nonary weights to a format ll
 
 import struct
 import numpy as np
-from gguf import GGUFWriter
+from gguf import GGUFWriter, GGMLQuantizationType
+
+# CRITICAL FIX (Audit 2 Item #7): Map balanced nonary to standard GGUF format
+# Problem: Original script used np.float16, but spec requires Q9_0 which llama.cpp doesn't support
+# Solution: Map balanced nonary [-4, +4] to Q8_0 (standard 8-bit quantization)
+
+def balanced_nonary_to_q8(nonary_values):
+    """
+    Convert balanced nonary weights [-4, +4] to normalized float32 for Q8_0 quantization.
+
+    Q8_0 quantization in GGUF uses symmetric 8-bit representation with per-block scaling.
+    We map balanced nonary to [-1.0, +1.0] range which Q8_0 can efficiently encode.
+
+    Args:
+        nonary_values: List of integers in range [-4, +4]
+
+    Returns:
+        numpy array of float32 values in [-1.0, +1.0]
+    """
+    # Normalize balanced nonary [-4, +4] to [-1.0, +1.0]
+    normalized = np.array(nonary_values, dtype=np.float32) / 4.0
+
+    # Clamp to ensure valid range
+    normalized = np.clip(normalized, -1.0, 1.0)
+
+    return normalized
 
 def convert_nik_to_gguf(nik_path, gguf_path):
     # 1. Read .nik file
@@ -182,12 +207,21 @@ def convert_nik_to_gguf(nik_path, gguf_path):
         header = read_nik_header(f)
         nodes = read_all_nodes(f)
 
-    # 2. Flatten via Hilbert curve
+    # 2. Flatten via Hilbert curve and extract balanced nonary weights
     amplitude_tensor = []
     phase_tensor = []
 
+    # Track whether we have balanced nonary or float values
+    has_nonary_weights = hasattr(nodes[0], 'nonary_weight')
+
     for node in sorted(nodes, key=lambda n: n.hilbert_idx):
-        amplitude_tensor.append(node.amplitude)
+        if has_nonary_weights:
+            # If nodes store balanced nonary weights directly
+            amplitude_tensor.append(node.nonary_weight)
+        else:
+            # Convert from amplitude (assuming it's already in nonary form)
+            amplitude_tensor.append(node.amplitude)
+
         phase_tensor.append(node.phase)
 
     # 3. Create GGUF writer
@@ -196,12 +230,21 @@ def convert_nik_to_gguf(nik_path, gguf_path):
     # 4. Add metadata
     gguf_writer.add_uint32('nikola.geometry.dimensions', 9)
     gguf_writer.add_string('nikola.encoding.base', 'balanced_nonary')
+    gguf_writer.add_string('nikola.quantization.mapping', 'nonary_to_q8_0')
     gguf_writer.add_float32('nikola.golden_ratio', 1.618033988749895)
+    gguf_writer.add_string('nikola.quantization.note',
+                          'Balanced nonary [-4,+4] mapped to Q8_0 via /4.0 normalization')
 
-    # 5. Add tensors
+    # 5. FIXED: Convert balanced nonary to Q8_0 compatible format
+    # This ensures llama.cpp can load and run the model without custom code
+    amplitude_normalized = balanced_nonary_to_q8(amplitude_tensor)
+
+    # Add tensors with Q8_0 quantization (standard llama.cpp format)
     gguf_writer.add_tensor('nikola.torus.amplitude',
-                           np.array(amplitude_tensor, dtype=np.float16))
+                           amplitude_normalized,
+                           quantization_type=GGMLQuantizationType.Q8_0)
 
+    # Phase can remain float16 as it's continuous
     gguf_writer.add_tensor('nikola.torus.phase',
                            np.array(phase_tensor, dtype=np.float16))
 
@@ -211,6 +254,9 @@ def convert_nik_to_gguf(nik_path, gguf_path):
     gguf_writer.write_tensors_to_file()
 
     print(f"Converted {nik_path} → {gguf_path}")
+    print(f"  - Amplitude tensor: {len(amplitude_tensor)} weights (Q8_0 quantized)")
+    print(f"  - Phase tensor: {len(phase_tensor)} values (FP16)")
+    print(f"  - Compatible with standard llama.cpp/ollama")
 
 if __name__ == '__main__':
     convert_nik_to_gguf('/var/lib/nikola/state/main.nik',

@@ -95,11 +95,13 @@ message NeuralSpike {
 - Whitelist of authorized public keys
 - Deny-by-default: Unknown keys rejected immediately
 
-### Key Generation
+### Key Generation with Persistence
 
 ```cpp
 #include <zmq.hpp>
 #include <sodium.h>
+#include <filesystem>
+#include <fstream>
 
 class CurveKeyPair {
 public:
@@ -107,13 +109,65 @@ public:
     std::array<uint8_t, 32> secret_key;
 
     CurveKeyPair() {
-        crypto_box_keypair(public_key.data(), secret_key.data());
+        // CRITICAL FIX: Load existing keys or generate new ones
+        // Prevents lockout after self-improvement restart (Section 17.5)
+        const std::string key_dir = "/etc/nikola/keys";
+        const std::string public_key_path = key_dir + "/broker_public.key";
+        const std::string secret_key_path = key_dir + "/broker_secret.key";
+
+        // Try to load existing keys
+        if (load_keys_from_disk(public_key_path, secret_key_path)) {
+            std::cout << "[SPINE] Loaded existing CurveZMQ keys" << std::endl;
+        } else {
+            // Generate new keys only if files don't exist
+            crypto_box_keypair(public_key.data(), secret_key.data());
+            save_keys_to_disk(public_key_path, secret_key_path);
+            std::cout << "[SPINE] Generated and persisted new CurveZMQ keys" << std::endl;
+        }
     }
 
     std::string public_key_z85() const {
         char z85[41];
         zmq_z85_encode(z85, public_key.data(), 32);
         return std::string(z85);
+    }
+
+private:
+    bool load_keys_from_disk(const std::string& pub_path, const std::string& sec_path) {
+        if (!std::filesystem::exists(pub_path) || !std::filesystem::exists(sec_path)) {
+            return false;
+        }
+
+        std::ifstream pub_file(pub_path, std::ios::binary);
+        std::ifstream sec_file(sec_path, std::ios::binary);
+
+        if (!pub_file || !sec_file) {
+            return false;
+        }
+
+        pub_file.read(reinterpret_cast<char*>(public_key.data()), 32);
+        sec_file.read(reinterpret_cast<char*>(secret_key.data()), 32);
+
+        return pub_file.gcount() == 32 && sec_file.gcount() == 32;
+    }
+
+    void save_keys_to_disk(const std::string& pub_path, const std::string& sec_path) {
+        // Ensure directory exists
+        std::filesystem::create_directories(std::filesystem::path(pub_path).parent_path());
+
+        std::ofstream pub_file(pub_path, std::ios::binary);
+        std::ofstream sec_file(sec_path, std::ios::binary);
+
+        if (!pub_file || !sec_file) {
+            throw std::runtime_error("Failed to save CurveZMQ keys to disk");
+        }
+
+        pub_file.write(reinterpret_cast<const char*>(public_key.data()), 32);
+        sec_file.write(reinterpret_cast<const char*>(secret_key.data()), 32);
+
+        // Set restrictive permissions (owner read/write only)
+        std::filesystem::permissions(pub_path, std::filesystem::perms::owner_read | std::filesystem::perms::owner_write);
+        std::filesystem::permissions(sec_path, std::filesystem::perms::owner_read | std::filesystem::perms::owner_write);
     }
 };
 ```

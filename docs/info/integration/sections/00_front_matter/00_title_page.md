@@ -2,8 +2,6 @@
 ## COMPLETE INTEGRATED ENGINEERING SPECIFICATION
 ### 9-Dimensional Toroidal Waveform Intelligence (9D-TWI)
 
-**GRANT SUBMISSION VERSION**
-
 ---
 
 ## !!! NO DEVIATION FROM SPECS FOR ANY REASON !!!
@@ -13,7 +11,7 @@
 **Document Version:** 3.0 FINAL COMPREHENSIVE SYNTHESIS
 **Date:** December 3, 2025
 **Status:** PRODUCTION-READY - All Critical Defects Remediated
-**Classification:** COMPLETE SELF-CONTAINED SPECIFICATION FOR GRANT SUBMISSION
+**Classification:** COMPLETE SELF-CONTAINED TECHNICAL SPECIFICATION
 
 ---
 
@@ -23,4 +21,4 @@
 
 ---
 
-This specification represents the authoritative, production-ready engineering documentation for the Nikola Model v0.0.4, synthesizing all source materials, implementation phases, audits, and remediation plans into a unified, grant-ready specification.
+This specification represents the authoritative, production-ready engineering documentation for the Nikola Model v0.0.4, synthesizing all source materials, implementation phases, audits, and remediation plans into a unified technical specification.

@@ -109,8 +109,25 @@ MambaParams extract_ssm_params(const TorusNode& node) {
     // B vector: Input coupling from state dimension
     params.B = Eigen::VectorXd::Constant(9, node.state_s);
 
-    // C vector: Uniform output (or trainable)
-    params.C = Eigen::VectorXd::Ones(9);
+    // CRITICAL FIX (Audit 3 Item #7): C vector from QuantumState projection
+    // Problem: Was using static Ones(9) instead of projecting wavefunction
+    // Solution: Project the node's QuantumState (u, v, w) into output matrix C
+    params.C = Eigen::VectorXd::Zero(9);
+
+    // Project quantum state amplitudes into C vector
+    // Dimensions 4, 5, 6 (u, v, w) get quantum component magnitudes
+    params.C(3) = std::abs(node.quantum.u);  // Quantum 1 magnitude
+    params.C(4) = std::abs(node.quantum.v);  // Quantum 2 magnitude
+    params.C(5) = std::abs(node.quantum.w);  // Quantum 3 magnitude
+
+    // Other dimensions weighted by total wavefunction strength
+    double total_amplitude = std::abs(node.quantum.total_amplitude());
+    params.C(0) = total_amplitude * node.resonance_r;  // Resonance-weighted
+    params.C(1) = total_amplitude * node.state_s;      // State-weighted
+    params.C(2) = total_amplitude;                      // Time component
+    params.C(6) = total_amplitude;                      // Spatial X
+    params.C(7) = total_amplitude;                      // Spatial Y
+    params.C(8) = total_amplitude;                      // Synchronizer
 
     // Delta: Adaptive
     params.Delta = compute_adaptive_delta(node, 0.01);
@@ -162,22 +179,58 @@ class Mamba9D {
     Eigen::VectorXd hidden_state;  // Current SSM state
 
 public:
-    Eigen::VectorXd forward(const std::vector<TorusNode>& sequence) {
+    // Zero-copy forward pass: operate directly on TorusNode memory
+    // Fulfills "layers ARE the toroid" requirement
+    Eigen::VectorXd forward(const std::vector<TorusNode*>& sequence) {
         hidden_state = Eigen::VectorXd::Zero(9);
 
-        for (const auto& node : sequence) {
-            // Extract SSM params
-            auto params = extract_ssm_params(node);
+        for (const auto* node_ptr : sequence) {
+            // Extract SSM params directly from node
+            auto params = extract_ssm_params(*node_ptr);
+
+            // ZERO-COPY: Map TorusNode's coordinate array directly into Eigen vector
+            // No intermediate allocation - operates on torus memory in-place
+            Eigen::Map<const Eigen::VectorXd> input(
+                reinterpret_cast<const double*>(&node_ptr->coord.r),
+                9
+            );
 
             // SSM recurrence: h_t = A h_{t-1} + B x_t
-            Eigen::VectorXd input = node_to_vector(node);
+            // This operates directly on the physical memory of the toroid
             hidden_state = params.A * hidden_state + params.B.cwiseProduct(input);
 
             // Scale by adaptive delta
             hidden_state *= params.Delta;
+
+            // OPTIONAL: Write output directly back to node (in-place modification)
+            // This ensures the computation happens "in memory" without CPU-RAM separation
+            node_ptr->mamba_state = hidden_state;
         }
 
         return hidden_state;
+    }
+
+private:
+    struct SSMParams {
+        Eigen::MatrixXd A;  // State transition matrix (from metric tensor)
+        Eigen::VectorXd B;  // Input projection (from resonance r)
+        double Delta;       // Adaptive time step (from state s)
+    };
+
+    SSMParams extract_ssm_params(const TorusNode& node) const {
+        SSMParams params;
+
+        // A matrix: derived from Christoffel symbols of metric tensor
+        params.A = Eigen::MatrixXd::Identity(9, 9) +
+                   0.01 * node.metric_tensor;  // Small perturbation from flat space
+
+        // B vector: modulated by resonance dimension
+        params.B = Eigen::VectorXd::Constant(9, node.resonance_r);
+
+        // Delta: adaptive discretization from state dimension
+        params.Delta = 1.0 / (1.0 + node.state_s);
+
+        return params;
     }
 };
 ```

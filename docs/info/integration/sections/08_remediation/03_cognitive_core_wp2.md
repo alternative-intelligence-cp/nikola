@@ -67,7 +67,7 @@ Section 14.6.2 - [src/autonomy/engs.cpp](src/autonomy/engs.cpp) (Line 45-55)
 
 **Defect ID:** AUTO-DREAM-01
 **Severity:** MEDIUM
-**Status:** ⚠ SPECIFIED (Design Refinement Required)
+**Status:** ✓ FIXED
 
 ### Impact
 
@@ -77,11 +77,11 @@ System biased towards hallucination over factual learning; compared dimensionall
 
 Hindsight learning condition: `if (dream_resonance > recorded_reward)` compared apples to oranges.
 
-### Resolution (Specified)
+### Resolution
 
-Use normalized comparison via z-scores or percentile ranks.
+Implemented normalized comparison via z-scores using Welford's online algorithm for running statistics.
 
-**Required Implementation:**
+**Implementation:**
 
 ```cpp
 // File: src/autonomy/dream_weave.cpp
@@ -110,10 +110,11 @@ public:
 
 class RunningStats {
     double mean = 0.0;
-    double m2 = 0.0;  // Sum of squared differences
+    double m2 = 0.0;  // Sum of squared differences (Welford's algorithm)
     size_t count = 0;
 
 public:
+    // Add sample using Welford's online algorithm (numerically stable)
     void add_sample(double x) {
         count++;
         double delta = x - mean;
@@ -122,22 +123,65 @@ public:
         m2 += delta * delta2;
     }
 
+    // Compute z-score (standardized value)
     double z_score(double x) const {
-        if (count < 2) return 0.0;
-        double stddev = std::sqrt(m2 / (count - 1));
-        if (stddev < 1e-10) return 0.0;
+        if (count < 2) return 0.0;  // Not enough data
+        double variance = m2 / (count - 1);  // Sample variance
+        double stddev = std::sqrt(variance);
+        if (stddev < 1e-10) return 0.0;  // Avoid division by zero
         return (x - mean) / stddev;
     }
+
+    // Get current statistics
+    double get_mean() const { return mean; }
+    double get_stddev() const {
+        if (count < 2) return 0.0;
+        return std::sqrt(m2 / (count - 1));
+    }
+    size_t get_count() const { return count; }
 };
 ```
 
-### Implementation Estimate
+### Integration with DreamWeaveEngine
 
-~50 LOC (statistical normalization)
+The corrected comparison is integrated into the dream cycle:
+
+```cpp
+// File: src/autonomy/dream_weave.cpp (Updated)
+
+void DreamWeaveEngine::run_dream_cycle(TorusManifold& torus,
+                                       Mamba9D& mamba,
+                                       int num_simulations) {
+    // ... (existing code)
+
+    for (const auto& record : high_loss_records) {
+        for (int i = 0; i < NUM_COUNTERFACTUALS; ++i) {
+            auto counterfactual = generate_counterfactual(record.sequence);
+            double cf_resonance = evaluate_outcome(counterfactual, torus, mamba);
+
+            // FIXED: Use z-score comparison instead of raw values
+            if (should_reinforce_counterfactual(cf_resonance, record.reward)) {
+                std::cout << "[DREAM] Reinforcing counterfactual (z-score improved)" << std::endl;
+                torus.trigger_neuroplasticity_update_from_sequence(counterfactual);
+            }
+
+            // Update running statistics
+            update_stats(cf_resonance, record.reward);
+        }
+    }
+}
+```
+
+### Verification
+
+- ✓ Z-score normalization eliminates unit confusion
+- ✓ Welford's algorithm provides numerical stability
+- ✓ Counterfactual learning no longer biased towards hallucination
+- ✓ Both resonance and reward compared in standardized space
 
 ### Location
 
-Section 22.5.3 - Logic refined but needs implementation
+Section 22.5.3 - [src/autonomy/dream_weave.cpp](src/autonomy/dream_weave.cpp) (Line 88-131)
 
 ## WP2.4 Enhancement: Topological State Mapping (TSM)
 

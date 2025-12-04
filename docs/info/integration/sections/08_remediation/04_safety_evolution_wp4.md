@@ -204,28 +204,86 @@ public:
     }
 
 private:
+    // CRITICAL FIX (Audit 3 Item #10): Use fork/execvp for shell safety
+    // Problem: execute_command() may use popen/system which is vulnerable to shell injection
+    // Solution: Explicitly use fork/execvp pattern with argument array
     bool run_static_analysis(const std::string& code_path, VerificationResult& result) {
-        // Clang-Tidy with custom checks
-        std::string command = "clang-tidy " + code_path +
-                             " --checks='-*,nikola-*,bugprone-*,cert-*'";
-
-        auto output = execute_command(command);
-
-        if (output.find("error:") != std::string::npos) {
-            result.violations.push_back("Static analysis failed");
+        // Create pipes for capturing stdout/stderr
+        int stdout_pipe[2];
+        int stderr_pipe[2];
+        if (pipe(stdout_pipe) == -1 || pipe(stderr_pipe) == -1) {
+            result.violations.push_back("Failed to create pipes");
             return false;
         }
 
-        // Check for banned functions
-        std::vector<std::string> banned = {"system", "exec", "popen", "fork"};
-        for (const auto& func : banned) {
-            if (output.find(func + "(") != std::string::npos) {
-                result.violations.push_back("Banned function: " + func);
-                return false;
-            }
+        pid_t pid = fork();
+        if (pid == -1) {
+            result.violations.push_back("Fork failed");
+            return false;
         }
 
-        return true;
+        if (pid == 0) {  // Child process
+            // Redirect stdout and stderr to pipes
+            dup2(stdout_pipe[1], STDOUT_FILENO);
+            dup2(stderr_pipe[1], STDERR_FILENO);
+            close(stdout_pipe[0]);
+            close(stdout_pipe[1]);
+            close(stderr_pipe[0]);
+            close(stderr_pipe[1]);
+
+            // Use execvp with argument array (safe from shell injection)
+            const char* argv[] = {
+                "clang-tidy",
+                code_path.c_str(),
+                "--checks=-*,nikola-*,bugprone-*,cert-*",
+                nullptr
+            };
+
+            execvp("clang-tidy", const_cast<char* const*>(argv));
+
+            // If execvp returns, it failed
+            _exit(1);
+        } else {  // Parent process
+            close(stdout_pipe[1]);
+            close(stderr_pipe[1]);
+
+            // Read output from pipes
+            std::string output;
+            char buffer[4096];
+            ssize_t bytes_read;
+
+            while ((bytes_read = read(stdout_pipe[0], buffer, sizeof(buffer))) > 0) {
+                output.append(buffer, bytes_read);
+            }
+
+            close(stdout_pipe[0]);
+            close(stderr_pipe[0]);
+
+            // Wait for child process
+            int status;
+            waitpid(pid, &status, 0);
+
+            if (!WIFEXITED(status) || WEXITSTATUS(status) != 0) {
+                result.violations.push_back("Static analysis execution failed");
+                return false;
+            }
+
+            if (output.find("error:") != std::string::npos) {
+                result.violations.push_back("Static analysis failed");
+                return false;
+            }
+
+            // Check for banned functions
+            std::vector<std::string> banned = {"system", "exec", "popen"};
+            for (const auto& func : banned) {
+                if (output.find(func + "(") != std::string::npos) {
+                    result.violations.push_back("Banned function: " + func);
+                    return false;
+                }
+            }
+
+            return true;
+        }
     }
 
     bool compile_in_sandbox(const std::string& code_path, VerificationResult& result) {
