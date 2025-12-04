@@ -44,10 +44,10 @@ public:
     AudioResonanceEngine(EmitterArray& e);
     ~AudioResonanceEngine();
 
-    void process_audio_frame(const std::vector<int16_t>& pcm_samples);
+    void process_audio_frame(const std::vector<int16_t>& pcm_samples, double sample_rate);
 
 private:
-    void bin_spectrum_to_emitters(const std::vector<fftw_complex>& spectrum);
+    void bin_spectrum_to_emitters(const std::vector<fftw_complex>& spectrum, double sample_rate);
 };
 
 } // namespace nikola::multimodal
@@ -58,7 +58,8 @@ private:
 **Audio Frame Processing:**
 
 ```cpp
-void AudioResonanceEngine::process_audio_frame(const std::vector<int16_t>& pcm_samples) {
+void AudioResonanceEngine::process_audio_frame(const std::vector<int16_t>& pcm_samples,
+                                               double sample_rate) {
     // 1. Normalize PCM to [-1.0, 1.0]
     for (size_t i = 0; i < pcm_samples.size() && i < FFT_SIZE; ++i) {
         input_buffer[i] = pcm_samples[i] / 32768.0;
@@ -67,8 +68,8 @@ void AudioResonanceEngine::process_audio_frame(const std::vector<int16_t>& pcm_s
     // 2. Perform FFT
     fftw_execute(fft_plan);
 
-    // 3. Bin spectrum
-    bin_spectrum_to_emitters(output_buffer);
+    // 3. Bin spectrum with provided sample rate
+    bin_spectrum_to_emitters(output_buffer, sample_rate);
 }
 ```
 
@@ -76,14 +77,15 @@ void AudioResonanceEngine::process_audio_frame(const std::vector<int16_t>& pcm_s
 
 ```cpp
 void AudioResonanceEngine::bin_spectrum_to_emitters(
-    const std::vector<fftw_complex>& spectrum) {
+    const std::vector<fftw_complex>& spectrum,
+    double sample_rate) {
 
     // Golden ratio frequencies (Hz)
     const double emitter_freqs[8] = {5.083, 8.225, 13.308, 21.532, 34.840, 56.371, 91.210, 147.58};
 
     // Nyquist frequency (max frequency in FFT output)
-    const double sample_rate = 44100.0;
-    const double nyquist_freq = sample_rate / 2.0;  // 22050 Hz
+    // Sample rate is now provided by caller (supports 44.1kHz, 48kHz, etc.)
+    const double nyquist_freq = sample_rate / 2.0;
     const double bin_width = sample_rate / FFT_SIZE;
 
     for (int e = 0; e < 8; ++e) {
@@ -166,6 +168,30 @@ private:
         // Normalize to [0, 1] range (peak at ~3kHz)
         return std::min(1.0, weight * 0.5);
     }
+```
+
+**Usage Example:**
+
+```cpp
+// Create engine
+AudioResonanceEngine engine(emitter_array);
+
+// Example 1: Standard audio (CD quality - 44.1kHz)
+std::vector<int16_t> cd_audio_frame = load_cd_audio();
+engine.process_audio_frame(cd_audio_frame, 44100.0);
+
+// Example 2: WebRTC voice (48kHz standard)
+std::vector<int16_t> webrtc_frame = receive_webrtc_audio();
+engine.process_audio_frame(webrtc_frame, 48000.0);
+
+// Example 3: High-resolution audio (96kHz)
+std::vector<int16_t> hires_frame = load_hires_audio();
+engine.process_audio_frame(hires_frame, 96000.0);
+
+// Example 4: Variable sample rate from file
+sndfile_info file_info;
+std::vector<int16_t> file_frame = load_audio_file("input.wav", &file_info);
+engine.process_audio_frame(file_frame, file_info.sample_rate);
 ```
 
 ## 24.1.4 Audio Input Sources

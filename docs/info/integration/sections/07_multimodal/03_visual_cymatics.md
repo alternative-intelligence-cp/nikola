@@ -150,6 +150,58 @@ void VisualCymaticsEngine::inject_image(const cv::Mat& image) {
         torus.propagate(0.01);
     }
 }
+
+double VisualCymaticsEngine::measure_resonance_with_stored_pattern(const std::string& label) {
+    // 1. Retrieve stored pattern from Long-Term Memory (LSM)
+    // The stored pattern represents the canonical wave signature of a learned object
+    std::vector<TorusNode> stored_pattern = memory_system.retrieve_pattern(label);
+
+    if (stored_pattern.empty()) {
+        // Pattern not found in memory - return no resonance
+        return 0.0;
+    }
+
+    // 2. Get current live wave state from the torus
+    // This is the wave pattern currently propagating after inject_image()
+    std::vector<TorusNode> current_state = torus.get_active_nodes();
+
+    // 3. Compute Wave Correlation Integral
+    // This is the dot product of complex conjugates, measuring phase-aligned overlap
+    // Formula: Correlation = Σ(stored* × current) / sqrt(Σ|stored|² × Σ|current|²)
+    //   where * denotes complex conjugate
+
+    std::complex<double> correlation_sum(0.0, 0.0);
+    double stored_energy = 0.0;
+    double current_energy = 0.0;
+
+    // Iterate over all active nodes in the current state
+    for (size_t i = 0; i < std::min(stored_pattern.size(), current_state.size()); ++i) {
+        // Complex conjugate multiplication: stored* × current
+        // This detects phase-aligned components (constructive interference)
+        std::complex<double> stored_conj = std::conj(stored_pattern[i].wavefunction);
+        std::complex<double> current_wave = current_state[i].wavefunction;
+
+        correlation_sum += stored_conj * current_wave;
+
+        // Accumulate energy norms for normalization
+        stored_energy += std::norm(stored_pattern[i].wavefunction);
+        current_energy += std::norm(current_state[i].wavefunction);
+    }
+
+    // 4. Normalize by geometric mean of energies (prevents bias toward high-amplitude patterns)
+    if (stored_energy < 1e-10 || current_energy < 1e-10) {
+        // One or both patterns are empty/vacuum - no resonance
+        return 0.0;
+    }
+
+    double normalization = std::sqrt(stored_energy * current_energy);
+
+    // 5. Return normalized correlation magnitude
+    // Value in [0, 1]: 0 = no overlap, 1 = perfect match
+    double resonance = std::abs(correlation_sum) / normalization;
+
+    return resonance;
+}
 ```
 
 ## 24.2.6 Hierarchical Visual Injection

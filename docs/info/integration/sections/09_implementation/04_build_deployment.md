@@ -48,10 +48,11 @@ public:
         spike.set_recipient(ComponentID::ORCHESTRATOR);
         spike.set_text_data(query_text);
 
-        // Serialize and send
-        std::string data;
-        spike.SerializeToString(&data);
-        socket.send(zmq::buffer(data), zmq::send_flags::none);
+        // Serialize directly to ZMQ message (zero-copy, no intermediate std::string)
+        size_t msg_size = spike.ByteSizeLong();
+        zmq::message_t request(msg_size);
+        spike.SerializeToArray(request.data(), msg_size);
+        socket.send(request, zmq::send_flags::none);
 
         // Receive response
         zmq::message_t reply;
@@ -63,6 +64,41 @@ public:
         return response.text_data();
     }
 };
+
+// Main entry point with proper libcurl initialization
+int main(int argc, char* argv[]) {
+    // CRITICAL: Initialize libcurl globally before any threading or network operations
+    // This prevents race conditions with the CustomHTTPClient used by external tools
+    // See Section 12.4 for CustomHTTPClient implementation
+    curl_global_init(CURL_GLOBAL_ALL);
+
+    // Ensure cleanup on exit
+    std::atexit([]() {
+        curl_global_cleanup();
+    });
+
+    // Parse command and execute
+    if (argc < 2) {
+        std::cerr << "Usage: twi-ctl <command> [args...]" << std::endl;
+        return 1;
+    }
+
+    TWIController controller;
+    std::string command = argv[1];
+
+    if (command == "query" && argc == 3) {
+        std::string result = controller.send_query(argv[2]);
+        std::cout << result << std::endl;
+    } else if (command == "status") {
+        // ... other commands ...
+    } else {
+        std::cerr << "Unknown command: " << command << std::endl;
+        return 1;
+    }
+
+    // libcurl will be cleaned up automatically via std::atexit
+    return 0;
+}
 ```
 
 ## 25.2 Build System (CMake)
@@ -202,10 +238,20 @@ RUN apt-get update && apt-get install -y \
     && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /build
-COPY . .
 
-RUN cmake -DCMAKE_BUILD_TYPE=Release -B build && \
-    cmake --build build --parallel $(nproc) && \
+# Copy dependency manifests first (for cache optimization)
+COPY CMakeLists.txt .
+COPY proto/ proto/
+
+# Configure CMake dependencies layer (cached unless CMakeLists.txt changes)
+RUN cmake -DCMAKE_BUILD_TYPE=Release -B build
+
+# Copy source code (invalidates cache only when source changes)
+COPY src/ src/
+COPY include/ include/
+
+# Build application (cached unless source or dependencies change)
+RUN cmake --build build --parallel $(nproc) && \
     cmake --install build --prefix /install
 
 # Stage 2: Runtime environment

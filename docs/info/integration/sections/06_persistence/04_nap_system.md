@@ -230,53 +230,43 @@ std::vector<TorusNode> DreamWeaveEngine::generate_counterfactual(
 void DreamWeaveEngine::inject_quantum_noise(std::vector<TorusNode>& sequence) {
     std::normal_distribution<double> noise(0.0, 0.1);
 
-    // First pass: Apply noise
+    // Energy-bounded perturbation preserves resonance state hierarchy
+    // Noise is multiplicative (scaled by existing energy) to respect vacuum states
+    // This maintains the distinction between short-term and long-term memories
     for (auto& node : sequence) {
         // Perturb quantum dimensions (u, v, w)
         std::complex<double> u_noise(noise(rng), noise(rng));
         std::complex<double> v_noise(noise(rng), noise(rng));
         std::complex<double> w_noise(noise(rng), noise(rng));
 
-        // Apply to wavefunction
-        node.wavefunction += 0.1 * (u_noise + v_noise + w_noise);
-    }
+        // Combined noise vector
+        std::complex<double> total_noise = u_noise + v_noise + w_noise;
 
-    // Second pass: Z-score normalization to prevent unbounded drift
-    // This ensures the noise-perturbed wavefield maintains stable statistics
-    // across multiple dream cycles, preventing numerical instability.
+        // Multiplicative noise scaled by existing energy (preserves vacuum)
+        // High-energy nodes (important memories) get larger perturbations
+        // Low-energy nodes (weak memories) get proportionally smaller noise
+        double current_energy = std::abs(node.wavefunction);
 
-    // Calculate mean and standard deviation
-    std::complex<double> mean(0.0, 0.0);
-    for (const auto& node : sequence) {
-        mean += node.wavefunction;
-    }
-    mean /= static_cast<double>(sequence.size());
+        // Apply multiplicative noise (10% of current amplitude)
+        node.wavefunction += 0.1 * current_energy * total_noise;
 
-    double variance = 0.0;
-    for (const auto& node : sequence) {
-        std::complex<double> diff = node.wavefunction - mean;
-        variance += std::norm(diff);  // |z - mean|^2
-    }
-    double std_dev = std::sqrt(variance / sequence.size());
-
-    // Prevent division by zero
-    if (std_dev < 1e-10) {
-        std_dev = 1.0;
-    }
-
-    // Z-score normalization: (x - mean) / std_dev
-    // This centers the distribution at 0 and scales to unit variance
-    for (auto& node : sequence) {
-        node.wavefunction = (node.wavefunction - mean) / std_dev;
-
-        // Additional safety: clamp amplitude to prevent extreme values
-        // Max amplitude: 10.0 (physical wavefunction should remain bounded)
+        // Energy conservation: Clamp to maximum nonary amplitude (±4)
+        // This respects the physical constraint from balanced nonary encoding
+        // Max amplitude: 4.0 (maps to Nit::POS4 or Nit::NEG4)
         double amplitude = std::abs(node.wavefunction);
-        if (amplitude > 10.0) {
+        if (amplitude > 4.0) {
             double phase = std::arg(node.wavefunction);
-            node.wavefunction = std::polar(10.0, phase);  // Preserve phase, clamp amplitude
+            node.wavefunction = std::polar(4.0, phase);  // Preserve phase, clamp to max Nit
         }
+
+        // Additional resonance preservation:
+        // The resonance_r dimension is NOT modified, preserving the damping hierarchy
+        // High resonance nodes (r → 1.0) maintain low damping (long-term memory)
+        // Low resonance nodes (r → 0.0) maintain high damping (temporary patterns)
     }
+
+    // No normalization step - energy distribution is meaningful and must be preserved
+    // The metric tensor g_ij will naturally balance energy distribution during propagation
 }
 
 double DreamWeaveEngine::evaluate_outcome(const std::vector<TorusNode>& sequence,

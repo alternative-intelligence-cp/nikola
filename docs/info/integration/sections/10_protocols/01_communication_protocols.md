@@ -295,12 +295,14 @@ public:
 
 #include <zmq.hpp>
 #include <unordered_set>
+#include <shared_mutex>
 #include <string>
 
 namespace nikola::spine {
 
 class ZAPHandler {
     std::unordered_set<std::string> whitelist;
+    mutable std::shared_mutex whitelist_mutex;  // Thread-safe access to whitelist
     zmq::context_t& ctx;
     zmq::socket_t zap_socket;
     bool running = false;
@@ -329,7 +331,13 @@ ZAPHandler::ZAPHandler(zmq::context_t& context)
 }
 
 void ZAPHandler::add_authorized_key(const std::string& public_key_z85) {
+    std::unique_lock<std::shared_mutex> lock(whitelist_mutex);  // Exclusive write lock
     whitelist.insert(public_key_z85);
+}
+
+void ZAPHandler::remove_authorized_key(const std::string& public_key_z85) {
+    std::unique_lock<std::shared_mutex> lock(whitelist_mutex);  // Exclusive write lock
+    whitelist.erase(public_key_z85);
 }
 
 void ZAPHandler::run() {
@@ -354,8 +362,12 @@ void ZAPHandler::run() {
             client_key.size()
         );
 
-        // Check whitelist
-        bool authorized = whitelist.count(client_key_str) > 0;
+        // Check whitelist (thread-safe read with shared lock)
+        bool authorized;
+        {
+            std::shared_lock<std::shared_mutex> lock(whitelist_mutex);  // Shared read lock
+            authorized = whitelist.count(client_key_str) > 0;
+        }
 
         // Send ZAP response (6 frames)
         zap_socket.send(zmq::str_buffer("1.0"), zmq::send_flags::sndmore);

@@ -148,37 +148,21 @@ All HTTP operations are asynchronous using std::future to prevent blocking the m
 #include <curl/curl.h>
 #include <mutex>
 
-// Singleton for thread-safe network library initialization
-class NetworkManager {
-private:
-    NetworkManager() {
-        curl_global_init(CURL_GLOBAL_ALL);
-    }
-
-    ~NetworkManager() {
-        curl_global_cleanup();
-    }
-
-    // Delete copy and move constructors
-    NetworkManager(const NetworkManager&) = delete;
-    NetworkManager& operator=(const NetworkManager&) = delete;
-    NetworkManager(NetworkManager&&) = delete;
-    NetworkManager& operator=(NetworkManager&&) = delete;
-
-public:
-    static NetworkManager& instance() {
-        static NetworkManager instance;
-        return instance;
-    }
-};
+// REMOVED: NetworkManager singleton to prevent race conditions
+// with curl_global_init being called multiple times from different
+// translation units or during static initialization.
+//
+// CRITICAL: curl_global_init MUST be called exactly once at the
+// beginning of main() BEFORE any networking operations occur.
+// See Section 25.1 for proper initialization in main().
 
 class CustomHTTPClient {
     CURL* curl;
 
 public:
     CustomHTTPClient() {
-        // Ensure network manager is initialized (thread-safe)
-        NetworkManager::instance();
+        // IMPORTANT: curl_global_init MUST have been called in main()
+        // before creating any CustomHTTPClient instances
 
         curl = curl_easy_init();
         if (!curl) {
@@ -570,6 +554,16 @@ std::string get_optional_env(const char* var_name, const std::string& default_va
 int main(int argc, char* argv[]) {
     std::cout << "[NIKOLA] Initializing Nikola Model v0.0.4..." << std::endl;
 
+    // CRITICAL: Initialize libcurl globally before any threading or network operations
+    // This MUST be called exactly once before any CustomHTTPClient instances are created
+    // to prevent race conditions during static initialization (see Audit Report Issue #9)
+    curl_global_init(CURL_GLOBAL_ALL);
+
+    // Ensure cleanup on exit
+    std::atexit([]() {
+        curl_global_cleanup();
+    });
+
     // Load API keys from environment variables
     std::string tavily_key = get_required_env("TAVILY_API_KEY");
     std::string firecrawl_key = get_required_env("FIRECRAWL_API_KEY");
@@ -588,6 +582,7 @@ int main(int argc, char* argv[]) {
     // Main event loop
     orchestrator.run();
 
+    // libcurl will be cleaned up automatically via std::atexit
     return 0;
 }
 ```
