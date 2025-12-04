@@ -226,15 +226,47 @@ private:
         header.page_id = page_id;
         header.flags = PAGE_COMPRESSED;
 
-        // Serialize nodes
-        std::vector<Nit> nonary_sequence;
+        // CRITICAL FIX (Audit 6 Item #1): Full node serialization
+        // Previous implementation only saved nonary_value, losing all learned geometry
+        // Now serializing complete state to prevent neuroplasticity data loss
+
+        std::vector<uint8_t> serialized_nodes;
+
         for (const auto& node : nodes) {
-            nonary_sequence.push_back(node.nonary_value);
-            // (Simplified: would also serialize metric tensor, etc.)
+            // 1. Nonary value (1 byte)
+            uint8_t nit_byte = static_cast<uint8_t>(static_cast<int>(node.nonary_value) + 4);
+            serialized_nodes.push_back(nit_byte);
+
+            // 2. Metric tensor (45 floats = 180 bytes)
+            // This is the LEARNED GEOMETRY - critical for neuroplasticity
+            const uint8_t* metric_bytes = reinterpret_cast<const uint8_t*>(node.metric_tensor.data());
+            serialized_nodes.insert(serialized_nodes.end(), metric_bytes, metric_bytes + (45 * sizeof(float)));
+
+            // 3. Resonance dimension (4 bytes)
+            const uint8_t* resonance_bytes = reinterpret_cast<const uint8_t*>(&node.resonance_r);
+            serialized_nodes.insert(serialized_nodes.end(), resonance_bytes, resonance_bytes + sizeof(float));
+
+            // 4. State dimension (4 bytes)
+            const uint8_t* state_bytes = reinterpret_cast<const uint8_t*>(&node.state_s);
+            serialized_nodes.insert(serialized_nodes.end(), state_bytes, state_bytes + sizeof(float));
+
+            // 5. Wavefunction (complex<double> = 16 bytes)
+            const uint8_t* wavefunction_bytes = reinterpret_cast<const uint8_t*>(&node.wavefunction);
+            serialized_nodes.insert(serialized_nodes.end(), wavefunction_bytes, wavefunction_bytes + sizeof(std::complex<double>));
+
+            // 6. Velocity (complex<double> = 16 bytes) - required for Velocity-Verlet integration
+            const uint8_t* velocity_bytes = reinterpret_cast<const uint8_t*>(&node.velocity);
+            serialized_nodes.insert(serialized_nodes.end(), velocity_bytes, velocity_bytes + sizeof(std::complex<double>));
+
+            // 7. Acceleration (complex<double> = 16 bytes) - required for Velocity-Verlet integration
+            const uint8_t* acceleration_bytes = reinterpret_cast<const uint8_t*>(&node.acceleration);
+            serialized_nodes.insert(serialized_nodes.end(), acceleration_bytes, acceleration_bytes + sizeof(std::complex<double>));
+
+            // Total per node: 1 + 180 + 4 + 4 + 16 + 16 + 16 = 237 bytes
         }
 
-        // Compress
-        auto compressed = nrle_compress(nonary_sequence);
+        // Compress the full serialized data
+        auto compressed = compress_binary(serialized_nodes);
         header.payload_len = compressed.size();
 
         // Checksum
@@ -243,6 +275,13 @@ private:
         // Write
         nik_file.write(reinterpret_cast<const char*>(&header), sizeof(header));
         nik_file.write(reinterpret_cast<const char*>(compressed.data()), compressed.size());
+    }
+
+    // Binary compression for serialized node data (replaces NRLE for full nodes)
+    std::vector<uint8_t> compress_binary(const std::vector<uint8_t>& data) {
+        // Use LZ4 or zstd for fast binary compression
+        // For now, return uncompressed (production should use compression library)
+        return data;
     }
 
     uint32_t crc32c(const uint8_t* data, size_t len);
@@ -438,8 +477,15 @@ public:
         // Add/update node in memtable
         memtable[hilbert_idx] = node;
 
-        // Estimate size (rough approximation)
-        memtable_size += sizeof(TorusNode);
+        // CRITICAL FIX (Audit 6 Item #1): Calculate actual serialized size
+        // If TorusNode uses PIMPL pattern, sizeof(TorusNode) returns only pointer size (8 bytes)
+        // Must use get_serializable_size() to get actual data size including:
+        // - metric_tensor (45 floats = 180 bytes)
+        // - wavefunction (2 doubles = 16 bytes)
+        // - resonance_r, state_s (2 floats = 8 bytes)
+        // - velocity, acceleration (2 complex = 32 bytes)
+        // Total: ~236 bytes + overhead
+        memtable_size += node.get_serializable_size();
 
         // Flush if memtable exceeds size limit
         if (memtable_size >= MEMTABLE_SIZE_LIMIT) {
@@ -484,12 +530,39 @@ public:
             page_header.page_id = hilbert_idx;
             page_header.flags = PAGE_COMPRESSED;
 
-            // Serialize node data
-            std::vector<Nit> nonary_sequence;
-            nonary_sequence.push_back(node.nonary_value);
+            // CRITICAL FIX (Audit 6 Item #1): Full serialization in LSM-DMC flush
+            std::vector<uint8_t> serialized_node;
 
-            // Compress using NRLE
-            auto compressed = nrle_compress(nonary_sequence);
+            // 1. Nonary value
+            uint8_t nit_byte = static_cast<uint8_t>(static_cast<int>(node.nonary_value) + 4);
+            serialized_node.push_back(nit_byte);
+
+            // 2. Metric tensor (45 floats = 180 bytes) - LEARNED GEOMETRY
+            const uint8_t* metric_bytes = reinterpret_cast<const uint8_t*>(node.metric_tensor.data());
+            serialized_node.insert(serialized_node.end(), metric_bytes, metric_bytes + (45 * sizeof(float)));
+
+            // 3. Resonance dimension
+            const uint8_t* resonance_bytes = reinterpret_cast<const uint8_t*>(&node.resonance_r);
+            serialized_node.insert(serialized_node.end(), resonance_bytes, resonance_bytes + sizeof(float));
+
+            // 4. State dimension
+            const uint8_t* state_bytes = reinterpret_cast<const uint8_t*>(&node.state_s);
+            serialized_node.insert(serialized_node.end(), state_bytes, state_bytes + sizeof(float));
+
+            // 5. Wavefunction
+            const uint8_t* wavefunction_bytes = reinterpret_cast<const uint8_t*>(&node.wavefunction);
+            serialized_node.insert(serialized_node.end(), wavefunction_bytes, wavefunction_bytes + sizeof(std::complex<double>));
+
+            // 6. Velocity
+            const uint8_t* velocity_bytes = reinterpret_cast<const uint8_t*>(&node.velocity);
+            serialized_node.insert(serialized_node.end(), velocity_bytes, velocity_bytes + sizeof(std::complex<double>));
+
+            // 7. Acceleration
+            const uint8_t* acceleration_bytes = reinterpret_cast<const uint8_t*>(&node.acceleration);
+            serialized_node.insert(serialized_node.end(), acceleration_bytes, acceleration_bytes + sizeof(std::complex<double>));
+
+            // Compress using binary compression (not NRLE - that's for sparse nonary values only)
+            auto compressed = compress_binary(serialized_node);
             page_header.payload_len = compressed.size();
             page_header.checksum = crc32c(compressed.data(), compressed.size());
 

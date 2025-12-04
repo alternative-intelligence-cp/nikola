@@ -93,6 +93,7 @@ find_package(LMDB REQUIRED)
 find_package(libvirt REQUIRED)
 find_package(FFTW3 REQUIRED)
 find_package(OpenCV REQUIRED)
+find_package(nlohmann_json 3.11.0 REQUIRED)  # CRITICAL FIX (Audit 6 Item #7): JSON library
 find_package(CUDA QUIET)
 
 # Optional AVX-512
@@ -162,6 +163,7 @@ target_link_libraries(lib9dtwi
         virt
         fftw3
         ${OpenCV_LIBS}
+        nlohmann_json::nlohmann_json  # CRITICAL FIX (Audit 6 Item #7): Add JSON library
 )
 
 target_include_directories(lib9dtwi
@@ -218,7 +220,12 @@ RUN apt-get update && apt-get install -y \
     libopencv-core4.6 \
     libcurl4 \
     qemu-system-x86 \
+    nlohmann-json3-dev \
     && rm -rf /var/lib/apt/lists/*
+
+# CRITICAL FIX (Audit 6 Item #7): Verify runtime dependencies with ldd
+# Run this command during build to ensure all shared libraries are present:
+# RUN ldd /usr/local/bin/nikola-daemon && ldd /usr/local/bin/twi-ctl
 
 COPY --from=builder /install /usr/local
 

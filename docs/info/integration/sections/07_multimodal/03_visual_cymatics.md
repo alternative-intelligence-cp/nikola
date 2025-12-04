@@ -87,36 +87,46 @@ void VisualCymaticsEngine::inject_image(const cv::Mat& image) {
     cv::resize(image, resized, cv::Size(81, 81));
 
     // Phase offsets for holographic encoding (in radians)
-    const double RED_PHASE_OFFSET = 0.0;           // 0° for emitter 7
-    const double GREEN_PHASE_OFFSET = M_PI / 3.0;  // 60° for emitter 8
-    const double BLUE_PHASE_OFFSET = 2.0 * M_PI / 3.0;  // 120° for emitter 9
+    const double RED_PHASE_OFFSET = 0.0;           // 0° for red channel
+    const double GREEN_PHASE_OFFSET = M_PI / 3.0;  // 60° for green channel
+    const double BLUE_PHASE_OFFSET = 2.0 * M_PI / 3.0;  // 120° for blue channel
+
+    // CRITICAL FIX (Audit 6 Item #2): Local wave injection instead of global emitter modulation
+    // Problem: Previous implementation called emitters.set_amplitude() in loop, overwriting
+    // global emitter state 81×81 times. Only last pixel (bottom-right) affected final state.
+    // Solution: Inject local wave interference at each spatial coordinate directly.
 
     for (int y = 0; y < resized.rows; ++y) {
         for (int x = 0; x < resized.cols; ++x) {
             cv::Vec3b pixel = resized.at<cv::Vec3b>(y, x);
 
-            // Map RGB to emitter amplitudes (normalized to [0, 1])
+            // Map RGB to normalized amplitudes [0, 1]
             double red_amp = pixel[2] / 255.0;
             double green_amp = pixel[1] / 255.0;
             double blue_amp = pixel[0] / 255.0;
 
-            // Map RGB to Quantum Dimensions (u, v, w / Emitters 4, 5, 6)
-            // Emitter 9 (Synchronizer) remains unmodulated to maintain global clocking stability
-
-            emitters.set_amplitude(4, red_amp, RED_PHASE_OFFSET);     // Red → e₄ (quantum u)
-            emitters.set_amplitude(5, green_amp, GREEN_PHASE_OFFSET); // Green → e₅ (quantum v)
-            emitters.set_amplitude(6, blue_amp, BLUE_PHASE_OFFSET);   // Blue → e₆ (quantum w)
-
-            // Inject at spatial coordinate
+            // Spatial coordinate in torus (x, y in dimensions 7, 8)
             Coord9D coord;
-            coord.coords = {0, 0, 0, 0, 0, 0, static_cast<double>(x), static_cast<double>(y), 0};
+            coord.coords = {0, 0, 0, 0, 0, 0, static_cast<int32_t>(x), static_cast<int32_t>(y), 0};
 
-            torus.apply_emitter_at_coord(coord, emitters);
+            // Compute local wave interference from three phase-offset channels
+            // Each color creates a wave with specific phase and amplitude
+            std::complex<double> red_wave(red_amp * cos(RED_PHASE_OFFSET), red_amp * sin(RED_PHASE_OFFSET));
+            std::complex<double> green_wave(green_amp * cos(GREEN_PHASE_OFFSET), green_amp * sin(GREEN_PHASE_OFFSET));
+            std::complex<double> blue_wave(blue_amp * cos(BLUE_PHASE_OFFSET), blue_amp * sin(BLUE_PHASE_OFFSET));
+
+            // Superposition: add all three color channels
+            std::complex<double> combined_wave = red_wave + green_wave + blue_wave;
+
+            // Inject the combined wave LOCALLY at this coordinate
+            // This directly modifies the node.wavefunction at (x, y) without affecting global state
+            torus.inject_wave_at_coord(coord, combined_wave);
         }
     }
 
     // Propagate waves for holographic encoding
     // The three phase-offset channels will interfere to create a holographic pattern
+    // Natural wave diffusion spreads spatial information across neighboring nodes
     for (int step = 0; step < 100; ++step) {
         torus.propagate(0.01);
     }

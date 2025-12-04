@@ -258,10 +258,20 @@ WantedBy=multi-user.target
         std::cerr << "Warning: Failed to enable systemd service (may need manual intervention)" << std::endl;
     }
 
-    // 5. Install dependencies (nlohmann-json)
-    if (guestfs_sh(g, "apt-get update && apt-get install -y nlohmann-json3-dev") == -1) {
-        std::cerr << "Warning: Failed to install dependencies" << std::endl;
-    }
+    // CRITICAL FIX (Audit 6 Item #3): Remove apt-get from air-gapped VM preparation
+    // Problem: VMs have NO network access (air-gapped security requirement)
+    // apt-get commands will always fail at runtime
+    // Solution: Pre-bake all dependencies into the gold image during initial setup
+    //
+    // Dependencies required by nikola-agent:
+    // - nlohmann-json3-dev (C++ JSON library)
+    // - g++ and libstdc++ (for compiled binary execution)
+    //
+    // IMPORTANT: Run these installations BEFORE this tool is used, during gold image creation:
+    //   apt-get update && apt-get install -y nlohmann-json3-dev g++ libstdc++6
+    //
+    // Or compile nikola-agent as a statically-linked binary to eliminate runtime dependencies:
+    //   g++ -std=c++17 -static -O3 -o nikola-agent nikola-agent.cpp
 
     // Unmount and cleanup
     if (guestfs_umount_all(g) == -1) {
@@ -305,19 +315,29 @@ wget https://cloud-images.ubuntu.com/noble/current/noble-server-cloudimg-amd64.i
 # 2. Resize image to 10GB
 qemu-img resize /var/lib/nikola/gold/ubuntu-24.04-base.qcow2 10G
 
-# 3. Compile nikola-agent
-g++ -std=c++17 -O3 -o /tmp/nikola-agent \
+# CRITICAL FIX (Audit 6 Item #3): Pre-install dependencies in gold image
+# Since VMs are air-gapped (no network), dependencies must be baked in BEFORE VM use
+
+# 3. Install runtime dependencies using virt-customize
+virt-customize -a /var/lib/nikola/gold/ubuntu-24.04-base.qcow2 \
+    --run-command "apt-get update" \
+    --install nlohmann-json3-dev,g++,libstdc++6 \
+    --run-command "apt-get clean"
+
+# 4. Compile nikola-agent (statically linked to eliminate runtime dependencies)
+g++ -std=c++17 -static -O3 -o /tmp/nikola-agent \
     nikola-agent.cpp \
     -I/usr/include/nlohmann
 
-# 4. Inject agent using libguestfs
+# 5. Inject agent using libguestfs
 ./prepare_gold_image /var/lib/nikola/gold/ubuntu-24.04-base.qcow2 /tmp/nikola-agent
 
-# 5. Copy to final location
+# 6. Copy to final location
 cp /var/lib/nikola/gold/ubuntu-24.04-base.qcow2 \
    /var/lib/nikola/gold/ubuntu-24.04.qcow2
 
 echo "Gold image ready at /var/lib/nikola/gold/ubuntu-24.04.qcow2"
+echo "All dependencies pre-installed (air-gapped compatible)"
 ```
 
 ### Option B: Cloud-Init Injection (Per-VM Dynamic Injection)

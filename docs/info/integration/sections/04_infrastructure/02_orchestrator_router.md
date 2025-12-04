@@ -74,10 +74,12 @@ bool is_factual_query(const std::string& query) {
 
 ## 11.4 Implementation
 
-### Orchestrator Class
+### 11.4.1 Reference Synchronous Implementation (DO NOT USE IN PRODUCTION)
+
+**WARNING:** The following synchronous implementation is provided for reference and testing only. It blocks the main thread during physics propagation and tool dispatch, preventing concurrent query processing. **Production systems must use the AsyncOrchestrator (Section 11.4.2).**
 
 ```cpp
-class Orchestrator {
+class SynchronousOrchestrator {  // Reference implementation only
     ComponentClient spine_client;
     TorusManifold torus;
     NonaryEmbedder embedder;
@@ -161,11 +163,15 @@ private:
 };
 ```
 
-### 11.2.1 Production Asynchronous Architecture
+### 11.4.2 Production Asynchronous Implementation (MANDATORY)
 
-**Important:** The synchronous implementation above blocks the main thread during propagation cycles (100ms) and tool dispatch (potentially seconds). For production deployment, the orchestrator must use an asynchronous event loop architecture.
+**CRITICAL FIX (Audit 6 Item #4):** The orchestrator MUST be asynchronous to prevent blocking the entire system during physics propagation (100ms) and tool dispatch (potentially seconds). The synchronous implementation causes:
+- Complete system freeze during query processing
+- Inability to handle concurrent requests
+- Blocking of API, CLI, and ZMQ message handling
+- Failure to process incoming sensor data (audio, video)
 
-**Recommended Implementation Pattern:**
+**Production-Grade Implementation:**
 
 ```cpp
 #include <boost/asio.hpp>
@@ -235,6 +241,22 @@ public:
 ```
 
 This architecture allows the system to "think" (physics propagation) while simultaneously waiting for external I/O (tool responses), preventing the cognitive loop from blocking.
+
+### 11.4.3 Deployment Recommendation
+
+**Production systems MUST:**
+1. Use `AsyncOrchestrator` (Section 11.4.2) as the primary orchestrator
+2. Run `start_physics_loop()` at system startup to enable continuous background wave propagation
+3. Use `process_query_async()` for all query processing, returning futures immediately
+4. Configure thread pool size based on available CPU cores (default: 4 threads)
+
+**Testing/Development systems MAY:**
+1. Use `SynchronousOrchestrator` (Section 11.4.1) for single-threaded debugging
+2. Accept the performance penalty for simplified call stack analysis
+
+**NEVER:**
+1. Deploy `SynchronousOrchestrator` to production environments
+2. Mix synchronous and asynchronous orchestrators in the same process
 
 ---
 
