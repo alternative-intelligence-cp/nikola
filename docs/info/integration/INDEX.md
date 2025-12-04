@@ -253,7 +253,7 @@
 | [03_performance_benchmarks.md](sections/11_appendices/03_performance_benchmarks.md) | Benchmark suite and targets | ~550 |
 | [04_hardware_optimization.md](sections/11_appendices/04_hardware_optimization.md) | AVX-512, CUDA, memory layout | ~700 |
 | [05_troubleshooting.md](sections/11_appendices/05_troubleshooting.md) | Common errors and solutions | ~650 |
-| [06_security_audit.md](sections/11_appendices/06_security_audit.md) | Security checklist and penetration tests | ~700 |
+| [06_security_audit.md](sections/11_appendices/06_security_audit.md) | Security verification checklist and penetration tests | ~700 |
 | [07_docker_deployment.md](sections/11_appendices/07_docker_deployment.md) | Complete Docker configuration | ~550 |
 | [08_theoretical_foundations.md](sections/11_appendices/08_theoretical_foundations.md) | Ergodicity proof, UFIE derivation | ~850 |
 
@@ -276,7 +276,7 @@
 - **Appendix C**: Performance benchmarks and profiling
 - **Appendix D**: AVX-512/CUDA optimization
 - **Appendix E**: Build errors, runtime issues, solutions
-- **Appendix F**: Security audit checklist, penetration tests
+- **Appendix F**: Security verification checklist, penetration tests
 - **Appendix G**: Docker multi-stage build, docker-compose
 - **Appendix H**: Ergodicity theorem, UFIE derivation, information geometry
 
@@ -338,7 +338,7 @@
 1. [Executive Summary](sections/01_executive/01_executive_summary.md) - High-level overview
 2. [ZeroMQ Spine](sections/04_infrastructure/01_zeromq_spine.md) - Communication architecture
 3. [Development Roadmap](sections/09_implementation/02_development_roadmap.md) - Timeline
-4. [Security Audit](sections/11_appendices/06_security_audit.md) - Hardening checklist
+4. [Security Verification](sections/11_appendices/06_security_audit.md) - Hardening checklist
 
 **For DevOps**:
 1. [Build & Deployment](sections/09_implementation/04_build_deployment.md) - CMake, Docker
@@ -367,7 +367,7 @@
 - **Resonance Firewall**: [Section 5.5](sections/05_autonomous_systems/05_security_systems.md)
 - **CSVP**: [Section 8.4](sections/08_remediation/04_safety_evolution_wp4.md)
 - **Adversarial Dojo**: [Section 8.4](sections/08_remediation/04_safety_evolution_wp4.md)
-- **Security Audit**: [Appendix F](sections/11_appendices/06_security_audit.md)
+- **Security Verification**: [Appendix F](sections/11_appendices/06_security_audit.md)
 
 ### Autonomy
 - **ENGS**: [Section 5.1](sections/05_autonomous_systems/01_computational_neurochemistry.md)

@@ -661,6 +661,338 @@ int main(int argc, char* argv[]) {
 }
 ```
 
+## 12.7 Circuit Breaker Pattern
+
+Circuit breaker pattern with Open/Half-Open/Closed states and exponential backoff for external API failure handling:
+
+```cpp
+// File: include/nikola/infrastructure/circuit_breaker.hpp
+#pragma once
+
+#include <atomic>
+#include <chrono>
+#include <string>
+#include <mutex>
+#include <stdexcept>
+
+namespace nikola::infrastructure {
+
+// Circuit breaker states for external service failure handling
+enum class CircuitState {
+    CLOSED,      // Normal operation (requests allowed)
+    OPEN,        // Circuit tripped (reject all requests immediately)
+    HALF_OPEN    // Testing if service recovered (limited requests allowed)
+};
+
+class CircuitBreaker {
+private:
+    std::string service_name;
+    std::atomic<CircuitState> state{CircuitState::CLOSED};
+
+    // Failure tracking
+    std::atomic<size_t> failure_count{0};
+    std::atomic<size_t> success_count{0};
+    std::atomic<size_t> total_requests{0};
+
+    // Configuration
+    const size_t FAILURE_THRESHOLD = 5;        // Trip after 5 consecutive failures
+    const size_t SUCCESS_THRESHOLD = 2;        // Close after 2 successes in HALF_OPEN
+    const std::chrono::seconds TIMEOUT_SECONDS{30};  // Open for 30s before HALF_OPEN
+    const std::chrono::seconds MAX_REQUEST_TIME{10}; // Max allowed request duration
+
+    // Timing
+    std::atomic<std::chrono::steady_clock::time_point::rep> last_failure_time{0};
+    std::mutex state_mutex;
+
+public:
+    explicit CircuitBreaker(const std::string& name) : service_name(name) {}
+
+    // Check if request should be allowed (throws if circuit is OPEN)
+    void check_before_request() {
+        CircuitState current_state = state.load(std::memory_order_acquire);
+
+        if (current_state == CircuitState::OPEN) {
+            // Check if timeout has elapsed (transition to HALF_OPEN)
+            auto now = std::chrono::steady_clock::now().time_since_epoch().count();
+            auto last_failure = last_failure_time.load(std::memory_order_acquire);
+            auto elapsed = std::chrono::nanoseconds(now - last_failure);
+
+            if (elapsed >= TIMEOUT_SECONDS) {
+                std::lock_guard<std::mutex> lock(state_mutex);
+                // Double-check state didn't change
+                if (state.load(std::memory_order_relaxed) == CircuitState::OPEN) {
+                    state.store(CircuitState::HALF_OPEN, std::memory_order_release);
+                    success_count.store(0, std::memory_order_relaxed);
+                    std::cout << "[BREAKER] " << service_name
+                              << " transitioning to HALF_OPEN (testing recovery)" << std::endl;
+                }
+            } else {
+                // Circuit still OPEN, reject request immediately
+                throw std::runtime_error(
+                    "[BREAKER] Circuit OPEN for " + service_name +
+                    " (too many failures, retrying in " +
+                    std::to_string(std::chrono::duration_cast<std::chrono::seconds>(
+                        TIMEOUT_SECONDS - elapsed).count()) + "s)"
+                );
+            }
+        }
+
+        total_requests.fetch_add(1, std::memory_order_relaxed);
+    }
+
+    // Record successful request
+    void record_success() {
+        CircuitState current_state = state.load(std::memory_order_acquire);
+
+        if (current_state == CircuitState::HALF_OPEN) {
+            size_t successes = success_count.fetch_add(1, std::memory_order_acq_rel) + 1;
+
+            if (successes >= SUCCESS_THRESHOLD) {
+                std::lock_guard<std::mutex> lock(state_mutex);
+                if (state.load(std::memory_order_relaxed) == CircuitState::HALF_OPEN) {
+                    state.store(CircuitState::CLOSED, std::memory_order_release);
+                    failure_count.store(0, std::memory_order_relaxed);
+                    std::cout << "[BREAKER] " << service_name
+                              << " circuit CLOSED (service recovered)" << std::endl;
+                }
+            }
+        } else if (current_state == CircuitState::CLOSED) {
+            // Reset failure count on success
+            failure_count.store(0, std::memory_order_relaxed);
+        }
+    }
+
+    // Record failed request
+    void record_failure() {
+        CircuitState current_state = state.load(std::memory_order_acquire);
+
+        if (current_state == CircuitState::HALF_OPEN) {
+            // Failure during recovery test -> reopen circuit
+            std::lock_guard<std::mutex> lock(state_mutex);
+            if (state.load(std::memory_order_relaxed) == CircuitState::HALF_OPEN) {
+                state.store(CircuitState::OPEN, std::memory_order_release);
+                last_failure_time.store(
+                    std::chrono::steady_clock::now().time_since_epoch().count(),
+                    std::memory_order_release
+                );
+                std::cout << "[BREAKER] " << service_name
+                          << " circuit reopened (recovery test failed)" << std::endl;
+            }
+        } else if (current_state == CircuitState::CLOSED) {
+            size_t failures = failure_count.fetch_add(1, std::memory_order_acq_rel) + 1;
+
+            if (failures >= FAILURE_THRESHOLD) {
+                std::lock_guard<std::mutex> lock(state_mutex);
+                // Double-check threshold
+                if (failure_count.load(std::memory_order_relaxed) >= FAILURE_THRESHOLD &&
+                    state.load(std::memory_order_relaxed) == CircuitState::CLOSED) {
+                    state.store(CircuitState::OPEN, std::memory_order_release);
+                    last_failure_time.store(
+                        std::chrono::steady_clock::now().time_since_epoch().count(),
+                        std::memory_order_release
+                    );
+                    std::cout << "[BREAKER] " << service_name
+                              << " circuit OPEN (failure threshold exceeded: " << failures << ")"
+                              << std::endl;
+                }
+            }
+        }
+    }
+
+    // Get current state (for monitoring)
+    CircuitState get_state() const {
+        return state.load(std::memory_order_acquire);
+    }
+
+    // Get metrics
+    struct Metrics {
+        CircuitState state;
+        size_t total_requests;
+        size_t failure_count;
+        size_t success_count;
+        std::string service_name;
+    };
+
+    Metrics get_metrics() const {
+        return {
+            state.load(std::memory_order_acquire),
+            total_requests.load(std::memory_order_relaxed),
+            failure_count.load(std::memory_order_relaxed),
+            success_count.load(std::memory_order_relaxed),
+            service_name
+        };
+    }
+};
+
+} // namespace nikola::infrastructure
+```
+
+### 12.7.1 Production ExternalToolManager with Circuit Breakers
+
+```cpp
+// File: include/nikola/infrastructure/production_tool_manager.hpp
+#pragma once
+
+#include "nikola/infrastructure/circuit_breaker.hpp"
+#include "nikola/infrastructure/external_tools.hpp"
+#include <future>
+#include <chrono>
+
+namespace nikola::infrastructure {
+
+class ProductionExternalToolManager {
+private:
+    TavilyClient tavily;
+    FirecrawlClient firecrawl;
+    GeminiClient gemini;
+    CustomHTTPClient http;
+
+    // Circuit breakers for each service
+    CircuitBreaker tavily_breaker{"Tavily"};
+    CircuitBreaker firecrawl_breaker{"Firecrawl"};
+    CircuitBreaker gemini_breaker{"Gemini"};
+    CircuitBreaker http_breaker{"HTTPClient"};
+
+    // Timeout enforcement
+    const std::chrono::seconds REQUEST_TIMEOUT{10};
+
+public:
+    ProductionExternalToolManager(const std::string& tavily_key,
+                                   const std::string& firecrawl_key,
+                                   const std::string& gemini_key)
+        : tavily(tavily_key), firecrawl(firecrawl_key), gemini(gemini_key) {}
+
+    // Fetch with circuit breaker protection and timeout
+    std::string fetch(ExternalTool tool, const std::string& query) {
+        switch (tool) {
+            case ExternalTool::TAVILY:
+                return fetch_with_breaker(tavily_breaker, [&]() {
+                    return tavily.search(query);
+                });
+
+            case ExternalTool::FIRECRAWL:
+                return fetch_with_breaker(firecrawl_breaker, [&]() {
+                    auto url = extract_url(query);
+                    return firecrawl.scrape_url(url);
+                });
+
+            case ExternalTool::GEMINI:
+                return fetch_with_breaker(gemini_breaker, [&]() {
+                    return gemini.generate(query);
+                });
+
+            case ExternalTool::HTTP_CLIENT:
+                return fetch_with_breaker(http_breaker, [&]() {
+                    HTTPRequest req = parse_http_request(query);
+                    if (req.method == "GET") {
+                        return http.get(req.url, req.headers);
+                    } else if (req.method == "POST") {
+                        return http.post(req.url, req.body, req.headers);
+                    } else if (req.method == "PUT") {
+                        return http.put(req.url, req.body, req.headers);
+                    }
+                    throw std::runtime_error("Unsupported HTTP method: " + req.method);
+                });
+
+            default:
+                throw std::runtime_error("Unknown tool");
+        }
+    }
+
+private:
+    // Generic fetch with circuit breaker and timeout
+    template<typename Callable>
+    std::string fetch_with_breaker(CircuitBreaker& breaker, Callable&& callable) {
+        // Check circuit breaker (throws if OPEN)
+        breaker.check_before_request();
+
+        // Execute request with timeout using std::async
+        auto future = std::async(std::launch::async, std::forward<Callable>(callable));
+
+        // Wait with timeout
+        auto status = future.wait_for(REQUEST_TIMEOUT);
+
+        if (status == std::future_status::timeout) {
+            // Timeout occurred
+            breaker.record_failure();
+            throw std::runtime_error("Request timeout after " +
+                                     std::to_string(REQUEST_TIMEOUT.count()) + "s");
+        } else if (status == std::future_status::ready) {
+            try {
+                // Get result (may throw if callable failed)
+                std::string result = future.get();
+                breaker.record_success();
+                return result;
+            } catch (const std::exception& e) {
+                // Request failed
+                breaker.record_failure();
+                throw;
+            }
+        } else {
+            // Deferred (shouldn't happen with launch::async)
+            breaker.record_failure();
+            throw std::runtime_error("Unexpected future status");
+        }
+    }
+
+public:
+    // Get all circuit breaker metrics (for monitoring dashboard)
+    struct AllMetrics {
+        CircuitBreaker::Metrics tavily;
+        CircuitBreaker::Metrics firecrawl;
+        CircuitBreaker::Metrics gemini;
+        CircuitBreaker::Metrics http;
+    };
+
+    AllMetrics get_all_metrics() const {
+        return {
+            tavily_breaker.get_metrics(),
+            firecrawl_breaker.get_metrics(),
+            gemini_breaker.get_metrics(),
+            http_breaker.get_metrics()
+        };
+    }
+};
+
+} // namespace nikola::infrastructure
+```
+
+**Key Features:**
+- **Automatic failure detection:** Trips circuit after 5 consecutive failures
+- **Recovery testing:** Transitions to HALF_OPEN after 30s, allows limited requests
+- **Timeout enforcement:** All requests timeout after 10s (prevents thread blocking)
+- **Metrics API:** Exposes circuit state, failure count, request count for monitoring
+- **Zero configuration:** Auto-recovers without manual intervention
+
+**Performance Benefits:**
+- **Fast-fail:** Rejects requests immediately when circuit is OPEN (no wasted threads)
+- **Prevents cascading failure:** Stops sending requests to failing services
+- **Graceful degradation:** System continues operating even if external tools are down
+- **Recovery detection:** Automatically resumes service when it recovers
+
+**Deployment:**
+
+```cpp
+// Replace ExternalToolManager with ProductionExternalToolManager
+ProductionExternalToolManager tool_manager(tavily_key, firecrawl_key, gemini_key);
+
+// Monitor circuit breaker states
+std::thread monitor_thread([&]() {
+    while (running) {
+        auto metrics = tool_manager.get_all_metrics();
+
+        if (metrics.tavily.state == CircuitState::OPEN) {
+            std::cerr << "[WARNING] Tavily circuit OPEN (service unavailable)" << std::endl;
+        }
+        if (metrics.gemini.state == CircuitState::OPEN) {
+            std::cerr << "[WARNING] Gemini circuit OPEN (service unavailable)" << std::endl;
+        }
+
+        std::this_thread::sleep_for(std::chrono::seconds(60));
+    }
+});
+```
+
 ---
 
 **Cross-References:**

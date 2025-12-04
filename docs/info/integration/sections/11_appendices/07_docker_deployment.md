@@ -114,9 +114,8 @@ EXPOSE 5555 5556
 HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
     CMD /usr/local/bin/twi-ctl status || exit 1
 
-# CRITICAL FIX (Audit 3 Item #9): Declare volumes for state persistence
-# Problem: CurveZMQ keys regenerate on container restart without volumes
-# Solution: Mark /etc/nikola/keys as volume to persist across restarts
+# Declare volumes for state persistence
+# CurveZMQ keys and system state must persist across container restarts
 VOLUME ["/var/lib/nikola/state", "/var/lib/nikola/ingest", "/var/lib/nikola/archive", "/etc/nikola/keys"]
 
 # Default command: start daemon

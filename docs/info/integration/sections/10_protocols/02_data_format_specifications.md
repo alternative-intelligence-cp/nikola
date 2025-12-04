@@ -707,14 +707,14 @@ phase_offset = 0.0
 **Always use Protocol Buffers for inter-component communication:**
 
 ```cpp
-// ✓ GOOD: Use protobuf
+// Recommended: Use Protocol Buffers for inter-component communication
 NeuralSpike spike;
 spike.set_text_data("Hello");
 std::string serialized;
 spike.SerializeToString(&serialized);
 socket.send(zmq::buffer(serialized));
 
-// ✗ BAD: Don't use raw JSON over ZMQ
+// Avoid: Raw JSON over ZMQ (lacks type safety and versioning)
 nlohmann::json j = {{"text", "Hello"}};
 socket.send(zmq::str_buffer(j.dump()));
 ```

@@ -109,8 +109,8 @@ public:
     std::array<uint8_t, 32> secret_key;
 
     CurveKeyPair() {
-        // CRITICAL FIX: Load existing keys or generate new ones
-        // Prevents lockout after self-improvement restart (Section 17.5)
+        // Load existing keys or generate new ones to maintain access across restarts
+        // Persistent key storage prevents lockout after self-improvement restart (Section 17.5)
         const std::string key_dir = "/etc/nikola/keys";
         const std::string public_key_path = key_dir + "/broker_public.key";
         const std::string secret_key_path = key_dir + "/broker_secret.key";

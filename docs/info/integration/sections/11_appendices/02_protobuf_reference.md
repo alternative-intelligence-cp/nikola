@@ -536,7 +536,7 @@ if (payload.citations_size() > 0) {
 **Avoid Large Repeated Fields:**
 
 ```cpp
-// ✓ GOOD: Send data in chunks
+// Send data in chunks (efficient for large datasets)
 for (int i = 0; i < data.size(); i += CHUNK_SIZE) {
     NeuralSpike chunk;
     auto* wave = chunk.mutable_data_wave();
@@ -547,7 +547,7 @@ for (int i = 0; i < data.size(); i += CHUNK_SIZE) {
     send_spike(chunk);
 }
 
-// ✗ BAD: Send all data at once (millions of elements)
+// Avoid sending all data at once (causes memory/performance issues with millions of elements)
 NeuralSpike spike;
 auto* wave = spike.mutable_data_wave();
 for (const auto& sample : all_data) {  // Could be huge!

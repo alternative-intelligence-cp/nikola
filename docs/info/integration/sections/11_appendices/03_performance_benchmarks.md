@@ -308,28 +308,28 @@ endif()
 **Wave Propagation Loop:**
 
 ```cpp
-// ✓ GOOD: Cache-friendly Hilbert order traversal
+// Cache-friendly Hilbert order traversal
 for (auto [hilbert_idx, node_ptr] : sorted_nodes) {
     propagate_node(node_ptr);
 }
 
-// ✗ BAD: Random memory access
+// Random memory access (poor cache locality)
 for (auto& [coord, node] : grid) {
-    propagate_node(&node);  // Poor cache locality
+    propagate_node(&node);
 }
 ```
 
 **Vectorization:**
 
 ```cpp
-// ✓ GOOD: Vectorizable loop (8 emitters at once with AVX-512)
+// Vectorizable loop (8 emitters at once with AVX-512)
 #pragma omp simd
 for (int i = 0; i < 8; ++i) {
     phases[i] += tuning_words[i];
     outputs[i] = sine_lut[phases[i] >> 18];  // Top 14 bits
 }
 
-// ✗ BAD: Not vectorizable (function calls in loop)
+// Not vectorizable (function calls in loop)
 for (int i = 0; i < 8; ++i) {
     outputs[i] = std::sin(2 * M_PI * phases[i] / (1ULL << 32));
 }
@@ -340,14 +340,14 @@ for (int i = 0; i < 8; ++i) {
 **Structure-of-Arrays (SoA) for SIMD:**
 
 ```cpp
-// ✓ GOOD: SoA layout (vectorizable)
+// SoA layout (vectorizable)
 struct TorusGrid {
     std::vector<std::complex<float>> wavefunctions;  // Contiguous
     std::vector<float> resonances;                   // Contiguous
     std::vector<float> states;                       // Contiguous
 };
 
-// ✗ BAD: Array-of-Structures (AoS) - poor SIMD
+// Array-of-Structures (AoS) - poor SIMD performance
 struct TorusNode {
     std::complex<float> wavefunction;
     float resonance;

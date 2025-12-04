@@ -4,7 +4,7 @@
 
 **Challenge:** Convert continuous 9D toroidal manifold to discrete tensor.
 
-**Solution:** "Holographic snapshot" at specific time $t$.
+**Approach:** "Holographic snapshot" at specific time $t$.
 
 ## 20.2 Hilbert Curve Flattening
 

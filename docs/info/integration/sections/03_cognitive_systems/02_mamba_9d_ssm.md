@@ -109,9 +109,7 @@ MambaParams extract_ssm_params(const TorusNode& node) {
     // B vector: Input coupling from state dimension
     params.B = Eigen::VectorXd::Constant(9, node.state_s);
 
-    // CRITICAL FIX (Audit 3 Item #7): C vector from QuantumState projection
-    // Problem: Was using static Ones(9) instead of projecting wavefunction
-    // Solution: Project the node's QuantumState (u, v, w) into output matrix C
+    // C vector: Project QuantumState amplitudes (u, v, w) into output matrix
     params.C = Eigen::VectorXd::Zero(9);
 
     // Project quantum state amplitudes into C vector

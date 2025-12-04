@@ -1,4 +1,4 @@
-# APPENDIX F: SECURITY AUDIT CHECKLIST
+# APPENDIX F: SECURITY VERIFICATION CHECKLIST
 
 ## F.1 System Hardening
 
@@ -405,15 +405,15 @@ for coord in generate_grid_coords():
 
 ---
 
-## F.6 Security Audit Report Template
+## F.6 Security Verification Report Template
 
 **Use this template for periodic security reviews:**
 
 ```markdown
-# Nikola Security Audit Report
+# Nikola Security Verification Report
 
 **Date:** YYYY-MM-DD
-**Auditor:** [Name]
+**Reviewer:** [Name]
 **Version:** v0.0.4
 
 ## Executive Summary

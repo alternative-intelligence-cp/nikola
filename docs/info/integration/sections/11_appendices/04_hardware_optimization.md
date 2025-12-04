@@ -296,10 +296,10 @@ endif()
 
 ### D.3.1 Cache-Friendly Access Patterns
 
-**✓ GOOD: Sequential Hilbert Order**
+**Sequential Hilbert Order for Cache Efficiency:**
 
 ```cpp
-// Sort nodes by Hilbert index for cache efficiency
+// Sort nodes by Hilbert index for optimal cache line utilization
 std::vector<std::pair<uint64_t, TorusNode*>> indexed_nodes;
 
 for (auto& [coord, node] : grid) {
@@ -315,10 +315,10 @@ for (auto& [idx, node_ptr] : indexed_nodes) {
 }
 ```
 
-**✗ BAD: Random Hash Map Iteration**
+**Random Hash Map Iteration (Poor Cache Locality):**
 
 ```cpp
-// Poor cache locality - random memory access
+// Random memory access pattern
 for (auto& [coord, node] : grid) {
     process_node(&node);
 }
@@ -349,7 +349,7 @@ static_assert(sizeof(TorusNode) == 256, "TorusNode must be 256 bytes");
 
 ### D.3.3 Structure-of-Arrays (SoA) for SIMD
 
-**✓ GOOD: SoA Layout**
+**SoA Layout for Vectorization:**
 
 ```cpp
 struct TorusGridSoA {
@@ -369,7 +369,7 @@ struct TorusGridSoA {
 };
 ```
 
-**✗ BAD: Array-of-Structures (AoS)**
+**Array-of-Structures (AoS) - Poor SIMD Performance:**
 
 ```cpp
 struct TorusNode {

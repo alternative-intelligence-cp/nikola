@@ -117,7 +117,7 @@ This repository contains the **complete, comprehensive, and unambiguous technica
 - [C: Performance Benchmarks](sections/11_appendices/03_performance_benchmarks.md)
 - [D: Hardware Optimization](sections/11_appendices/04_hardware_optimization.md)
 - [E: Troubleshooting Guide](sections/11_appendices/05_troubleshooting.md)
-- [F: Security Audit Checklist](sections/11_appendices/06_security_audit.md)
+- [F: Security Verification Checklist](sections/11_appendices/06_security_audit.md)
 - [G: Docker Deployment](sections/11_appendices/07_docker_deployment.md)
 - [H: Theoretical Foundations](sections/11_appendices/08_theoretical_foundations.md)
 
@@ -243,7 +243,7 @@ See [Appendix H: Theoretical Foundations](sections/11_appendices/08_theoretical_
 5. **Testing**: Adversarial Code Dojo (Red Team agent)
 6. **Evolution**: Shadow Spine Protocol (safe A/B testing)
 
-**Penetration Testing**: See [Appendix F: Security Audit](sections/11_appendices/06_security_audit.md)
+**Penetration Testing**: See [Appendix F: Security Verification](sections/11_appendices/06_security_audit.md)
 
 ---
 

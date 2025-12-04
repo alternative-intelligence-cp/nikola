@@ -93,7 +93,7 @@ find_package(LMDB REQUIRED)
 find_package(libvirt REQUIRED)
 find_package(FFTW3 REQUIRED)
 find_package(OpenCV REQUIRED)
-find_package(nlohmann_json 3.11.0 REQUIRED)  # CRITICAL FIX (Audit 6 Item #7): JSON library
+find_package(nlohmann_json 3.11.0 REQUIRED)  # JSON library for configuration
 find_package(CUDA QUIET)
 
 # Optional AVX-512
@@ -163,7 +163,7 @@ target_link_libraries(lib9dtwi
         virt
         fftw3
         ${OpenCV_LIBS}
-        nlohmann_json::nlohmann_json  # CRITICAL FIX (Audit 6 Item #7): Add JSON library
+        nlohmann_json::nlohmann_json  # JSON library for configuration
 )
 
 target_include_directories(lib9dtwi
@@ -223,8 +223,7 @@ RUN apt-get update && apt-get install -y \
     nlohmann-json3-dev \
     && rm -rf /var/lib/apt/lists/*
 
-# CRITICAL FIX (Audit 6 Item #7): Verify runtime dependencies with ldd
-# Run this command during build to ensure all shared libraries are present:
+# Verify runtime dependencies with ldd during build:
 # RUN ldd /usr/local/bin/nikola-daemon && ldd /usr/local/bin/twi-ctl
 
 COPY --from=builder /install /usr/local
@@ -375,7 +374,7 @@ ctest -R bench
 - [ ] All unit tests pass (100%)
 - [ ] All integration tests pass
 - [ ] Physics invariants verified
-- [ ] Security audit passed (Appendix G)
+- [ ] Security verification passed (Appendix G)
 - [ ] Performance benchmarks met (Appendix F)
 - [ ] Docker image builds successfully
 
