@@ -148,21 +148,32 @@ All HTTP operations are asynchronous using std::future to prevent blocking the m
 #include <curl/curl.h>
 #include <mutex>
 
-// REMOVED: NetworkManager singleton to prevent race conditions
-// with curl_global_init being called multiple times from different
-// translation units or during static initialization.
-//
-// CRITICAL: curl_global_init MUST be called exactly once at the
-// beginning of main() BEFORE any networking operations occur.
-// See Section 25.1 for proper initialization in main().
+// CRITICAL: Thread-safe lazy initialization using std::call_once
+// Prevents race conditions even if CustomHTTPClient is instantiated
+// from static initializers or unit tests before main() executes
+
+class NetworkInitializer {
+public:
+    static void ensure_initialized() {
+        static std::once_flag init_flag;
+        std::call_once(init_flag, []() {
+            curl_global_init(CURL_GLOBAL_ALL);
+
+            // Register cleanup (runs at program exit)
+            std::atexit([]() {
+                curl_global_cleanup();
+            });
+        });
+    }
+};
 
 class CustomHTTPClient {
     CURL* curl;
 
 public:
     CustomHTTPClient() {
-        // IMPORTANT: curl_global_init MUST have been called in main()
-        // before creating any CustomHTTPClient instances
+        // Lazy thread-safe initialization (safe even in static constructors)
+        NetworkInitializer::ensure_initialized();
 
         curl = curl_easy_init();
         if (!curl) {

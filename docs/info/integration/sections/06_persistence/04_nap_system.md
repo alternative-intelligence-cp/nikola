@@ -207,20 +207,130 @@ struct InteractionRecord {
     uint64_t timestamp;
 };
 
+// Sum-tree data structure for O(log N) prioritized sampling
+// Used in DreamWeave for efficient high-error experience replay
+class SumTree {
+private:
+    std::vector<double> tree;     // Binary heap storing cumulative sums
+    std::vector<InteractionRecord*> data;  // Leaf nodes (actual data)
+    size_t capacity;
+    size_t write_idx = 0;
+    size_t size_ = 0;
+
+public:
+    explicit SumTree(size_t capacity) : capacity(capacity) {
+        // Tree has 2*capacity-1 nodes (internal + leaves)
+        tree.resize(2 * capacity - 1, 0.0);
+        data.resize(capacity, nullptr);
+    }
+
+    // Add experience with priority (prediction error)
+    void add(InteractionRecord* record, double priority) {
+        size_t tree_idx = write_idx + capacity - 1;  // Leaf index in tree
+
+        // Store data at leaf
+        data[write_idx] = record;
+
+        // Update tree with new priority
+        update(tree_idx, priority);
+
+        // Circular buffer
+        write_idx = (write_idx + 1) % capacity;
+        if (size_ < capacity) {
+            size_++;
+        }
+    }
+
+    // Update priority at specific tree index
+    void update(size_t tree_idx, double priority) {
+        double change = priority - tree[tree_idx];
+        tree[tree_idx] = priority;
+
+        // Propagate change up the tree
+        while (tree_idx > 0) {
+            tree_idx = (tree_idx - 1) / 2;  // Parent index
+            tree[tree_idx] += change;
+        }
+    }
+
+    // Sample index based on priority (O(log N))
+    size_t sample(double value) const {
+        size_t idx = 0;  // Start at root
+
+        while (idx < capacity - 1) {  // Traverse to leaf
+            size_t left = 2 * idx + 1;
+            size_t right = left + 1;
+
+            if (value <= tree[left]) {
+                idx = left;
+            } else {
+                value -= tree[left];
+                idx = right;
+            }
+        }
+
+        return idx - (capacity - 1);  // Convert tree index to data index
+    }
+
+    // Get data at specific index
+    InteractionRecord* get(size_t idx) const {
+        return data[idx];
+    }
+
+    // Get priority at specific data index
+    double get_priority(size_t idx) const {
+        size_t tree_idx = idx + capacity - 1;
+        return tree[tree_idx];
+    }
+
+    // Total sum of all priorities
+    double total_priority() const {
+        return tree[0];
+    }
+
+    size_t size() const { return size_; }
+};
+
 class DreamWeaveEngine {
     std::deque<InteractionRecord> recent_history;
+    std::unique_ptr<SumTree> prioritized_buffer;
     std::mt19937_64 rng;
 
     const size_t MAX_HISTORY = 1000;
     const double HIGH_LOSS_THRESHOLD = 0.3;
     const int NUM_COUNTERFACTUALS = 5;
+    const double PRIORITY_ALPHA = 0.6;  // Prioritization exponent
 
 public:
-    DreamWeaveEngine();
+    DreamWeaveEngine() : rng(std::random_device{}()) {
+        // Initialize prioritized replay buffer with sum-tree
+        prioritized_buffer = std::make_unique<SumTree>(MAX_HISTORY);
+    }
 
+    // Record interaction with priority based on TD-error
     void record_interaction(const std::vector<TorusNode>& sequence,
                            double error,
-                           double reward);
+                           double reward) {
+        InteractionRecord record;
+        record.sequence = sequence;
+        record.prediction_error = error;
+        record.reward = reward;
+        record.timestamp = std::chrono::system_clock::now().time_since_epoch().count();
+
+        recent_history.push_back(record);
+
+        // Calculate priority: |TD-error|^α (prioritized experience replay)
+        // Higher error = higher priority for sampling during dreams
+        double priority = std::pow(std::abs(error), PRIORITY_ALPHA);
+
+        // Add to sum-tree with priority
+        prioritized_buffer->add(&recent_history.back(), priority);
+
+        // Maintain circular buffer
+        if (recent_history.size() > MAX_HISTORY) {
+            recent_history.pop_front();
+        }
+    }
 
     void run_dream_cycle(TorusManifold& torus,
                         Mamba9D& mamba,
@@ -253,46 +363,56 @@ namespace nikola::autonomy {
 void DreamWeaveEngine::run_dream_cycle(TorusManifold& torus,
                                        Mamba9D& mamba,
                                        int num_simulations) {
-    // 1. Identify high-loss interactions
-    std::vector<InteractionRecord> high_loss_records;
+    if (prioritized_buffer->size() == 0) {
+        return;  // No experiences to replay
+    }
 
-    for (const auto& record : recent_history) {
-        if (record.prediction_error > HIGH_LOSS_THRESHOLD) {
-            high_loss_records.push_back(record);
+    // PRODUCTION: Prioritized sampling using sum-tree (O(log N) per sample)
+    // Samples experiences with probability proportional to |TD-error|^α
+    // High-error experiences are replayed more frequently → faster learning
+    std::uniform_real_distribution<double> priority_dist(0.0, prioritized_buffer->total_priority());
+
+    std::vector<InteractionRecord*> sampled_records;
+    sampled_records.reserve(num_simulations);
+
+    // Sample num_simulations experiences based on priority
+    for (int i = 0; i < num_simulations && i < static_cast<int>(prioritized_buffer->size()); ++i) {
+        // Sample from priority distribution
+        double sample_value = priority_dist(rng);
+        size_t idx = prioritized_buffer->sample(sample_value);
+
+        InteractionRecord* record = prioritized_buffer->get(idx);
+        if (record && record->prediction_error > HIGH_LOSS_THRESHOLD) {
+            sampled_records.push_back(record);
         }
     }
 
-    if (high_loss_records.empty()) {
-        return;  // Nothing to learn from
+    if (sampled_records.empty()) {
+        return;  // No high-loss experiences
     }
 
-    // 2. Sample for counterfactual generation
-    std::sample(high_loss_records.begin(),
-                high_loss_records.end(),
-                std::back_inserter(high_loss_records),
-                std::min(num_simulations, (int)high_loss_records.size()),
-                rng);
-
-    // 3. Generate and evaluate counterfactuals
-    for (const auto& record : high_loss_records) {
+    // Generate and evaluate counterfactuals
+    for (const auto* record : sampled_records) {
         for (int cf = 0; cf < NUM_COUNTERFACTUALS; ++cf) {
-            auto counterfactual = generate_counterfactual(record.sequence);
+            auto counterfactual = generate_counterfactual(record->sequence);
 
             double cf_outcome = evaluate_outcome(counterfactual, torus, mamba);
-            double actual_outcome = record.reward;
+            double actual_outcome = record->reward;
 
-            // 4. Selective reinforcement
+            // Selective reinforcement: Update if counterfactual improved outcome
             if (cf_outcome > actual_outcome) {
                 // Update metric tensor to favor this pathway
-                // (Would trigger neuroplasticity update with counterfactual sequence)
                 std::cout << "[DREAM] Counterfactual improved outcome: "
                           << actual_outcome << " -> " << cf_outcome << std::endl;
 
-                // Apply update (simplified)
+                // Apply neuroplasticity update with counterfactual sequence
                 torus.trigger_neuroplasticity_update_from_sequence(counterfactual);
             }
         }
     }
+
+    std::cout << "[DREAM] Cycle complete: Sampled " << sampled_records.size()
+              << " high-priority experiences (prioritized replay with sum-tree)" << std::endl;
 }
 
 std::vector<TorusNode> DreamWeaveEngine::generate_counterfactual(

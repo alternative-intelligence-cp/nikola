@@ -550,14 +550,39 @@ void ShadowSpine::compare_responses(const std::string& request_id) {
 void ShadowSpine::promote_candidate_if_ready() {
     std::cout << "[Shadow Spine] PROMOTING CANDIDATE TO PRODUCTION" << std::endl;
 
-    // 1. Backup current production
-    // 2. Swap candidate → production
-    // 3. Reset vote counter
-    // 4. Notify Architect component
+    // CRITICAL: Use explicit memory ordering for atomic pointer hot-swap
+    // Ensures candidate system is fully initialized before visibility to readers
 
-    // TODO: Implement safe promotion with rollback capability
+    // 1. Backup current production (for rollback capability)
+    OrchestatorSystem* old_production = production_system.load(std::memory_order_acquire);
+    backup_system.store(old_production, std::memory_order_release);
 
-    votes_for_candidate = 0;
+    // 2. Hot-swap: Atomically replace production pointer with candidate
+    // memory_order_release ensures:
+    //   - All candidate initialization writes are visible before pointer becomes visible
+    //   - Prevents reordering of initialization code past this point
+    // memory_order_acquire in readers ensures:
+    //   - They see fully initialized candidate after loading the pointer
+    OrchestatorSystem* old_ptr = production_system.exchange(
+        candidate_system.load(std::memory_order_acquire),
+        std::memory_order_acq_rel  // Acquire current, release new
+    );
+
+    // 3. Reset vote counter (relaxed okay - not synchronized with pointer swap)
+    votes_for_candidate.store(0, std::memory_order_relaxed);
+
+    // 4. Create new candidate system (asynchronously prepare next candidate)
+    std::thread([this, old_ptr]() {
+        // Reuse old production system as next candidate (recycling)
+        candidate_system.store(old_ptr, std::memory_order_release);
+
+        // Reset candidate state for next A/B test cycle
+        old_ptr->reset_for_next_test();
+
+        std::cout << "[Shadow Spine] New candidate system initialized" << std::endl;
+    }).detach();
+
+    std::cout << "[Shadow Spine] Hot-swap complete (zero downtime)" << std::endl;
 }
 ```
 

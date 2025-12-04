@@ -172,7 +172,94 @@ If $\rho(\mathbf{x}) > \rho_{\text{critical}}$ (typically 0.8), trigger neurogen
 - Expand in powers of 3: $27, 30, 33, 36, ..., 81$
 - Maximum: $81^3 = 531,441$ nodes (before multi-torus sharding)
 
-## 3.6 Sparse Hyper-Voxel Octree (SHVO)
+## 3.6 CRITICAL: Structure-of-Arrays (SoA) Architecture
+
+**⚠️ ARCHITECTURAL MANDATE:**
+
+The system MUST use **Structure-of-Arrays (SoA)** storage, NOT Array-of-Structures (AoS). This is non-negotiable for:
+- AVX-512 vectorization (requires contiguous float/double arrays)
+- CUDA coalesced memory access (requires aligned, contiguous data)
+- Zero-copy GPU transfer (can't serialize struct-of-structs efficiently)
+
+### Storage Layout
+
+```cpp
+// ❌ FORBIDDEN: Array-of-Structures (AoS)
+struct TorusNode {
+    std::complex<double> wavefunction;
+    std::array<double, 45> metric_tensor;
+    double resonance_r;
+    double state_s;
+    // ... (other fields)
+};
+std::vector<TorusNode> nodes;  // BREAKS SIMD/GPU
+
+// ✅ CORRECT: Structure-of-Arrays (SoA)
+struct TorusGridSoA {
+    // All wavefunctions in one contiguous array (SIMD-friendly)
+    std::vector<double> wavefunction_real;
+    std::vector<double> wavefunction_imag;
+
+    // All metric tensors in one contiguous array (GPU-friendly)
+    std::vector<double> metric_tensor;  // Flattened: [node0_g00, node0_g01, ..., node1_g00, ...]
+
+    // All resonance values in one contiguous array
+    std::vector<double> resonance_r;
+
+    // All state values in one contiguous array
+    std::vector<double> state_s;
+
+    // ... (other fields as separate vectors)
+
+    size_t num_nodes() const { return wavefunction_real.size(); }
+};
+```
+
+### TorusNode as Lightweight Proxy
+
+`TorusNode` is NOT a storage class. It's a **view/proxy** (cursor) into the SoA storage:
+
+```cpp
+// Lightweight proxy class (sizeof = 16 bytes on 64-bit system)
+class TorusNode {
+    TorusGridSoA* grid;  // Pointer to SoA storage
+    size_t index;        // Index into the SoA arrays
+
+public:
+    TorusNode(TorusGridSoA* g, size_t idx) : grid(g), index(idx) {}
+
+    // Proxy accessors (no data duplication)
+    std::complex<double> get_wavefunction() const {
+        return {grid->wavefunction_real[index], grid->wavefunction_imag[index]};
+    }
+
+    void set_wavefunction(std::complex<double> psi) {
+        grid->wavefunction_real[index] = psi.real();
+        grid->wavefunction_imag[index] = psi.imag();
+    }
+
+    double get_resonance() const {
+        return grid->resonance_r[index];
+    }
+
+    // ... (other proxy methods)
+};
+```
+
+### Benefits
+
+1. **CUDA Transfer:** `cudaMemcpy(d_wavefunction, grid.wavefunction_real.data(), size, ...)` (zero-copy)
+2. **AVX-512 Vectorization:** Process 8 doubles at once from contiguous array
+3. **Cache Efficiency:** Sequential access patterns, no pointer chasing
+4. **GPU Coalescing:** Thread 0 accesses wavefunction[0], thread 1 accesses wavefunction[1], etc.
+
+### Implementation Rule
+
+Any code that appears to use `vector<TorusNode>` is actually using `vector<TorusNodeProxy>` where the proxy points into SoA storage. Never store node data directly in a TorusNode struct.
+
+---
+
+## 3.7 Sparse Hyper-Voxel Octree (SHVO)
 
 **[ADDENDUM]**
 

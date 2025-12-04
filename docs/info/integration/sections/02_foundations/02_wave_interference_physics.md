@@ -1,5 +1,66 @@
 # WAVE INTERFERENCE PHYSICS
 
+## 4.0 CRITICAL: Nonlinear Operator Enforcement
+
+**⚠️ ARCHITECTURAL MANDATE:**
+
+This system is a **computational medium**, NOT a passive storage system. All wave updates MUST include the cubic nonlinear operator β|Ψ|²Ψ to enable heterodyning (wave mixing for multiplication/logic).
+
+### Forbidden Patterns
+
+```cpp
+// ❌ FORBIDDEN: Linear superposition without nonlinear operator
+void inject_wave(Coord9D pos, std::complex<double> wave) {
+    node.wavefunction += wave;  // BREAKS COMPUTATIONAL ABILITY
+}
+
+// ❌ FORBIDDEN: Direct addition bypass
+node.wavefunction = wave_a + wave_b;  // NO HETERODYNING
+```
+
+### Mandated Pattern
+
+```cpp
+// ✅ CORRECT: All updates go through symplectic integrator
+void propagate(double dt) {
+    // CUDA kernel applies FULL NLSE with nonlinear operator:
+    // ∂²Ψ/∂t² = c²∇²Ψ - γ(∂Ψ/∂t) + β|Ψ|²Ψ
+    //                              ^^^^^^^^^ REQUIRED FOR COMPUTATION
+    propagate_wave_kernel<<<blocks, threads>>>(data, dt);
+}
+
+// ✅ CORRECT: Injection followed by propagation
+void inject_and_propagate(Coord9D pos, std::complex<double> wave, double dt) {
+    // 1. Add wave to node (linear superposition for input)
+    nodes[pos].wavefunction += wave;
+
+    // 2. IMMEDIATELY propagate to apply nonlinear operator
+    //    Without this step, the injected wave remains linear
+    propagate(dt);  // Applies β|Ψ|²Ψ heterodyning
+}
+```
+
+### Physical Justification
+
+The nonlinear operator β|Ψ|²Ψ creates **frequency mixing** (heterodyning):
+- Input waves: Ψ₁ = e^(iω₁t), Ψ₂ = e^(iω₂t)
+- After nonlinear operator: Contains ω₁±ω₂, 2ω₁±ω₂, ω₁±2ω₂, ...
+- This enables **multiplication** via beat frequencies: (ω₁ + ω₂) and |ω₁ - ω₂|
+
+Without the nonlinear operator, waves simply interfere linearly and decay. The system becomes a resonator, not a processor.
+
+### Verification
+
+Any code review MUST verify:
+1. ✅ No direct wavefunction assignments outside initialization
+2. ✅ All wave evolution goes through `propagate_wave_kernel` (CUDA) or equivalent symplectic integrator
+3. ✅ The kernel includes the term: `beta * psi_magnitude_sq * psi`
+4. ✅ Injection functions are followed by propagation (never standalone addition)
+
+**Failure to enforce this renders the entire system non-computational.**
+
+---
+
 ## 4.1 Emitter Array Specifications
 
 The system uses **8 peripheral emitters** plus **1 central synchronizer** to drive the wave interference processor.

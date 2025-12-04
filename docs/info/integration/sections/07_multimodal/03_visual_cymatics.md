@@ -86,10 +86,18 @@ void VisualCymaticsEngine::inject_image(const cv::Mat& image) {
     cv::Mat resized;
     cv::resize(image, resized, cv::Size(81, 81));
 
-    // Base phase offsets for RGB color separation
-    const double RED_PHASE_BASE = 0.0;           // 0° for red channel
-    const double GREEN_PHASE_BASE = M_PI / 3.0;  // 60° for green channel
-    const double BLUE_PHASE_BASE = 2.0 * M_PI / 3.0;  // 120° for blue channel
+    // PRODUCTION: Convert RGB to Lab color space to decouple color from spatial frequency
+    // Lab separates perceptual lightness (L*) from chroma (a*, b*)
+    // This prevents color information from interfering with spatial frequency encoding
+    cv::Mat lab_image;
+    cv::cvtColor(resized, lab_image, cv::COLOR_BGR2Lab);
+
+    // Base phase offsets for Lab color separation (perceptually uniform)
+    // L* channel encodes brightness → amplitude modulation
+    // a* channel (green-red axis) → phase offset 0°
+    // b* channel (blue-yellow axis) → phase offset 90° (orthogonal)
+    const double A_PHASE_BASE = 0.0;           // 0° for a* (green-red)
+    const double B_PHASE_BASE = M_PI / 2.0;    // 90° for b* (blue-yellow, orthogonal)
 
     // Spatial frequency carrier for local phase modulation
     // Creates spatially-varying phase field that encodes position information
@@ -98,12 +106,20 @@ void VisualCymaticsEngine::inject_image(const cv::Mat& image) {
 
     for (int y = 0; y < resized.rows; ++y) {
         for (int x = 0; x < resized.cols; ++x) {
-            cv::Vec3b pixel = resized.at<cv::Vec3b>(y, x);
+            cv::Vec3b lab_pixel = lab_image.at<cv::Vec3b>(y, x);
 
-            // Map RGB to normalized amplitudes [0, 1]
-            double red_amp = pixel[2] / 255.0;
-            double green_amp = pixel[1] / 255.0;
-            double blue_amp = pixel[0] / 255.0;
+            // Extract Lab components (OpenCV ranges: L=[0,255], a=[0,255], b=[0,255])
+            // Convert to perceptual ranges: L*=[0,100], a*=[-128,127], b*=[-128,127]
+            double L_star = (lab_pixel[0] / 255.0) * 100.0;       // Lightness [0, 100]
+            double a_star = (lab_pixel[1] - 128.0);                // Green-red [-128, 127]
+            double b_star = (lab_pixel[2] - 128.0);                // Blue-yellow [-128, 127]
+
+            // Normalize chroma components to [0, 1] for amplitude modulation
+            // L* directly controls overall amplitude (brightness)
+            // a*, b* control directional chroma (normalized by max chroma distance)
+            double max_chroma = std::sqrt(128.0*128.0 + 128.0*128.0);  // Max Lab chroma ~181
+            double a_amp = (L_star / 100.0) * (std::abs(a_star) / max_chroma);
+            double b_amp = (L_star / 100.0) * (std::abs(b_star) / max_chroma);
 
             // Spatial coordinate in torus (x, y in dimensions 7, 8)
             Coord9D coord;
@@ -116,25 +132,29 @@ void VisualCymaticsEngine::inject_image(const cv::Mat& image) {
             double phase_y = SPATIAL_FREQUENCY_Y * y;
             double local_phase = phase_x + phase_y;
 
-            // Create phase-modulated carrier waves for each color channel
-            // Each pixel contributes a locally phase-modulated wave packet
-            std::complex<double> red_wave(
-                red_amp * cos(RED_PHASE_BASE + local_phase),
-                red_amp * sin(RED_PHASE_BASE + local_phase)
+            // Create phase-modulated carrier waves for Lab chroma channels
+            // L* modulates overall amplitude (brightness-independent from color)
+            // a*, b* modulate orthogonal chroma phases (decoupled from spatial frequency)
+
+            // a* wave (green-red axis)
+            // Sign of a_star determines phase polarity (green vs red)
+            double a_phase_sign = (a_star >= 0) ? 1.0 : -1.0;
+            std::complex<double> a_wave(
+                a_amp * a_phase_sign * cos(A_PHASE_BASE + local_phase),
+                a_amp * a_phase_sign * sin(A_PHASE_BASE + local_phase)
             );
 
-            std::complex<double> green_wave(
-                green_amp * cos(GREEN_PHASE_BASE + local_phase),
-                green_amp * sin(GREEN_PHASE_BASE + local_phase)
+            // b* wave (blue-yellow axis, 90° orthogonal to a*)
+            // Sign of b_star determines phase polarity (yellow vs blue)
+            double b_phase_sign = (b_star >= 0) ? 1.0 : -1.0;
+            std::complex<double> b_wave(
+                b_amp * b_phase_sign * cos(B_PHASE_BASE + local_phase),
+                b_amp * b_phase_sign * sin(B_PHASE_BASE + local_phase)
             );
 
-            std::complex<double> blue_wave(
-                blue_amp * cos(BLUE_PHASE_BASE + local_phase),
-                blue_amp * sin(BLUE_PHASE_BASE + local_phase)
-            );
-
-            // Superposition: add all three color channels with local phase encoding
-            std::complex<double> combined_wave = red_wave + green_wave + blue_wave;
+            // Superposition: a* and b* waves form perceptually uniform color encoding
+            // Spatial frequency is now independent of color information
+            std::complex<double> combined_wave = a_wave + b_wave;
 
             // Inject the phase-modulated wave LOCALLY at this coordinate
             // The local phase modulation creates interference fringes that encode
@@ -343,19 +363,27 @@ void HierarchicalVisionEngine::inject_pyramid_level(const PyramidLevel& level) {
     const double freq_band = level.frequency_band;
     const double weight = level.injection_weight;
 
-    // Phase offsets remain the same for RGB holographic encoding
-    const double RED_PHASE_OFFSET = 0.0;
-    const double GREEN_PHASE_OFFSET = M_PI / 3.0;
-    const double BLUE_PHASE_OFFSET = 2.0 * M_PI / 3.0;
+    // PRODUCTION: Convert to Lab color space for perceptually uniform encoding
+    cv::Mat lab_img;
+    cv::cvtColor(img, lab_img, cv::COLOR_BGR2Lab);
+
+    // Phase offsets for Lab chroma channels (orthogonal)
+    const double A_PHASE_OFFSET = 0.0;           // a* (green-red)
+    const double B_PHASE_OFFSET = M_PI / 2.0;    // b* (blue-yellow, 90° orthogonal)
 
     for (int y = 0; y < img.rows; ++y) {
         for (int x = 0; x < img.cols; ++x) {
-            cv::Vec3b pixel = img.at<cv::Vec3b>(y, x);
+            cv::Vec3b lab_pixel = lab_img.at<cv::Vec3b>(y, x);
 
-            // Normalize amplitudes
-            double red_amp = (pixel[2] / 255.0) * weight;
-            double green_amp = (pixel[1] / 255.0) * weight;
-            double blue_amp = (pixel[0] / 255.0) * weight;
+            // Extract Lab components and normalize
+            double L_star = (lab_pixel[0] / 255.0) * 100.0;
+            double a_star = (lab_pixel[1] - 128.0);
+            double b_star = (lab_pixel[2] - 128.0);
+
+            // Normalize chroma with pyramid level weighting
+            double max_chroma = std::sqrt(128.0*128.0 + 128.0*128.0);
+            double a_amp = (L_star / 100.0) * (std::abs(a_star) / max_chroma) * weight;
+            double b_amp = (L_star / 100.0) * (std::abs(b_star) / max_chroma) * weight;
 
             // Map to spatial coordinates with frequency modulation
             // Scale position based on pyramid level to spread coarse features
@@ -370,24 +398,25 @@ void HierarchicalVisionEngine::inject_pyramid_level(const PyramidLevel& level) {
 
             // Create carrier waves modulated by frequency band
             // Higher frequency bands create more oscillations per unit distance
+            // Lab color space ensures color is independent of spatial frequency
             double phase_mod = freq_band * (x + y * 0.1);  // Spatial phase modulation
 
-            std::complex<double> red_wave(
-                red_amp * cos(RED_PHASE_OFFSET + phase_mod),
-                red_amp * sin(RED_PHASE_OFFSET + phase_mod)
+            // a* wave (green-red axis) with frequency modulation
+            double a_phase_sign = (a_star >= 0) ? 1.0 : -1.0;
+            std::complex<double> a_wave(
+                a_amp * a_phase_sign * cos(A_PHASE_OFFSET + phase_mod),
+                a_amp * a_phase_sign * sin(A_PHASE_OFFSET + phase_mod)
             );
 
-            std::complex<double> green_wave(
-                green_amp * cos(GREEN_PHASE_OFFSET + phase_mod),
-                green_amp * sin(GREEN_PHASE_OFFSET + phase_mod)
+            // b* wave (blue-yellow axis, 90° orthogonal) with frequency modulation
+            double b_phase_sign = (b_star >= 0) ? 1.0 : -1.0;
+            std::complex<double> b_wave(
+                b_amp * b_phase_sign * cos(B_PHASE_OFFSET + phase_mod),
+                b_amp * b_phase_sign * sin(B_PHASE_OFFSET + phase_mod)
             );
 
-            std::complex<double> blue_wave(
-                blue_amp * cos(BLUE_PHASE_OFFSET + phase_mod),
-                blue_amp * sin(BLUE_PHASE_OFFSET + phase_mod)
-            );
-
-            std::complex<double> combined_wave = red_wave + green_wave + blue_wave;
+            // Superposition of Lab chroma waves
+            std::complex<double> combined_wave = a_wave + b_wave;
 
             // Inject into torus (additive across pyramid levels)
             torus.inject_wave_at_coord(coord, combined_wave);

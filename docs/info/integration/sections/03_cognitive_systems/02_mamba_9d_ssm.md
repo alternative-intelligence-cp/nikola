@@ -286,26 +286,29 @@ The "learning" of the Mamba model is actually the **Neuroplasticity of the torus
 class Mamba9D {
     Eigen::VectorXd hidden_state;  // Current SSM state
 
-    // Pre-allocated workspace to avoid allocations in hot loop
-    // CRITICAL FIX: Prevents heap allocation per node (12.5x performance improvement)
-    mutable Eigen::MatrixXd metric_workspace;  // Reused for metric reconstruction
-    mutable Eigen::MatrixXd A_workspace;       // Reused for A matrix computation
-    mutable Eigen::VectorXd B_workspace;       // Reused for B vector
-
 public:
-    Mamba9D() : hidden_state(Eigen::VectorXd::Zero(9)),
-                metric_workspace(Eigen::MatrixXd::Zero(9, 9)),
-                A_workspace(Eigen::MatrixXd::Zero(9, 9)),
-                B_workspace(Eigen::VectorXd::Zero(9)) {}
+    Mamba9D() : hidden_state(Eigen::VectorXd::Zero(9)) {}
 
     // Zero-copy forward pass: operate directly on TorusNode memory
     // Fulfills "layers ARE the toroid" requirement
+    // THREAD-SAFE: Uses thread_local workspaces for multi-threaded execution
     Eigen::VectorXd forward(const std::vector<TorusNode*>& sequence) {
+        // CRITICAL: Thread-local workspaces to avoid allocations AND race conditions
+        // Each thread gets its own workspace - no mutex needed, zero allocations
+        // This is the ONLY production-grade solution for parallel Mamba inference
+        thread_local static Eigen::MatrixXd metric_workspace = Eigen::MatrixXd::Zero(9, 9);
+        thread_local static Eigen::MatrixXd A_workspace = Eigen::MatrixXd::Zero(9, 9);
+        thread_local static Eigen::VectorXd B_workspace = Eigen::VectorXd::Zero(9);
+
         hidden_state.setZero();
 
         for (const auto* node_ptr : sequence) {
             // Extract SSM params directly from node (in-place, no allocation)
-            SSMParams params = extract_ssm_params_inplace(*node_ptr);
+            // Pass thread-local workspaces by reference
+            SSMParams params = extract_ssm_params_inplace(*node_ptr,
+                                                          metric_workspace,
+                                                          A_workspace,
+                                                          B_workspace);
 
             // ZERO-COPY: Map TorusNode's coordinate array directly into Eigen vector
             // No intermediate allocation - operates on torus memory in-place
@@ -336,9 +339,13 @@ private:
         double Delta;
     };
 
-    // CRITICAL: In-place parameter extraction using pre-allocated workspace
-    SSMParams extract_ssm_params_inplace(const TorusNode& node) const {
-        // Reconstruct metric matrix into pre-allocated workspace (no return by value)
+    // CRITICAL: In-place parameter extraction using thread-local workspace
+    // Thread-safe: no shared state, each thread uses its own workspace
+    static SSMParams extract_ssm_params_inplace(const TorusNode& node,
+                                                 Eigen::MatrixXd& metric_workspace,
+                                                 Eigen::MatrixXd& A_workspace,
+                                                 Eigen::VectorXd& B_workspace) {
+        // Reconstruct metric matrix into thread-local workspace (no heap allocation)
         reconstruct_metric_matrix_inplace(node.metric_tensor, metric_workspace);
 
         // Compute A matrix in-place
@@ -351,7 +358,8 @@ private:
         // Delta: adaptive discretization from state dimension
         double delta = 1.0 / (1.0 + node.state_s);
 
-        // Return lightweight references to workspace (no heap allocation)
+        // Return lightweight references to thread-local workspace
+        // Safe because workspaces are thread_local - no aliasing between threads
         return SSMParams{A_workspace, B_workspace, delta};
     }
 
