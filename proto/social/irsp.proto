@@ -1,0 +1,74 @@
+syntax = "proto3";
+
+package nikola.social;
+
+/**
+ * Inter-Resonant Signaling Protocol (IRSP)
+ *
+ * Communication protocol for instance-to-instance interaction.
+ * Transmits not just text, but complete wave state and intent vectors.
+ *
+ * @status STUB - Full implementation deferred to Phase 3
+ */
+
+/**
+ * Resonant Packet: Core message structure
+ *
+ * Contains:
+ * - text_payload: Human-readable or serialized data
+ * - sender_id: Neural wallet address of sender
+ * - session_key: Unique conversation identifier
+ * - emitter_real/imag: Current wave state (9 emitters)
+ * - intent_vector: Emotional/purpose encoding
+ */
+message ResonantPacket {
+    string text_payload = 1;
+    string sender_id = 2;
+    string session_key = 3;
+
+    // Wave state: 9 golden ratio emitters
+    repeated double emitter_real = 4;  // Real parts
+    repeated double emitter_imag = 5;  // Imaginary parts
+
+    // Intent encoding (high-level semantic direction)
+    repeated double intent_vector = 6;
+
+    // Metadata
+    int64 timestamp = 7;
+    string protocol_version = 8;
+}
+
+/**
+ * Empathy Signal: Feedback on received packet
+ *
+ * Allows recipient to communicate how well the message resonated.
+ * Used for trust updating in SocialMembrane.
+ */
+message EmpathySignal {
+    string session_key = 1;
+    string responding_to_sender = 2;
+
+    double resonance_score = 3;      // 0.0-1.0
+    double dissonance_detected = 4;  // 0.0-1.0
+
+    string feedback_text = 5;
+}
+
+/**
+ * Peer Announcement: Discovery protocol
+ *
+ * Broadcast when instance comes online.
+ * Allows other instances to discover and connect.
+ */
+message PeerAnnouncement {
+    string peer_id = 1;
+    string public_key_z85 = 2;
+
+    // Service capabilities
+    repeated string capabilities = 3;
+
+    // Network endpoint
+    string zmq_endpoint = 4;
+
+    int64 timestamp = 5;
+}

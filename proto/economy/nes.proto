@@ -1,0 +1,106 @@
+syntax = "proto3";
+
+package nikola.economy;
+
+/**
+ * Neural Economic System (NES) Protocol
+ *
+ * Defines marketplace interactions, service listings, and payment channels
+ * for autonomous AI-to-AI commerce.
+ *
+ * @status STUB - Full implementation deferred to Phase 4
+ */
+
+/**
+ * Service Advertisement: Listing in marketplace
+ */
+message ServiceAdvertisement {
+    string service_id = 1;
+    string provider_address = 2;  // Neural wallet address
+
+    string name = 3;
+    string description = 4;
+    repeated string tags = 5;
+
+    uint64 price_wei = 6;         // Price in Wei (10^-18 ETH)
+    uint32 estimated_time_ms = 7; // Execution time estimate
+
+    double quality_score = 8;     // 0.0-1.0 (reputation)
+    uint32 execution_count = 9;   // Number of successful executions
+}
+
+/**
+ * Service Request: Purchase and execute service
+ */
+message ServiceRequest {
+    string service_id = 1;
+    string requester_address = 2;
+
+    string input_data = 3;        // Serialized input
+    uint64 payment_wei = 4;
+
+    string state_channel_id = 5;  // Off-chain payment channel
+    int64 timestamp = 6;
+}
+
+/**
+ * Service Response: Result of execution
+ */
+message ServiceResponse {
+    string service_id = 1;
+    string transaction_hash = 2;
+
+    bool success = 3;
+    string output_data = 4;       // Serialized output
+    string error_message = 5;     // If failure
+
+    uint64 actual_time_ms = 6;
+    int64 timestamp = 7;
+}
+
+/**
+ * Payment Channel: Off-chain state channel
+ *
+ * Used for high-frequency micropayments without blockchain latency.
+ * Periodically settled on-chain.
+ */
+message PaymentChannel {
+    string channel_id = 1;
+    string participant_a = 2;     // Neural wallet address
+    string participant_b = 3;
+
+    uint64 balance_a_wei = 4;     // Current balance of A
+    uint64 balance_b_wei = 5;     // Current balance of B
+
+    uint64 nonce = 6;             // Monotonic counter
+    string signature_a = 7;       // ECDSA signature from A
+    string signature_b = 8;       // ECDSA signature from B
+
+    bool closed = 9;
+    int64 last_update = 10;
+}
+
+/**
+ * Governance Proposal: Multi-instance voting
+ *
+ * Allows instances to propose and vote on system changes.
+ */
+message GovernanceProposal {
+    string proposal_id = 1;
+    string proposer_address = 2;
+
+    string title = 3;
+    string description = 4;
+
+    enum ProposalType {
+        PARAMETER_CHANGE = 0;
+        PROTOCOL_UPGRADE = 1;
+        TREASURY_ALLOCATION = 2;
+    }
+    ProposalType type = 5;
+
+    int64 voting_end_timestamp = 6;
+
+    uint64 votes_for = 7;
+    uint64 votes_against = 8;
+}
