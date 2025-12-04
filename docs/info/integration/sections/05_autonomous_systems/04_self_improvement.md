@@ -653,100 +653,158 @@ bool SelfImprovementEngine::test_in_sandbox(const std::string& code) {
 - **Self-Healing:** Automatically rejects code that would break physics invariants
 - **Confidence:** Mathematical proof that modifications preserve system correctness
 
-## 17.4 Hot-Swapping with dlopen
+## 17.4 Process-Based Module Isolation
 
-### Dynamic Module Loading
+### Worker Process Architecture
 
-Module handles use std::unique_ptr with custom deleter for RAII-based resource management, ensuring automatic dlclose even during exceptions.
+Modules are loaded in isolated worker processes communicating via ZeroMQ. Hot-swapping is achieved by restarting workers, avoiding dlclose crashes and memory corruption.
 
 ```cpp
-#include <dlfcn.h>
+#include <zmq.hpp>
+#include <sys/wait.h>
+#include <unistd.h>
+#include <signal.h>
 #include <memory>
 #include <map>
 #include <string>
+#include <dlfcn.h>
 
-// Custom deleter for dlopen handles (calls dlclose automatically)
-struct DlopenDeleter {
-    void operator()(void* handle) const {
-        if (handle) {
-            dlclose(handle);
+// Process-based module manager for safe hot-swapping
+class ProcessModuleManager {
+    struct WorkerProcess {
+        pid_t pid;
+        zmq::socket_t request_socket;
+        std::string module_path;
+        std::string ipc_endpoint;
+
+        WorkerProcess(zmq::context_t& ctx, const std::string& module, const std::string& endpoint)
+            : pid(-1), request_socket(ctx, ZMQ_REQ), module_path(module), ipc_endpoint(endpoint) {
+            request_socket.connect(endpoint);
         }
+    };
+
+    zmq::context_t zmq_ctx;
+    std::map<std::string, std::unique_ptr<WorkerProcess>> workers;
+
+    // Spawn worker process that loads the module
+    pid_t spawn_worker(const std::string& module_name, const std::string& so_path,
+                      const std::string& ipc_endpoint) {
+        pid_t pid = fork();
+
+        if (pid == 0) {
+            // Child process: load module and run server
+            run_worker_server(so_path, ipc_endpoint);
+            _exit(0);  // Worker never returns
+        }
+
+        // Parent: return worker PID
+        return pid;
     }
-};
 
-// Type alias for RAII module handle
-using ModuleHandle = std::unique_ptr<void, DlopenDeleter>;
+    // Worker process main loop
+    static void run_worker_server(const std::string& so_path, const std::string& ipc_endpoint) {
+        zmq::context_t ctx(1);
+        zmq::socket_t server(ctx, ZMQ_REP);
+        server.bind(ipc_endpoint);
 
-class DynamicModuleManager {
-    // Module handles managed via RAII (automatic dlclose on destruction/reassignment)
-    std::map<std::string, ModuleHandle> loaded_modules;
+        // Load module in worker address space
+        void* handle = dlopen(so_path.c_str(), RTLD_NOW | RTLD_LOCAL);
+        if (!handle) {
+            std::cerr << "[WORKER] Failed to load module: " << dlerror() << std::endl;
+            return;
+        }
+
+        // Service loop: receive requests, call module functions, send responses
+        while (true) {
+            zmq::message_t request;
+            server.recv(request, zmq::recv_flags::none);
+
+            // Parse request (function name + serialized arguments)
+            // ... deserialize and dispatch to module function ...
+
+            zmq::message_t reply(/* result data */);
+            server.send(reply, zmq::send_flags::none);
+        }
+
+        // Worker process termination automatically unloads module
+        // No dlclose needed - entire process exits
+    }
 
 public:
+    ProcessModuleManager() : zmq_ctx(1) {}
+
+    // Hot-swap: restart worker process with new module
     void hot_swap(const std::string& module_name, const std::string& new_so_path) {
-        // 1. Load new module (returns raw pointer from dlopen)
-        void* raw_handle = dlopen(new_so_path.c_str(), RTLD_NOW);
-        if (!raw_handle) {
-            throw std::runtime_error("dlopen failed: " + std::string(dlerror()));
+        std::string ipc_endpoint = "ipc:///tmp/nikola/module_" + module_name + ".ipc";
+
+        // 1. Kill old worker if exists
+        if (workers.count(module_name)) {
+            pid_t old_pid = workers[module_name]->pid;
+            kill(old_pid, SIGTERM);
+            waitpid(old_pid, nullptr, 0);  // Reap zombie
         }
 
-        // 2. Wrap in unique_ptr with custom deleter
-        //    The old module (if exists) will be automatically dlclose'd
-        //    when the unique_ptr is reassigned or goes out of scope
-        ModuleHandle new_handle(raw_handle, DlopenDeleter{});
+        // 2. Spawn new worker with updated module
+        auto worker = std::make_unique<WorkerProcess>(zmq_ctx, new_so_path, ipc_endpoint);
+        worker->pid = spawn_worker(module_name, new_so_path, ipc_endpoint);
 
-        // 3. Store new handle (old handle automatically cleaned up via RAII)
-        loaded_modules[module_name] = std::move(new_handle);
+        // 3. Wait for worker to bind socket
+        std::this_thread::sleep_for(std::chrono::milliseconds(100));
 
-        std::cout << "[HOT-SWAP] Module " << module_name << " updated (RAII-safe)." << std::endl;
+        // 4. Store new worker (old worker is dead, no dlclose risk)
+        workers[module_name] = std::move(worker);
+
+        std::cout << "[HOT-SWAP] Module " << module_name << " restarted (PID: "
+                  << workers[module_name]->pid << ")" << std::endl;
     }
 
-    template<typename FuncPtr>
-    FuncPtr get_function(const std::string& module_name, const std::string& func_name) {
-        // Get raw pointer from unique_ptr (safe - we still own it)
-        void* handle = loaded_modules.at(module_name).get();
+    // Call function in worker process
+    template<typename ReturnType, typename... Args>
+    ReturnType call_function(const std::string& module_name, const std::string& func_name,
+                            Args... args) {
+        auto& worker = workers.at(module_name);
 
-        // Load function symbol
-        void* func_ptr = dlsym(handle, func_name.c_str());
-        if (!func_ptr) {
-            throw std::runtime_error("dlsym failed: " + std::string(dlerror()));
+        // Serialize request
+        zmq::message_t request(/* serialize func_name + args */);
+        worker->request_socket.send(request, zmq::send_flags::none);
+
+        // Receive response
+        zmq::message_t reply;
+        worker->request_socket.recv(reply, zmq::recv_flags::none);
+
+        // Deserialize result
+        return /* deserialize reply to ReturnType */;
+    }
+
+    // Graceful shutdown: terminate all workers
+    ~ProcessModuleManager() {
+        for (auto& [name, worker] : workers) {
+            kill(worker->pid, SIGTERM);
+            waitpid(worker->pid, nullptr, 0);
         }
-
-        return reinterpret_cast<FuncPtr>(func_ptr);
     }
-
-    // Destructor automatically calls dlclose on all loaded modules via unique_ptr
-    // No need for explicit cleanup code - RAII handles everything
-    ~DynamicModuleManager() = default;
 };
 ```
 
 **Benefits:**
 
-1. **Exception Safety:** If an exception occurs during hot_swap, the unique_ptr destructor automatically calls dlclose, preventing resource leaks.
-2. **Automatic Cleanup:** When a module is replaced, the old handle is automatically closed when the unique_ptr is reassigned.
-3. **RAII Compliance:** No manual dlclose calls needed - destructor handles all cleanup.
-4. **Memory Safety:** Eliminates risk of double-free or use-after-free errors with raw pointers.
+1. **No dlclose Crashes:** Workers exit via process termination, not dlclose (no static destructor issues)
+2. **Memory Isolation:** Each module runs in separate address space (no pointer corruption)
+3. **Thread Safety:** No risk of threads holding pointers into unloaded module
+4. **Clean Restart:** Hot-swap = process restart, guaranteed clean state
+5. **Fault Isolation:** Worker crashes don't affect main process
 
 **Example Usage:**
 
 ```cpp
-try {
-    DynamicModuleManager manager;
-    manager.hot_swap("physics_engine", "/var/lib/nikola/modules/physics_v2.so");
+ProcessModuleManager manager;
+manager.hot_swap("physics_engine", "/var/lib/nikola/modules/physics_v2.so");
 
-    // Get function pointer
-    using UpdateFunc = void(*)(double);
-    auto update_fn = manager.get_function<UpdateFunc>("physics_engine", "update_physics");
+// Call function in worker process
+double result = manager.call_function<double>("physics_engine", "compute_energy");
 
-    // Use function
-    update_fn(0.001);
-
-    // If exception occurs here, unique_ptr automatically calls dlclose
-} catch (const std::exception& e) {
-    // Resource cleanup happens automatically - no manual dlclose needed
-    std::cerr << "Error: " << e.what() << std::endl;
-}
-```
+// Hot-swap to new version (old worker cleanly terminated)
+manager.hot_swap("physics_engine", "/var/lib/nikola/modules/physics_v3.so");
 ```
 
 ## 17.5 Core Updates with execv

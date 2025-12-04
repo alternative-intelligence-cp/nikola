@@ -87,23 +87,40 @@ std::complex<double> heterodyne(std::complex<double> a,
 ### Quantization to Nonary
 
 ```cpp
+// Voronoi quantization in complex plane for balanced nonary distribution
 Nit quantize_wave(std::complex<double> wave) {
-    double mag = std::abs(wave);
-    double phase = std::arg(wave);
+    // Define Voronoi cell centers for each Nit value in complex plane
+    // Arranged in balanced configuration to avoid bias
+    static const std::array<std::complex<double>, 9> voronoi_centers = {{
+        {0.0, 0.0},        // ZERO
+        {1.0, 0.0},        // P1
+        {2.0, 0.0},        // P2
+        {3.0, 0.0},        // P3
+        {4.0, 0.0},        // P4
+        {-1.0, 0.0},       // N1
+        {-2.0, 0.0},       // N2
+        {-3.0, 0.0},       // N3
+        {-4.0, 0.0}        // N4
+    }};
 
-    // Noise floor
-    if (mag < 0.2) return Nit::ZERO;
+    static const std::array<Nit, 9> nit_values = {
+        Nit::ZERO, Nit::P1, Nit::P2, Nit::P3, Nit::P4,
+        Nit::N1, Nit::N2, Nit::N3, Nit::N4
+    };
 
-    // Round magnitude
-    int val = static_cast<int>(std::round(mag));
-    val = std::clamp(val, 0, 4);
+    // Find nearest Voronoi cell center (minimum Euclidean distance)
+    size_t nearest_idx = 0;
+    double min_distance = std::abs(wave - voronoi_centers[0]);
 
-    // Apply sign from phase
-    if (std::abs(phase) > M_PI / 2.0) {
-        val = -val;  // Negative phase
+    for (size_t i = 1; i < voronoi_centers.size(); ++i) {
+        double distance = std::abs(wave - voronoi_centers[i]);
+        if (distance < min_distance) {
+            min_distance = distance;
+            nearest_idx = i;
+        }
     }
 
-    return static_cast<Nit>(val);
+    return nit_values[nearest_idx];
 }
 ```
 
@@ -883,6 +900,7 @@ private:
 #include "nikola/physics/simd_complex.hpp"
 #include <vector>
 #include <algorithm>
+#include <shared_mutex>
 
 namespace nikola::physics {
 
@@ -912,6 +930,15 @@ struct TorusManifold::Impl {
     // Emitter state
     std::array<double, 9> emitter_phases;
     std::array<double, 9> emitter_amplitudes;
+
+    // Striped locking for concurrent access (64 stripes for cache-line alignment)
+    static constexpr size_t NUM_STRIPES = 64;
+    mutable std::array<std::shared_mutex, NUM_STRIPES> mutexes;
+
+    // Hash index to stripe for lock selection
+    size_t index_to_stripe(uint64_t idx) const {
+        return idx % NUM_STRIPES;
+    }
 
     // Constructor
     Impl(const std::array<int, 9>& dimensions)
@@ -981,11 +1008,22 @@ TorusManifold& TorusManifold::operator=(TorusManifold&& other) noexcept = defaul
 
 // Public API delegates to Impl
 void TorusManifold::propagate(double dt) {
+    // Lock all stripes for global propagation
+    std::array<std::unique_lock<std::shared_mutex>, Impl::NUM_STRIPES> locks;
+    for (size_t i = 0; i < Impl::NUM_STRIPES; ++i) {
+        locks[i] = std::unique_lock<std::shared_mutex>(pimpl->mutexes[i]);
+    }
+
     pimpl->propagate_velocity_verlet(dt);
 }
 
 std::complex<double> TorusManifold::get_wavefunction(const Coord9D& coord) const {
     uint64_t idx = pimpl->coord_to_index(coord);
+    size_t stripe = pimpl->index_to_stripe(idx);
+
+    // Shared lock allows concurrent reads
+    std::shared_lock<std::shared_mutex> lock(pimpl->mutexes[stripe]);
+
     return std::complex<double>(
         pimpl->node_data.wavefunction_real[idx],
         pimpl->node_data.wavefunction_imag[idx]
@@ -994,11 +1032,22 @@ std::complex<double> TorusManifold::get_wavefunction(const Coord9D& coord) const
 
 void TorusManifold::inject_wave_at_coord(const Coord9D& coord, std::complex<double> amplitude) {
     uint64_t idx = pimpl->coord_to_index(coord);
+    size_t stripe = pimpl->index_to_stripe(idx);
+
+    // Unique lock for exclusive write access
+    std::unique_lock<std::shared_mutex> lock(pimpl->mutexes[stripe]);
+
     pimpl->node_data.wavefunction_real[idx] += static_cast<float>(amplitude.real());
     pimpl->node_data.wavefunction_imag[idx] += static_cast<float>(amplitude.imag());
 }
 
 void TorusManifold::reset() {
+    // Lock all stripes for global modification
+    std::array<std::unique_lock<std::shared_mutex>, Impl::NUM_STRIPES> locks;
+    for (size_t i = 0; i < Impl::NUM_STRIPES; ++i) {
+        locks[i] = std::unique_lock<std::shared_mutex>(pimpl->mutexes[i]);
+    }
+
     std::fill(pimpl->node_data.wavefunction_real.begin(),
               pimpl->node_data.wavefunction_real.end(), 0.0f);
     std::fill(pimpl->node_data.wavefunction_imag.begin(),

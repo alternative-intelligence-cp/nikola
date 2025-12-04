@@ -696,7 +696,7 @@ public:
                   << " (" << level0_sstables.size() << " SSTables in Level 0)" << std::endl;
     }
 
-    // Background compaction: merge Level 0 SSTables into Level 1
+    // Background compaction: k-way streaming merge of Level 0 SSTables into Level 1
     void background_compaction() {
         // Only compact if we have multiple SSTables in Level 0
         if (level0_sstables.size() < 4) {
@@ -706,46 +706,85 @@ public:
         std::cout << "[LSM-DMC] Starting compaction of " << level0_sstables.size()
                   << " SSTables..." << std::endl;
 
-        // Read all entries from Level 0 SSTables
-        std::map<uint64_t, TorusNode> merged_data;
+        // K-way merge iterator for streaming compaction
+        struct SSTableIterator {
+            std::ifstream stream;
+            uint64_t current_key;
+            TorusNode current_node;
+            bool valid;
+            size_t sstable_index;  // For tie-breaking (prefer newer files)
 
-        for (const auto& sstable_path : level0_sstables) {
-            std::ifstream sstable(sstable_path, std::ios::binary);
-            if (!sstable) {
-                std::cerr << "[LSM-DMC] Warning: Failed to open " << sstable_path << std::endl;
+            bool advance() {
+                if (stream.peek() == EOF) {
+                    valid = false;
+                    return false;
+                }
+
+                PageHeader page_header;
+                stream.read(reinterpret_cast<char*>(&page_header), sizeof(page_header));
+
+                if (stream.gcount() != sizeof(page_header)) {
+                    valid = false;
+                    return false;
+                }
+
+                current_key = page_header.page_id;
+
+                // Read compressed payload
+                std::vector<uint8_t> compressed(page_header.payload_len);
+                stream.read(reinterpret_cast<char*>(compressed.data()), page_header.payload_len);
+
+                // Decompress
+                auto nonary_sequence = nrle_decompress(compressed);
+
+                // Reconstruct node
+                if (!nonary_sequence.empty()) {
+                    current_node.nonary_value = nonary_sequence[0];
+                }
+
+                valid = true;
+                return true;
+            }
+        };
+
+        // Priority queue comparator: min-heap by key, prefer newer SSTable on tie
+        auto compare = [](const SSTableIterator* a, const SSTableIterator* b) {
+            if (a->current_key != b->current_key) {
+                return a->current_key > b->current_key;  // Min-heap
+            }
+            return a->sstable_index < b->sstable_index;  // Prefer newer (higher index)
+        };
+
+        std::priority_queue<SSTableIterator*, std::vector<SSTableIterator*>, decltype(compare)> pq(compare);
+
+        // Open all SSTables and initialize iterators
+        std::vector<std::unique_ptr<SSTableIterator>> iterators;
+        iterators.reserve(level0_sstables.size());
+
+        for (size_t i = 0; i < level0_sstables.size(); ++i) {
+            auto it = std::make_unique<SSTableIterator>();
+            it->stream.open(level0_sstables[i], std::ios::binary);
+            it->sstable_index = i;
+            it->valid = false;
+
+            if (!it->stream) {
+                std::cerr << "[LSM-DMC] Warning: Failed to open " << level0_sstables[i] << std::endl;
                 continue;
             }
 
             // Skip header
             NikHeader header;
-            sstable.read(reinterpret_cast<char*>(&header), sizeof(header));
+            it->stream.read(reinterpret_cast<char*>(&header), sizeof(header));
 
-            // Read all pages
-            while (sstable.peek() != EOF) {
-                PageHeader page_header;
-                sstable.read(reinterpret_cast<char*>(&page_header), sizeof(page_header));
-
-                // Read compressed payload
-                std::vector<uint8_t> compressed(page_header.payload_len);
-                sstable.read(reinterpret_cast<char*>(compressed.data()), page_header.payload_len);
-
-                // Decompress
-                auto nonary_sequence = nrle_decompress(compressed);
-
-                // Reconstruct node (simplified)
-                TorusNode node;
-                if (!nonary_sequence.empty()) {
-                    node.nonary_value = nonary_sequence[0];
-                }
-
-                // Merge (newer entries overwrite older ones)
-                merged_data[page_header.page_id] = node;
+            // Read first entry
+            if (it->advance()) {
+                pq.push(it.get());
             }
 
-            sstable.close();
+            iterators.push_back(std::move(it));
         }
 
-        // Write merged data to Level 1
+        // Prepare Level 1 output file
         auto timestamp = std::chrono::duration_cast<std::chrono::seconds>(
             std::chrono::system_clock::now().time_since_epoch()).count();
         std::string level1_path = data_dir + "/level1/sstable_" +
@@ -764,19 +803,43 @@ public:
         header.cipher_type = 0x00;
         level1_sstable.write(reinterpret_cast<const char*>(&header), sizeof(header));
 
-        // Write merged entries
-        for (const auto& [hilbert_idx, node] : merged_data) {
+        // K-way merge with streaming output
+        uint64_t last_key = 0;
+        size_t merged_count = 0;
+
+        while (!pq.empty()) {
+            // Extract minimum key
+            SSTableIterator* min_it = pq.top();
+            pq.pop();
+
+            // Skip duplicate keys (keep newest version)
+            if (merged_count > 0 && min_it->current_key == last_key) {
+                if (min_it->advance()) {
+                    pq.push(min_it);
+                }
+                continue;
+            }
+
+            // Write entry to Level 1
             PageHeader page_header;
-            page_header.page_id = hilbert_idx;
+            page_header.page_id = min_it->current_key;
             page_header.flags = PAGE_COMPRESSED;
 
-            std::vector<Nit> nonary_sequence{node.nonary_value};
+            std::vector<Nit> nonary_sequence{min_it->current_node.nonary_value};
             auto compressed = nrle_compress(nonary_sequence);
             page_header.payload_len = compressed.size();
             page_header.checksum = crc32c(compressed.data(), compressed.size());
 
             level1_sstable.write(reinterpret_cast<const char*>(&page_header), sizeof(page_header));
             level1_sstable.write(reinterpret_cast<const char*>(compressed.data()), compressed.size());
+
+            last_key = min_it->current_key;
+            merged_count++;
+
+            // Advance iterator and re-insert if valid
+            if (min_it->advance()) {
+                pq.push(min_it);
+            }
         }
 
         level1_sstable.close();
@@ -791,7 +854,8 @@ public:
         level0_sstables.clear();
 
         std::cout << "[LSM-DMC] Compaction complete. Merged " << compacted_count
-                  << " SSTables into " << level1_path << std::endl;
+                  << " SSTables into " << level1_path
+                  << " (" << merged_count << " unique entries)" << std::endl;
     }
 };
 

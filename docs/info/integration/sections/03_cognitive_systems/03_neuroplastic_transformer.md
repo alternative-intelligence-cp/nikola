@@ -202,6 +202,46 @@ public:
     }
 
 private:
+    // Heterodyning-based feed-forward network
+    // Replaces traditional MLP with wave mixing for nonlinear transformation
+    std::vector<std::complex<double>> feed_forward(
+        const std::vector<std::complex<double>>& input) {
+
+        constexpr size_t expansion_factor = 4;  // Standard transformer expansion
+        size_t expanded_dim = input.size() * expansion_factor;
+
+        // First projection: expand to higher dimensional space
+        std::vector<std::complex<double>> expanded(expanded_dim);
+        for (size_t i = 0; i < expanded_dim; ++i) {
+            size_t src_idx = i % input.size();
+            expanded[i] = input[src_idx] * weights[i];
+        }
+
+        // Heterodyning activation (nonlinear wave mixing)
+        // Implements β|Ψ|²Ψ for each component
+        for (auto& val : expanded) {
+            double magnitude_sq = std::norm(val);  // |Ψ|²
+            double beta = 0.1;  // Nonlinear coupling
+            val = val + beta * magnitude_sq * val;  // Ψ + β|Ψ|²Ψ
+        }
+
+        // Second projection: compress back to original dimension
+        std::vector<std::complex<double>> output(input.size(), {0.0, 0.0});
+        for (size_t i = 0; i < input.size(); ++i) {
+            for (size_t j = 0; j < expansion_factor; ++j) {
+                size_t exp_idx = i * expansion_factor + j;
+                output[i] += expanded[exp_idx] * weights[expanded_dim + exp_idx];
+            }
+        }
+
+        // Residual connection
+        for (size_t i = 0; i < input.size(); ++i) {
+            output[i] += input[i];
+        }
+
+        return output;
+    }
+
     void update_manifold_plasticity(TorusManifold& torus,
                                      const std::vector<std::complex<double>>& activations) {
         // Update metric tensor based on activation correlations

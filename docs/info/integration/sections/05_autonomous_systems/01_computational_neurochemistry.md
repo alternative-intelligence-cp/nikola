@@ -290,14 +290,18 @@ public:
 
 private:
     void trigger_curiosity() {
-        // Select random topic
+        // Select random topic using C++11 random
         std::vector<std::string> topics = {
             "recent breakthroughs in quantum computing",
             "unsolved problems in mathematics",
             "novel materials science discoveries"
         };
 
-        std::string topic = topics[rand() % topics.size()];
+        static std::random_device rd;
+        static std::mt19937 gen(rd());
+        std::uniform_int_distribution<size_t> dist(0, topics.size() - 1);
+
+        std::string topic = topics[dist(gen)];
 
         // Trigger external search (would connect to orchestrator)
         std::cout << "[CURIOSITY] Exploring: " << topic << std::endl;

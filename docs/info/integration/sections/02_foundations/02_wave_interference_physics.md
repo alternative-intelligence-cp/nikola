@@ -390,9 +390,19 @@ __global__ void propagate_wave_kernel(
    psi_new.y = psi.y + vel.y * dt + 0.5f * old_accel.y * dt * dt;
 
    // Step 2: Compute new acceleration at updated position
+   // Cubic nonlinearity term for soliton formation and heterodyning
+   float psi_magnitude_sq = psi.x * psi.x + psi.y * psi.y;
+   float beta = 0.01f;  // Nonlinear coupling coefficient
+
+   // Compute β|Ψ|²Ψ for heterodyning (enables nonary multiplication)
+   float2 nonlinear_term;
+   nonlinear_term.x = beta * psi_magnitude_sq * psi.x;
+   nonlinear_term.y = beta * psi_magnitude_sq * psi.y;
+
+   // Full NLSE acceleration: c²∇²Ψ - γv + β|Ψ|²Ψ
    float2 new_accel;
-   new_accel.x = velocity * laplacian.x - gamma * vel.x;
-   new_accel.y = velocity * laplacian.y - gamma * vel.y;
+   new_accel.x = velocity * laplacian.x - gamma * vel.x + nonlinear_term.x;
+   new_accel.y = velocity * laplacian.y - gamma * vel.y + nonlinear_term.y;
 
    // Step 3: Update velocity using average of old and new accelerations
    float2 vel_new;

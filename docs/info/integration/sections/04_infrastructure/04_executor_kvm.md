@@ -258,18 +258,39 @@ WantedBy=multi-user.target
         std::cerr << "Warning: Failed to enable systemd service (may need manual intervention)" << std::endl;
     }
 
-    // Air-gapped VM preparation: Dependencies must be pre-baked into gold image
-    // VMs have no network access for security, so apt-get commands fail at runtime.
-    //
-    // Dependencies required by nikola-agent:
-    // - nlohmann-json3-dev (C++ JSON library)
-    // - g++ and libstdc++ (for compiled binary execution)
-    //
-    // IMPORTANT: Run these installations BEFORE this tool is used, during gold image creation:
-    //   apt-get update && apt-get install -y nlohmann-json3-dev g++ libstdc++6
-    //
-    // Or compile nikola-agent as a statically-linked binary to eliminate runtime dependencies:
-    //   g++ -std=c++17 -static -O3 -o nikola-agent nikola-agent.cpp
+    // Offline package injection for air-gapped VMs
+    // Download packages on host, then inject into gold image via libguestfs
+    const char* inject_deps_script = R"(
+#!/bin/bash
+# File: tools/inject_offline_packages.sh
+
+GOLD_IMAGE="$1"
+PKG_DIR="./offline_packages"
+
+# Step 1: Download packages on networked host
+mkdir -p "$PKG_DIR"
+cd "$PKG_DIR"
+
+apt-get download nlohmann-json3-dev g++ libstdc++6 \
+    $(apt-cache depends --recurse --no-recommends --no-suggests \
+      nlohmann-json3-dev g++ libstdc++6 | grep "^\w" | sort -u)
+
+# Step 2: Inject packages into gold image
+virt-copy-in -a "../$GOLD_IMAGE" *.deb /tmp/
+
+# Step 3: Install packages inside guest (no network required)
+virt-customize -a "../$GOLD_IMAGE" \
+    --run-command "dpkg -i /tmp/*.deb || apt-get install -f -y" \
+    --run-command "rm -f /tmp/*.deb"
+
+echo "[OFFLINE] Successfully injected packages into $GOLD_IMAGE"
+)";
+
+    // Write offline injection script for deployment
+    std::ofstream script_file("/var/lib/nikola/tools/inject_offline_packages.sh");
+    script_file << inject_deps_script;
+    script_file.close();
+    chmod("/var/lib/nikola/tools/inject_offline_packages.sh", 0755);
 
     // Unmount and cleanup
     if (guestfs_umount_all(g) == -1) {

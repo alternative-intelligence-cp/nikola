@@ -63,18 +63,39 @@ Carry Mechanism:
 **Implementation:**
 
 ```cpp
+// Voronoi quantization in complex plane for balanced nonary distribution
 Nit quantize_wave(std::complex<double> wave) {
-    double magnitude = std::abs(wave);
-    double phase = std::arg(wave);
+    // Define Voronoi cell centers for each Nit value in complex plane
+    static const std::array<std::complex<double>, 9> voronoi_centers = {{
+        {0.0, 0.0},        // ZERO
+        {1.0, 0.0},        // P1
+        {2.0, 0.0},        // P2
+        {3.0, 0.0},        // P3
+        {4.0, 0.0},        // P4
+        {-1.0, 0.0},       // N1
+        {-2.0, 0.0},       // N2
+        {-3.0, 0.0},       // N3
+        {-4.0, 0.0}        // N4
+    }};
 
-    // Quantize magnitude to [0, 4]
-    int quant_mag = static_cast<int>(std::round(magnitude * 4.0));
-    quant_mag = std::clamp(quant_mag, 0, 4);
+    static const std::array<Nit, 9> nit_values = {
+        Nit::ZERO, Nit::P1, Nit::P2, Nit::P3, Nit::P4,
+        Nit::N1, Nit::N2, Nit::N3, Nit::N4
+    };
 
-    // Determine sign from phase
-    bool negative = (phase > M_PI / 2.0 && phase < 3.0 * M_PI / 2.0);
+    // Find nearest Voronoi cell center (minimum Euclidean distance)
+    size_t nearest_idx = 0;
+    double min_distance = std::abs(wave - voronoi_centers[0]);
 
-    return static_cast<Nit>(negative ? -quant_mag : quant_mag);
+    for (size_t i = 1; i < voronoi_centers.size(); ++i) {
+        double distance = std::abs(wave - voronoi_centers[i]);
+        if (distance < min_distance) {
+            min_distance = distance;
+            nearest_idx = i;
+        }
+    }
+
+    return nit_values[nearest_idx];
 }
 ```
 
