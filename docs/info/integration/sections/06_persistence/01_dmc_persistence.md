@@ -170,6 +170,8 @@ void write_varint(std::vector<uint8_t>& output, size_t value) {
 **Nap Sequence:**
 
 ```cpp
+#include <zstd.h>
+
 class PersistenceManager {
     std::map<uint64_t, TorusNode> dirty_cache;
     std::ofstream nik_file;
@@ -276,11 +278,44 @@ private:
         nik_file.write(reinterpret_cast<const char*>(compressed.data()), compressed.size());
     }
 
-    // Binary compression for serialized node data (replaces NRLE for full nodes)
+    // Binary compression using zstd for optimal size/speed tradeoff
     std::vector<uint8_t> compress_binary(const std::vector<uint8_t>& data) {
-        // Use LZ4 or zstd for fast binary compression
-        // For now, return uncompressed (production should use compression library)
-        return data;
+        size_t bound = ZSTD_compressBound(data.size());
+        std::vector<uint8_t> compressed(bound);
+
+        size_t cSize = ZSTD_compress(compressed.data(), bound,
+                                     data.data(), data.size(),
+                                     3);  // Level 3: balanced speed/ratio
+
+        if (ZSTD_isError(cSize)) {
+            throw std::runtime_error("Compression failed: " +
+                                     std::string(ZSTD_getErrorName(cSize)));
+        }
+
+        compressed.resize(cSize);
+        return compressed;
+    }
+
+    // Decompress zstd data
+    std::vector<uint8_t> decompress_binary(const std::vector<uint8_t>& compressed) {
+        unsigned long long decompressed_size = ZSTD_getFrameContentSize(
+            compressed.data(), compressed.size());
+
+        if (decompressed_size == ZSTD_CONTENTSIZE_ERROR ||
+            decompressed_size == ZSTD_CONTENTSIZE_UNKNOWN) {
+            throw std::runtime_error("Invalid compressed data");
+        }
+
+        std::vector<uint8_t> decompressed(decompressed_size);
+        size_t result = ZSTD_decompress(decompressed.data(), decompressed_size,
+                                        compressed.data(), compressed.size());
+
+        if (ZSTD_isError(result)) {
+            throw std::runtime_error("Decompression failed: " +
+                                     std::string(ZSTD_getErrorName(result)));
+        }
+
+        return decompressed;
     }
 
     uint32_t crc32c(const uint8_t* data, size_t len);
@@ -367,6 +402,86 @@ public:
                 }
             }
         });
+    }
+
+    void restore_state(TorusManifold& torus, const std::string& nik_path = "/var/lib/nikola/state/main.nik") {
+        std::ifstream nik_file(nik_path, std::ios::binary);
+        if (!nik_file) {
+            throw std::runtime_error("Failed to open .nik file for restore");
+        }
+
+        // Read global header
+        NikHeader header;
+        nik_file.read(reinterpret_cast<char*>(&header), sizeof(header));
+
+        if (header.magic != 0x4E494B4F) {
+            throw std::runtime_error("Invalid .nik file magic number");
+        }
+
+        std::cout << "[RESTORE] Loading checkpoint from " << nik_path << std::endl;
+
+        // Read all hyper-pages
+        size_t nodes_restored = 0;
+        while (nik_file.peek() != EOF) {
+            PageHeader page_header;
+            nik_file.read(reinterpret_cast<char*>(&page_header), sizeof(page_header));
+
+            // Read compressed payload
+            std::vector<uint8_t> compressed(page_header.payload_len);
+            nik_file.read(reinterpret_cast<char*>(compressed.data()), page_header.payload_len);
+
+            // Verify checksum
+            uint32_t computed_checksum = manager.crc32c(compressed.data(), compressed.size());
+            if (computed_checksum != page_header.checksum) {
+                std::cerr << "[RESTORE] Warning: Checksum mismatch at page "
+                          << page_header.page_id << std::endl;
+                continue;
+            }
+
+            // Decompress
+            std::vector<uint8_t> decompressed = manager.decompress_binary(compressed);
+
+            // Deserialize nodes from page
+            size_t offset = 0;
+            while (offset < decompressed.size()) {
+                TorusNode node;
+
+                // 1. Nonary value (1 byte)
+                uint8_t nit_byte = decompressed[offset++];
+                node.nonary_value = static_cast<Nit>(static_cast<int>(nit_byte) - 4);
+
+                // 2. Metric tensor (45 floats = 180 bytes)
+                std::memcpy(node.metric_tensor.data(), &decompressed[offset], 45 * sizeof(float));
+                offset += 45 * sizeof(float);
+
+                // 3. Resonance dimension (4 bytes)
+                std::memcpy(&node.resonance_r, &decompressed[offset], sizeof(float));
+                offset += sizeof(float);
+
+                // 4. State dimension (4 bytes)
+                std::memcpy(&node.state_s, &decompressed[offset], sizeof(float));
+                offset += sizeof(float);
+
+                // 5. Wavefunction (16 bytes)
+                std::memcpy(&node.wavefunction, &decompressed[offset], sizeof(std::complex<double>));
+                offset += sizeof(std::complex<double>);
+
+                // 6. Velocity (16 bytes)
+                std::memcpy(&node.velocity, &decompressed[offset], sizeof(std::complex<double>));
+                offset += sizeof(std::complex<double>);
+
+                // 7. Acceleration (16 bytes)
+                std::memcpy(&node.acceleration, &decompressed[offset], sizeof(std::complex<double>));
+                offset += sizeof(std::complex<double>);
+
+                // Inject node into torus at its original position
+                torus.restore_node(page_header.page_id, node);
+                nodes_restored++;
+            }
+        }
+
+        nik_file.close();
+        std::cout << "[RESTORE] Loaded " << nodes_restored << " nodes from checkpoint" << std::endl;
     }
 
     void stop() {

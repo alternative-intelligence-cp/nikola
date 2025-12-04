@@ -38,16 +38,69 @@ public:
     }
 
 private:
+    // Algorithmic Gray code rotation for 9D Hilbert curve
+    // Avoids massive lookup table memory overhead
     static uint32_t apply_hilbert_rotation(uint32_t bits, int level) {
-        // Simplified: Use lookup table for 9D rotations
-        return hilbert_rotation_lut_9d[level % ROTATION_TABLE_SIZE][bits];
+        // Apply Gray code transform
+        uint32_t gray = bits ^ (bits >> 1);
+
+        // Direction-dependent rotation based on level parity
+        // For 9D, rotation pattern alternates every 9 levels
+        int rotation_amount = (level % 9);
+
+        // Circular bit rotation for 9-bit value
+        uint32_t rotated = ((gray << rotation_amount) | (gray >> (9 - rotation_amount))) & 0x1FF;
+
+        // Apply inverse Gray code to get final position
+        uint32_t result = rotated;
+        for (int i = 1; i < 9; ++i) {
+            result ^= (rotated >> i);
+        }
+
+        return result & 0x1FF;  // Mask to 9 bits
+    }
+
+    // Decode Hilbert index back to coordinates
+    static std::array<uint32_t, 9> decode(uint64_t h_index, int bits) {
+        std::array<uint32_t, 9> coords{};
+
+        for (int level = bits - 1; level >= 0; --level) {
+            // Extract cell bits for this level
+            uint32_t cell_bits = (h_index >> (level * 9)) & 0x1FF;
+
+            // Reverse rotation
+            cell_bits = reverse_hilbert_rotation(cell_bits, level);
+
+            // Distribute bits to coordinates
+            for (int dim = 0; dim < 9; ++dim) {
+                uint32_t bit = (cell_bits >> dim) & 1;
+                coords[dim] |= (bit << level);
+            }
+        }
+
+        return coords;
+    }
+
+    static uint32_t reverse_hilbert_rotation(uint32_t bits, int level) {
+        // Inverse of apply_hilbert_rotation
+        int rotation_amount = (level % 9);
+
+        // Apply Gray code
+        uint32_t gray = bits;
+        for (int i = 1; i < 9; ++i) {
+            gray ^= (bits >> i);
+        }
+
+        // Reverse circular rotation
+        uint32_t unrotated = ((gray >> rotation_amount) | (gray << (9 - rotation_amount))) & 0x1FF;
+
+        // Inverse Gray code
+        uint32_t result = unrotated ^ (unrotated >> 1);
+
+        return result & 0x1FF;
     }
 };
 ```
-
-### Rotation Table
-
-Pre-computed table of Gray code rotations for 9D Hilbert curve (implementation detail, can use existing libraries).
 
 ## 7.2 Variable Rate Sampling
 

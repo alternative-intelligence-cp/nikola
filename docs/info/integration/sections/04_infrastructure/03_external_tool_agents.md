@@ -146,20 +146,50 @@ All HTTP operations are asynchronous using std::future to prevent blocking the m
 #include <future>
 #include <thread>
 #include <curl/curl.h>
+#include <mutex>
+
+// Singleton for thread-safe network library initialization
+class NetworkManager {
+private:
+    NetworkManager() {
+        curl_global_init(CURL_GLOBAL_ALL);
+    }
+
+    ~NetworkManager() {
+        curl_global_cleanup();
+    }
+
+    // Delete copy and move constructors
+    NetworkManager(const NetworkManager&) = delete;
+    NetworkManager& operator=(const NetworkManager&) = delete;
+    NetworkManager(NetworkManager&&) = delete;
+    NetworkManager& operator=(NetworkManager&&) = delete;
+
+public:
+    static NetworkManager& instance() {
+        static NetworkManager instance;
+        return instance;
+    }
+};
 
 class CustomHTTPClient {
     CURL* curl;
 
 public:
     CustomHTTPClient() {
-        // Note: curl_global_init() must be called once at process startup in main()
-        // It is NOT thread-safe and must not be called from multiple threads
+        // Ensure network manager is initialized (thread-safe)
+        NetworkManager::instance();
+
         curl = curl_easy_init();
+        if (!curl) {
+            throw std::runtime_error("Failed to initialize CURL");
+        }
     }
 
     ~CustomHTTPClient() {
-        curl_easy_cleanup(curl);
-        // Note: curl_global_cleanup() should be called once at process shutdown in main()
+        if (curl) {
+            curl_easy_cleanup(curl);
+        }
     }
 
     // Async GET with std::future (non-blocking)

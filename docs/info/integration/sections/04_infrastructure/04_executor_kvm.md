@@ -310,6 +310,22 @@ set -e
 wget https://cloud-images.ubuntu.com/noble/current/noble-server-cloudimg-amd64.img \
      -O /var/lib/nikola/gold/ubuntu-24.04-base.qcow2
 
+# Verify SHA256 checksum (replace with actual hash for your specific image version)
+# Get official hash from: https://cloud-images.ubuntu.com/noble/current/SHA256SUMS
+EXPECTED_SHA256="8d0dfbd82c869ef06a7be9e7d8db88dfba43e5cf1e8fa76f8d6f8a3b5ecf9b5d"
+ACTUAL_SHA256=$(sha256sum /var/lib/nikola/gold/ubuntu-24.04-base.qcow2 | awk '{print $1}')
+
+if [ "$ACTUAL_SHA256" != "$EXPECTED_SHA256" ]; then
+    echo "ERROR: SHA256 checksum mismatch!"
+    echo "Expected: $EXPECTED_SHA256"
+    echo "Actual:   $ACTUAL_SHA256"
+    echo "Image may be corrupted or compromised. Aborting."
+    rm /var/lib/nikola/gold/ubuntu-24.04-base.qcow2
+    exit 1
+fi
+
+echo "SHA256 verification passed"
+
 # 2. Resize image to 10GB
 qemu-img resize /var/lib/nikola/gold/ubuntu-24.04-base.qcow2 10G
 

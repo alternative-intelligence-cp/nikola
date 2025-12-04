@@ -324,6 +324,10 @@ __global__ void propagate_wave_kernel(
 
    float2 laplacian = {0.0f, 0.0f};
 
+   // Kahan summation state variables for compensated accumulation
+   // Prevents FP32 error accumulation over 18 neighbor summations
+   float2 kahan_c = {0.0f, 0.0f};  // Running compensation for lost low-order bits
+
    // Helper: compute diagonal index in upper-triangular storage
    // For 9x9 symmetric matrix, diagonal indices are: 0, 9, 17, 24, 30, 35, 39, 42, 44
    // Formula: index(d,d) = d*9 - d*(d-1)/2 = d*(18-d+1)/2
@@ -331,7 +335,7 @@ __global__ void propagate_wave_kernel(
        return d * (18 - d + 1) / 2;
    };
 
-   // Iterate over 9 dimensions (18 neighbors)
+   // Iterate over 9 dimensions (18 neighbors) with Kahan summation
    for (int d = 0; d < DIMENSIONS; d++) {
        // Metric tensor component g_{dd} for this dimension
        // Using proper diagonal indexing for upper-triangular storage
@@ -342,16 +346,36 @@ __global__ void propagate_wave_kernel(
        int n_idx = data.neighbor_indices[idx * 18 + (2 * d)];
        if (n_idx != -1) {
            float2 psi_n = data.wavefunction[n_idx];
-           laplacian.x += g_dd * (psi_n.x - psi.x);
-           laplacian.y += g_dd * (psi_n.y - psi.y);
+
+           // Kahan summation for real part
+           float y_real = g_dd * (psi_n.x - psi.x) - kahan_c.x;
+           float t_real = laplacian.x + y_real;
+           kahan_c.x = (t_real - laplacian.x) - y_real;
+           laplacian.x = t_real;
+
+           // Kahan summation for imaginary part
+           float y_imag = g_dd * (psi_n.y - psi.y) - kahan_c.y;
+           float t_imag = laplacian.y + y_imag;
+           kahan_c.y = (t_imag - laplacian.y) - y_imag;
+           laplacian.y = t_imag;
        }
 
        // Negative Neighbor
        n_idx = data.neighbor_indices[idx * 18 + (2 * d + 1)];
        if (n_idx != -1) {
            float2 psi_n = data.wavefunction[n_idx];
-           laplacian.x += g_dd * (psi_n.x - psi.x);
-           laplacian.y += g_dd * (psi_n.y - psi.y);
+
+           // Kahan summation for real part
+           float y_real = g_dd * (psi_n.x - psi.x) - kahan_c.x;
+           float t_real = laplacian.x + y_real;
+           kahan_c.x = (t_real - laplacian.x) - y_real;
+           laplacian.x = t_real;
+
+           // Kahan summation for imaginary part
+           float y_imag = g_dd * (psi_n.y - psi.y) - kahan_c.y;
+           float t_imag = laplacian.y + y_imag;
+           kahan_c.y = (t_imag - laplacian.y) - y_imag;
+           laplacian.y = t_imag;
        }
    }
 

@@ -223,10 +223,16 @@ public:
         });
     }
 
-    // Background physics loop runs continuously
+    // Background physics loop with fixed timestep for numerical stability
     void start_physics_loop() {
         std::thread([this]() {
+            using clock = std::chrono::steady_clock;
+            auto next_frame = clock::now();
+            const auto timestep = std::chrono::microseconds(1000);  // 1ms strict pacing
+
             while (running) {
+                next_frame += timestep;  // Schedule next frame
+
                 std::array<double, 9> emitter_outputs;
                 emitters.tick(emitter_outputs.data());
 
@@ -234,8 +240,10 @@ public:
                     torus.apply_emitter(e, emitter_outputs[e]);
                 }
 
-                torus.propagate(0.001);  // 1ms timestep
-                std::this_thread::sleep_for(std::chrono::milliseconds(1));
+                torus.propagate(0.001);  // 1ms timestep (guaranteed by sleep_until)
+
+                // Sleep until next scheduled frame (prevents timing drift)
+                std::this_thread::sleep_until(next_frame);
             }
         }).detach();
     }
@@ -319,9 +327,15 @@ public:
 
     // Main event loop (reactor pattern)
     void run() {
-        // Background physics loop (continuous wave propagation)
+        // Background physics loop with fixed timestep for energy conservation
         std::thread physics_thread([this]() {
+            using clock = std::chrono::steady_clock;
+            auto next_frame = clock::now();
+            const auto timestep = std::chrono::microseconds(1000);  // 1ms strict pacing
+
             while (running) {
+                next_frame += timestep;  // Schedule next frame
+
                 std::array<double, 9> emitter_outputs;
                 emitters.tick(emitter_outputs.data());
 
@@ -329,8 +343,10 @@ public:
                     torus.apply_emitter(e, emitter_outputs[e]);
                 }
 
-                torus.propagate(0.001);  // 1ms timestep
-                std::this_thread::sleep_for(std::chrono::milliseconds(1));
+                torus.propagate(0.001);  // 1ms timestep (guaranteed by sleep_until)
+
+                // Sleep until next scheduled frame (prevents timing drift)
+                std::this_thread::sleep_until(next_frame);
             }
         });
         physics_thread.detach();
