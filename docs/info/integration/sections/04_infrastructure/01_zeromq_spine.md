@@ -190,30 +190,62 @@ public:
         whitelist.insert(public_key_z85);
     }
 
+    // CRITICAL FIX (Audit 4 Item #8): Add error handling to ZAP loop
+    // Problem: Malformed messages can cause recv to throw/hang, crashing security handler
+    // Solution: Wrap in try/catch, log errors, restart handler without killing thread
     void run() {
         while (true) {
-            zmq::message_t version, request_id, domain, address, identity, mechanism, client_key;
+            try {
+                zmq::message_t version, request_id, domain, address, identity, mechanism, client_key;
 
-            zap_socket.recv(version);
-            zap_socket.recv(request_id);
-            zap_socket.recv(domain);
-            zap_socket.recv(address);
-            zap_socket.recv(identity);
-            zap_socket.recv(mechanism);
-            zap_socket.recv(client_key);
+                zap_socket.recv(version);
+                zap_socket.recv(request_id);
+                zap_socket.recv(domain);
+                zap_socket.recv(address);
+                zap_socket.recv(identity);
+                zap_socket.recv(mechanism);
+                zap_socket.recv(client_key);
 
-            std::string client_key_str(static_cast<char*>(client_key.data()), client_key.size());
+                std::string client_key_str(static_cast<char*>(client_key.data()), client_key.size());
 
-            // Check whitelist
-            bool authorized = whitelist.count(client_key_str) > 0;
+                // Check whitelist
+                bool authorized = whitelist.count(client_key_str) > 0;
 
-            // Send response
-            zap_socket.send(zmq::str_buffer("1.0"), zmq::send_flags::sndmore);
-            zap_socket.send(request_id, zmq::send_flags::sndmore);
-            zap_socket.send(zmq::str_buffer(authorized ? "200" : "400"), zmq::send_flags::sndmore);
-            zap_socket.send(zmq::str_buffer(authorized ? "OK" : "Unauthorized"), zmq::send_flags::sndmore);
-            zap_socket.send(zmq::str_buffer(""), zmq::send_flags::sndmore);
-            zap_socket.send(zmq::str_buffer(""));
+                // Send response
+                zap_socket.send(zmq::str_buffer("1.0"), zmq::send_flags::sndmore);
+                zap_socket.send(request_id, zmq::send_flags::sndmore);
+                zap_socket.send(zmq::str_buffer(authorized ? "200" : "400"), zmq::send_flags::sndmore);
+                zap_socket.send(zmq::str_buffer(authorized ? "OK" : "Unauthorized"), zmq::send_flags::sndmore);
+                zap_socket.send(zmq::str_buffer(""), zmq::send_flags::sndmore);
+                zap_socket.send(zmq::str_buffer(""));
+
+            } catch (const zmq::error_t& e) {
+                // ZeroMQ error (e.g., EINTR, EAGAIN, malformed message)
+                std::cerr << "[ZAP ERROR] ZeroMQ exception: " << e.what()
+                          << " (code: " << e.num() << ")" << std::endl;
+
+                // Log security event but continue running
+                log_security_event("ZAP handler encountered ZeroMQ error", e.what());
+
+                // Brief sleep to prevent tight error loop
+                std::this_thread::sleep_for(std::chrono::milliseconds(100));
+
+            } catch (const std::exception& e) {
+                // Standard exception (e.g., bad_alloc, out_of_range)
+                std::cerr << "[ZAP ERROR] Standard exception: " << e.what() << std::endl;
+
+                log_security_event("ZAP handler encountered exception", e.what());
+
+                std::this_thread::sleep_for(std::chrono::milliseconds(100));
+
+            } catch (...) {
+                // Unknown exception
+                std::cerr << "[ZAP ERROR] Unknown exception caught" << std::endl;
+
+                log_security_event("ZAP handler encountered unknown exception", "");
+
+                std::this_thread::sleep_for(std::chrono::milliseconds(100));
+            }
         }
     }
 };

@@ -100,11 +100,14 @@ void VisualCymaticsEngine::inject_image(const cv::Mat& image) {
             double green_amp = pixel[1] / 255.0;
             double blue_amp = pixel[0] / 255.0;
 
-            // HOLOGRAPHIC ENCODING: Apply distinct phase offsets to each color channel
-            // This creates a 3-channel interference pattern that preserves color information
-            emitters.set_amplitude(7, red_amp, RED_PHASE_OFFSET);     // Red → e₇ (x-spatial)
-            emitters.set_amplitude(8, green_amp, GREEN_PHASE_OFFSET); // Green → e₈ (y-spatial)
-            emitters.set_amplitude(9, blue_amp, BLUE_PHASE_OFFSET);   // Blue → e₉ (synchronizer)
+            // CRITICAL FIX (Audit 4 Item #6): Remap RGB to avoid modulating Emitter 9
+            // Problem: Emitter 9 is the Synchronizer - modulating it with Blue channel
+            // destabilizes global clocking. Synchronizer must remain invariant.
+            // Solution: Map RGB to Quantum Dimensions (u, v, w / Emitters 4, 5, 6)
+
+            emitters.set_amplitude(4, red_amp, RED_PHASE_OFFSET);     // Red → e₄ (quantum u)
+            emitters.set_amplitude(5, green_amp, GREEN_PHASE_OFFSET); // Green → e₅ (quantum v)
+            emitters.set_amplitude(6, blue_amp, BLUE_PHASE_OFFSET);   // Blue → e₆ (quantum w)
 
             // Inject at spatial coordinate
             Coord9D coord;

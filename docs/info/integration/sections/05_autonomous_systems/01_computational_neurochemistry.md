@@ -106,9 +106,7 @@ class BoredomCuriositySystem {
     double kappa = 0.05;
 
 public:
-    // CRITICAL FIX (Audit 3 Item #8): Add dt scaling for frame-rate independence
-    // Problem: Linear accumulation was frame-rate dependent (Zeno's paradox)
-    // Solution: Scale by delta time for consistent behavior regardless of tick rate
+    // Update boredom with time-step scaling for frame-rate independence
     void update(const TorusManifold& torus, double dopamine, double dt) {
         // Compute entropy
         double entropy = compute_entropy(torus);
@@ -350,26 +348,55 @@ class ExtendedNeurochemistry {
     DopamineSystem dopamine;
     BoredomCuriositySystem boredom;
 
-    // NEW: Extended neurochemicals
+    // Extended neurochemicals
     double serotonin = 0.5;       // Stability
     double norepinephrine = 0.5;  // Arousal
 
-    const double S_baseline = 0.5;
-    const double N_baseline = 0.5;
+    // Baselines loaded from configuration file for tuning
+    double dopamine_baseline;
+    double serotonin_baseline;
+    double norepinephrine_baseline;
+    double boredom_baseline;
+
+    // Decay rates (also configurable)
+    double serotonin_decay_rate;
+    double norepinephrine_decay_rate;
 
 public:
+    // Constructor loads baselines from configuration file
+    ExtendedNeurochemistry(const Config& config) {
+        // Load baselines from nikola.conf with sensible defaults
+        dopamine_baseline = config.get_double("neurochemistry.dopamine_baseline", 0.5);
+        serotonin_baseline = config.get_double("neurochemistry.serotonin_baseline", 0.5);
+        norepinephrine_baseline = config.get_double("neurochemistry.norepinephrine_baseline", 0.5);
+        boredom_baseline = config.get_double("neurochemistry.boredom_baseline", 0.0);
+
+        // Load decay rates
+        serotonin_decay_rate = config.get_double("neurochemistry.serotonin_decay", 0.01);
+        norepinephrine_decay_rate = config.get_double("neurochemistry.norepinephrine_decay", 0.05);
+
+        // Initialize neurochemical levels to baselines
+        serotonin = serotonin_baseline;
+        norepinephrine = norepinephrine_baseline;
+
+        std::cout << "[NEUROCHEMISTRY] Loaded baselines: "
+                  << "D=" << dopamine_baseline << " "
+                  << "S=" << serotonin_baseline << " "
+                  << "N=" << norepinephrine_baseline << std::endl;
+    }
+
     void update(const TorusManifold& torus, double dt) {
-        // Update base systems
+        // Update base systems (dopamine uses its internal baseline)
         dopamine.update(...);
         boredom.update(torus, dopamine.get_level());
 
         // Serotonin homeostasis (slow decay to baseline)
-        double S_decay = 0.01 * (S_baseline - serotonin);
+        double S_decay = serotonin_decay_rate * (serotonin_baseline - serotonin);
         serotonin += S_decay * dt;
         serotonin = std::clamp(serotonin, 0.0, 1.0);
 
         // Norepinephrine homeostasis (faster decay)
-        double N_decay = 0.05 * (N_baseline - norepinephrine);
+        double N_decay = norepinephrine_decay_rate * (norepinephrine_baseline - norepinephrine);
         norepinephrine += N_decay * dt;
         norepinephrine = std::clamp(norepinephrine, 0.0, 1.0);
     }

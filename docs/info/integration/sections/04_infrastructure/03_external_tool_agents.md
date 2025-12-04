@@ -138,7 +138,7 @@ public:
 
 **Purpose:** Generic HTTP/HTTPS requests with full control (Postman-like).
 
-**CRITICAL FIX (Audit 3 Item #2):** Non-blocking async HTTP to prevent cognitive loop stalls.
+All HTTP operations are asynchronous using std::future to prevent blocking the main cognitive loop during network I/O.
 
 ### Implementation
 
@@ -161,7 +161,7 @@ public:
         curl_global_cleanup();
     }
 
-    // CRITICAL FIX: Async GET with std::future to prevent blocking cognitive loop
+    // Async GET with std::future (non-blocking)
     std::future<std::string> get_async(const std::string& url,
                                          const std::map<std::string, std::string>& headers = {}) {
         return std::async(std::launch::async, [this, url, headers]() {
@@ -169,7 +169,7 @@ public:
         });
     }
 
-    // CRITICAL FIX: Async POST with std::future to prevent blocking cognitive loop
+    // Async POST with std::future (non-blocking)
     std::future<std::string> post_async(const std::string& url,
                                           const std::string& data,
                                           const std::map<std::string, std::string>& headers = {}) {
@@ -258,7 +258,7 @@ private:
     }
 };
 
-// Helper functions - FIXED: Now async by default to prevent blocking
+// Global helper functions - async by default (non-blocking)
 std::future<std::string> http_get(const std::string& url,
                                     const std::map<std::string, std::string>& headers = {}) {
     static thread_local CustomHTTPClient client;
@@ -338,15 +338,17 @@ message HTTPInspectionReport {
 ### HTTP Request Parser
 
 ```cpp
-// CRITICAL FIX (Audit 3 Item #11): Production-Grade HTTP Parsing
-// Problem: Manual std::getline parsing fails on:
+// Production-grade HTTP parsing using cpp-httplib
+// This library provides RFC 7230 compliant parsing with support for:
 //   - Chunked transfer encoding
 //   - Multipart bodies
-//   - Multi-line headers
+//   - Multi-line headers (folding)
 //   - HTTP/1.1 pipelining
-// Solution: Use cpp-httplib (header-only) or llhttp library
-
-// Option 1: cpp-httplib (recommended - header-only, no build dependencies)
+//
+// Security note: Manual string parsing using std::getline is not permitted
+// due to vulnerabilities (HTTP Request Smuggling, malformed header crashes).
+//
+// cpp-httplib is header-only with no build dependencies.
 // Add to CMakeLists.txt:
 //   find_package(httplib CONFIG REQUIRED)
 //   target_link_libraries(nikola PRIVATE httplib::httplib)

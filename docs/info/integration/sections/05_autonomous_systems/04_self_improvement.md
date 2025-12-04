@@ -110,9 +110,7 @@ private:
         }
     }
 
-    // CRITICAL FIX (Audit 3 Item #12): Implement apply_patch hot-swap logic
-    // Problem: Function was declared but not implemented
-    // Solution: Move compiled shared object to hot-swap directory and trigger DynamicModuleManager
+    // Apply patch by compiling to shared object and triggering hot-swap
     void apply_patch(const std::string& target, const std::string& code) {
         // 1. Write code to file
         std::string source_path = "/tmp/patch_" + target + ".cpp";
@@ -219,33 +217,55 @@ The AI is permitted to "examine its own code... generate... and hot swap". To pr
 
 ### Dynamic Module Loading
 
+Module handles use std::unique_ptr with custom deleter for RAII-based resource management, ensuring automatic dlclose even during exceptions.
+
 ```cpp
+#include <dlfcn.h>
+#include <memory>
+#include <map>
+#include <string>
+
+// Custom deleter for dlopen handles (calls dlclose automatically)
+struct DlopenDeleter {
+    void operator()(void* handle) const {
+        if (handle) {
+            dlclose(handle);
+        }
+    }
+};
+
+// Type alias for RAII module handle
+using ModuleHandle = std::unique_ptr<void, DlopenDeleter>;
+
 class DynamicModuleManager {
-    std::map<std::string, void*> loaded_modules;
+    // Module handles managed via RAII (automatic dlclose on destruction/reassignment)
+    std::map<std::string, ModuleHandle> loaded_modules;
 
 public:
     void hot_swap(const std::string& module_name, const std::string& new_so_path) {
-        // 1. Load new module
-        void* new_handle = dlopen(new_so_path.c_str(), RTLD_NOW);
-        if (!new_handle) {
+        // 1. Load new module (returns raw pointer from dlopen)
+        void* raw_handle = dlopen(new_so_path.c_str(), RTLD_NOW);
+        if (!raw_handle) {
             throw std::runtime_error("dlopen failed: " + std::string(dlerror()));
         }
 
-        // 2. Unload old module (if exists)
-        if (loaded_modules.count(module_name)) {
-            dlclose(loaded_modules[module_name]);
-        }
+        // 2. Wrap in unique_ptr with custom deleter
+        //    The old module (if exists) will be automatically dlclose'd
+        //    when the unique_ptr is reassigned or goes out of scope
+        ModuleHandle new_handle(raw_handle, DlopenDeleter{});
 
-        // 3. Store new handle
-        loaded_modules[module_name] = new_handle;
+        // 3. Store new handle (old handle automatically cleaned up via RAII)
+        loaded_modules[module_name] = std::move(new_handle);
 
-        std::cout << "[HOT-SWAP] Module " << module_name << " updated." << std::endl;
+        std::cout << "[HOT-SWAP] Module " << module_name << " updated (RAII-safe)." << std::endl;
     }
 
     template<typename FuncPtr>
     FuncPtr get_function(const std::string& module_name, const std::string& func_name) {
-        void* handle = loaded_modules.at(module_name);
+        // Get raw pointer from unique_ptr (safe - we still own it)
+        void* handle = loaded_modules.at(module_name).get();
 
+        // Load function symbol
         void* func_ptr = dlsym(handle, func_name.c_str());
         if (!func_ptr) {
             throw std::runtime_error("dlsym failed: " + std::string(dlerror()));
@@ -253,7 +273,40 @@ public:
 
         return reinterpret_cast<FuncPtr>(func_ptr);
     }
+
+    // Destructor automatically calls dlclose on all loaded modules via unique_ptr
+    // No need for explicit cleanup code - RAII handles everything
+    ~DynamicModuleManager() = default;
 };
+```
+
+**Benefits:**
+
+1. **Exception Safety:** If an exception occurs during hot_swap, the unique_ptr destructor automatically calls dlclose, preventing resource leaks.
+2. **Automatic Cleanup:** When a module is replaced, the old handle is automatically closed when the unique_ptr is reassigned.
+3. **RAII Compliance:** No manual dlclose calls needed - destructor handles all cleanup.
+4. **Memory Safety:** Eliminates risk of double-free or use-after-free errors with raw pointers.
+
+**Example Usage:**
+
+```cpp
+try {
+    DynamicModuleManager manager;
+    manager.hot_swap("physics_engine", "/var/lib/nikola/modules/physics_v2.so");
+
+    // Get function pointer
+    using UpdateFunc = void(*)(double);
+    auto update_fn = manager.get_function<UpdateFunc>("physics_engine", "update_physics");
+
+    // Use function
+    update_fn(0.001);
+
+    // If exception occurs here, unique_ptr automatically calls dlclose
+} catch (const std::exception& e) {
+    // Resource cleanup happens automatically - no manual dlclose needed
+    std::cerr << "Error: " << e.what() << std::endl;
+}
+```
 ```
 
 ## 17.5 Core Updates with execv

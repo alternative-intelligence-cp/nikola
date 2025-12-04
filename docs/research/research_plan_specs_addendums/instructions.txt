@@ -1,3 +1,0 @@
-all inforamtion neccessary for final deliverable are in /home/randy/._____RANDY_____/REPOS/nikola/docs/research/integration/research_plan_specs_addendums . 
-output should go in ._____RANDY_____/REPOS/nikola/docs/research/integration/sections
-please refer to and update /home/randy/._____RANDY_____/REPOS/nikola/docs/research/integration/instructions.txt as we complete each step so its easy to track where we are. 

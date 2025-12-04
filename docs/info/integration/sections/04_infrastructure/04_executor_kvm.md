@@ -121,7 +121,344 @@ Host Side:                      Guest Side:
 }
 ```
 
-## 13.6 Implementation
+## 13.6 Guest Agent Injection Protocol
+
+The Nikola guest agent must be present inside the VM to enable command execution. Two approaches are supported: (A) one-time injection into the gold image using libguestfs, or (B) per-VM injection using cloud-init ISO.
+
+### Option A: Gold Image Preparation (One-Time Setup)
+
+Use libguestfs to inject the agent into the gold image during initial setup:
+
+```cpp
+// File: tools/prepare_gold_image.cpp
+
+#include <guestfs.h>
+#include <iostream>
+#include <stdexcept>
+
+void inject_nikola_agent(const std::string& gold_image_path,
+                         const std::string& agent_binary_path) {
+    guestfs_h* g = guestfs_create();
+    if (!g) {
+        throw std::runtime_error("Failed to create libguestfs handle");
+    }
+
+    // Add disk in read/write mode
+    if (guestfs_add_drive_opts(g, gold_image_path.c_str(),
+                                GUESTFS_ADD_DRIVE_OPTS_FORMAT, "qcow2",
+                                GUESTFS_ADD_DRIVE_OPTS_READONLY, 0,
+                                -1) == -1) {
+        guestfs_close(g);
+        throw std::runtime_error("Failed to add drive: " + std::string(guestfs_last_error(g)));
+    }
+
+    // Launch the appliance
+    if (guestfs_launch(g) == -1) {
+        guestfs_close(g);
+        throw std::runtime_error("Failed to launch guestfs appliance");
+    }
+
+    // Mount the root filesystem
+    auto roots = guestfs_inspect_os(g);
+    if (!roots || !roots[0]) {
+        guestfs_close(g);
+        throw std::runtime_error("Failed to find root filesystem");
+    }
+
+    const char* root = roots[0];
+
+    // Get mountpoints
+    auto mountpoints = guestfs_inspect_get_mountpoints(g, root);
+    if (!mountpoints) {
+        guestfs_close(g);
+        throw std::runtime_error("Failed to get mountpoints");
+    }
+
+    // Mount filesystems
+    for (int i = 0; mountpoints[i] != NULL; i += 2) {
+        if (guestfs_mount(g, mountpoints[i+1], mountpoints[i]) == -1) {
+            std::cerr << "Warning: Failed to mount " << mountpoints[i] << std::endl;
+        }
+    }
+
+    // Verify target directories exist and are writable before uploading agent
+
+    // 1. Check if /usr/local/bin exists
+    if (guestfs_is_dir(g, "/usr/local/bin") == 0) {
+        std::cout << "[GOLD IMAGE] /usr/local/bin does not exist, creating..." << std::endl;
+
+        // Create /usr/local/bin with proper permissions
+        if (guestfs_mkdir_p(g, "/usr/local/bin") == -1) {
+            guestfs_close(g);
+            throw std::runtime_error("Failed to create /usr/local/bin directory");
+        }
+
+        // Set permissions: rwxr-xr-x (0755)
+        if (guestfs_chmod(g, 0755, "/usr/local/bin") == -1) {
+            std::cerr << "Warning: Failed to set permissions on /usr/local/bin" << std::endl;
+        }
+    }
+
+    // 2. Verify /usr/local/bin is writable (check permissions)
+    struct guestfs_statns* stat_info = guestfs_statns(g, "/usr/local/bin");
+    if (stat_info) {
+        int64_t mode = stat_info->st_mode;
+        // Check owner write permission (bit 7: 0200)
+        if ((mode & 0200) == 0) {
+            std::cerr << "Warning: /usr/local/bin may not be writable (mode: "
+                      << std::oct << mode << std::dec << ")" << std::endl;
+        }
+        guestfs_free_statns(stat_info);
+    }
+
+    // 3. Check if /etc/systemd/system exists (for service file)
+    if (guestfs_is_dir(g, "/etc/systemd/system") == 0) {
+        std::cout << "[GOLD IMAGE] /etc/systemd/system does not exist, creating..." << std::endl;
+        if (guestfs_mkdir_p(g, "/etc/systemd/system") == -1) {
+            std::cerr << "Warning: Failed to create /etc/systemd/system" << std::endl;
+        }
+    }
+
+    // 4. Upload nikola-agent binary (now with safety checks)
+    if (guestfs_upload(g, agent_binary_path.c_str(), "/usr/local/bin/nikola-agent") == -1) {
+        guestfs_close(g);
+        throw std::runtime_error("Failed to upload agent binary to /usr/local/bin/nikola-agent");
+    }
+
+    // 2. Set executable permissions
+    if (guestfs_chmod(g, 0755, "/usr/local/bin/nikola-agent") == -1) {
+        guestfs_close(g);
+        throw std::runtime_error("Failed to chmod agent binary");
+    }
+
+    // 3. Create systemd service
+    std::string service_content = R"([Unit]
+Description=Nikola Guest Agent
+After=multi-user.target
+
+[Service]
+Type=simple
+ExecStart=/usr/local/bin/nikola-agent
+Restart=on-failure
+StandardInput=file:/dev/vport0p1
+StandardOutput=file:/dev/vport0p1
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target
+)";
+
+    if (guestfs_write(g, "/etc/systemd/system/nikola-agent.service", service_content.c_str()) == -1) {
+        guestfs_close(g);
+        throw std::runtime_error("Failed to write systemd service");
+    }
+
+    // 4. Enable service
+    if (guestfs_sh(g, "systemctl enable nikola-agent") == -1) {
+        std::cerr << "Warning: Failed to enable systemd service (may need manual intervention)" << std::endl;
+    }
+
+    // 5. Install dependencies (nlohmann-json)
+    if (guestfs_sh(g, "apt-get update && apt-get install -y nlohmann-json3-dev") == -1) {
+        std::cerr << "Warning: Failed to install dependencies" << std::endl;
+    }
+
+    // Unmount and cleanup
+    if (guestfs_umount_all(g) == -1) {
+        std::cerr << "Warning: Failed to unmount all" << std::endl;
+    }
+
+    guestfs_close(g);
+
+    std::cout << "[GOLD IMAGE] Successfully injected nikola-agent into " << gold_image_path << std::endl;
+}
+
+int main(int argc, char* argv[]) {
+    if (argc != 3) {
+        std::cerr << "Usage: prepare_gold_image <gold_image.qcow2> <nikola-agent binary>" << std::endl;
+        return 1;
+    }
+
+    try {
+        inject_nikola_agent(argv[1], argv[2]);
+        std::cout << "Gold image prepared successfully!" << std::endl;
+        return 0;
+    } catch (const std::exception& e) {
+        std::cerr << "Error: " << e.what() << std::endl;
+        return 1;
+    }
+}
+```
+
+**Build Script:**
+
+```bash
+#!/bin/bash
+# File: tools/prepare_gold.sh
+
+set -e
+
+# 1. Download Ubuntu 24.04 Cloud image
+wget https://cloud-images.ubuntu.com/noble/current/noble-server-cloudimg-amd64.img \
+     -O /var/lib/nikola/gold/ubuntu-24.04-base.qcow2
+
+# 2. Resize image to 10GB
+qemu-img resize /var/lib/nikola/gold/ubuntu-24.04-base.qcow2 10G
+
+# 3. Compile nikola-agent
+g++ -std=c++17 -O3 -o /tmp/nikola-agent \
+    nikola-agent.cpp \
+    -I/usr/include/nlohmann
+
+# 4. Inject agent using libguestfs
+./prepare_gold_image /var/lib/nikola/gold/ubuntu-24.04-base.qcow2 /tmp/nikola-agent
+
+# 5. Copy to final location
+cp /var/lib/nikola/gold/ubuntu-24.04-base.qcow2 \
+   /var/lib/nikola/gold/ubuntu-24.04.qcow2
+
+echo "Gold image ready at /var/lib/nikola/gold/ubuntu-24.04.qcow2"
+```
+
+### Option B: Cloud-Init Injection (Per-VM Dynamic Injection)
+
+For overlay-based injection without modifying the gold image:
+
+```cpp
+// File: src/executor/cloud_init_injector.cpp
+
+#include <iostream>
+#include <fstream>
+#include <sstream>
+
+std::string create_cloud_init_iso(const std::string& task_id,
+                                    const std::string& agent_binary_path) {
+    std::string iso_path = "/tmp/nikola/cloud-init/" + task_id + ".iso";
+    std::string staging_dir = "/tmp/nikola/cloud-init/" + task_id;
+
+    // Create staging directory
+    std::filesystem::create_directories(staging_dir);
+
+    // 1. Create meta-data
+    std::ofstream meta_data(staging_dir + "/meta-data");
+    meta_data << "instance-id: nikola-" << task_id << "\n";
+    meta_data << "local-hostname: nikola-executor\n";
+    meta_data.close();
+
+    // 2. Create user-data with agent installation
+    std::ofstream user_data(staging_dir + "/user-data");
+    user_data << R"(#cloud-config
+packages:
+  - nlohmann-json3-dev
+
+write_files:
+  - path: /usr/local/bin/nikola-agent
+    permissions: '0755'
+    encoding: b64
+    content: )";
+
+    // Base64 encode the agent binary for cloud-init injection
+    std::ifstream agent_file(agent_binary_path, std::ios::binary);
+    std::vector<uint8_t> agent_bytes((std::istreambuf_iterator<char>(agent_file)),
+                                      std::istreambuf_iterator<char>());
+
+    // Option A: Use OpenSSL EVP_EncodeBlock (production-grade)
+    #include <openssl/evp.h>
+    #include <openssl/bio.h>
+    #include <openssl/buffer.h>
+
+    auto base64_encode = [](const std::vector<uint8_t>& data) -> std::string {
+        BIO* bio = BIO_new(BIO_s_mem());
+        BIO* b64 = BIO_new(BIO_f_base64());
+        bio = BIO_push(b64, bio);
+
+        BIO_set_flags(bio, BIO_FLAGS_BASE64_NO_NL);  // No newlines
+        BIO_write(bio, data.data(), data.size());
+        BIO_flush(bio);
+
+        BUF_MEM* bufferPtr;
+        BIO_get_mem_ptr(bio, &bufferPtr);
+        std::string result(bufferPtr->data, bufferPtr->length);
+
+        BIO_free_all(bio);
+        return result;
+    };
+
+    user_data << base64_encode(agent_bytes) << "\n";
+
+    user_data << R"(
+  - path: /etc/systemd/system/nikola-agent.service
+    permissions: '0644'
+    content: |
+      [Unit]
+      Description=Nikola Guest Agent
+      After=multi-user.target
+
+      [Service]
+      Type=simple
+      ExecStart=/usr/local/bin/nikola-agent
+      Restart=on-failure
+      StandardInput=file:/dev/vport0p1
+      StandardOutput=file:/dev/vport0p1
+      StandardError=journal
+
+      [Install]
+      WantedBy=multi-user.target
+
+runcmd:
+  - systemctl daemon-reload
+  - systemctl enable nikola-agent
+  - systemctl start nikola-agent
+)";
+    user_data.close();
+
+    // 3. Generate ISO using genisoimage
+    pid_t pid = fork();
+    if (pid == 0) {
+        const char* argv[] = {
+            "genisoimage",
+            "-output", iso_path.c_str(),
+            "-volid", "cidata",
+            "-joliet",
+            "-rock",
+            staging_dir.c_str(),
+            nullptr
+        };
+        execvp("genisoimage", const_cast<char**>(argv));
+        _exit(1);
+    } else {
+        int status;
+        waitpid(pid, &status, 0);
+
+        if (!WIFEXITED(status) || WEXITSTATUS(status) != 0) {
+            throw std::runtime_error("Failed to create cloud-init ISO");
+        }
+    }
+
+    return iso_path;
+}
+```
+
+**Updated VM XML with Cloud-Init:**
+
+```cpp
+// Add to generate_vm_xml():
+std::string cloud_init_iso = create_cloud_init_iso(task_id, "/usr/local/bin/nikola-agent");
+
+// Add to devices section:
+R"(
+    <disk type='file' device='cdrom'>
+      <driver name='qemu' type='raw'/>
+      <source file=')" + cloud_init_iso + R"('/>
+      <target dev='hdc' bus='ide'/>
+      <readonly/>
+    </disk>
+)"
+```
+
+**Impact:** VMs now boot with the nikola-agent pre-installed and running, enabling immediate command execution without manual intervention.
+
+## 13.7 Implementation
 
 ### VM XML Template Generator
 

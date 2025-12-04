@@ -235,8 +235,17 @@ public:
 ```cpp
 class RealTimeAudioProcessor {
     std::atomic<bool> running{true};
-    RingBuffer<int16_t> audio_buffer{FFT_SIZE * 4};  // 4x FFT size for buffering
+    // CRITICAL FIX (Audit 4 Item #7): Make buffer size configurable
+    // Problem: Hardcoded 4-frame buffer insufficient for high-latency scenarios or GC pauses
+    // Solution: Load from config with safer default (500ms buffer ~= 50 frames at 48kHz/1024)
+    size_t buffer_frames;
+    RingBuffer<int16_t> audio_buffer;
     std::thread processing_thread;
+
+    RealTimeAudioProcessor() {
+        buffer_frames = config.get_int("audio.buffer_frames", 50);  // Default: 50 frames
+        audio_buffer = RingBuffer<int16_t>(FFT_SIZE * buffer_frames);
+    }
 
 public:
     void start() {
