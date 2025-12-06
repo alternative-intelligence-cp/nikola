@@ -34,6 +34,11 @@ include_directories(
 file(GLOB_RECURSE PROTO_FILES "${CMAKE_CURRENT_SOURCE_DIR}/proto/*.proto")
 protobuf_generate_cpp(PROTO_SRCS PROTO_HDRS ${PROTO_FILES})
 
+# Core Infrastructure (Audit 1 - Finding 2.1)
+set(CORE_SOURCES
+    src/core/config.cpp
+)
+
 # Genesis Module 1: Cognitive Resonance
 set(COGNITIVE_SOURCES
     src/cognitive/spectral_filter.cpp
@@ -78,8 +83,9 @@ set(ARIA_SOURCES
     src/aria/native_interface.cpp
 )
 
-# Nikola Genesis Library (stub implementations)
+# Nikola Genesis Library (stub implementations + core infrastructure)
 add_library(nikola_genesis STATIC
+    ${CORE_SOURCES}
     ${COGNITIVE_SOURCES}
     ${SOCIAL_SOURCES}
     ${ECONOMY_SOURCES}
@@ -102,12 +108,20 @@ target_link_libraries(nikola_genesis PUBLIC
     Threads::Threads
 )
 
-# Compilation test target
+# Test targets
 add_executable(genesis_stub_test
     tests/genesis_stub_test.cpp
 )
 
 target_link_libraries(genesis_stub_test PRIVATE
+    nikola_genesis
+)
+
+add_executable(config_test
+    tests/config_test.cpp
+)
+
+target_link_libraries(config_test PRIVATE
     nikola_genesis
 )
 

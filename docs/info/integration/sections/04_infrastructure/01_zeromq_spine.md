@@ -102,6 +102,7 @@ message NeuralSpike {
 #include <sodium.h>
 #include <filesystem>
 #include <fstream>
+#include "nikola/core/config.hpp"  // AUDIT FIX (Finding 2.1): Centralized configuration
 
 class CurveKeyPair {
 public:
@@ -111,7 +112,8 @@ public:
     CurveKeyPair() {
         // Load existing keys or generate new ones to maintain access across restarts
         // Persistent key storage prevents lockout after self-improvement restart (Section 17.5)
-        const std::string key_dir = "/etc/nikola/keys";
+        // AUDIT FIX (Finding 2.1): Use centralized configuration
+        const std::string key_dir = nikola::core::Config::get().key_directory();
         const std::string public_key_path = key_dir + "/broker_public.key";
         const std::string secret_key_path = key_dir + "/broker_secret.key";
 
@@ -280,8 +282,10 @@ public:
         backend.set(zmq::sockopt::zap_domain, "nikola");
 
         // Bind sockets
-        frontend.bind("ipc:///tmp/nikola/spine_frontend.ipc");
-        backend.bind("ipc:///tmp/nikola/spine_backend.ipc");
+        // AUDIT FIX (Finding 2.1 & 4.1): Use centralized config and secure /run directory
+        const std::string runtime_dir = nikola::core::Config::get().runtime_directory();
+        frontend.bind("ipc://" + runtime_dir + "/spine_frontend.ipc");
+        backend.bind("ipc://" + runtime_dir + "/spine_backend.ipc");
         monitor.bind("inproc://logger");
     }
 
@@ -317,7 +321,9 @@ public:
         socket.set(zmq::sockopt::routing_id, identity);
 
         // Connect
-        socket.connect("ipc:///tmp/nikola/spine_frontend.ipc");
+        // AUDIT FIX (Finding 2.1 & 4.1): Use centralized config and secure /run directory
+        const std::string runtime_dir = nikola::core::Config::get().runtime_directory();
+        socket.connect("ipc://" + runtime_dir + "/spine_frontend.ipc");
     }
 
     void send_spike(const NeuralSpike& spike) {

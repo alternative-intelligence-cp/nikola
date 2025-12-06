@@ -171,11 +171,13 @@ void write_varint(std::vector<uint8_t>& output, size_t value) {
 
 ```cpp
 #include <zstd.h>
+#include "nikola/core/config.hpp"  // AUDIT FIX (Finding 2.1)
 
 class PersistenceManager {
     std::map<uint64_t, TorusNode> dirty_cache;
     std::ofstream nik_file;
-    std::string nik_path = "/var/lib/nikola/state/main.nik";
+    // AUDIT FIX (Finding 2.1): Use centralized configuration
+    std::string nik_path = nikola::core::Config::get().lsm_data_directory() + "/state/main.nik";
 
 public:
     void trigger_nap(const TorusManifold& torus) {
@@ -404,7 +406,9 @@ public:
         });
     }
 
-    void restore_state(TorusManifold& torus, const std::string& nik_path = "/var/lib/nikola/state/main.nik") {
+    // AUDIT FIX (Finding 2.1): Default path from centralized configuration
+    void restore_state(TorusManifold& torus,
+                       const std::string& nik_path = nikola::core::Config::get().lsm_data_directory() + "/state/main.nik") {
         std::ifstream nik_file(nik_path, std::ios::binary);
         if (!nik_file) {
             throw std::runtime_error("Failed to open .nik file for restore");
@@ -559,7 +563,8 @@ private:
     std::thread compaction_thread;
     std::atomic<bool> running{true};
 
-    const std::string data_dir = "/var/lib/nikola/lsm";
+    // AUDIT FIX (Finding 2.1): Use centralized configuration
+    const std::string data_dir = nikola::core::Config::get().lsm_data_directory();
 
 public:
     LSM_DMC() {

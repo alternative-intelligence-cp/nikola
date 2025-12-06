@@ -2,7 +2,8 @@
 
 ## 16.1 Directory Watching with inotify
 
-**Watched Directory:** `/var/lib/nikola/ingest/`
+**Watched Directory:** `${NIKOLA_INGEST_DIRECTORY}` (default: `/var/lib/nikola/ingest/`)
+**Config:** Use `nikola::core::Config::get().ingest_directory()` in C++
 
 **Events:** `IN_CLOSE_WRITE`, `IN_MOVED_TO`
 
@@ -11,11 +12,13 @@
 ```cpp
 #include <sys/inotify.h>
 #include <unistd.h>
+#include "nikola/core/config.hpp"  // AUDIT FIX (Finding 2.1)
 
 class IngestionSentinel {
     int inotify_fd = -1;
     int watch_descriptor = -1;
-    std::string watch_path = "/var/lib/nikola/ingest/";
+    // AUDIT FIX (Finding 2.1): Use centralized configuration
+    std::string watch_path = nikola::core::Config::get().ingest_directory();
 
     ThreadSafeQueue<std::filesystem::path> ingest_queue;
     std::thread watch_thread;
@@ -193,7 +196,8 @@ void IngestionSentinel::process_file(const std::filesystem::path& file_path) {
         std::cout << "[INGEST] Embedded and stored: " << file_path.filename() << std::endl;
 
         // 5. Archive
-        std::filesystem::path archive_dir = "/var/lib/nikola/archive/";
+        // AUDIT FIX (Finding 2.1): Use centralized configuration
+        std::filesystem::path archive_dir = nikola::core::Config::get().archive_directory();
         archive_dir /= current_date_string();
         std::filesystem::create_directories(archive_dir);
         std::filesystem::rename(file_path, archive_dir / file_path.filename());

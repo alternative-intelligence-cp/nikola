@@ -38,25 +38,31 @@ UNDEFINED → DEFINED → RUNNING → SHUTOFF → UNDEFINED
 
 ### Read-Only Base Image
 
-- **Path:** `/var/lib/nikola/gold/ubuntu-24.04.qcow2`
+- **Path:** `${NIKOLA_GOLD_CHECKPOINT_DIR}/ubuntu-24.04.qcow2` (default: `/var/lib/nikola/gold/`)
 - **Size:** ~2GB
 - **Contents:** Minimal Ubuntu 24.04 Cloud image
 - **State:** Immutable (never modified)
+- **Config:** Use `nikola::core::Config::get().gold_checkpoint_dir()` in C++
 
 ### QCOW2 Overlay (Copy-on-Write)
 
-- **Created per task:** `/tmp/nikola/overlays/task_<ID>.qcow2`
+- **Created per task:** `${NIKOLA_WORK_DIRECTORY}/overlays/task_<ID>.qcow2` (default: `/var/lib/nikola/work/`)
 - **Backing file:** Gold image
 - **Size:** Sparse (grows as needed, max ~10GB)
 - **Lifetime:** Deleted after task completion
+- **Config:** Use `nikola::core::Config::get().work_directory()` in C++
 
 ### Creation
 
 ```bash
+# AUDIT FIX (Finding 2.1): Use environment variables for paths
+GOLD_DIR="${NIKOLA_GOLD_CHECKPOINT_DIR:-/var/lib/nikola/gold}"
+WORK_DIR="${NIKOLA_WORK_DIRECTORY:-/var/lib/nikola/work}"
+
 qemu-img create -f qcow2 \
-  -b /var/lib/nikola/gold/ubuntu-24.04.qcow2 \
+  -b "${GOLD_DIR}/ubuntu-24.04.qcow2" \
   -F qcow2 \
-  /tmp/nikola/overlays/task_12345.qcow2
+  "${WORK_DIR}/overlays/task_12345.qcow2"
 ```
 
 ## 13.4 Virtio-Serial Communication
@@ -287,10 +293,14 @@ echo "[OFFLINE] Successfully injected packages into $GOLD_IMAGE"
 )";
 
     // Write offline injection script for deployment
-    std::ofstream script_file("/var/lib/nikola/tools/inject_offline_packages.sh");
+    // AUDIT FIX (Finding 2.1): Use centralized configuration
+    std::string tools_dir = nikola::core::Config::get().work_directory() + "/tools";
+    std::filesystem::create_directories(tools_dir);
+    std::string script_path = tools_dir + "/inject_offline_packages.sh";
+    std::ofstream script_file(script_path);
     script_file << inject_deps_script;
     script_file.close();
-    chmod("/var/lib/nikola/tools/inject_offline_packages.sh", 0755);
+    chmod(script_path.c_str(), 0755);
 
     // Unmount and cleanup
     if (guestfs_umount_all(g) == -1) {
@@ -324,37 +334,42 @@ int main(int argc, char* argv[]) {
 ```bash
 #!/bin/bash
 # File: tools/prepare_gold.sh
+# AUDIT FIX (Finding 2.1): Use environment variables for configurable paths
 
 set -e
 
+# Configuration from environment (with defaults)
+GOLD_DIR="${NIKOLA_GOLD_CHECKPOINT_DIR:-/var/lib/nikola/gold}"
+mkdir -p "$GOLD_DIR"
+
 # 1. Download Ubuntu 24.04 Cloud image
 wget https://cloud-images.ubuntu.com/noble/current/noble-server-cloudimg-amd64.img \
-     -O /var/lib/nikola/gold/ubuntu-24.04-base.qcow2
+     -O "${GOLD_DIR}/ubuntu-24.04-base.qcow2"
 
 # Verify SHA256 checksum (replace with actual hash for your specific image version)
 # Get official hash from: https://cloud-images.ubuntu.com/noble/current/SHA256SUMS
 EXPECTED_SHA256="8d0dfbd82c869ef06a7be9e7d8db88dfba43e5cf1e8fa76f8d6f8a3b5ecf9b5d"
-ACTUAL_SHA256=$(sha256sum /var/lib/nikola/gold/ubuntu-24.04-base.qcow2 | awk '{print $1}')
+ACTUAL_SHA256=$(sha256sum "${GOLD_DIR}/ubuntu-24.04-base.qcow2" | awk '{print $1}')
 
 if [ "$ACTUAL_SHA256" != "$EXPECTED_SHA256" ]; then
     echo "ERROR: SHA256 checksum mismatch!"
     echo "Expected: $EXPECTED_SHA256"
     echo "Actual:   $ACTUAL_SHA256"
     echo "Image may be corrupted or compromised. Aborting."
-    rm /var/lib/nikola/gold/ubuntu-24.04-base.qcow2
+    rm "${GOLD_DIR}/ubuntu-24.04-base.qcow2"
     exit 1
 fi
 
 echo "SHA256 verification passed"
 
 # 2. Resize image to 10GB
-qemu-img resize /var/lib/nikola/gold/ubuntu-24.04-base.qcow2 10G
+qemu-img resize "${GOLD_DIR}/ubuntu-24.04-base.qcow2" 10G
 
 # Pre-install dependencies in gold image for air-gapped VMs
 # VMs have no network access, so all dependencies must be included during image creation
 
 # 3. Install runtime dependencies using virt-customize
-virt-customize -a /var/lib/nikola/gold/ubuntu-24.04-base.qcow2 \
+virt-customize -a "${GOLD_DIR}/ubuntu-24.04-base.qcow2" \
     --run-command "apt-get update" \
     --install nlohmann-json3-dev,g++,libstdc++6 \
     --run-command "apt-get clean"
@@ -365,13 +380,13 @@ g++ -std=c++17 -static -O3 -o /tmp/nikola-agent \
     -I/usr/include/nlohmann
 
 # 5. Inject agent using libguestfs
-./prepare_gold_image /var/lib/nikola/gold/ubuntu-24.04-base.qcow2 /tmp/nikola-agent
+./prepare_gold_image "${GOLD_DIR}/ubuntu-24.04-base.qcow2" /tmp/nikola-agent
 
 # 6. Copy to final location
-cp /var/lib/nikola/gold/ubuntu-24.04-base.qcow2 \
-   /var/lib/nikola/gold/ubuntu-24.04.qcow2
+cp "${GOLD_DIR}/ubuntu-24.04-base.qcow2" \
+   "${GOLD_DIR}/ubuntu-24.04.qcow2"
 
-echo "Gold image ready at /var/lib/nikola/gold/ubuntu-24.04.qcow2"
+echo "Gold image ready at ${GOLD_DIR}/ubuntu-24.04.qcow2"
 echo "All dependencies pre-installed (air-gapped compatible)"
 ```
 
@@ -385,11 +400,14 @@ For overlay-based injection without modifying the gold image:
 #include <iostream>
 #include <fstream>
 #include <sstream>
+#include "nikola/core/config.hpp"  // AUDIT FIX (Finding 2.1)
 
 std::string create_cloud_init_iso(const std::string& task_id,
                                     const std::string& agent_binary_path) {
-    std::string iso_path = "/tmp/nikola/cloud-init/" + task_id + ".iso";
-    std::string staging_dir = "/tmp/nikola/cloud-init/" + task_id;
+    // AUDIT FIX (Finding 2.1 & 4.1): Use centralized config, avoid insecure /tmp
+    std::string work_dir = nikola::core::Config::get().work_directory();
+    std::string iso_path = work_dir + "/cloud-init/" + task_id + ".iso";
+    std::string staging_dir = work_dir + "/cloud-init/" + task_id;
 
     // Create staging directory
     std::filesystem::create_directories(staging_dir);
@@ -518,8 +536,16 @@ R"(
 ### VM XML Template Generator
 
 ```cpp
+// AUDIT FIX (Finding 2.1): Use centralized configuration for paths
+#include "nikola/core/config.hpp"
+
 std::string generate_vm_xml(const std::string& task_id,
                               const std::string& overlay_path) {
+    // Get paths from Config (Finding 2.1 & 4.1)
+    const auto& config = nikola::core::Config::get();
+    std::string gold_dir = config.gold_checkpoint_dir();
+    std::string runtime_dir = config.runtime_directory();
+
     return R"(
 <domain type='kvm'>
   <name>nikola_task_)" + task_id + R"(</name>
@@ -527,8 +553,8 @@ std::string generate_vm_xml(const std::string& task_id,
   <vcpu placement='static'>2</vcpu>
   <os>
     <type arch='x86_64'>hvm</type>
-    <kernel>/var/lib/nikola/kernels/vmlinuz-6.8.0</kernel>
-    <initrd>/var/lib/nikola/kernels/initrd.img-6.8.0</initrd>
+    <kernel>)" + gold_dir + R"(/kernels/vmlinuz-6.8.0</kernel>
+    <initrd>)" + gold_dir + R"(/kernels/initrd.img-6.8.0</initrd>
     <cmdline>console=ttyS0 root=/dev/vda rw quiet</cmdline>
   </os>
   <features>
@@ -543,7 +569,7 @@ std::string generate_vm_xml(const std::string& task_id,
       <target dev='vda' bus='virtio'/>
     </disk>
     <channel type='unix'>
-      <source mode='bind' path='/tmp/nikola/sockets/)" + task_id + R"(.sock'/>
+      <source mode='bind' path=')" + runtime_dir + R"(/sockets/)" + task_id + R"(.sock'/>
       <target type='virtio' name='org.nikola.agent.0'/>
     </channel>
     <serial type='pty'>
@@ -562,10 +588,12 @@ std::string generate_vm_xml(const std::string& task_id,
 
 ```cpp
 #include <libvirt/libvirt.h>
+#include "nikola/core/config.hpp"  // AUDIT FIX (Finding 2.1)
 
 class KVMExecutor {
     virConnectPtr conn = nullptr;
-    std::string gold_image_path = "/var/lib/nikola/gold/ubuntu-24.04.qcow2";
+    // AUDIT FIX (Finding 2.1): Use centralized configuration
+    std::string gold_image_path = nikola::core::Config::get().gold_checkpoint_dir() + "/ubuntu-24.04.qcow2";
 
 public:
     KVMExecutor() {
@@ -596,7 +624,8 @@ public:
         }
 
         // 4. Connect to virtio-serial socket
-        std::string socket_path = "/tmp/nikola/sockets/" + task_id + ".sock";
+        // AUDIT FIX (Finding 2.1 & 4.1): Use runtime_directory for sockets
+        std::string socket_path = nikola::core::Config::get().runtime_directory() + "/sockets/" + task_id + ".sock";
         auto agent_conn = wait_for_socket(socket_path, 30000);  // 30s timeout
 
         // 5. Send command
@@ -640,7 +669,8 @@ public:
 
 private:
     std::string create_overlay(const std::string& task_id) {
-        std::string overlay_path = "/tmp/nikola/overlays/task_" + task_id + ".qcow2";
+        // AUDIT FIX (Finding 2.1 & 4.1): Use work_directory for overlays
+        std::string overlay_path = nikola::core::Config::get().work_directory() + "/overlays/task_" + task_id + ".qcow2";
 
         // SECURITY: Use fork/execv instead of system() to prevent shell injection
         // (Compliant with Section 17.3.1 CSVP - Code Safety Verification Protocol)
@@ -899,7 +929,8 @@ private:
     std::atomic<uint64_t> pool_hits{0};      // VM acquired from pool
     std::atomic<uint64_t> pool_misses{0};    // Had to create new VM
 
-    std::string gold_image_path = "/var/lib/nikola/gold/ubuntu-24.04.qcow2";
+    // AUDIT FIX (Finding 2.1): Use centralized configuration
+    std::string gold_image_path = nikola::core::Config::get().gold_checkpoint_dir() + "/ubuntu-24.04.qcow2";
 
 public:
     VMPool(virConnectPtr connection) : conn(connection) {
@@ -1047,13 +1078,15 @@ private:
     // Create and boot VM synchronously
     WarmVM* create_vm_synchronous() {
         std::string vm_id = generate_vm_id();
+        // AUDIT FIX (Finding 2.1 & 4.1): Use centralized config
+        const auto& config = nikola::core::Config::get();
 
         // 1. Create overlay
-        std::string overlay_path = "/tmp/nikola/pool/" + vm_id + ".qcow2";
+        std::string overlay_path = config.work_directory() + "/pool/" + vm_id + ".qcow2";
         create_qcow2_overlay(overlay_path);
 
         // 2. Generate VM XML
-        std::string socket_path = "/tmp/nikola/pool/" + vm_id + ".sock";
+        std::string socket_path = config.runtime_directory() + "/pool/" + vm_id + ".sock";
         std::string xml = generate_vm_xml_pool(vm_id, overlay_path, socket_path);
 
         // 3. Boot VM
@@ -1257,6 +1290,9 @@ private:
     std::string generate_vm_xml_pool(const std::string& vm_id,
                                        const std::string& overlay_path,
                                        const std::string& socket_path) {
+        // AUDIT FIX (Finding 2.1): Use centralized configuration
+        std::string gold_dir = nikola::core::Config::get().gold_checkpoint_dir();
+
         return R"(
 <domain type='kvm'>
   <name>nikola_pool_)" + vm_id + R"(</name>
@@ -1264,8 +1300,8 @@ private:
   <vcpu placement='static'>1</vcpu>
   <os>
     <type arch='x86_64'>hvm</type>
-    <kernel>/var/lib/nikola/kernels/vmlinuz-6.8.0</kernel>
-    <initrd>/var/lib/nikola/kernels/initrd.img-6.8.0</initrd>
+    <kernel>)" + gold_dir + R"(/kernels/vmlinuz-6.8.0</kernel>
+    <initrd>)" + gold_dir + R"(/kernels/initrd.img-6.8.0</initrd>
     <cmdline>console=ttyS0 root=/dev/vda rw quiet</cmdline>
   </os>
   <features>

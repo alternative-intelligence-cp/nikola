@@ -18,9 +18,12 @@ struct IdentityProfile {
 **Implementation:**
 
 ```cpp
+#include "nikola/core/config.hpp"  // AUDIT FIX (Finding 2.1)
+
 class IdentityManager {
     IdentityProfile profile;
-    std::string profile_path = "/var/lib/nikola/identity.json";
+    // AUDIT FIX (Finding 2.1): Use centralized configuration
+    std::string profile_path = nikola::core::Config::get().identity_directory() + "/identity.json";
 
 public:
     void load() {
