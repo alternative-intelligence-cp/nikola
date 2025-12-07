@@ -340,7 +340,14 @@ struct NonaryNumber {
                 // Saturating logic: If next dimension is saturated, absorb energy
                 int next_dim = (i + 1) % 9;
                 if (digits[next_dim].is_saturated()) {
-                    // Energy absorption: increment dissipation counter instead of propagating
+                    // Energy absorption: Couple to resonance dimension (heating lowers Q-factor)
+                    // Physical interpretation: Dissipated energy becomes heat, lowering resonance
+                    // This maintains energy conservation via thermodynamic coupling
+                    constexpr double DISSIPATION_TO_HEAT_COUPLING = 0.001;
+                    node.resonance -= (carry_amount * DISSIPATION_TO_HEAT_COUPLING);
+                    node.resonance = std::max(0.0, node.resonance);  // Clamp at 0
+                    
+                    // Track total dissipation for monitoring (energy audit)
                     dissipated_energy += carry_amount;
                     sum = 4;  // Clamp at saturation
                 } else {

@@ -351,6 +351,296 @@ void propagate_wave_ufie(double dt) {
 - Standing wave test: Energy drift must be <0.0001% over 10,000 steps
 - See: Section 8 (Phase 0 Requirements) for complete specifications
 
+### 4.5.2 Physics Oracle: Energy Dissipation Verification
+
+**⚠️ CRITICAL SAFETY CHECK**
+
+The Physics Oracle monitors energy balance to detect numerical instability or invalid state evolution. Because the UFIE includes damping (non-conservative), we **CANNOT** check $dH/dt = 0$ (this always fails for damped systems).
+
+**Correct Energy Balance:**
+
+$$\frac{dH}{dt} = P_{\text{in}} - P_{\text{diss}}$$
+
+Where:
+- $H = \int |\Psi|^2 + |\nabla\Psi|^2 dV$ (total Hamiltonian)
+- $P_{\text{in}} = \sum_{i=1}^{8} \int \mathcal{E}_i \cdot \frac{\partial \Psi^*}{\partial t} dV$ (emitter power)
+- $P_{\text{diss}} = \alpha \int (1 - \hat{r}) \left|\frac{\partial \Psi}{\partial t}\right|^2 dV$ (damping dissipation)
+
+**Implementation:**
+
+```cpp
+/**
+ * @brief Physics Oracle - Energy Conservation Monitor
+ * Validates that energy balance matches expected dissipation from damping.
+ * This is NOT a conservative system, so we check dH/dt = P_in - P_diss.
+ */
+class PhysicsOracle {
+    double prev_energy = 0.0;
+    double energy_tolerance = 0.01;  // 1% tolerance for numerical error
+
+public:
+    bool validate_energy_balance(const TorusGridSoA& grid,
+                                  const EmitterArray& emitters,
+                                  double dt) {
+        // Compute current total energy
+        double current_energy = compute_hamiltonian(grid);
+        
+        // Compute expected power input from emitters
+        double P_in = compute_emitter_power(grid, emitters);
+        
+        // Compute expected dissipation power from damping
+        double P_diss = compute_dissipation_power(grid);
+        
+        // Expected energy change: dH = (P_in - P_diss) * dt
+        double expected_dH = (P_in - P_diss) * dt;
+        
+        // Actual energy change
+        double actual_dH = current_energy - prev_energy;
+        
+        // Check if energy balance is within tolerance
+        double energy_error = std::abs(actual_dH - expected_dH) / (std::abs(expected_dH) + 1e-12);
+        
+        // Update for next iteration
+        prev_energy = current_energy;
+        
+        // If energy error exceeds tolerance, trigger soft SCRAM
+        if (energy_error > energy_tolerance) {
+            std::cerr << "[Physics Oracle] Energy conservation violated!\n";
+            std::cerr << "  Expected dH: " << expected_dH << " J\n";
+            std::cerr << "  Actual dH:   " << actual_dH << " J\n";
+            std::cerr << "  Error:       " << (energy_error * 100.0) << "%\n";
+            return false;
+        }
+        
+        return true;
+    }
+
+private:
+    // Compute total Hamiltonian: H = ∫(|Ψ|² + |∇Ψ|²) dV
+    double compute_hamiltonian(const TorusGridSoA& grid) {
+        double H = 0.0;
+        
+        #pragma omp parallel for reduction(+:H)
+        for (size_t i = 0; i < grid.num_active; ++i) {
+            std::complex<double> psi(grid.wavefunction_real[i], grid.wavefunction_imag[i]);
+            std::complex<double> grad(grid.gradient_real[i], grid.gradient_imag[i]);
+            
+            H += std::norm(psi) + std::norm(grad);
+        }
+        
+        return H;
+    }
+    
+    // Compute emitter input power: P_in = Σ ∫ 𝓔ᵢ · ∂Ψ*/∂t dV
+    double compute_emitter_power(const TorusGridSoA& grid, const EmitterArray& emitters) {
+        double P_in = 0.0;
+        
+        #pragma omp parallel for reduction(+:P_in)
+        for (size_t i = 0; i < grid.num_active; ++i) {
+            std::complex<double> velocity(grid.velocity_real[i], grid.velocity_imag[i]);
+            std::complex<double> emitter_field = emitters.get_field_at_node(i);
+            
+            // Power = Re(E · v*)
+            P_in += std::real(emitter_field * std::conj(velocity));
+        }
+        
+        return P_in;
+    }
+    
+    // Compute dissipation power: P_diss = α ∫ (1-r̂) |∂Ψ/∂t|² dV
+    double compute_dissipation_power(const TorusGridSoA& grid) {
+        double P_diss = 0.0;
+        const double alpha = 0.1;  // Damping coefficient from UFIE
+        
+        #pragma omp parallel for reduction(+:P_diss)
+        for (size_t i = 0; i < grid.num_active; ++i) {
+            double resonance = grid.resonance[i];
+            std::complex<double> velocity(grid.velocity_real[i], grid.velocity_imag[i]);
+            
+            // Damping factor γ = α(1 - r̂)
+            double gamma = alpha * (1.0 - resonance);
+            
+            // Dissipation = γ |∂Ψ/∂t|²
+            P_diss += gamma * std::norm(velocity);
+        }
+        
+        return P_diss;
+    }
+};
+```
+
+**Usage in Propagation Loop:**
+
+```cpp
+PhysicsOracle oracle;
+
+void timestep_with_validation(double dt) {
+    // Propagate wave equation
+    propagate_wave_ufie(dt);
+    
+    // Validate energy balance
+    if (!oracle.validate_energy_balance(grid, emitters, dt)) {
+        // Energy conservation violated - trigger soft SCRAM
+        trigger_soft_scram("Physics Oracle: Energy balance failed");
+    }
+}
+```
+
+**SCRAM Protocol Implementation:**
+
+```cpp
+/**
+ * @brief Soft SCRAM (Safety Control Reset And Monitor)
+ * Graceful emergency reset with 3-attempt limit before hard abort.
+ * Prevents /dev/shm pollution and allows recovery from transient instabilities.
+ */
+void trigger_soft_scram(const std::string& reason) {
+    static int scram_attempts = 0;
+    static constexpr int MAX_SCRAM_ATTEMPTS = 3;
+    static auto last_scram_time = std::chrono::steady_clock::now();
+    
+    auto now = std::chrono::steady_clock::now();
+    auto time_since_last = std::chrono::duration_cast<std::chrono::seconds>(now - last_scram_time).count();
+    
+    // Reset attempt counter if last SCRAM was >60 seconds ago (recovered)
+    if (time_since_last > 60) {
+        scram_attempts = 0;
+    }
+    
+    std::cerr << "[SOFT SCRAM #" << (scram_attempts + 1) << "/" << MAX_SCRAM_ATTEMPTS << "] " 
+              << reason << "\n";
+    
+    scram_attempts++;
+    last_scram_time = now;
+    
+    // STEP 1: Zero wavefunction (vacuum state)
+    #pragma omp parallel for
+    for (size_t i = 0; i < grid.num_active; ++i) {
+        grid.wavefunction_real[i] = 0.0;
+        grid.wavefunction_imag[i] = 0.0;
+        grid.velocity_real[i] = 0.0;
+        grid.velocity_imag[i] = 0.0;
+    }
+    
+    // STEP 2: Reset metric tensor to flat Euclidean
+    reset_metric_to_euclidean();
+    
+    // STEP 3: Reset emitters to default phase offsets
+    emitter_array.reset_to_defaults();
+    
+    // STEP 4: Log event with timestamp
+    std::ofstream log("/var/log/nikola/scram.log", std::ios::app);
+    if (log) {
+        auto time_t_now = std::chrono::system_clock::to_time_t(
+            std::chrono::system_clock::now());
+        log << std::put_time(std::localtime(&time_t_now), "%Y-%m-%d %H:%M:%S")
+            << " | Attempt " << scram_attempts << " | " << reason << "\n";
+        log.close();
+    }
+    
+    // STEP 5: Hard abort only after exhausting retry limit
+    if (scram_attempts >= MAX_SCRAM_ATTEMPTS) {
+        std::cerr << "[HARD SCRAM] Exceeded retry limit (" << MAX_SCRAM_ATTEMPTS 
+                  << " attempts). System unstable. Aborting.\n";
+        std::cerr << "Last reason: " << reason << "\n";
+        
+        // Final cleanup before abort
+        cleanup_shared_memory();
+        
+        std::abort();
+    }
+    
+    std::cerr << "[SOFT SCRAM] System reset complete. Resuming operation.\n";
+}
+
+/**
+ * @brief Reset metric tensor to flat Euclidean geometry
+ * This eliminates all curvature, reverting to uncoupled harmonic oscillators
+ */
+void reset_metric_to_euclidean() {
+    #pragma omp parallel for
+    for (size_t i = 0; i < grid.num_active; ++i) {
+        // Set diagonal elements to 1.0 (identity metric)
+        for (int d = 0; d < 9; ++d) {
+            int diag_idx = d * (18 - d + 1) / 2;  // Upper-triangular diagonal index
+            grid.metric_tensor[diag_idx][i] = 1.0f;
+        }
+        
+        // Set off-diagonal elements to 0.0 (no coupling)
+        int idx = 0;
+        for (int i_dim = 0; i_dim < 9; ++i_dim) {
+            for (int j_dim = i_dim + 1; j_dim < 9; ++j_dim) {
+                if (idx < 45 && i_dim * (18 - i_dim + 1) / 2 + (j_dim - i_dim) != idx) {
+                    grid.metric_tensor[idx][i] = 0.0f;
+                }
+                idx++;
+            }
+        }
+    }
+}
+```
+
+**Why This Matters:**
+- **Detects numerical instability** before it causes explosion
+- **Validates damping physics** (ensures dissipation matches theory)
+- **Prevents hallucination** from unphysical wave evolution
+
+### 4.5.3 Sampling Rate Requirements
+
+**⚠️ CRITICAL: HARDCODED REQUIREMENT**
+
+The emitter array operates at 147Hz (golden ratio harmonic). The nonlinear soliton term ($\beta |\Psi|^2 \Psi$) generates **third harmonic** at $3 \times 147 = 441$ Hz.
+
+**Nyquist Requirement:**
+
+$$f_{\text{sample}} \geq 2 \times 441 = 882 \text{ Hz}$$
+
+**Production Requirement (with safety margin):**
+
+$$\Delta t \leq 0.0005 \text{ s} \quad (f_{\text{sample}} = 2000 \text{ Hz})$$
+
+**Implementation:**
+
+```cpp
+// HARDCODED CONSTRAINT: DO NOT USE DYNAMIC dt FOR UFIE PROPAGATION
+// Reason: 147Hz emitter creates 441Hz third harmonic (must satisfy Nyquist)
+namespace nikola::physics {
+    constexpr double MAX_TIMESTEP = 0.0005;  // 2000 Hz sampling rate
+    constexpr double MIN_TIMESTEP = 0.0001;  // 10,000 Hz (optional for high curvature)
+}
+
+void enforce_timestep_constraint(double& dt) {
+    // Clamp to safe range
+    dt = std::clamp(dt, nikola::physics::MIN_TIMESTEP, nikola::physics::MAX_TIMESTEP);
+}
+
+void propagate_wave_ufie_safe(double dt) {
+    // ALWAYS enforce sampling rate constraint
+    enforce_timestep_constraint(dt);
+    
+    // Proceed with validated timestep
+    propagate_wave_ufie(dt);
+}
+```
+
+**Consequence of Violation:**
+- **Aliasing:** 441Hz harmonic folds into low frequencies
+- **Golden ratio corruption:** $\phi$ relationship destroyed
+- **Hallucination:** System perceives non-existent patterns
+- **Instability:** Energy leaks to invalid modes
+
+**Validation Test:**
+```cpp
+// Unit test: Verify timestep is NEVER exceeded
+void test_sampling_rate_constraint() {
+    for (double dt_test : {0.001, 0.0005, 0.0001, 0.00001}) {
+        double dt = dt_test;
+        enforce_timestep_constraint(dt);
+        assert(dt <= nikola::physics::MAX_TIMESTEP);
+    }
+}
+```
+
 ### Simplified Discretization (Finite Difference)
 
 For reference, the naive update rule (DO NOT USE):

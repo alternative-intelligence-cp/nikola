@@ -262,6 +262,109 @@ This uses the **first-order Taylor approximation** of the matrix exponential: $\
 
 **Performance Rationale:** Computing the full matrix exponential $\exp(-\Delta \cdot \mathbf{G}_i)$ requires O(N³) operations (eigendecomposition or matrix series). For a 9×9 matrix per node with millions of nodes, this is computationally impossible. The first-order approximation reduces this to O(N²) matrix-scalar multiplication, a 10× speedup with negligible accuracy loss when $\Delta$ is small (which it is due to adaptive discretization).
 
+**⚠️ CRITICAL STABILITY REQUIREMENT:**
+
+The first-order approximation $A \approx I - \Delta \cdot G$ is **UNSTABLE** if the spectral radius $\rho(G) > 2/\Delta$. In high-curvature regions (black holes, dense memory), eigenvalues can be large, causing state explosion.
+
+**Spectral Radius Stability Check:**
+
+```cpp
+/**
+ * @brief Compute spectral radius (largest absolute eigenvalue) of metric tensor G
+ * Uses power iteration for efficiency (avoids full eigendecomposition)
+ * Complexity: O(N²) vs O(N³) for full eigensolver
+ */
+double compute_spectral_radius(const Eigen::MatrixXd& G, int max_iters = 100) {
+    // Power iteration: |λ_max| = lim_{k→∞} ||G^k v|| / ||G^{k-1} v||
+    Eigen::VectorXd v = Eigen::VectorXd::Random(G.rows());
+    v.normalize();
+    
+    double lambda = 0.0;
+    for (int iter = 0; iter < max_iters; ++iter) {
+        Eigen::VectorXd Gv = G * v;
+        double lambda_new = Gv.norm();
+        
+        // Convergence check
+        if (std::abs(lambda_new - lambda) < 1e-6) {
+            return lambda_new;
+        }
+        
+        lambda = lambda_new;
+        v = Gv / lambda;
+    }
+    
+    return lambda;
+}
+
+/**
+ * @brief Validate and correct adaptive timestep for SSM stability
+ * Ensures Δ < 2/ρ(G) to prevent eigenvalue explosion
+ */
+double enforce_ssm_stability(const Eigen::MatrixXd& G, double Delta_requested) {
+    // Compute spectral radius of metric tensor
+    double rho = compute_spectral_radius(G);
+    
+    // Stability condition: Δ < 2/ρ(G)
+    double Delta_max = 2.0 / (rho + 1e-12);  // Add epsilon to prevent division by zero
+    
+    // Apply safety factor (80% of theoretical limit)
+    Delta_max *= 0.8;
+    
+    // Clamp requested timestep
+    double Delta_safe = std::min(Delta_requested, Delta_max);
+    
+    // Log if clamping occurred (indicates high curvature region)
+    if (Delta_safe < Delta_requested) {
+        std::cerr << "[Mamba-9D Stability] High curvature detected: ρ(G) = " << rho << "\n";
+        std::cerr << "  Requested Δ = " << Delta_requested << " s\n";
+        std::cerr << "  Enforced Δ  = " << Delta_safe << " s (stability limit)\n";
+    }
+    
+    return Delta_safe;
+}
+```
+
+**Integration into Parameter Extraction:**
+
+```cpp
+MambaParams extract_ssm_params(const TorusNode& node) {
+    MambaParams params;
+
+    // A matrix: Metric tensor + damping
+    params.A = reconstruct_metric_matrix(node.metric_tensor);
+    Eigen::MatrixXd G = params.A;  // Save un-damped metric for stability check
+    params.A *= (1.0 - node.resonance_r);  // Apply damping
+
+    // B vector: Input coupling from state dimension
+    params.B = Eigen::VectorXd::Constant(9, node.state_s);
+
+    // C vector: Project QuantumState amplitudes (u, v, w) into output matrix
+    params.C = Eigen::VectorXd::Zero(9);
+    params.C(3) = std::abs(node.quantum.u);
+    params.C(4) = std::abs(node.quantum.v);
+    params.C(5) = std::abs(node.quantum.w);
+    double total_amplitude = std::abs(node.quantum.total_amplitude());
+    params.C(0) = total_amplitude * node.resonance_r;
+    params.C(1) = total_amplitude * node.state_s;
+    params.C(2) = total_amplitude;
+    params.C(6) = total_amplitude;
+    params.C(7) = total_amplitude;
+    params.C(8) = total_amplitude;
+
+    // Delta: Adaptive with stability enforcement
+    double Delta_requested = compute_adaptive_delta(node, 0.01);
+    params.Delta = enforce_ssm_stability(G, Delta_requested);  // ✅ STABILITY CHECK
+
+    return params;
+}
+```
+
+**Why This Matters:**
+- **Prevents state explosion** in high-curvature regions (dense memories, black holes)
+- **Automatic timestep reduction** when approaching numerical instability
+- **O(N²) performance** using power iteration instead of full eigensolve
+- **Essential for production safety** - without this, system crashes in complex states
+
 **Insight:** Regions with high resonance ($r \to 1$) result in $A \approx I$, meaning the state is preserved perfectly (Long Term Memory). Regions with low resonance result in decay (Forgetting).
 
 **2. Matrix B (Input Sensitivity):** Defined by the local State dimension.

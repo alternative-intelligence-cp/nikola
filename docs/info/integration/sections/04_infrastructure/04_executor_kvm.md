@@ -632,6 +632,205 @@ which genisoimage  # Should output: /usr/bin/genisoimage
 
 **Performance:** ISO generation ~50-100ms, VM boot with cloud-init ~3-5 seconds (dominated by cloud-init package installation).
 
+### 13.6.1 Security Hardening: Read-Only ISO Mount
+
+**⚠️ CRITICAL SECURITY REQUIREMENT**
+
+**Problem:** The cloud-init approach in Option B writes the agent binary to a writable partition (`/usr/local/bin/nikola-agent`). If the guest VM is compromised, an attacker can modify the agent binary to spoof results or exfiltrate data.
+
+**Solution:** Mount the agent on a read-only ISO image attached as a CD-ROM drive.
+
+**Benefits:**
+- **Tamper-proof:** Agent binary cannot be modified by guest OS
+- **Hardware enforcement:** Read-only flag enforced by QEMU/KVM hypervisor
+- **Simple verification:** Host can verify ISO checksum before each execution
+- **Standards-compliant:** Uses standard ISO 9660 filesystem
+
+**Implementation:**
+
+```cpp
+/**
+ * @brief Create read-only ISO containing nikola-agent binary
+ * This ISO is mounted as a read-only CD-ROM in the guest VM
+ * Prevents compromised guest from tampering with agent
+ */
+std::string create_agent_iso(const std::string& agent_binary_path) {
+    // Use centralized config for paths
+    std::string work_dir = nikola::core::Config::get().work_directory();
+    std::string iso_path = work_dir + "/agent.iso";
+    std::string staging_dir = work_dir + "/agent_staging";
+
+    // Create staging directory
+    std::filesystem::create_directories(staging_dir);
+
+    // Copy agent binary to staging
+    std::filesystem::copy_file(agent_binary_path, 
+                               staging_dir + "/nikola-agent",
+                               std::filesystem::copy_options::overwrite_existing);
+
+    // Set executable permissions (preserved in ISO)
+    chmod((staging_dir + "/nikola-agent").c_str(), 0755);
+
+    // Generate ISO using mkisofs
+    pid_t pid = fork();
+    if (pid == -1) {
+        throw std::runtime_error("fork() failed during agent ISO generation");
+    } else if (pid == 0) {
+        // Child process: exec mkisofs
+        const char* argv[] = {
+            "mkisofs",
+            "-o", iso_path.c_str(),
+            "-r",                     // Rock Ridge extensions (preserves permissions)
+            "-J",                     // Joliet extensions (Windows compatibility)
+            "-V", "NIKOLA_AGENT",     // Volume label
+            staging_dir.c_str(),
+            nullptr
+        };
+        execvp("mkisofs", const_cast<char**>(argv));
+        
+        std::cerr << "ERROR: execvp(mkisofs) failed: " << strerror(errno) << std::endl;
+        _exit(127);
+    } else {
+        // Parent: wait for mkisofs to complete
+        int status;
+        if (waitpid(pid, &status, 0) == -1) {
+            throw std::runtime_error("waitpid() failed during agent ISO generation");
+        }
+
+        if (!WIFEXITED(status) || WEXITSTATUS(status) != 0) {
+            throw std::runtime_error("mkisofs failed");
+        }
+    }
+
+    // Cleanup staging directory
+    std::filesystem::remove_all(staging_dir);
+
+    // Verify ISO checksum (detect corruption/tampering)
+    std::string expected_sha256 = compute_sha256(agent_binary_path);
+    std::string actual_sha256 = compute_sha256_from_iso(iso_path, "nikola-agent");
+    
+    if (expected_sha256 != actual_sha256) {
+        std::filesystem::remove(iso_path);
+        throw std::runtime_error("Agent ISO checksum mismatch - possible tampering");
+    }
+
+    std::cout << "[SECURITY] Agent ISO created: " << iso_path 
+              << " (SHA256: " << actual_sha256 << ")" << std::endl;
+
+    return iso_path;
+}
+
+/**
+ * @brief Compute SHA256 checksum of file
+ */
+std::string compute_sha256(const std::string& file_path) {
+    std::ifstream file(file_path, std::ios::binary);
+    if (!file) throw std::runtime_error("Failed to open file for checksum");
+
+    EVP_MD_CTX* ctx = EVP_MD_CTX_new();
+    EVP_DigestInit_ex(ctx, EVP_sha256(), nullptr);
+
+    char buffer[4096];
+    while (file.read(buffer, sizeof(buffer))) {
+        EVP_DigestUpdate(ctx, buffer, file.gcount());
+    }
+    if (file.gcount() > 0) {
+        EVP_DigestUpdate(ctx, buffer, file.gcount());
+    }
+
+    unsigned char hash[EVP_MAX_MD_SIZE];
+    unsigned int hash_len;
+    EVP_DigestFinal_ex(ctx, hash, &hash_len);
+    EVP_MD_CTX_free(ctx);
+
+    // Convert to hex string
+    std::ostringstream hex_stream;
+    for (unsigned int i = 0; i < hash_len; ++i) {
+        hex_stream << std::hex << std::setw(2) << std::setfill('0') 
+                   << static_cast<int>(hash[i]);
+    }
+    return hex_stream.str();
+}
+```
+
+**Updated VM XML with Read-Only Agent ISO:**
+
+```cpp
+std::string generate_secure_vm_xml(const std::string& task_id,
+                                     const std::string& overlay_path,
+                                     const std::string& agent_iso_path) {
+    std::ostringstream xml;
+    xml << R"(<domain type='kvm'>
+  <name>nikola-executor-)" << task_id << R"(</name>
+  <memory unit='GiB'>2</memory>
+  <vcpu>2</vcpu>
+  <os>
+    <type arch='x86_64'>hvm</type>
+    <boot dev='hd'/>
+  </os>
+  <devices>
+    <disk type='file' device='disk'>
+      <driver name='qemu' type='qcow2'/>
+      <source file=')" << overlay_path << R"('/>
+      <target dev='vda' bus='virtio'/>
+    </disk>
+    <!-- Read-only agent ISO (SECURITY: Prevents tampering) -->
+    <disk type='file' device='cdrom'>
+      <driver name='qemu' type='raw'/>
+      <source file=')" << agent_iso_path << R"('/>
+      <target dev='hdc' bus='ide'/>
+      <readonly/>
+    </disk>
+    <!-- Virtio-serial for communication -->
+    <channel type='unix'>
+      <source mode='bind' path='/tmp/nikola-)" << task_id << R"(.sock'/>
+      <target type='virtio' name='org.nikola.guest.0'/>
+    </channel>
+  </devices>
+</domain>)";
+    return xml.str();
+}
+```
+
+**Guest Systemd Service (Reads from CD-ROM):**
+
+```systemd
+# File: /etc/systemd/system/nikola-agent.service (in gold image)
+[Unit]
+Description=Nikola Guest Agent (Read-Only ISO)
+After=multi-user.target
+
+[Service]
+Type=simple
+# Execute agent directly from read-only CD-ROM mount
+ExecStartPre=/bin/mount -t iso9660 -o ro /dev/cdrom /mnt/agent
+ExecStart=/mnt/agent/nikola-agent
+Restart=on-failure
+StandardInput=file:/dev/vport0p1
+StandardOutput=file:/dev/vport0p1
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target
+```
+
+**Security Guarantees:**
+- ✅ Agent binary is **immutable** (ISO filesystem is read-only)
+- ✅ Hypervisor enforces read-only flag (guest cannot remount writable)
+- ✅ Host verifies checksum before each execution
+- ✅ Compromised guest **cannot** spoof results by modifying agent
+- ✅ Complies with least-privilege principle (guest has no write access to agent)
+
+**Comparison:**
+
+| Approach | Agent Location | Writable? | Tampering Risk | Checksum Verification |
+|----------|---------------|-----------|----------------|----------------------|
+| **Option A** (libguestfs) | `/usr/local/bin/nikola-agent` | ✅ Yes | ⚠️ High (compromised guest can modify) | ❌ Only at gold image creation |
+| **Option B** (cloud-init) | `/usr/local/bin/nikola-agent` | ✅ Yes | ⚠️ High (same as Option A) | ❌ None (injected per-VM but writable) |
+| **Option C** (ISO mount) | `/mnt/agent/nikola-agent` (CD-ROM) | ❌ No (read-only) | ✅ **None** (immutable) | ✅ Every execution |
+
+**Recommendation:** Use **Option C** (read-only ISO mount) for production deployments requiring strong security guarantees.
+
 ## 13.7 Implementation
 
 ### VM XML Template Generator

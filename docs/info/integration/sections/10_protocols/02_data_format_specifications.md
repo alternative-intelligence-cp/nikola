@@ -32,12 +32,45 @@ enum ComponentID {
 }
 
 // Complex waveform representation
+// ⚠️ DEPRECATED: Do NOT use real_parts/imag_parts for large waveforms
+// Reason: 1GB+ serialization stalls entire system (blocking ZeroMQ thread)
+// Use WaveformSHM instead for production (shared memory descriptor only)
 message Waveform {
-    repeated double real_parts = 1;  // Real components
-    repeated double imag_parts = 2;  // Imaginary components
+    repeated double real_parts = 1 [deprecated = true];  // Real components (DEPRECATED)
+    repeated double imag_parts = 2 [deprecated = true];  // Imaginary components (DEPRECATED)
     int32 length = 3;                // Number of samples
     double sampling_rate = 4;        // Hz (for audio)
 }
+
+// Shared Memory Waveform Descriptor (RECOMMENDED for large data)
+// Size: ~100 bytes vs 1GB+ for serialized waveform
+message WaveformSHM {
+    string shm_path = 1;             // Shared memory path (e.g., "/dev/shm/nikola_waveform_0")
+    uint64 size_bytes = 2;           // Total allocation size in bytes
+    uint64 offset = 3;               // Start offset for this wavefunction
+    repeated int32 dimensions = 4;   // Grid shape [9 dimensions]
+    double sampling_rate = 5;        // Hz (for audio, if applicable)
+    int64 timestamp_created = 6;     // Unix timestamp (ms) for lifetime tracking
+    
+    // Type information for deserialization
+    enum DataType {
+        COMPLEX_DOUBLE = 0;          // std::complex<double> (16 bytes per element)
+        COMPLEX_FLOAT = 1;           // std::complex<float> (8 bytes per element)
+        REAL_DOUBLE = 2;             // double (8 bytes per element)
+        REAL_FLOAT = 3;              // float (4 bytes per element)
+    }
+    DataType data_type = 7;
+}
+
+// Usage Example:
+// Instead of:
+//   Waveform wf;
+//   wf.real_parts = [1000000 values];  // ❌ 8MB serialization overhead
+//
+// Use:
+//   WaveformSHM wf_shm;
+//   wf_shm.shm_path = "/dev/shm/nikola_waveform_42";
+//   wf_shm.size_bytes = 16000000;  // ✅ ~100 bytes message, data in shared memory
 
 // Sandboxed command execution request
 message CommandRequest {
