@@ -34,7 +34,7 @@ include_directories(
 file(GLOB_RECURSE PROTO_FILES "${CMAKE_CURRENT_SOURCE_DIR}/proto/*.proto")
 protobuf_generate_cpp(PROTO_SRCS PROTO_HDRS ${PROTO_FILES})
 
-# Core Infrastructure (Audit 1 - Finding 2.1)
+# Core Infrastructure (Phase 0 Requirements)
 set(CORE_SOURCES
     src/core/config.cpp
 )
@@ -146,4 +146,4 @@ message(STATUS "  Module 4: Security Layer (HSK) - STUB")
 message(STATUS "  Module 5: Interior Life & Metacognition - STUB")
 message(STATUS "  Module 7: Code Generation & Self-Improvement (Aria) - STUB")
 message(STATUS "  Module 6: Subjective Experience - PENDING (documentation only)")
-message(STATUS "Implementation deferred until Phase 1 (Audit 1 & 2) completion")
+message(STATUS "Implementation deferred until Phase 1 completion")

@@ -319,7 +319,7 @@ void propagate_wave_ufie(double dt) {
 
 **Validation Requirement:**
 - Standing wave test: Energy drift must be <0.0001% over 10,000 steps
-- See: Section 8 (Audit Remediation) for complete specifications
+- See: Section 8 (Phase 0 Requirements) for complete specifications
 
 ### Simplified Discretization (Finite Difference)
 

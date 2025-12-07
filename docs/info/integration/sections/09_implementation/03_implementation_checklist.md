@@ -1,6 +1,6 @@
 # IMPLEMENTATION CHECKLIST
 
-## 🚨 PHASE 0: AUDIT REMEDIATION (MANDATORY)
+## 🚨 PHASE 0: PHASE 0 REQUIREMENTS (MANDATORY)
 
 **MUST complete before proceeding to 28.2 Foundation Layer**
 
@@ -10,7 +10,7 @@
   - Modify `TorusBlock` to use `alignas(64)` SoA layout
   - Separate arrays for: psi_real, psi_imag, metric_tensor (45 arrays), resonance, state
   - Block size: 19683 nodes (3^9)
-  - **Reference:** Audit Remediation §1.2
+  - **Reference:** Phase 0 Requirements §1.2
   - **Validation:** Verify cache hit rate >95% in Laplacian kernel
   - **Effort:** 2 days
 
@@ -21,7 +21,7 @@
   - Step 3: Drift
   - Step 4: Recompute forces
   - Step 5: Half-kick forces + final damping
-  - **Reference:** Audit Remediation §2.2-2.3
+  - **Reference:** Phase 0 Requirements §2.2-2.3
   - **Validation:** Energy drift <0.01% over 10,000 steps
   - **Effort:** 3 days
 
@@ -29,7 +29,7 @@
   - Implement compensated summation in `compute_laplacian_kahan()`
   - Use compensation variable `c` to track lost low-order bits
   - Apply to ALL accumulation loops in physics kernel
-  - **Reference:** Audit Remediation §2.4
+  - **Reference:** Phase 0 Requirements §2.4
   - **Validation:** Memory waves persist >1000 timesteps without vanishing
   - **Effort:** 1 day
 
@@ -40,7 +40,7 @@
   - Implement `vec_sum_gate(__m512i, __m512i)` using `_mm512_add_epi8` + clamp
   - Implement `vec_product_gate(__m512i, __m512i)` with saturation
   - Remove ALL uses of `std::clamp` in hot loops
-  - **Reference:** Audit Remediation §4
+  - **Reference:** Phase 0 Requirements §4
   - **Validation:** Processes 64 nits in <10 CPU cycles
   - **Effort:** 2 days
 
@@ -49,7 +49,7 @@
   - Add `dirty_flag` to track when recomputation needed
   - Implement `recompute_if_needed()` with stability check
   - Rollback plasticity update if Cholesky fails (non-positive-definite)
-  - **Reference:** Audit Remediation §5
+  - **Reference:** Phase 0 Requirements §5
   - **Validation:** Metric inversion <1% of total compute time
   - **Effort:** 3 days
 
@@ -59,7 +59,7 @@
   - Monitor Hamiltonian every 100 timesteps
   - Auto-adjust damping when $\Delta E / E > 0.01$
   - Inject noise if $E < E_{min}$ (stochastic resonance)
-  - **Reference:** Audit Remediation §9.1
+  - **Reference:** Phase 0 Requirements §9.1
   - **Validation:** System remains stable for 24-hour continuous run
   - **Effort:** 1 day
 
@@ -70,7 +70,7 @@
   - Physics writes grid to `shm_open("/nikola_snapshot_<id>")`
   - ZeroMQ sends only snapshot_id (8 bytes)
   - Persistence mmaps shared segment
-  - **Reference:** Audit Remediation §6.3
+  - **Reference:** Phase 0 Requirements §6.3
   - **Validation:** IPC latency <100ns (vs. μs for Protobuf)
   - **Effort:** 2 days
 
@@ -78,7 +78,7 @@
   - Replace matrix exponential with first-order Taylor: $\exp(M) \approx I + M$
   - $A_i = I - \Delta(1-r_i)G_i$
   - Verify timestep constraint: $\Delta < \frac{0.1}{(1-r_{min})\lambda_{max}(G)}$
-  - **Reference:** Audit Remediation §3
+  - **Reference:** Phase 0 Requirements §3
   - **Validation:** SSM computation <10% of total time
   - **Effort:** 2 days
 
@@ -86,7 +86,7 @@
   - Correct packing: 2 nits per byte (not 5)
   - $packed = (n_1 + 4) \times 9 + (n_2 + 4)$
   - Unpack: $n_1 = (packed / 9) - 4$, $n_2 = (packed \% 9) - 4$
-  - **Reference:** Audit Remediation §8
+  - **Reference:** Phase 0 Requirements §8
   - **Validation:** Storage density = 4 bits/weight
   - **Effort:** 1 day
 
@@ -95,7 +95,7 @@
 - [ ] **0.10** Sliding Window DFT for Firewall
   - Replace full FFT with Goertzel Algorithm
   - Monitor specific attack frequencies (10Hz, 50Hz, 100Hz)
-  - **Reference:** Audit Remediation §7
+  - **Reference:** Phase 0 Requirements §7
   - **Validation:** Firewall latency <1μs per sample
   - **Effort:** 1 day
 

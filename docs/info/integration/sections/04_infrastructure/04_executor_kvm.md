@@ -55,7 +55,7 @@ UNDEFINED → DEFINED → RUNNING → SHUTOFF → UNDEFINED
 ### Creation
 
 ```bash
-# AUDIT FIX (Finding 2.1): Use environment variables for paths
+# DESIGN NOTE (Finding 2.1): Use environment variables for paths
 GOLD_DIR="${NIKOLA_GOLD_CHECKPOINT_DIR:-/var/lib/nikola/gold}"
 WORK_DIR="${NIKOLA_WORK_DIRECTORY:-/var/lib/nikola/work}"
 
@@ -293,7 +293,7 @@ echo "[OFFLINE] Successfully injected packages into $GOLD_IMAGE"
 )";
 
     // Write offline injection script for deployment
-    // AUDIT FIX (Finding 2.1): Use centralized configuration
+    // DESIGN NOTE (Finding 2.1): Use centralized configuration
     std::string tools_dir = nikola::core::Config::get().work_directory() + "/tools";
     std::filesystem::create_directories(tools_dir);
     std::string script_path = tools_dir + "/inject_offline_packages.sh";
@@ -334,7 +334,7 @@ int main(int argc, char* argv[]) {
 ```bash
 #!/bin/bash
 # File: tools/prepare_gold.sh
-# AUDIT FIX (Finding 2.1): Use environment variables for configurable paths
+# DESIGN NOTE (Finding 2.1): Use environment variables for configurable paths
 
 set -e
 
@@ -400,11 +400,11 @@ For overlay-based injection without modifying the gold image:
 #include <iostream>
 #include <fstream>
 #include <sstream>
-#include "nikola/core/config.hpp"  // AUDIT FIX (Finding 2.1)
+#include "nikola/core/config.hpp"  // DESIGN NOTE (Finding 2.1)
 
 std::string create_cloud_init_iso(const std::string& task_id,
                                     const std::string& agent_binary_path) {
-    // AUDIT FIX (Finding 2.1 & 4.1): Use centralized config, avoid insecure /tmp
+    // DESIGN NOTE (Finding 2.1 & 4.1): Use centralized config, avoid insecure /tmp
     std::string work_dir = nikola::core::Config::get().work_directory();
     std::string iso_path = work_dir + "/cloud-init/" + task_id + ".iso";
     std::string staging_dir = work_dir + "/cloud-init/" + task_id;
@@ -536,7 +536,7 @@ R"(
 ### VM XML Template Generator
 
 ```cpp
-// AUDIT FIX (Finding 2.1): Use centralized configuration for paths
+// DESIGN NOTE (Finding 2.1): Use centralized configuration for paths
 #include "nikola/core/config.hpp"
 
 std::string generate_vm_xml(const std::string& task_id,
@@ -588,11 +588,11 @@ std::string generate_vm_xml(const std::string& task_id,
 
 ```cpp
 #include <libvirt/libvirt.h>
-#include "nikola/core/config.hpp"  // AUDIT FIX (Finding 2.1)
+#include "nikola/core/config.hpp"  // DESIGN NOTE (Finding 2.1)
 
 class KVMExecutor {
     virConnectPtr conn = nullptr;
-    // AUDIT FIX (Finding 2.1): Use centralized configuration
+    // DESIGN NOTE (Finding 2.1): Use centralized configuration
     std::string gold_image_path = nikola::core::Config::get().gold_checkpoint_dir() + "/ubuntu-24.04.qcow2";
 
 public:
@@ -624,7 +624,7 @@ public:
         }
 
         // 4. Connect to virtio-serial socket
-        // AUDIT FIX (Finding 2.1 & 4.1): Use runtime_directory for sockets
+        // DESIGN NOTE (Finding 2.1 & 4.1): Use runtime_directory for sockets
         std::string socket_path = nikola::core::Config::get().runtime_directory() + "/sockets/" + task_id + ".sock";
         auto agent_conn = wait_for_socket(socket_path, 30000);  // 30s timeout
 
@@ -669,7 +669,7 @@ public:
 
 private:
     std::string create_overlay(const std::string& task_id) {
-        // AUDIT FIX (Finding 2.1 & 4.1): Use work_directory for overlays
+        // DESIGN NOTE (Finding 2.1 & 4.1): Use work_directory for overlays
         std::string overlay_path = nikola::core::Config::get().work_directory() + "/overlays/task_" + task_id + ".qcow2";
 
         // SECURITY: Use fork/execv instead of system() to prevent shell injection
@@ -929,7 +929,7 @@ private:
     std::atomic<uint64_t> pool_hits{0};      // VM acquired from pool
     std::atomic<uint64_t> pool_misses{0};    // Had to create new VM
 
-    // AUDIT FIX (Finding 2.1): Use centralized configuration
+    // DESIGN NOTE (Finding 2.1): Use centralized configuration
     std::string gold_image_path = nikola::core::Config::get().gold_checkpoint_dir() + "/ubuntu-24.04.qcow2";
 
 public:
@@ -1078,7 +1078,7 @@ private:
     // Create and boot VM synchronously
     WarmVM* create_vm_synchronous() {
         std::string vm_id = generate_vm_id();
-        // AUDIT FIX (Finding 2.1 & 4.1): Use centralized config
+        // DESIGN NOTE (Finding 2.1 & 4.1): Use centralized config
         const auto& config = nikola::core::Config::get();
 
         // 1. Create overlay
@@ -1290,7 +1290,7 @@ private:
     std::string generate_vm_xml_pool(const std::string& vm_id,
                                        const std::string& overlay_path,
                                        const std::string& socket_path) {
-        // AUDIT FIX (Finding 2.1): Use centralized configuration
+        // DESIGN NOTE (Finding 2.1): Use centralized configuration
         std::string gold_dir = nikola::core::Config::get().gold_checkpoint_dir();
 
         return R"(

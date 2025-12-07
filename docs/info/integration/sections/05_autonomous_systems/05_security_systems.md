@@ -423,7 +423,7 @@ public:
 - [ ] Adversarial Dojo includes at least 10 attack vectors
 - [ ] Hot-swap protocol tested in sandbox (KVM)
 - [ ] Rollback mechanism implemented (restore previous .so on crash)
-- [ ] Logging: All verification results saved to audit log
+- [ ] Logging: All verification results saved to validation log
 
 **Fail-Safe:**
 If upgraded code causes crash, system automatically:

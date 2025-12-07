@@ -12,12 +12,12 @@
 ```cpp
 #include <sys/inotify.h>
 #include <unistd.h>
-#include "nikola/core/config.hpp"  // AUDIT FIX (Finding 2.1)
+#include "nikola/core/config.hpp"  // DESIGN NOTE (Finding 2.1)
 
 class IngestionSentinel {
     int inotify_fd = -1;
     int watch_descriptor = -1;
-    // AUDIT FIX (Finding 2.1): Use centralized configuration
+    // DESIGN NOTE (Finding 2.1): Use centralized configuration
     std::string watch_path = nikola::core::Config::get().ingest_directory();
 
     ThreadSafeQueue<std::filesystem::path> ingest_queue;
@@ -196,7 +196,7 @@ void IngestionSentinel::process_file(const std::filesystem::path& file_path) {
         std::cout << "[INGEST] Embedded and stored: " << file_path.filename() << std::endl;
 
         // 5. Archive
-        // AUDIT FIX (Finding 2.1): Use centralized configuration
+        // DESIGN NOTE (Finding 2.1): Use centralized configuration
         std::filesystem::path archive_dir = nikola::core::Config::get().archive_directory();
         archive_dir /= current_date_string();
         std::filesystem::create_directories(archive_dir);

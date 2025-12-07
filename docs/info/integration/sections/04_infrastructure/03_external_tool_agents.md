@@ -567,7 +567,7 @@ int main(int argc, char* argv[]) {
 
     // CRITICAL: Initialize libcurl globally before any threading or network operations
     // This MUST be called exactly once before any CustomHTTPClient instances are created
-    // to prevent race conditions during static initialization (see Audit Report Issue #9)
+    // to prevent race conditions during static initialization (see Design Issue #9)
     curl_global_init(CURL_GLOBAL_ALL);
 
     // Ensure cleanup on exit

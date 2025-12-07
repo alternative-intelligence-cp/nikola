@@ -1,17 +1,17 @@
 # FILE STRUCTURE
 
-## 26.0 Engineering Audit Updates
+## 26.0 Phase 0 Critical Components
 
 **Date:** December 7, 2025  
 **Source:** Engineering Report Review and Analysis v0.0.4
 
-The file structure has been updated to include Phase 0 audit remediation components. Key additions:
+The file structure has been updated to include Phase 0 critical components. Key additions:
 
 - `include/nikola/physics/soa_layout.hpp` - Structure-of-Arrays memory layout
 - `include/nikola/physics/symplectic_integrator.hpp` - Split-operator integration
 - `include/nikola/security/physics_oracle.hpp` - Self-improvement safety
 - `src/physics/kernels/wave_propagate_soa.cu` - SoA CUDA kernel
-- `tests/validation/` - Audit validation test suite
+- `tests/validation/` - Phase 0 validation test suite
 
 See: `08_audit_remediation/01_critical_fixes.md` for complete specifications.
 
@@ -186,7 +186,7 @@ nikola/
 │   ├── twi-ctl/
 │   │   ├── main.cpp                 # CLI controller
 │   │   └── CMakeLists.txt
-│   ├── validate_phase0/             # ⚡ Audit validation (Phase 0)
+│   ├── validate_phase0/             # ⚡ Phase 0 validation (Phase 0)
 │   │   ├── test_energy_conservation.cpp
 │   │   ├── test_symplectic.cpp
 │   │   ├── test_kahan.cpp

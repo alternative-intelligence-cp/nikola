@@ -266,7 +266,7 @@ Fixed-size thread pool with task queue and reactor pattern for IO events:
 #pragma once
 
 #include "nikola/infrastructure/orchestrator.hpp"
-#include "nikola/core/config.hpp"  // AUDIT FIX (Finding 2.1): Centralized configuration
+#include "nikola/core/config.hpp"  // DESIGN NOTE (Finding 2.1): Centralized configuration
 #include <boost/asio/thread_pool.hpp>
 #include <boost/asio/post.hpp>
 #include <zmq.hpp>
@@ -318,7 +318,7 @@ public:
           torus(t), emitters(e), embedder(emb), tool_manager(tm) {
 
         // Bind sockets
-        // AUDIT FIX (Finding 2.1 & 4.1): Use centralized config and secure /run directory
+        // DESIGN NOTE (Finding 2.1 & 4.1): Use centralized config and secure /run directory
         const std::string runtime_dir = nikola::core::Config::get().runtime_directory();
         frontend_socket.bind("ipc://" + runtime_dir + "/spine_frontend.ipc");
         backend_socket.bind("inproc://backend");

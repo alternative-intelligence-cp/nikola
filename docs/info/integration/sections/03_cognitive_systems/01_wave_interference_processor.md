@@ -1411,7 +1411,7 @@ private:
 } // namespace nikola::cognitive
 ```
 
-### 6.9.4 Dependency Audit and Enforcement
+### 6.9.4 Dependency Analysis and Enforcement
 
 **Automated Dependency Checker:**
 
