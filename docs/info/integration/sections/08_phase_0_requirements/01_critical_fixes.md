@@ -1,21 +1,21 @@
-# PHASE 0: AUDIT REMEDIATION - CRITICAL FIXES
+# PHASE 0: CRITICAL REQUIREMENTS
 
 ## EXECUTIVE SUMMARY
 
 **Date:** December 7, 2025  
 **Status:** MANDATORY - NO CODE UNTIL COMPLETE  
-**Source:** Engineering Report Review and Analysis v0.0.4
+**Version:** v0.0.4
 
-This section documents critical engineering defects identified in the initial specification that **MUST** be remediated before any feature implementation begins. These are not optimizations—they are functional requirements to prevent system failure.
+This section documents critical engineering requirements that **MUST** be implemented before any feature development begins. These are not optimizations—they are functional requirements to prevent system failure.
 
-### Critical Risks Identified
+### Critical Requirements
 
-1. **Numerical Instability:** Velocity-Verlet integration causes energy drift → system divergence within hours
-2. **Memory Thrashing:** Array-of-Structures layout causes 90% cache miss rate → 100x performance loss
-3. **Precision Loss:** Float32 Laplacian accumulation loses information → "amnesia" over time
-4. **Hash Collisions:** 64-bit Morton codes insufficient for high-resolution 9D grids → memory corruption
+1. **Numerical Stability:** Split-operator symplectic integration required for energy conservation
+2. **Memory Efficiency:** Structure-of-Arrays layout required for cache optimization
+3. **Precision Preservation:** Kahan compensated summation required for Laplacian accuracy
+4. **Collision-Free Hashing:** 128-bit Morton codes required for high-resolution 9D grids
 
-### Remediation Mandate
+### Implementation Mandate
 
 **NO DEVIATION:** All Phase 0 fixes are mandatory architectural requirements. The system CANNOT function correctly without these implementations.
 

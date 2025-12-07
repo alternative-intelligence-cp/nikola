@@ -75,9 +75,9 @@ This specification represents the authoritative engineering documentation for th
 - [7.2 Audio Resonance Engine](07_multimodal/02_audio_resonance.md)
 - [7.3 Visual Cymatics Engine](07_multimodal/03_visual_cymatics.md)
 
-## SECTION 8: AUDIT REMEDIATION (⚡ NEW - PHASE 0 CRITICAL)
+## SECTION 8: PHASE 0 REQUIREMENTS (⚡ CRITICAL)
 
-- [8.1 Critical Fixes and Validation](08_audit_remediation/01_critical_fixes.md)
+- [8.1 Critical Requirements and Validation](08_phase_0_requirements/01_critical_fixes.md)
 
 ## SECTION 9: IMPLEMENTATION GUIDE
 
@@ -107,9 +107,9 @@ This specification represents the authoritative engineering documentation for th
 
 ## 🚨 CRITICAL UPDATES - December 7, 2025
 
-**Engineering Audit Findings Integrated:**
+**Phase 0 Requirements Defined:**
 
-A comprehensive technical audit identified critical implementation gaps requiring **mandatory remediation before feature development**. The following updates have been integrated:
+Critical engineering requirements have been identified that are **mandatory before feature development**. The following updates have been integrated:
 
 **Phase 0 (NEW Section 8):**
 - Structure-of-Arrays (SoA) memory layout (10x performance improvement)
@@ -125,9 +125,9 @@ A comprehensive technical audit identified critical implementation gaps requirin
 - Section 9.1: Updated file structure with Phase 0 components
 - Section 9.2: Added Phase 0 gate review (17-day critical path)
 
-**Project Status:** APPROVED FOR IMPLEMENTATION (Subject to Phase 0 Remediation)
+**Project Status:** APPROVED FOR IMPLEMENTATION (Subject to Phase 0 Requirements)
 
-See `08_audit_remediation/01_critical_fixes.md` for complete specifications.
+See `08_phase_0_requirements/01_critical_fixes.md` for complete specifications.
 
 
 ---
@@ -3600,7 +3600,7 @@ private:
 } // namespace nikola::cognitive
 ```
 
-### 6.9.4 Dependency Audit and Enforcement
+### 6.9.4 Dependency Analysis and Enforcement
 
 **Automated Dependency Checker:**
 
@@ -5418,7 +5418,7 @@ message NeuralSpike {
 #include <sodium.h>
 #include <filesystem>
 #include <fstream>
-#include "nikola/core/config.hpp"  // AUDIT FIX (Finding 2.1): Centralized configuration
+#include "nikola/core/config.hpp"  // DESIGN NOTE (Finding 2.1): Centralized configuration
 
 class CurveKeyPair {
 public:
@@ -5428,7 +5428,7 @@ public:
     CurveKeyPair() {
         // Load existing keys or generate new ones to maintain access across restarts
         // Persistent key storage prevents lockout after self-improvement restart (Section 17.5)
-        // AUDIT FIX (Finding 2.1): Use centralized configuration
+        // DESIGN NOTE (Finding 2.1): Use centralized configuration
         const std::string key_dir = nikola::core::Config::get().key_directory();
         const std::string public_key_path = key_dir + "/broker_public.key";
         const std::string secret_key_path = key_dir + "/broker_secret.key";
@@ -5598,7 +5598,7 @@ public:
         backend.set(zmq::sockopt::zap_domain, "nikola");
 
         // Bind sockets
-        // AUDIT FIX (Finding 2.1 & 4.1): Use centralized config and secure /run directory
+        // DESIGN NOTE (Finding 2.1 & 4.1): Use centralized config and secure /run directory
         const std::string runtime_dir = nikola::core::Config::get().runtime_directory();
         frontend.bind("ipc://" + runtime_dir + "/spine_frontend.ipc");
         backend.bind("ipc://" + runtime_dir + "/spine_backend.ipc");
@@ -5637,7 +5637,7 @@ public:
         socket.set(zmq::sockopt::routing_id, identity);
 
         // Connect
-        // AUDIT FIX (Finding 2.1 & 4.1): Use centralized config and secure /run directory
+        // DESIGN NOTE (Finding 2.1 & 4.1): Use centralized config and secure /run directory
         const std::string runtime_dir = nikola::core::Config::get().runtime_directory();
         socket.connect("ipc://" + runtime_dir + "/spine_frontend.ipc");
     }
@@ -6199,7 +6199,7 @@ Fixed-size thread pool with task queue and reactor pattern for IO events:
 #pragma once
 
 #include "nikola/infrastructure/orchestrator.hpp"
-#include "nikola/core/config.hpp"  // AUDIT FIX (Finding 2.1): Centralized configuration
+#include "nikola/core/config.hpp"  // DESIGN NOTE (Finding 2.1): Centralized configuration
 #include <boost/asio/thread_pool.hpp>
 #include <boost/asio/post.hpp>
 #include <zmq.hpp>
@@ -6251,7 +6251,7 @@ public:
           torus(t), emitters(e), embedder(emb), tool_manager(tm) {
 
         // Bind sockets
-        // AUDIT FIX (Finding 2.1 & 4.1): Use centralized config and secure /run directory
+        // DESIGN NOTE (Finding 2.1 & 4.1): Use centralized config and secure /run directory
         const std::string runtime_dir = nikola::core::Config::get().runtime_directory();
         frontend_socket.bind("ipc://" + runtime_dir + "/spine_frontend.ipc");
         backend_socket.bind("inproc://backend");
@@ -7454,7 +7454,7 @@ int main(int argc, char* argv[]) {
 
     // CRITICAL: Initialize libcurl globally before any threading or network operations
     // This MUST be called exactly once before any CustomHTTPClient instances are created
-    // to prevent race conditions during static initialization (see Audit Report Issue #9)
+    // to prevent race conditions during static initialization (see Design Issue #9)
     curl_global_init(CURL_GLOBAL_ALL);
 
     // Ensure cleanup on exit
@@ -7979,7 +7979,7 @@ UNDEFINED → DEFINED → RUNNING → SHUTOFF → UNDEFINED
 ### Creation
 
 ```bash
-# AUDIT FIX (Finding 2.1): Use environment variables for paths
+# DESIGN NOTE (Finding 2.1): Use environment variables for paths
 GOLD_DIR="${NIKOLA_GOLD_CHECKPOINT_DIR:-/var/lib/nikola/gold}"
 WORK_DIR="${NIKOLA_WORK_DIRECTORY:-/var/lib/nikola/work}"
 
@@ -8217,7 +8217,7 @@ echo "[OFFLINE] Successfully injected packages into $GOLD_IMAGE"
 )";
 
     // Write offline injection script for deployment
-    // AUDIT FIX (Finding 2.1): Use centralized configuration
+    // DESIGN NOTE (Finding 2.1): Use centralized configuration
     std::string tools_dir = nikola::core::Config::get().work_directory() + "/tools";
     std::filesystem::create_directories(tools_dir);
     std::string script_path = tools_dir + "/inject_offline_packages.sh";
@@ -8258,7 +8258,7 @@ int main(int argc, char* argv[]) {
 ```bash
 #!/bin/bash
 # File: tools/prepare_gold.sh
-# AUDIT FIX (Finding 2.1): Use environment variables for configurable paths
+# DESIGN NOTE (Finding 2.1): Use environment variables for configurable paths
 
 set -e
 
@@ -8324,11 +8324,11 @@ For overlay-based injection without modifying the gold image:
 #include <iostream>
 #include <fstream>
 #include <sstream>
-#include "nikola/core/config.hpp"  // AUDIT FIX (Finding 2.1)
+#include "nikola/core/config.hpp"  // DESIGN NOTE (Finding 2.1)
 
 std::string create_cloud_init_iso(const std::string& task_id,
                                     const std::string& agent_binary_path) {
-    // AUDIT FIX (Finding 2.1 & 4.1): Use centralized config, avoid insecure /tmp
+    // DESIGN NOTE (Finding 2.1 & 4.1): Use centralized config, avoid insecure /tmp
     std::string work_dir = nikola::core::Config::get().work_directory();
     std::string iso_path = work_dir + "/cloud-init/" + task_id + ".iso";
     std::string staging_dir = work_dir + "/cloud-init/" + task_id;
@@ -8460,7 +8460,7 @@ R"(
 ### VM XML Template Generator
 
 ```cpp
-// AUDIT FIX (Finding 2.1): Use centralized configuration for paths
+// DESIGN NOTE (Finding 2.1): Use centralized configuration for paths
 #include "nikola/core/config.hpp"
 
 std::string generate_vm_xml(const std::string& task_id,
@@ -8512,11 +8512,11 @@ std::string generate_vm_xml(const std::string& task_id,
 
 ```cpp
 #include <libvirt/libvirt.h>
-#include "nikola/core/config.hpp"  // AUDIT FIX (Finding 2.1)
+#include "nikola/core/config.hpp"  // DESIGN NOTE (Finding 2.1)
 
 class KVMExecutor {
     virConnectPtr conn = nullptr;
-    // AUDIT FIX (Finding 2.1): Use centralized configuration
+    // DESIGN NOTE (Finding 2.1): Use centralized configuration
     std::string gold_image_path = nikola::core::Config::get().gold_checkpoint_dir() + "/ubuntu-24.04.qcow2";
 
 public:
@@ -8548,7 +8548,7 @@ public:
         }
 
         // 4. Connect to virtio-serial socket
-        // AUDIT FIX (Finding 2.1 & 4.1): Use runtime_directory for sockets
+        // DESIGN NOTE (Finding 2.1 & 4.1): Use runtime_directory for sockets
         std::string socket_path = nikola::core::Config::get().runtime_directory() + "/sockets/" + task_id + ".sock";
         auto agent_conn = wait_for_socket(socket_path, 30000);  // 30s timeout
 
@@ -8593,7 +8593,7 @@ public:
 
 private:
     std::string create_overlay(const std::string& task_id) {
-        // AUDIT FIX (Finding 2.1 & 4.1): Use work_directory for overlays
+        // DESIGN NOTE (Finding 2.1 & 4.1): Use work_directory for overlays
         std::string overlay_path = nikola::core::Config::get().work_directory() + "/overlays/task_" + task_id + ".qcow2";
 
         // SECURITY: Use fork/execv instead of system() to prevent shell injection
@@ -8853,7 +8853,7 @@ private:
     std::atomic<uint64_t> pool_hits{0};      // VM acquired from pool
     std::atomic<uint64_t> pool_misses{0};    // Had to create new VM
 
-    // AUDIT FIX (Finding 2.1): Use centralized configuration
+    // DESIGN NOTE (Finding 2.1): Use centralized configuration
     std::string gold_image_path = nikola::core::Config::get().gold_checkpoint_dir() + "/ubuntu-24.04.qcow2";
 
 public:
@@ -9002,7 +9002,7 @@ private:
     // Create and boot VM synchronously
     WarmVM* create_vm_synchronous() {
         std::string vm_id = generate_vm_id();
-        // AUDIT FIX (Finding 2.1 & 4.1): Use centralized config
+        // DESIGN NOTE (Finding 2.1 & 4.1): Use centralized config
         const auto& config = nikola::core::Config::get();
 
         // 1. Create overlay
@@ -9214,7 +9214,7 @@ private:
     std::string generate_vm_xml_pool(const std::string& vm_id,
                                        const std::string& overlay_path,
                                        const std::string& socket_path) {
-        // AUDIT FIX (Finding 2.1): Use centralized configuration
+        // DESIGN NOTE (Finding 2.1): Use centralized configuration
         std::string gold_dir = nikola::core::Config::get().gold_checkpoint_dir();
 
         return R"(
@@ -11072,12 +11072,12 @@ void training_thread_func(AutoTrainingManager& trainer,
 ```cpp
 #include <sys/inotify.h>
 #include <unistd.h>
-#include "nikola/core/config.hpp"  // AUDIT FIX (Finding 2.1)
+#include "nikola/core/config.hpp"  // DESIGN NOTE (Finding 2.1)
 
 class IngestionSentinel {
     int inotify_fd = -1;
     int watch_descriptor = -1;
-    // AUDIT FIX (Finding 2.1): Use centralized configuration
+    // DESIGN NOTE (Finding 2.1): Use centralized configuration
     std::string watch_path = nikola::core::Config::get().ingest_directory();
 
     ThreadSafeQueue<std::filesystem::path> ingest_queue;
@@ -11256,7 +11256,7 @@ void IngestionSentinel::process_file(const std::filesystem::path& file_path) {
         std::cout << "[INGEST] Embedded and stored: " << file_path.filename() << std::endl;
 
         // 5. Archive
-        // AUDIT FIX (Finding 2.1): Use centralized configuration
+        // DESIGN NOTE (Finding 2.1): Use centralized configuration
         std::filesystem::path archive_dir = nikola::core::Config::get().archive_directory();
         archive_dir /= current_date_string();
         std::filesystem::create_directories(archive_dir);
@@ -12670,12 +12670,12 @@ void write_varint(std::vector<uint8_t>& output, size_t value) {
 
 ```cpp
 #include <zstd.h>
-#include "nikola/core/config.hpp"  // AUDIT FIX (Finding 2.1)
+#include "nikola/core/config.hpp"  // DESIGN NOTE (Finding 2.1)
 
 class PersistenceManager {
     std::map<uint64_t, TorusNode> dirty_cache;
     std::ofstream nik_file;
-    // AUDIT FIX (Finding 2.1): Use centralized configuration
+    // DESIGN NOTE (Finding 2.1): Use centralized configuration
     std::string nik_path = nikola::core::Config::get().lsm_data_directory() + "/state/main.nik";
 
 public:
@@ -12905,7 +12905,7 @@ public:
         });
     }
 
-    // AUDIT FIX (Finding 2.1): Default path from centralized configuration
+    // DESIGN NOTE (Finding 2.1): Default path from centralized configuration
     void restore_state(TorusManifold& torus,
                        const std::string& nik_path = nikola::core::Config::get().lsm_data_directory() + "/state/main.nik") {
         std::ifstream nik_file(nik_path, std::ios::binary);
@@ -13062,7 +13062,7 @@ private:
     std::thread compaction_thread;
     std::atomic<bool> running{true};
 
-    // AUDIT FIX (Finding 2.1): Use centralized configuration
+    // DESIGN NOTE (Finding 2.1): Use centralized configuration
     const std::string data_dir = nikola::core::Config::get().lsm_data_directory();
 
 public:
@@ -14693,11 +14693,11 @@ struct IdentityProfile {
 **Implementation:**
 
 ```cpp
-#include "nikola/core/config.hpp"  // AUDIT FIX (Finding 2.1)
+#include "nikola/core/config.hpp"  // DESIGN NOTE (Finding 2.1)
 
 class IdentityManager {
     IdentityProfile profile;
-    // AUDIT FIX (Finding 2.1): Use centralized configuration
+    // DESIGN NOTE (Finding 2.1): Use centralized configuration
     std::string profile_path = nikola::core::Config::get().identity_directory() + "/identity.json";
 
 public:
@@ -16762,19 +16762,19 @@ nikola/
 - See Appendices for build system details
 # DEVELOPMENT ROADMAP
 
-## 🚨 CRITICAL: Engineering Audit Remediation Required
+## 🚨 CRITICAL: Phase 0 Critical Requirements Required
 
 **Date:** December 7, 2025  
 **Source:** Engineering Report Review and Analysis  
 **Status:** MANDATORY - Must complete before Phase 1
 
-A comprehensive engineering audit identified critical implementation gaps that **MUST** be addressed to prevent:
+A comprehensive engineering analysis identified critical implementation gaps that **MUST** be addressed to prevent:
 - Numerical instability (system diverges within minutes)
 - Memory thrashing (TLB misses destroy performance)
 - Energy drift (FP32 errors cause "amnesia")
 - Race conditions (GPU segfaults)
 
-See **Section 8: Audit Remediation** for complete specifications.
+See **Section 8: Phase 0 Requirements** for complete specifications.
 
 ### Phase 0: Critical Remediation (Weeks 1-2)
 
@@ -16951,7 +16951,7 @@ See **Section 8: Audit Remediation** for complete specifications.
 - See Section 28 for Detailed Checklist
 # IMPLEMENTATION CHECKLIST
 
-## 🚨 PHASE 0: AUDIT REMEDIATION (MANDATORY)
+## 🚨 PHASE 0: PHASE 0 REQUIREMENTS (MANDATORY)
 
 **MUST complete before proceeding to 28.2 Foundation Layer**
 
@@ -16961,7 +16961,7 @@ See **Section 8: Audit Remediation** for complete specifications.
   - Modify `TorusBlock` to use `alignas(64)` SoA layout
   - Separate arrays for: psi_real, psi_imag, metric_tensor (45 arrays), resonance, state
   - Block size: 19683 nodes (3^9)
-  - **Reference:** Audit Remediation §1.2
+  - **Reference:** Phase 0 Requirements §1.2
   - **Validation:** Verify cache hit rate >95% in Laplacian kernel
   - **Effort:** 2 days
 
@@ -16972,7 +16972,7 @@ See **Section 8: Audit Remediation** for complete specifications.
   - Step 3: Drift
   - Step 4: Recompute forces
   - Step 5: Half-kick forces + final damping
-  - **Reference:** Audit Remediation §2.2-2.3
+  - **Reference:** Phase 0 Requirements §2.2-2.3
   - **Validation:** Energy drift <0.01% over 10,000 steps
   - **Effort:** 3 days
 
@@ -16980,7 +16980,7 @@ See **Section 8: Audit Remediation** for complete specifications.
   - Implement compensated summation in `compute_laplacian_kahan()`
   - Use compensation variable `c` to track lost low-order bits
   - Apply to ALL accumulation loops in physics kernel
-  - **Reference:** Audit Remediation §2.4
+  - **Reference:** Phase 0 Requirements §2.4
   - **Validation:** Memory waves persist >1000 timesteps without vanishing
   - **Effort:** 1 day
 
@@ -16991,7 +16991,7 @@ See **Section 8: Audit Remediation** for complete specifications.
   - Implement `vec_sum_gate(__m512i, __m512i)` using `_mm512_add_epi8` + clamp
   - Implement `vec_product_gate(__m512i, __m512i)` with saturation
   - Remove ALL uses of `std::clamp` in hot loops
-  - **Reference:** Audit Remediation §4
+  - **Reference:** Phase 0 Requirements §4
   - **Validation:** Processes 64 nits in <10 CPU cycles
   - **Effort:** 2 days
 
@@ -17000,7 +17000,7 @@ See **Section 8: Audit Remediation** for complete specifications.
   - Add `dirty_flag` to track when recomputation needed
   - Implement `recompute_if_needed()` with stability check
   - Rollback plasticity update if Cholesky fails (non-positive-definite)
-  - **Reference:** Audit Remediation §5
+  - **Reference:** Phase 0 Requirements §5
   - **Validation:** Metric inversion <1% of total compute time
   - **Effort:** 3 days
 
@@ -17010,7 +17010,7 @@ See **Section 8: Audit Remediation** for complete specifications.
   - Monitor Hamiltonian every 100 timesteps
   - Auto-adjust damping when $\Delta E / E > 0.01$
   - Inject noise if $E < E_{min}$ (stochastic resonance)
-  - **Reference:** Audit Remediation §9.1
+  - **Reference:** Phase 0 Requirements §9.1
   - **Validation:** System remains stable for 24-hour continuous run
   - **Effort:** 1 day
 
@@ -17021,7 +17021,7 @@ See **Section 8: Audit Remediation** for complete specifications.
   - Physics writes grid to `shm_open("/nikola_snapshot_<id>")`
   - ZeroMQ sends only snapshot_id (8 bytes)
   - Persistence mmaps shared segment
-  - **Reference:** Audit Remediation §6.3
+  - **Reference:** Phase 0 Requirements §6.3
   - **Validation:** IPC latency <100ns (vs. μs for Protobuf)
   - **Effort:** 2 days
 
@@ -17029,7 +17029,7 @@ See **Section 8: Audit Remediation** for complete specifications.
   - Replace matrix exponential with first-order Taylor: $\exp(M) \approx I + M$
   - $A_i = I - \Delta(1-r_i)G_i$
   - Verify timestep constraint: $\Delta < \frac{0.1}{(1-r_{min})\lambda_{max}(G)}$
-  - **Reference:** Audit Remediation §3
+  - **Reference:** Phase 0 Requirements §3
   - **Validation:** SSM computation <10% of total time
   - **Effort:** 2 days
 
@@ -17037,7 +17037,7 @@ See **Section 8: Audit Remediation** for complete specifications.
   - Correct packing: 2 nits per byte (not 5)
   - $packed = (n_1 + 4) \times 9 + (n_2 + 4)$
   - Unpack: $n_1 = (packed / 9) - 4$, $n_2 = (packed \% 9) - 4$
-  - **Reference:** Audit Remediation §8
+  - **Reference:** Phase 0 Requirements §8
   - **Validation:** Storage density = 4 bits/weight
   - **Effort:** 1 day
 
@@ -17046,7 +17046,7 @@ See **Section 8: Audit Remediation** for complete specifications.
 - [ ] **0.10** Sliding Window DFT for Firewall
   - Replace full FFT with Goertzel Algorithm
   - Monitor specific attack frequencies (10Hz, 50Hz, 100Hz)
-  - **Reference:** Audit Remediation §7
+  - **Reference:** Phase 0 Requirements §7
   - **Validation:** Firewall latency <1μs per sample
   - **Effort:** 1 day
 
