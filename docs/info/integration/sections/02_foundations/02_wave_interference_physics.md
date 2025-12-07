@@ -364,7 +364,6 @@ The propagation of waves in 9 dimensions is computationally intense ($3^9$ neigh
 struct NodeDataSOA {
    double2* wavefunction;      // Complex amplitude [FP64]
    double2* velocity;          // dΨ/dt [FP64]
-   double2* acceleration;      // d²Ψ/dt² [FP64]
    double*  metric_tensor;     // Flattened metric [FP64]
    double*  resonance;         // Damping factor [FP64]
    double*  state;             // Refractive index [FP64]
@@ -375,7 +374,6 @@ __global__ void propagate_wave_kernel(
    NodeDataSOA data,
    double2* next_wavefunction,
    double2* next_velocity,
-   double2* next_acceleration,
    int num_active_nodes,
    double dt,
    double c0_squared
@@ -449,40 +447,63 @@ __global__ void propagate_wave_kernel(
        }
    }
 
-   // Load velocity and acceleration from previous step
+   // Load velocity from previous step
    double2 vel = data.velocity[idx];
-   double2 old_accel = data.acceleration[idx];
 
-   // UFIE Update Step (Velocity-Verlet Integration - Symplectic)
-   // Step 1: Update position using current velocity
-   double2 psi_new;
-   psi_new.x = psi.x + vel.x * dt + 0.5 * old_accel.x * dt * dt;
-   psi_new.y = psi.y + vel.y * dt + 0.5 * old_accel.y * dt * dt;
+   // 5-STEP SPLIT-OPERATOR SYMPLECTIC INTEGRATION
+   // This method prevents energy drift when damping and conservative forces are present.
+   // Standard Verlet treats damping as a force, which breaks energy conservation.
+   // Split-operator separates operators to maintain symplectic structure.
 
-   // Step 2: Compute new acceleration at updated position
    // Cubic nonlinearity term for soliton formation and heterodyning
    double psi_magnitude_sq = psi.x * psi.x + psi.y * psi.y;
    double beta = 0.01;  // Nonlinear coupling coefficient
 
-   // Compute β|Ψ|²Ψ for heterodyning (enables nonary multiplication)
+   // STEP 1: Half-kick with damping (dissipative operator)
+   // This applies friction in velocity space only, preserving phase space volume
+   double damping_factor = exp(-gamma * 0.5 * dt);  // Exact exponential damping
+   vel.x *= damping_factor;
+   vel.y *= damping_factor;
+
+   // STEP 2: Half-kick with conservative forces (Hamiltonian operator)
+   // Compute conservative acceleration (Laplacian + nonlinearity)
    double2 nonlinear_term;
    nonlinear_term.x = beta * psi_magnitude_sq * psi.x;
    nonlinear_term.y = beta * psi_magnitude_sq * psi.y;
 
-   // Full NLSE acceleration: c²∇²Ψ - γv + β|Ψ|²Ψ
-   double2 new_accel;
-   new_accel.x = velocity * laplacian.x - gamma * vel.x + nonlinear_term.x;
-   new_accel.y = velocity * laplacian.y - gamma * vel.y + nonlinear_term.y;
+   double2 accel;
+   accel.x = velocity * laplacian.x + nonlinear_term.x;
+   accel.y = velocity * laplacian.y + nonlinear_term.y;
 
-   // Step 3: Update velocity using average of old and new accelerations
-   double2 vel_new;
-   vel_new.x = vel.x + 0.5 * (old_accel.x + new_accel.x) * dt;
-   vel_new.y = vel.y + 0.5 * (old_accel.y + new_accel.y) * dt;
+   vel.x += 0.5 * accel.x * dt;
+   vel.y += 0.5 * accel.y * dt;
+
+   // STEP 3: Full drift (position update)
+   double2 psi_new;
+   psi_new.x = psi.x + vel.x * dt;
+   psi_new.y = psi.y + vel.y * dt;
+
+   // STEP 4: Half-kick with conservative forces (recompute at new position)
+   // Recompute nonlinearity at new position
+   double psi_new_magnitude_sq = psi_new.x * psi_new.x + psi_new.y * psi_new.y;
+   nonlinear_term.x = beta * psi_new_magnitude_sq * psi_new.x;
+   nonlinear_term.y = beta * psi_new_magnitude_sq * psi_new.y;
+
+   accel.x = velocity * laplacian.x + nonlinear_term.x;
+   accel.y = velocity * laplacian.y + nonlinear_term.y;
+
+   vel.x += 0.5 * accel.x * dt;
+   vel.y += 0.5 * accel.y * dt;
+
+   // STEP 5: Half-kick with damping (symmetric completion)
+   vel.x *= damping_factor;
+   vel.y *= damping_factor;
+
+   double2 vel_new = vel;
 
    // Write back
    next_wavefunction[idx] = psi_new;
    next_velocity[idx] = vel_new;
-   next_acceleration[idx] = new_accel;
 }
 ```
 

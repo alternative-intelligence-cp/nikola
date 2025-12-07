@@ -1,5 +1,51 @@
 # DEVELOPMENT ROADMAP
 
+## 🚨 CRITICAL: Engineering Audit Remediation Required
+
+**Date:** December 7, 2025  
+**Source:** Engineering Report Review and Analysis  
+**Status:** MANDATORY - Must complete before Phase 1
+
+A comprehensive engineering audit identified critical implementation gaps that **MUST** be addressed to prevent:
+- Numerical instability (system diverges within minutes)
+- Memory thrashing (TLB misses destroy performance)
+- Energy drift (FP32 errors cause "amnesia")
+- Race conditions (GPU segfaults)
+
+See **Section 8: Audit Remediation** for complete specifications.
+
+### Phase 0: Critical Remediation (Weeks 1-2)
+
+**Priority P0 (Critical - 6 days):**
+
+| Day | Task | Reference | Impact |
+|-----|------|-----------|--------|
+| 1-2 | Implement SoA Memory Layout | Remediation §1 | 10x performance |
+| 3-5 | Implement Split-Operator Integration | Remediation §2 | Prevents divergence |
+| 6 | Implement Kahan Summation | Remediation §2.4 | Prevents amnesia |
+
+**Priority P1 (High - 6 days):**
+
+| Day | Task | Reference | Impact |
+|-----|------|-----------|--------|
+| 7-8 | AVX-512 Nit Operations | Remediation §4 | 200x speedup |
+| 9-11 | Lazy Cholesky Decomposition | Remediation §5 | 100x speedup |
+| 12 | Energy Watchdog | Remediation §9.1 | System stability |
+
+**Priority P2 (Medium - 5 days):**
+
+| Day | Task | Reference | Impact |
+|-----|------|-----------|--------|
+| 13-14 | Shared Memory IPC | Remediation §6.3 | 1000x latency reduction |
+| 15-16 | Mamba Taylor Approximation | Remediation §3 | 10x speedup |
+| 17 | Q9_0 Quantization Fix | Remediation §8 | 2x storage efficiency |
+
+**Total Critical Path:** 17 days (3.5 weeks)
+
+**Gate:** All P0 and P1 items must pass validation before proceeding to Phase 1.
+
+---
+
 ## 27.1 Phase 1: Core Physics Engine (Months 1-3)
 
 **Milestone:** Standing waves propagate correctly in 9D

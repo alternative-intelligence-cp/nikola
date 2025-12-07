@@ -185,13 +185,46 @@ To "be exported to GGUF", we must map the balanced nonary weights to a format ll
 
 **Quantization Scheme:**
 
-- **Target:** Store weights in discrete values $\{-4, \dots, 4\}$.
-- **Packing:** A single Balanced Nonary "Trit" takes $\log_2(9) \approx 3.17$ bits.
-- **Block Layout:** We pack 5 trits into 16 bits (2 bytes). $3^5 = 243 < 2^8$. Wait, $3^5 = 243$, which fits in 8 bits (one byte).
-- **Correction:** $3^5 = 243$. A single byte (256 values) can perfectly store 5 trits.
-- **Efficiency:** This yields a compression ratio of 1.6 bits per weight. This is significantly more efficient than standard 4-bit quantization (Q4_0), offering higher precision (9 states vs 16 states) at comparable or better compression density per parameter.
+- **Target:** Store weights in discrete values $\{-4, \dots, 4\}$ (9 possible states).
+- **Bit Requirement:** Each nit requires $\lceil \log_2(9) \rceil = 4$ bits to store.
+- **Packing Density:** **2 nits per byte** (8 bits ÷ 4 bits/nit = 2 nits/byte).
+- **Block Layout:** Weights are packed in 32-byte blocks, each storing 64 nits (32 bytes × 2 nits/byte).
+- **Compression Ratio:** 4 bits per weight (same as Q4_0 but with 9 quantization levels instead of 16).
 
-**Integration:** A custom CUDA kernel is added to the export pipeline to dequantize Q9_0 blocks back to FP16 for inference on standard GPUs.
+**Packing Algorithm:**
+
+```cpp
+// Pack two 4-bit nits into a single byte
+uint8_t pack_nits(Nit nit_a, Nit nit_b) {
+    // Offset to 0-8 range: -4→0, 0→4, +4→8
+    uint8_t a = static_cast<uint8_t>(nit_a + 4);
+    uint8_t b = static_cast<uint8_t>(nit_b + 4);
+    
+    // Pack: high 4 bits = nit_a, low 4 bits = nit_b
+    return (a << 4) | b;
+}
+
+// Unpack byte into two nits
+std::pair<Nit, Nit> unpack_nits(uint8_t packed) {
+    uint8_t a = (packed >> 4) & 0x0F;  // Extract high 4 bits
+    uint8_t b = packed & 0x0F;         // Extract low 4 bits
+    
+    // Offset back to -4 to +4 range
+    return {static_cast<Nit>(a - 4), static_cast<Nit>(b - 4)};
+}
+```
+
+**Storage Efficiency:**
+
+| Format | Bits/Weight | Quantization Levels | Precision |
+|--------|-------------|-------------------|-----------|
+| FP32 | 32 | Continuous | Full |
+| FP16 | 16 | Continuous | High |
+| Q8_0 | 8 | 256 binary | Medium |
+| **Q9_0** | **4** | **9 balanced** | **Balanced nonary** |
+| Q4_0 | 4 | 16 binary | Low |
+
+**Integration:** A custom CUDA kernel dequantizes Q9_0 blocks back to FP16 for inference on standard GPUs.
 
 ### 20.5.2 Q9_0 De-Quantization Kernel
 

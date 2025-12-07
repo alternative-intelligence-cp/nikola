@@ -1,5 +1,120 @@
 # IMPLEMENTATION CHECKLIST
 
+## 🚨 PHASE 0: AUDIT REMEDIATION (MANDATORY)
+
+**MUST complete before proceeding to 28.2 Foundation Layer**
+
+### P0 Critical Items (Block Everything)
+
+- [ ] **0.1** Structure-of-Arrays Memory Layout
+  - Modify `TorusBlock` to use `alignas(64)` SoA layout
+  - Separate arrays for: psi_real, psi_imag, metric_tensor (45 arrays), resonance, state
+  - Block size: 19683 nodes (3^9)
+  - **Reference:** Audit Remediation §1.2
+  - **Validation:** Verify cache hit rate >95% in Laplacian kernel
+  - **Effort:** 2 days
+
+- [ ] **0.2** Split-Operator Symplectic Integration
+  - Replace Velocity-Verlet with 5-step split-operator
+  - Step 1: Half-kick damping (analytical exponential)
+  - Step 2: Half-kick forces
+  - Step 3: Drift
+  - Step 4: Recompute forces
+  - Step 5: Half-kick forces + final damping
+  - **Reference:** Audit Remediation §2.2-2.3
+  - **Validation:** Energy drift <0.01% over 10,000 steps
+  - **Effort:** 3 days
+
+- [ ] **0.3** Kahan Summation for Laplacian
+  - Implement compensated summation in `compute_laplacian_kahan()`
+  - Use compensation variable `c` to track lost low-order bits
+  - Apply to ALL accumulation loops in physics kernel
+  - **Reference:** Audit Remediation §2.4
+  - **Validation:** Memory waves persist >1000 timesteps without vanishing
+  - **Effort:** 1 day
+
+### P1 High Priority (Performance Critical)
+
+- [ ] **0.4** AVX-512 Nonary Arithmetic
+  - Replace enum-based Nit with `typedef int8_t Nit`
+  - Implement `vec_sum_gate(__m512i, __m512i)` using `_mm512_add_epi8` + clamp
+  - Implement `vec_product_gate(__m512i, __m512i)` with saturation
+  - Remove ALL uses of `std::clamp` in hot loops
+  - **Reference:** Audit Remediation §4
+  - **Validation:** Processes 64 nits in <10 CPU cycles
+  - **Effort:** 2 days
+
+- [ ] **0.5** Lazy Cholesky Decomposition
+  - Add cached Cholesky factor `L` to `MetricTensor` class
+  - Add `dirty_flag` to track when recomputation needed
+  - Implement `recompute_if_needed()` with stability check
+  - Rollback plasticity update if Cholesky fails (non-positive-definite)
+  - **Reference:** Audit Remediation §5
+  - **Validation:** Metric inversion <1% of total compute time
+  - **Effort:** 3 days
+
+- [ ] **0.6** Energy Watchdog System
+  - Implement `EnergyWatchdog` class with state machine
+  - States: Stable, Heating, Critical, Dying
+  - Monitor Hamiltonian every 100 timesteps
+  - Auto-adjust damping when $\Delta E / E > 0.01$
+  - Inject noise if $E < E_{min}$ (stochastic resonance)
+  - **Reference:** Audit Remediation §9.1
+  - **Validation:** System remains stable for 24-hour continuous run
+  - **Effort:** 1 day
+
+### P2 Medium Priority (Optimization)
+
+- [ ] **0.7** Shared Memory IPC (Physics ↔ Persistence)
+  - Replace Protocol Buffers serialization with `/dev/shm` segments
+  - Physics writes grid to `shm_open("/nikola_snapshot_<id>")`
+  - ZeroMQ sends only snapshot_id (8 bytes)
+  - Persistence mmaps shared segment
+  - **Reference:** Audit Remediation §6.3
+  - **Validation:** IPC latency <100ns (vs. μs for Protobuf)
+  - **Effort:** 2 days
+
+- [ ] **0.8** Mamba-9D Taylor Approximation
+  - Replace matrix exponential with first-order Taylor: $\exp(M) \approx I + M$
+  - $A_i = I - \Delta(1-r_i)G_i$
+  - Verify timestep constraint: $\Delta < \frac{0.1}{(1-r_{min})\lambda_{max}(G)}$
+  - **Reference:** Audit Remediation §3
+  - **Validation:** SSM computation <10% of total time
+  - **Effort:** 2 days
+
+- [ ] **0.9** Q9_0 Quantization Fix
+  - Correct packing: 2 nits per byte (not 5)
+  - $packed = (n_1 + 4) \times 9 + (n_2 + 4)$
+  - Unpack: $n_1 = (packed / 9) - 4$, $n_2 = (packed \% 9) - 4$
+  - **Reference:** Audit Remediation §8
+  - **Validation:** Storage density = 4 bits/weight
+  - **Effort:** 1 day
+
+### P3 Low Priority (Nice-to-Have)
+
+- [ ] **0.10** Sliding Window DFT for Firewall
+  - Replace full FFT with Goertzel Algorithm
+  - Monitor specific attack frequencies (10Hz, 50Hz, 100Hz)
+  - **Reference:** Audit Remediation §7
+  - **Validation:** Firewall latency <1μs per sample
+  - **Effort:** 1 day
+
+### Phase 0 Validation Gate
+
+**ALL P0 and P1 items MUST be completed and validated before proceeding to Phase 1.**
+
+**Validation Criteria:**
+- [ ] Energy drift <0.01% over 10,000 timesteps
+- [ ] Memory waves persist >1000 timesteps
+- [ ] Cache hit rate >95% in physics kernel
+- [ ] Metric inversion <1% of total compute
+- [ ] System stable for 24-hour continuous run
+- [ ] IPC latency <100ns (if P2 complete)
+
+**Estimated Total Effort:** 17 days (P0: 6 days, P1: 6 days, P2: 5 days)
+
+---
+
 ## 28.1 Overview
 
 This checklist MUST be followed file-by-file in order. Do NOT skip steps or deviate.
