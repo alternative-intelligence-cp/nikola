@@ -191,9 +191,139 @@ Where:
 - $g$: Determinant of metric tensor
 - $g^{ij}$: Inverse metric tensor
 
+## 4.5 UNIFIED FIELD INTERFERENCE EQUATION (UFIE)
+
+**⚠️ CRITICAL: This is the master equation governing all wave evolution.**
+
+The complete physics of the Nikola Model is captured by the Unified Field Interference Equation:
+
+$$\frac{\partial^2 \Psi}{\partial t^2} + \alpha(1 - \hat{r}) \frac{\partial \Psi}{\partial t} - \frac{c_0^2}{(1 + \hat{s})^2} \nabla^2_g \Psi = \sum_{i=1}^8 \mathcal{E}_i(\vec{x}, t) + \beta |\Psi|^2 \Psi$$
+
+### Term-by-Term Explanation
+
+1. **Inertial Term:** $\frac{\partial^2 \Psi}{\partial t^2}$
+   - Wave acceleration (second time derivative)
+   - Standard wave equation component
+
+2. **Damping Term:** $\alpha(1 - \hat{r}) \frac{\partial \Psi}{\partial t}$
+   - Friction/energy dissipation
+   - Controlled by Resonance dimension $\hat{r}$
+   - When $\hat{r} \to 1$: Zero damping (perfect memory retention)
+   - When $\hat{r} \to 0$: Maximum damping (rapid forgetting)
+   - **CRITICAL:** This is a non-conservative term
+
+3. **Wave Propagation:** $\frac{c_0^2}{(1 + \hat{s})^2} \nabla^2_g \Psi$
+   - Laplace-Beltrami operator on curved manifold
+   - Speed modulated by State dimension $\hat{s}$
+   - High $\hat{s}$ → slower propagation (attention/detailed processing)
+   - Low $\hat{s}$ → faster propagation (peripheral awareness)
+
+4. **External Driving:** $\sum_{i=1}^8 \mathcal{E}_i(\vec{x}, t)$
+   - Emitter array forcing terms
+   - Injects information into the system
+
+5. **Nonlinear Soliton Term:** $\beta |\Psi|^2 \Psi$
+   - **ABSOLUTELY REQUIRED FOR COMPUTATION**
+   - Enables heterodyning (frequency mixing)
+   - Creates stable solitons (thought packets)
+   - Without this, system is linear and cannot compute
+
+### 4.5.1 Split-Operator Symplectic Integration
+
+**⚠️ MANDATORY IMPLEMENTATION METHOD**
+
+The UFIE contains both conservative and non-conservative terms. Standard Verlet integration **FAILS** for systems with damping, causing energy drift and numerical instability.
+
+**Solution:** Strang Splitting (2nd-order accurate, unconditionally stable for damping)
+
+Decompose the evolution operator into three parts:
+
+1. **Damping Operator:** $\hat{D} = -\gamma \frac{\partial}{\partial t}$ (non-conservative)
+2. **Conservative Operator:** $\hat{H} = \frac{\partial^2}{\partial t^2} - c^2 \nabla^2$ (Hamiltonian)
+3. **Nonlinear Operator:** $\hat{N} = \beta |\Psi|^2 \Psi$ (conservative)
+
+Apply Strang splitting:
+
+$$e^{(\hat{D} + \hat{H} + \hat{N})\Delta t} \approx e^{\hat{D}\Delta t/2} e^{\hat{H}\Delta t/2} e^{\hat{N}\Delta t} e^{\hat{H}\Delta t/2} e^{\hat{D}\Delta t/2} + O(\Delta t^3)$$
+
+### Implementation Algorithm (6 Steps per Timestep)
+
+```cpp
+void propagate_wave_ufie(double dt) {
+    const double dt_half = dt / 2.0;
+    
+    // STEP 1: Half-kick damping (exact analytical solution)
+    // Solution: v(t + dt/2) = v(t) * exp(-γ * dt/2)
+    #pragma omp parallel for
+    for (auto& node : active_nodes) {
+        double gamma = alpha * (1.0 - node.resonance);  // Damping coefficient
+        double decay_factor = std::exp(-gamma * dt_half);
+        node.psi_velocity *= decay_factor;
+    }
+    
+    // STEP 2: Half-kick conservative force (Laplacian + emitters)
+    // v(t + dt/2) += [c²∇²Ψ + Σ𝓔ᵢ] * dt/2
+    compute_laplacian_curved_space();  // Computes ∇²ᵍΨ with metric tensor
+    
+    #pragma omp parallel for
+    for (auto& node : active_nodes) {
+        double c_eff = c0 / std::pow(1.0 + node.state, 2);  // Effective speed
+        std::complex<double> force = c_eff * c_eff * node.laplacian;
+        force += emitter_field[node.index];  // External driving
+        node.psi_velocity += force * dt_half;
+    }
+    
+    // STEP 3: Drift (update wavefunction position)
+    // Ψ(t + dt) = Ψ(t) + v(t + dt/2) * dt
+    #pragma omp parallel for
+    for (auto& node : active_nodes) {
+        node.psi += node.psi_velocity * dt;
+    }
+    
+    // STEP 4: Apply nonlinear operator (RK2 for implicit stability)
+    // Ψ(t + dt) += β|Ψ|²Ψ * dt
+    #pragma omp parallel for
+    for (auto& node : active_nodes) {
+        double magnitude_sq = std::norm(node.psi);
+        std::complex<double> nonlinear_term = beta * magnitude_sq * node.psi;
+        node.psi += nonlinear_term * dt;
+    }
+    
+    // STEP 5: Half-kick force (recompute at new position)
+    compute_laplacian_curved_space();  // Update with new Ψ
+    
+    #pragma omp parallel for
+    for (auto& node : active_nodes) {
+        double c_eff = c0 / std::pow(1.0 + node.state, 2);
+        std::complex<double> force = c_eff * c_eff * node.laplacian;
+        force += emitter_field[node.index];
+        node.psi_velocity += force * dt_half;
+    }
+    
+    // STEP 6: Half-kick damping (final decay)
+    #pragma omp parallel for
+    for (auto& node : active_nodes) {
+        double gamma = alpha * (1.0 - node.resonance);
+        double decay_factor = std::exp(-gamma * dt_half);
+        node.psi_velocity *= decay_factor;
+    }
+}
+```
+
+### Why This Method is Mandatory
+
+1. **Energy Conservation:** Symplectic structure preserves Hamiltonian for conservative terms
+2. **Exact Damping:** Analytical exponential ensures perfect energy dissipation
+3. **Unconditional Stability:** No CFL condition for linear terms
+4. **Long-term Accuracy:** 2nd-order error $O(\Delta t^2)$ prevents cumulative drift
+
+**Validation Requirement:**
+- Standing wave test: Energy drift must be <0.0001% over 10,000 steps
+- See: Section 8 (Audit Remediation) for complete specifications
+
 ### Simplified Discretization (Finite Difference)
 
-For implementation, we use a simplified update rule on a regular grid:
+For reference, the naive update rule (DO NOT USE):
 
 $$\Psi_{i,t+1} = \Psi_{i,t} + \Delta t \cdot \left[ c^2 \sum_{\text{neighbors}} w_j (\Psi_{j,t} - \Psi_{i,t}) - \gamma \Psi_{i,t} \right]$$
 

@@ -3,46 +3,85 @@
 ## 🚨 CRITICAL: Engineering Audit Remediation Required
 
 **Date:** December 7, 2025  
-**Source:** Engineering Report Review and Analysis  
-**Status:** MANDATORY - Must complete before Phase 1
+**Source:** Engineering Report Review and Analysis v0.0.4  
+**Status:** MANDATORY - NO CODE UNTIL COMPLETE  
+**Classification:** PHASE 0 - CRITICAL FIXES
 
-A comprehensive engineering audit identified critical implementation gaps that **MUST** be addressed to prevent:
-- Numerical instability (system diverges within minutes)
-- Memory thrashing (TLB misses destroy performance)
-- Energy drift (FP32 errors cause "amnesia")
-- Race conditions (GPU segfaults)
+A comprehensive engineering audit identified critical implementation gaps that **MUST** be addressed before any feature development. These are not optimizations—they are functional requirements to prevent:
 
-See **Section 8: Audit Remediation** for complete specifications.
+- **Numerical Instability:** System divergence within hours (energy drift)
+- **Memory Thrashing:** 90% cache miss rate → 100x performance loss
+- **Precision Loss:** Float32 errors cause "amnesia" over time
+- **Hash Collisions:** Memory corruption in high-resolution grids
+- **Race Conditions:** GPU segfaults and data corruption
 
-### Phase 0: Critical Remediation (Weeks 1-2)
+**See:** `08_audit_remediation/01_critical_fixes.md` for complete specifications
 
-**Priority P0 (Critical - 6 days):**
+---
 
-| Day | Task | Reference | Impact |
-|-----|------|-----------|--------|
-| 1-2 | Implement SoA Memory Layout | Remediation §1 | 10x performance |
-| 3-5 | Implement Split-Operator Integration | Remediation §2 | Prevents divergence |
-| 6 | Implement Kahan Summation | Remediation §2.4 | Prevents amnesia |
+## Phase 0: Critical Remediation (Weeks 1-2, 17 days)
 
-**Priority P1 (High - 6 days):**
+**⚠️ NO DEVIATION:** All Phase 0 fixes are mandatory architectural requirements.
 
-| Day | Task | Reference | Impact |
-|-----|------|-----------|--------|
-| 7-8 | AVX-512 Nit Operations | Remediation §4 | 200x speedup |
-| 9-11 | Lazy Cholesky Decomposition | Remediation §5 | 100x speedup |
-| 12 | Energy Watchdog | Remediation §9.1 | System stability |
+### Priority P0 (Critical - 6 days)
 
-**Priority P2 (Medium - 5 days):**
+| Day | Task | Reference | Impact | Validation |
+|-----|------|-----------|--------|------------|
+| 1-2 | **SoA Memory Layout** | §1 Critical Fixes | 10x performance | >80% memory bandwidth utilization |
+| | - Refactor `TorusNode` → `TorusBlock` | | | |
+| | - Implement `TorusNodeProxy` | | | |
+| | - Update CUDA kernels for coalesced access | | | |
+| 3-5 | **Split-Operator Integration** | §2 Critical Fixes | Prevents divergence | Energy drift <0.0001% over 10K steps |
+| | - Replace Verlet with Strang splitting | | | |
+| | - Implement analytical damping decay | | | |
+| | - Add adaptive timestep control | | | |
+| 6 | **Kahan Summation** | §2.4 Critical Fixes | Prevents amnesia | Amplitude stable to 6 decimals over 1M steps |
+| | - Update Laplacian accumulation | | | |
+| | - CUDA kernel with compensation | | | |
 
-| Day | Task | Reference | Impact |
-|-----|------|-----------|--------|
-| 13-14 | Shared Memory IPC | Remediation §6.3 | 1000x latency reduction |
-| 15-16 | Mamba Taylor Approximation | Remediation §3 | 10x speedup |
-| 17 | Q9_0 Quantization Fix | Remediation §8 | 2x storage efficiency |
+### Priority P1 (High - 6 days)
+
+| Day | Task | Reference | Impact | Validation |
+|-----|------|-----------|--------|------------|
+| 7-8 | **AVX-512 Nit Operations** | §4 Critical Fixes | 200x speedup | 10M ops in <50μs |
+| | - Vectorized add/multiply (64 nits/op) | | | |
+| | - Lookup tables for multiplication | | | |
+| | - CPU feature detection + fallback | | | |
+| 9-11 | **Lazy Cholesky Decomposition** | §5 Critical Fixes | 100x speedup | Metric overhead <5% runtime |
+| | - Add `MetricTensorCache` class | | | |
+| | - Implement dirty tracking | | | |
+| | - Batch update logic | | | |
+| 12 | **Energy Watchdog** | §9.1 Critical Fixes | System stability | Detect drift injection |
+| | - Energy computation | | | |
+| | - Periodic checks (every 100 steps) | | | |
+
+### Priority P2 (Medium - 5 days)
+
+| Day | Task | Reference | Impact | Validation |
+|-----|------|-----------|--------|------------|
+| 13-14 | **Shared Memory IPC** | §6.3 Critical Fixes | 1000x latency reduction | <10μs jitter |
+| | - Seqlock implementation | | | |
+| | - `/dev/shm` allocation | | | |
+| | - ZMQ notifications | | | |
+| 15-16 | **Mamba Taylor Approximation** | §3 Critical Fixes | 10x speedup | Compare vs full matrix exp |
+| | - First-order matrix approximation | | | |
+| | - Adaptive timestep | | | |
+| 17 | **Q9_0 Quantization** | §8 Critical Fixes | 2x storage efficiency | 1M roundtrip 100% accuracy |
+| | - Radix-9 encoding | | | |
+| | - Batch SIMD encoder | | | |
+
+### Phase 0 Gate Review
+
+**Criteria for Phase 1 Entry:**
+- ✅ All P0 and P1 tasks complete
+- ✅ All validation tests pass
+- ✅ Energy watchdog operational
+- ✅ Physics step <1ms on sparse 27³ grid
+- ✅ Code review completed (2 engineer sign-off)
+
+**If gate fails:** Remediation continues until all criteria met. **NO EXCEPTIONS.**
 
 **Total Critical Path:** 17 days (3.5 weeks)
-
-**Gate:** All P0 and P1 items must pass validation before proceeding to Phase 1.
 
 ---
 

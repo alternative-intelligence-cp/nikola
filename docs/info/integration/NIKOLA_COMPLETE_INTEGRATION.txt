@@ -75,17 +75,21 @@ This specification represents the authoritative engineering documentation for th
 - [7.2 Audio Resonance Engine](07_multimodal/02_audio_resonance.md)
 - [7.3 Visual Cymatics Engine](07_multimodal/03_visual_cymatics.md)
 
-## SECTION 8: IMPLEMENTATION GUIDE
+## SECTION 8: AUDIT REMEDIATION (⚡ NEW - PHASE 0 CRITICAL)
 
-- [8.1 File Structure and Organization](09_implementation/01_file_structure.md)
-- [8.2 Development Roadmap](09_implementation/02_development_roadmap.md)
-- [8.3 Implementation Checklist](09_implementation/03_implementation_checklist.md)
-- [8.4 Build and Deployment](09_implementation/04_build_deployment.md)
+- [8.1 Critical Fixes and Validation](08_audit_remediation/01_critical_fixes.md)
 
-## SECTION 9: PROTOCOLS AND INTERFACES
+## SECTION 9: IMPLEMENTATION GUIDE
 
-- [9.1 RCIS Specification](10_protocols/01_rcis_specification.md)
-- [9.2 CLI Controller](10_protocols/02_cli_controller.md)
+- [9.1 File Structure and Organization](09_implementation/01_file_structure.md)
+- [9.2 Development Roadmap](09_implementation/02_development_roadmap.md)
+- [9.3 Implementation Checklist](09_implementation/03_implementation_checklist.md)
+- [9.4 Build and Deployment](09_implementation/04_build_deployment.md)
+
+## SECTION 10: PROTOCOLS AND INTERFACES
+
+- [10.1 RCIS Specification](10_protocols/01_rcis_specification.md)
+- [10.2 CLI Controller](10_protocols/02_cli_controller.md)
 
 ## APPENDICES
 
@@ -98,6 +102,33 @@ This specification represents the authoritative engineering documentation for th
 - [Appendix G: Security Checklist](11_appendices/G_security_checklist.md)
 - [Appendix H: Theoretical Foundations](11_appendices/H_theoretical_foundations.md)
 - [Appendix I: Docker Deployment](11_appendices/I_docker_deployment.md)
+
+---
+
+## 🚨 CRITICAL UPDATES - December 7, 2025
+
+**Engineering Audit Findings Integrated:**
+
+A comprehensive technical audit identified critical implementation gaps requiring **mandatory remediation before feature development**. The following updates have been integrated:
+
+**Phase 0 (NEW Section 8):**
+- Structure-of-Arrays (SoA) memory layout (10x performance improvement)
+- Split-Operator Symplectic Integration (prevents system divergence)
+- Kahan Summation for numerical precision (prevents "amnesia")
+- AVX-512 vectorization for nonary arithmetic (200x speedup)
+- Physics Oracle for self-improvement safety
+- Adversarial Code Dojo (red team testing)
+
+**Updated Sections:**
+- Section 2.2: Added UFIE split-operator integration details
+- Section 5.5: Added Physics Oracle and hot-swap protocol
+- Section 9.1: Updated file structure with Phase 0 components
+- Section 9.2: Added Phase 0 gate review (17-day critical path)
+
+**Project Status:** APPROVED FOR IMPLEMENTATION (Subject to Phase 0 Remediation)
+
+See `08_audit_remediation/01_critical_fixes.md` for complete specifications.
+
 
 ---
 

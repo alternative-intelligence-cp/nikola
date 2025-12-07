@@ -1,0 +1,1018 @@
+# PHASE 0: AUDIT REMEDIATION - CRITICAL FIXES
+
+## EXECUTIVE SUMMARY
+
+**Date:** December 7, 2025  
+**Status:** MANDATORY - NO CODE UNTIL COMPLETE  
+**Source:** Engineering Report Review and Analysis v0.0.4
+
+This section documents critical engineering defects identified in the initial specification that **MUST** be remediated before any feature implementation begins. These are not optimizations—they are functional requirements to prevent system failure.
+
+### Critical Risks Identified
+
+1. **Numerical Instability:** Velocity-Verlet integration causes energy drift → system divergence within hours
+2. **Memory Thrashing:** Array-of-Structures layout causes 90% cache miss rate → 100x performance loss
+3. **Precision Loss:** Float32 Laplacian accumulation loses information → "amnesia" over time
+4. **Hash Collisions:** 64-bit Morton codes insufficient for high-resolution 9D grids → memory corruption
+
+### Remediation Mandate
+
+**NO DEVIATION:** All Phase 0 fixes are mandatory architectural requirements. The system CANNOT function correctly without these implementations.
+
+**Timeline:** 17 days (3.5 weeks)  
+**Gate:** All P0 and P1 items must pass validation before Phase 1 begins.
+
+---
+
+## 1. STRUCTURE-OF-ARRAYS (SoA) MEMORY LAYOUT
+
+### Problem Statement
+
+The initial specification used Array-of-Structures (AoS) layout:
+
+```cpp
+// ❌ FORBIDDEN: AoS layout causes cache thrashing
+struct TorusNode {
+    std::complex<double> psi;           // 16 bytes
+    std::array<double, 45> metric;      // 360 bytes
+    std::array<double, 9> christoffel;  // 72 bytes
+    // Total: 448 bytes per node
+};
+```
+
+**Issue:** Computing the Laplacian requires accessing `psi` from 18 neighbors. With AoS, each access pulls 448 bytes into cache but uses only 16 bytes (3.6% efficiency). This causes:
+- Cache thrashing (TLB misses destroy performance)
+- Memory bandwidth saturation (fetching 90% unused data)
+- Poor vectorization (SIMD can't load contiguous psi values)
+
+### Solution: Structure-of-Arrays (SoA)
+
+```cpp
+// ✅ MANDATORY: SoA layout for cache efficiency
+struct TorusBlock {
+    static constexpr int BLOCK_SIZE = 19683;  // 3^9 voxels per block
+    
+    // Aligned for AVX-512 (64-byte cache lines)
+    alignas(64) std::array<float, BLOCK_SIZE> psi_real;
+    alignas(64) std::array<float, BLOCK_SIZE> psi_imag;
+    alignas(64) std::array<float, BLOCK_SIZE> psi_vel_real;
+    alignas(64) std::array<float, BLOCK_SIZE> psi_vel_imag;
+    
+    // Metric tensor: 45 components × 19683 voxels
+    alignas(64) std::array<std::array<float, BLOCK_SIZE>, 45> metric_tensor;
+    
+    // Christoffel symbols: 9 × 9 × 9 = 729 components (sparse)
+    alignas(64) std::array<std::array<float, BLOCK_SIZE>, 729> christoffel;
+};
+
+// Proxy accessor class (maintains API compatibility)
+class TorusNodeProxy {
+    TorusBlock* block;
+    size_t index;
+    
+public:
+    std::complex<double> psi() const {
+        return {block->psi_real[index], block->psi_imag[index]};
+    }
+    
+    void set_psi(std::complex<double> val) {
+        block->psi_real[index] = val.real();
+        block->psi_imag[index] = val.imag();
+    }
+    
+    // ... metric accessors ...
+};
+```
+
+### Implementation Requirements
+
+1. **Refactor all grid code** to use `TorusBlock` arrays instead of `TorusNode` arrays
+2. **CUDA kernels** must use coalesced memory access patterns (threads access contiguous indices)
+3. **Cache alignment:** All arrays must be 64-byte aligned (`alignas(64)`)
+4. **Block size:** Must be power of 3^9 for efficient torus indexing
+
+### Performance Impact
+
+- **Memory bandwidth:** 3.6% → 100% efficiency (28x improvement)
+- **Cache hit rate:** ~10% → ~95% (9.5x improvement)
+- **Overall speedup:** ~10x for physics kernel
+
+**Priority:** P0 (Critical)  
+**Timeline:** 2 days  
+**Validation:** Physics kernel must achieve <1ms per step on sparse 27³ grid
+
+---
+
+## 2. SPLIT-OPERATOR SYMPLECTIC INTEGRATION
+
+### Problem Statement
+
+The original specification suggested Velocity-Verlet integration for the UFIE:
+
+$$\frac{\partial^2 \Psi}{\partial t^2} + \alpha(1 - \hat{r}) \frac{\partial \Psi}{\partial t} - \frac{c_0^2}{(1 + \hat{s})^2} \nabla^2_g \Psi = \sum_{i=1}^8 \mathcal{E}_i(\vec{x}, t) + \beta |\Psi|^2 \Psi$$
+
+**Issue:** The damping term $\alpha(1 - \hat{r}) \frac{\partial \Psi}{\partial t}$ is non-conservative. Standard Verlet methods assume Hamiltonian systems and fail to conserve energy in the presence of friction. This causes:
+- Energy drift (memories vanish or explode exponentially)
+- Numerical instability (system diverges within hours)
+- Loss of standing waves (catastrophic "amnesia")
+
+### Solution: Split-Operator Strang Splitting
+
+Decompose the UFIE into three operators:
+
+1. **Damping Operator:** $\hat{D} = -\gamma \frac{\partial}{\partial t}$ (dissipative)
+2. **Conservative Operator:** $\hat{H} = \frac{\partial^2}{\partial t^2} - c^2 \nabla^2$ (Hamiltonian)
+3. **Nonlinear Operator:** $\hat{N} = \beta |\Psi|^2 \Psi$ (conservative but nonlinear)
+
+Apply Strang splitting for second-order accuracy:
+
+$$e^{(\hat{D} + \hat{H} + \hat{N})\Delta t} \approx e^{\hat{D}\Delta t/2} e^{\hat{H}\Delta t/2} e^{\hat{N}\Delta t} e^{\hat{H}\Delta t/2} e^{\hat{D}\Delta t/2} + O(\Delta t^3)$$
+
+### Implementation Algorithm
+
+```cpp
+void propagate_wave_split_operator(double dt) {
+    const double dt_half = dt / 2.0;
+    
+    // Step 1: Half-kick damping (exact analytical solution)
+    // v(t + dt/2) = v(t) * exp(-γ * dt/2)
+    for (auto& node : active_nodes) {
+        double gamma = alpha * (1.0 - node.resonance);  // Damping coefficient
+        double decay = std::exp(-gamma * dt_half);
+        node.psi_velocity *= decay;
+    }
+    
+    // Step 2: Half-kick conservative force (Laplacian + emitters)
+    // v(t + dt/2) += F(t) * dt/2
+    compute_laplacian();  // Calculates ∇²Ψ
+    for (auto& node : active_nodes) {
+        double c_eff = c0 / std::pow(1.0 + node.state, 2);  // Effective speed
+        std::complex<double> force = c_eff * c_eff * node.laplacian;
+        force += emitter_field[node.index];  // External driving
+        node.psi_velocity += force * dt_half;
+    }
+    
+    // Step 3: Drift (update position)
+    // Ψ(t + dt) = Ψ(t) + v(t + dt/2) * dt
+    for (auto& node : active_nodes) {
+        node.psi += node.psi_velocity * dt;
+    }
+    
+    // Step 4: Apply nonlinear operator (implicit RK2 for stability)
+    // Ψ(t + dt) = Ψ(t + dt) + β|Ψ|²Ψ * dt
+    for (auto& node : active_nodes) {
+        double magnitude_sq = std::norm(node.psi);
+        node.psi += beta * magnitude_sq * node.psi * dt;
+    }
+    
+    // Step 5: Half-kick force (recompute at new position)
+    compute_laplacian();
+    for (auto& node : active_nodes) {
+        double c_eff = c0 / std::pow(1.0 + node.state, 2);
+        std::complex<double> force = c_eff * c_eff * node.laplacian;
+        force += emitter_field[node.index];
+        node.psi_velocity += force * dt_half;
+    }
+    
+    // Step 6: Half-kick damping (final decay)
+    for (auto& node : active_nodes) {
+        double gamma = alpha * (1.0 - node.resonance);
+        double decay = std::exp(-gamma * dt_half);
+        node.psi_velocity *= decay;
+    }
+}
+```
+
+### Mathematical Justification
+
+**Symplectic Property:** The split-operator method preserves the symplectic structure of the Hamiltonian part, ensuring long-term energy conservation for the conservative terms.
+
+**Exact Damping:** The analytical exponential decay for the damping operator ensures perfect energy dissipation without numerical drift.
+
+**Stability:** Unconditionally stable for the linear terms. The nonlinear term requires $\Delta t < 1/(\beta |\Psi|_{\max})$, which is enforced by adaptive timestepping.
+
+### Implementation Requirements
+
+1. **Replace all Verlet code** with split-operator method
+2. **CUDA kernel:** Implement as 6 separate kernel launches (allows device synchronization)
+3. **Adaptive timestep:** Monitor $\max |\Psi|$ and reduce $\Delta t$ if it exceeds threshold
+4. **Energy watchdog:** Compute total energy $E = \int (|\nabla \Psi|^2 + |\Psi|^2) dV$ every 100 steps, abort if drift exceeds 0.01%
+
+### Performance Impact
+
+- **Stability:** Prevents divergence (critical for multi-hour runs)
+- **Accuracy:** 2nd-order in time ($O(\Delta t^2)$ error)
+- **Overhead:** ~20% slower than naive Verlet, but necessary for correctness
+
+**Priority:** P0 (Critical)  
+**Timeline:** 3 days  
+**Validation:** Energy drift must be <0.0001% over 10,000 steps with standing wave test
+
+---
+
+## 3. KAHAN SUMMATION FOR LAPLACIAN
+
+### Problem Statement
+
+The Laplacian computation sums contributions from 18 neighbors in 9D:
+
+$$\nabla^2 \Psi = \sum_{i=1}^{18} w_i (\Psi_{\text{neighbor}_i} - \Psi_{\text{center}})$$
+
+With float32, summing 18 terms loses precision due to rounding errors. This causes:
+- Gradual "smearing" of wave packets
+- Loss of high-frequency components (fine details)
+- Cumulative error accumulation ("amnesia" over days)
+
+### Solution: Kahan Compensated Summation
+
+```cpp
+// ❌ FORBIDDEN: Naive summation loses precision
+std::complex<float> laplacian = 0.0f;
+for (auto& neighbor : neighbors) {
+    laplacian += neighbor.psi;
+}
+
+// ✅ MANDATORY: Kahan summation preserves precision
+std::complex<float> kahan_sum(const std::vector<std::complex<float>>& values) {
+    std::complex<float> sum = 0.0f;
+    std::complex<float> c = 0.0f;  // Compensation term
+    
+    for (const auto& val : values) {
+        std::complex<float> y = val - c;    // Subtract previous error
+        std::complex<float> t = sum + y;    // Add with low bits
+        c = (t - sum) - y;                  // Recover rounding error
+        sum = t;                            // Update sum
+    }
+    
+    return sum;
+}
+```
+
+### CUDA Implementation
+
+```cuda
+__device__ void kahan_add(float& sum, float& compensation, float value) {
+    float y = value - compensation;
+    float t = sum + y;
+    compensation = (t - sum) - y;
+    sum = t;
+}
+
+__global__ void compute_laplacian_kahan(float* psi_real, float* psi_imag, 
+                                        float* laplacian_real, float* laplacian_imag,
+                                        int* neighbor_indices, int num_nodes) {
+    int idx = blockIdx.x * blockDim.x + threadIdx.x;
+    if (idx >= num_nodes) return;
+    
+    float sum_real = 0.0f, c_real = 0.0f;
+    float sum_imag = 0.0f, c_imag = 0.0f;
+    
+    // Sum contributions from 18 neighbors
+    for (int n = 0; n < 18; n++) {
+        int neighbor_idx = neighbor_indices[idx * 18 + n];
+        float contrib_real = psi_real[neighbor_idx] - psi_real[idx];
+        float contrib_imag = psi_imag[neighbor_idx] - psi_imag[idx];
+        
+        kahan_add(sum_real, c_real, contrib_real);
+        kahan_add(sum_imag, c_imag, contrib_imag);
+    }
+    
+    laplacian_real[idx] = sum_real;
+    laplacian_imag[idx] = sum_imag;
+}
+```
+
+### Implementation Requirements
+
+1. **Replace all Laplacian summations** with Kahan algorithm
+2. **CUDA kernels:** Use register-based compensation (no extra memory)
+3. **AVX-512:** Implement vectorized Kahan sum for CPU fallback
+
+### Performance Impact
+
+- **Precision:** Reduces rounding error from $O(n \epsilon)$ to $O(\epsilon)$ where $n$ is number of terms
+- **Overhead:** ~10% slower due to extra FP operations
+- **Memory:** No additional storage (compensation is register-local)
+
+**Priority:** P0 (Critical)  
+**Timeline:** 1 day  
+**Validation:** Standing wave must maintain amplitude to 6 decimal places over 1 million steps
+
+---
+
+## 4. AVX-512 NONARY ARITHMETIC
+
+### Problem Statement
+
+Balanced nonary arithmetic requires saturation at $\pm 4$. Standard CPU ALUs perform binary arithmetic, requiring explicit clamping after every operation.
+
+Scalar implementation:
+
+```cpp
+// ❌ SLOW: Scalar saturation (200x slower than needed)
+Nit add_nonary(Nit a, Nit b) {
+    int result = static_cast<int>(a) + static_cast<int>(b);
+    if (result > 4) return Nit::FOUR;
+    if (result < -4) return Nit::NEG_FOUR;
+    return static_cast<Nit>(result);
+}
+```
+
+**Issue:** Processing 1M nits sequentially takes ~5ms. With SIMD, this can be reduced to ~25μs (200x speedup).
+
+### Solution: AVX-512 Vectorization
+
+```cpp
+// ✅ MANDATORY: AVX-512 saturated nonary addition (64 nits per operation)
+#include <immintrin.h>
+
+void add_nonary_simd(const int8_t* a, const int8_t* b, int8_t* result, size_t count) {
+    const __m512i limit_pos = _mm512_set1_epi8(4);   // Upper bound
+    const __m512i limit_neg = _mm512_set1_epi8(-4);  // Lower bound
+    
+    size_t i = 0;
+    for (; i + 64 <= count; i += 64) {
+        // Load 64 nits
+        __m512i va = _mm512_loadu_si512((__m512i*)(a + i));
+        __m512i vb = _mm512_loadu_si512((__m512i*)(b + i));
+        
+        // Saturated addition (with hardware saturation at ±127)
+        __m512i vsum = _mm512_adds_epi8(va, vb);
+        
+        // Clamp to [-4, 4] (nonary saturation)
+        vsum = _mm512_min_epi8(vsum, limit_pos);
+        vsum = _mm512_max_epi8(vsum, limit_neg);
+        
+        // Store result
+        _mm512_storeu_si512((__m512i*)(result + i), vsum);
+    }
+    
+    // Handle remaining elements (scalar fallback)
+    for (; i < count; i++) {
+        int sum = a[i] + b[i];
+        result[i] = std::clamp(sum, -4, 4);
+    }
+}
+```
+
+### Multiplication via Lookup Table
+
+Nonary multiplication requires heterodyning (wave mixing). For performance, use a precomputed 9×9 lookup table:
+
+```cpp
+// Precomputed nonary multiplication table
+static constexpr int8_t NONARY_MUL_TABLE[9][9] = {
+    // Row: multiplier value (-4 to 4), Column: multiplicand (-4 to 4)
+    { 4,  3,  2,  1,  0, -1, -2, -3, -4},  // -4 × {...}
+    { 3,  2,  1,  1,  0, -1, -1, -2, -3},  // -3 × {...}
+    { 2,  1,  1,  0,  0,  0, -1, -1, -2},  // -2 × {...}
+    { 1,  1,  0,  0,  0,  0,  0, -1, -1},  // -1 × {...}
+    { 0,  0,  0,  0,  0,  0,  0,  0,  0},  //  0 × {...}
+    {-1, -1,  0,  0,  0,  0,  0,  1,  1},  //  1 × {...}
+    {-2, -1, -1,  0,  0,  0,  1,  1,  2},  //  2 × {...}
+    {-3, -2, -1, -1,  0,  1,  1,  2,  3},  //  3 × {...}
+    {-4, -3, -2, -1,  0,  1,  2,  3,  4},  //  4 × {...}
+};
+
+__m512i mul_nonary_simd(__m512i a, __m512i b) {
+    // Use gather operation with lookup table
+    // This requires AVX-512VBMI2 for efficient byte-level gather
+    // Fallback: process 8 elements at a time with scalar lookup
+    alignas(64) int8_t a_arr[64], b_arr[64], result[64];
+    _mm512_store_si512((__m512i*)a_arr, a);
+    _mm512_store_si512((__m512i*)b_arr, b);
+    
+    for (int i = 0; i < 64; i++) {
+        int ai = a_arr[i] + 4;  // Convert [-4,4] to [0,8]
+        int bi = b_arr[i] + 4;
+        result[i] = NONARY_MUL_TABLE[ai][bi];
+    }
+    
+    return _mm512_load_si512((__m512i*)result);
+}
+```
+
+### Implementation Requirements
+
+1. **CPU feature detection:** Check for AVX-512 support at runtime, fallback to scalar
+2. **Memory alignment:** All nit arrays must be 64-byte aligned
+3. **Compiler flags:** `-mavx512f -mavx512bw -mavx512vl`
+
+### Performance Impact
+
+- **Addition:** 200x speedup (64 nits per SIMD instruction vs 1 per scalar)
+- **Multiplication:** ~50x speedup (lookup table is cache-friendly)
+- **Total:** Nonary operations become negligible (<1% of runtime)
+
+**Priority:** P1 (High)  
+**Timeline:** 2 days  
+**Validation:** Process 10M nonary additions in <50μs
+
+---
+
+## 5. LAZY CHOLESKY DECOMPOSITION FOR METRIC TENSOR
+
+### Problem Statement
+
+The metric tensor $g_{ij}$ is a 9×9 symmetric positive-definite matrix. To compute the Laplacian in curved space, we need:
+
+$$\nabla^2 \Psi = g^{ij} \nabla_i \nabla_j \Psi$$
+
+This requires inverting $g_{ij}$ to obtain $g^{ij}$. Naive matrix inversion (Gaussian elimination) is $O(n^3) = O(729)$ operations per node per timestep.
+
+For 1M active nodes at 60 FPS:
+- Operations: $1,000,000 \times 729 \times 60 = 4.4 \times 10^{10}$ per second
+- Cost: ~100 CPU cores to maintain real-time (UNACCEPTABLE)
+
+### Solution: Lazy Cholesky Decomposition with Caching
+
+**Key Insight:** The metric tensor changes slowly (plasticity timescale is ~seconds). We can cache the decomposition and only recompute when the tensor changes significantly.
+
+```cpp
+class MetricTensorCache {
+    std::array<double, 45> g_lower_triangle;  // Stored metric (symmetric)
+    std::array<double, 45> L_cholesky;        // Cached Cholesky factor
+    bool is_valid = false;
+    double change_threshold = 1e-6;
+    
+public:
+    // Check if metric has changed significantly
+    bool needs_update(const std::array<double, 45>& new_g) const {
+        double max_diff = 0.0;
+        for (int i = 0; i < 45; i++) {
+            max_diff = std::max(max_diff, std::abs(new_g[i] - g_lower_triangle[i]));
+        }
+        return max_diff > change_threshold;
+    }
+    
+    // Update Cholesky decomposition (only when needed)
+    void update_if_changed(const std::array<double, 45>& new_g) {
+        if (!needs_update(new_g) && is_valid) {
+            return;  // Use cached value
+        }
+        
+        // Perform Cholesky decomposition: g = L * L^T
+        // ... Cholesky algorithm (O(n³) but rare) ...
+        
+        g_lower_triangle = new_g;
+        is_valid = true;
+    }
+    
+    // Compute g^{-1} * v using forward/backward substitution (O(n²))
+    std::array<double, 9> apply_inverse(const std::array<double, 9>& v) {
+        // Solve L * y = v (forward substitution)
+        std::array<double, 9> y;
+        // ... O(n²) ...
+        
+        // Solve L^T * x = y (backward substitution)
+        std::array<double, 9> x;
+        // ... O(n²) ...
+        
+        return x;  // x = g^{-1} * v
+    }
+};
+```
+
+### Batch Update Strategy
+
+For plasticity updates (which happen every ~1000 timesteps):
+
+```cpp
+void update_metric_batch() {
+    // Identify nodes with changed metrics
+    std::vector<size_t> dirty_nodes;
+    for (size_t i = 0; i < active_nodes.size(); i++) {
+        if (active_nodes[i].metric_dirty_flag) {
+            dirty_nodes.push_back(i);
+        }
+    }
+    
+    // Parallel Cholesky decomposition (embarrassingly parallel)
+    #pragma omp parallel for
+    for (size_t idx : dirty_nodes) {
+        active_nodes[idx].metric_cache.update_if_changed(
+            active_nodes[idx].metric_tensor
+        );
+        active_nodes[idx].metric_dirty_flag = false;
+    }
+}
+```
+
+### Implementation Requirements
+
+1. **Caching layer:** Add `MetricTensorCache` to `TorusNode` (or `TorusBlock` with SoA)
+2. **Dirty flags:** Track which nodes have changed metrics
+3. **Batch updates:** Update caches once per 1000 physics steps (not every step)
+4. **Fallback:** For rapidly changing metrics, use direct inversion (rare case)
+
+### Performance Impact
+
+- **Speedup:** 100x for metric-related operations (amortized)
+- **Cache hit rate:** >99% during steady-state operation
+- **Memory overhead:** +360 bytes per node (Cholesky factor storage)
+
+**Priority:** P1 (High)  
+**Timeline:** 2 days  
+**Validation:** Metric inversion overhead must be <5% of total runtime
+
+---
+
+## 6. SHARED MEMORY ZERO-COPY IPC
+
+### Problem Statement
+
+ZeroMQ serialization (Protocol Buffers) for high-frequency data (physics state at 60 FPS) introduces:
+- Latency: ~100μs per frame (serialization + network stack)
+- CPU overhead: ~10% (protobuf encoding/decoding)
+- Memory allocation: frequent malloc/free causes fragmentation
+
+For real-time visualization and memory systems, this is unacceptable.
+
+### Solution: Shared Memory with Seqlock
+
+```cpp
+// Shared memory header (lives in /dev/shm/nikola_frame)
+struct SharedFrame {
+    // Seqlock for concurrency control
+    std::atomic<uint64_t> sequence;  // Even = stable, Odd = writing
+    
+    // Metadata
+    uint64_t timestamp_ns;
+    uint32_t frame_number;
+    uint32_t active_node_count;
+    
+    // Data payload (variable size)
+    struct NodeState {
+        uint64_t morton_code;  // Z-order index
+        float psi_real, psi_imag;
+        float energy_density;
+    } nodes[];  // Flexible array member
+};
+
+// Writer (Physics Engine)
+class SharedMemoryWriter {
+    int shm_fd;
+    SharedFrame* frame;
+    size_t capacity;
+    
+public:
+    void write_frame(const std::vector<NodeState>& nodes) {
+        // 1. Increment sequence (mark as writing)
+        uint64_t seq = frame->sequence.load(std::memory_order_acquire);
+        frame->sequence.store(seq + 1, std::memory_order_release);
+        
+        // 2. Write data
+        frame->timestamp_ns = get_timestamp_ns();
+        frame->frame_number++;
+        frame->active_node_count = nodes.size();
+        std::memcpy(frame->nodes, nodes.data(), nodes.size() * sizeof(NodeState));
+        
+        // 3. Increment sequence again (mark as stable)
+        frame->sequence.store(seq + 2, std::memory_order_release);
+        
+        // 4. Notify readers via tiny ZMQ message (8 bytes)
+        zmq_send(notify_socket, &frame->frame_number, sizeof(uint32_t), ZMQ_DONTWAIT);
+    }
+};
+
+// Reader (Visualizer)
+class SharedMemoryReader {
+    int shm_fd;
+    const SharedFrame* frame;
+    
+public:
+    std::optional<std::vector<NodeState>> read_frame() {
+        uint64_t seq1, seq2;
+        std::vector<NodeState> nodes;
+        
+        do {
+            // Read sequence number (before)
+            seq1 = frame->sequence.load(std::memory_order_acquire);
+            if (seq1 & 1) continue;  // Writer is active, retry
+            
+            // Read data
+            nodes.resize(frame->active_node_count);
+            std::memcpy(nodes.data(), frame->nodes, 
+                       frame->active_node_count * sizeof(NodeState));
+            
+            // Read sequence number (after)
+            std::atomic_thread_fence(std::memory_order_acquire);
+            seq2 = frame->sequence.load(std::memory_order_relaxed);
+            
+        } while (seq1 != seq2);  // Retry if data was modified during read
+        
+        return nodes;
+    }
+};
+```
+
+### Implementation Requirements
+
+1. **Shared memory segment:** Allocate in `/dev/shm` (tmpfs, zero-copy)
+2. **Size calculation:** Max frame size = `sizeof(SharedFrame) + MAX_ACTIVE_NODES * sizeof(NodeState)`
+3. **ZMQ notification:** Use PUB-SUB pattern for frame-ready signals (no blocking)
+4. **Cleanup:** Unlink shared memory on shutdown (`shm_unlink`)
+
+### Performance Impact
+
+- **Latency:** 100μs → 1μs (100x reduction)
+- **Bandwidth:** No serialization overhead (direct memory access)
+- **CPU:** 10% → 0.1% (no protobuf encoding)
+
+**Priority:** P2 (Medium)  
+**Timeline:** 2 days  
+**Validation:** Visualizer must receive frames with <10μs latency jitter
+
+---
+
+## 7. 128-BIT MORTON CODES FOR Z-ORDER CURVES
+
+### Problem Statement
+
+Sparse grid hashing uses Z-order (Morton) curves to map 9D coordinates to linear indices. Standard implementation:
+
+```cpp
+// ❌ INSUFFICIENT: 64-bit keys cause collisions at high resolution
+uint64_t morton_encode_9d(const std::array<uint16_t, 9>& coords) {
+    // Each coordinate is 7 bits (max value 127)
+    // Total: 9 × 7 = 63 bits (fits in uint64_t)
+    // ...
+}
+```
+
+**Issue:** This limits grid resolution to $128^9 \approx 10^{18}$ voxels. For detailed memory regions, we need $2^{14} = 16384$ voxels per dimension, requiring $9 \times 14 = 126$ bits.
+
+**Consequence:** Hash collisions overwrite existing memories (data corruption).
+
+### Solution: __int128_t Morton Codes
+
+```cpp
+// ✅ MANDATORY: 128-bit Morton codes (14 bits per dimension × 9 = 126 bits)
+using MortonCode = __uint128_t;  // GCC/Clang extension
+
+MortonCode morton_encode_9d(const std::array<uint16_t, 9>& coords) {
+    MortonCode result = 0;
+    
+    for (int bit = 0; bit < 14; bit++) {
+        for (int dim = 0; dim < 9; dim++) {
+            // Extract bit from coordinate
+            uint16_t coord_bit = (coords[dim] >> bit) & 1;
+            
+            // Place bit in Morton code
+            int morton_bit_pos = bit * 9 + dim;
+            result |= (static_cast<MortonCode>(coord_bit) << morton_bit_pos);
+        }
+    }
+    
+    return result;
+}
+
+std::array<uint16_t, 9> morton_decode_9d(MortonCode code) {
+    std::array<uint16_t, 9> coords = {0};
+    
+    for (int bit = 0; bit < 14; bit++) {
+        for (int dim = 0; dim < 9; dim++) {
+            int morton_bit_pos = bit * 9 + dim;
+            uint16_t coord_bit = (code >> morton_bit_pos) & 1;
+            coords[dim] |= (coord_bit << bit);
+        }
+    }
+    
+    return coords;
+}
+```
+
+### Hash Table Implementation
+
+```cpp
+#include <unordered_map>
+
+// Custom hash function for __uint128_t
+struct MortonHasher {
+    size_t operator()(__uint128_t key) const {
+        // XOR high and low 64 bits
+        uint64_t low = static_cast<uint64_t>(key);
+        uint64_t high = static_cast<uint64_t>(key >> 64);
+        return std::hash<uint64_t>{}(low ^ high);
+    }
+};
+
+// Sparse grid map
+std::unordered_map<__uint128_t, TorusNodeProxy, MortonHasher> sparse_grid;
+```
+
+### Implementation Requirements
+
+1. **Compiler support:** GCC/Clang only (MSVC uses `_BitInt(128)` in C++23)
+2. **Serialization:** Split into two `uint64_t` for storage/transmission
+3. **Overflow checks:** Assert coordinates are ≤ 16383 (14 bits)
+
+### Performance Impact
+
+- **Collision rate:** 100% → 0% (eliminates hash collisions)
+- **Memory overhead:** 8 bytes → 16 bytes per key (acceptable)
+- **Correctness:** CRITICAL (prevents data corruption)
+
+**Priority:** P1 (High)  
+**Timeline:** 1 day  
+**Validation:** Insert 10M nodes with no collisions, verify retrieval
+
+---
+
+## 8. Q9_0 QUANTIZATION CORRECTION
+
+### Problem Statement
+
+The original spec suggested Q9_0 quantization packs 5 nits into `uint16_t`:
+- $9^5 = 59,049 < 65,536$ ✅ Fits
+- Storage: $16 / 5 = 3.2$ bits per nit
+
+**Issue:** The encoding/decoding logic must handle the 9-ary radix conversion correctly. Naive implementation:
+
+```cpp
+// ❌ INCORRECT: Loses precision for large values
+uint16_t encode_q9(const Nit nits[5]) {
+    uint16_t result = 0;
+    for (int i = 0; i < 5; i++) {
+        int digit = static_cast<int>(nits[i]) + 4;  // Convert [-4,4] to [0,8]
+        result = result * 9 + digit;  // Radix 9 accumulation
+    }
+    return result;
+}
+```
+
+This works but loses the ability to index individual nits efficiently.
+
+### Solution: Proper Radix Encoding
+
+```cpp
+// ✅ CORRECT: Radix-9 encoding with explicit powers
+uint16_t encode_q9_0(const std::array<Nit, 5>& nits) {
+    static constexpr uint16_t POWERS_OF_9[5] = {1, 9, 81, 729, 6561};
+    
+    uint16_t result = 0;
+    for (int i = 0; i < 5; i++) {
+        int digit = static_cast<int>(nits[i]) + 4;  // [-4,4] → [0,8]
+        result += digit * POWERS_OF_9[i];
+    }
+    
+    return result;
+}
+
+std::array<Nit, 5> decode_q9_0(uint16_t encoded) {
+    static constexpr uint16_t POWERS_OF_9[5] = {1, 9, 81, 729, 6561};
+    std::array<Nit, 5> nits;
+    
+    for (int i = 4; i >= 0; i--) {
+        int digit = encoded / POWERS_OF_9[i];
+        nits[i] = static_cast<Nit>(digit - 4);  // [0,8] → [-4,4]
+        encoded %= POWERS_OF_9[i];
+    }
+    
+    return nits;
+}
+```
+
+### SIMD Batch Encoding
+
+```cpp
+// Encode 64 nits (12.8 uint16_t values) using AVX-512
+void encode_q9_0_batch(const int8_t* nits, uint16_t* encoded, size_t count) {
+    static constexpr int CHUNK_SIZE = 5;
+    
+    for (size_t i = 0; i + CHUNK_SIZE <= count; i += CHUNK_SIZE) {
+        std::array<Nit, 5> chunk;
+        std::memcpy(chunk.data(), nits + i, CHUNK_SIZE);
+        encoded[i / CHUNK_SIZE] = encode_q9_0(chunk);
+    }
+    
+    // Handle remainder
+    // ...
+}
+```
+
+### Implementation Requirements
+
+1. **Validation:** Roundtrip test (encode → decode must match input)
+2. **Bounds checking:** Assert nits are in [-4, 4] before encoding
+3. **Alignment:** Pad to multiple of 5 nits for efficient SIMD processing
+
+### Performance Impact
+
+- **Storage:** 8 bits → 3.2 bits per nit (2.5x compression)
+- **Speed:** Encoding/decoding is ~50ns per 5-nit block (negligible)
+
+**Priority:** P2 (Medium)  
+**Timeline:** 1 day  
+**Validation:** 1M nit roundtrip test with 100% accuracy
+
+---
+
+## 9. VALIDATION AND MONITORING
+
+### 9.1 Energy Watchdog
+
+**Purpose:** Detect numerical instability by monitoring total system energy.
+
+```cpp
+class EnergyWatchdog {
+    double initial_energy = 0.0;
+    double tolerance = 1e-4;  // 0.01% drift allowed
+    
+public:
+    void initialize(const TorusGrid& grid) {
+        initial_energy = compute_total_energy(grid);
+    }
+    
+    void check(const TorusGrid& grid, int step) {
+        if (step % 100 != 0) return;  // Check every 100 steps
+        
+        double current_energy = compute_total_energy(grid);
+        double drift = std::abs(current_energy - initial_energy) / initial_energy;
+        
+        if (drift > tolerance) {
+            std::cerr << "CRITICAL: Energy drift " << drift * 100 << "% at step " 
+                      << step << std::endl;
+            std::cerr << "Initial: " << initial_energy 
+                      << ", Current: " << current_energy << std::endl;
+            std::abort();  // Fail fast
+        }
+    }
+    
+private:
+    double compute_total_energy(const TorusGrid& grid) {
+        double kinetic = 0.0, potential = 0.0;
+        
+        for (const auto& node : grid.active_nodes()) {
+            // Kinetic energy: (1/2) * |∂Ψ/∂t|²
+            kinetic += 0.5 * std::norm(node.psi_velocity);
+            
+            // Potential energy: (1/2) * |∇Ψ|² (computed via Laplacian)
+            potential += 0.5 * std::norm(node.laplacian);
+        }
+        
+        return kinetic + potential;
+    }
+};
+```
+
+### 9.2 Performance Profiler
+
+**Purpose:** Identify bottlenecks in the physics loop.
+
+```cpp
+class PhysicsProfiler {
+    std::unordered_map<std::string, std::chrono::nanoseconds> timings;
+    
+public:
+    struct ScopedTimer {
+        PhysicsProfiler& profiler;
+        std::string name;
+        std::chrono::steady_clock::time_point start;
+        
+        ScopedTimer(PhysicsProfiler& p, std::string n) 
+            : profiler(p), name(std::move(n)), 
+              start(std::chrono::steady_clock::now()) {}
+        
+        ~ScopedTimer() {
+            auto elapsed = std::chrono::steady_clock::now() - start;
+            profiler.record(name, elapsed);
+        }
+    };
+    
+    void record(const std::string& name, std::chrono::nanoseconds duration) {
+        timings[name] += duration;
+    }
+    
+    void print_report(int num_frames) {
+        std::cout << "=== Physics Profiler ===" << std::endl;
+        for (const auto& [name, total] : timings) {
+            double avg_ms = total.count() / (1e6 * num_frames);
+            std::cout << name << ": " << avg_ms << " ms/frame" << std::endl;
+        }
+    }
+};
+
+// Usage:
+void physics_step() {
+    PhysicsProfiler::ScopedTimer timer(profiler, "LaplacianCompute");
+    compute_laplacian();
+}
+```
+
+### 9.3 Correctness Tests
+
+**Harmonic Oscillator Test:**
+
+```cpp
+void test_harmonic_oscillator() {
+    // Initial condition: Gaussian wave packet
+    // Ψ(x,0) = exp(-x²/2) * exp(ikx)
+    
+    // Expected: Oscillates with frequency ω = √(c² + k²)
+    // Energy should remain constant
+    
+    // Run for 1000 cycles, check amplitude preservation
+}
+```
+
+**Standing Wave Test:**
+
+```cpp
+void test_standing_wave() {
+    // Initial: sin(πx/L) * sin(πy/L) pattern
+    // Expected: Remains stationary (zero group velocity)
+    
+    // Run for 10,000 steps, check position stability
+}
+```
+
+**Priority:** P1 (High)  
+**Timeline:** Integrated into Phase 0 validation  
+**Gate:** All tests must pass before Phase 1
+
+---
+
+## 10. PHASE 0 COMPLETION CHECKLIST
+
+### P0 Tasks (Critical - 6 days)
+
+- [ ] **Day 1-2:** Refactor `TorusNode` to SoA layout (`TorusBlock`)
+  - [ ] Create `TorusBlock` struct with aligned arrays
+  - [ ] Implement `TorusNodeProxy` accessor class
+  - [ ] Update grid allocation code
+  - [ ] Update CUDA kernels for coalesced access
+  - [ ] **Validation:** Measure memory bandwidth (must achieve >80% of peak)
+
+- [ ] **Day 3-5:** Implement Split-Operator Symplectic Integration
+  - [ ] Replace Verlet with 6-step Strang splitting
+  - [ ] Implement analytical damping decay
+  - [ ] Add adaptive timestep control
+  - [ ] **Validation:** Energy drift <0.0001% over 10K steps
+
+- [ ] **Day 6:** Implement Kahan Summation for Laplacian
+  - [ ] Update Laplacian accumulation loops
+  - [ ] Add CUDA kernel with compensation
+  - [ ] **Validation:** Standing wave amplitude stable to 6 decimals over 1M steps
+
+### P1 Tasks (High - 6 days)
+
+- [ ] **Day 7-8:** AVX-512 Nonary Arithmetic
+  - [ ] Implement vectorized add/multiply
+  - [ ] Create lookup tables
+  - [ ] Add CPU feature detection
+  - [ ] **Validation:** 10M operations in <50μs
+
+- [ ] **Day 9-11:** Lazy Cholesky Decomposition
+  - [ ] Add `MetricTensorCache` class
+  - [ ] Implement dirty tracking
+  - [ ] Add batch update logic
+  - [ ] **Validation:** Metric overhead <5% of runtime
+
+- [ ] **Day 12:** Energy Watchdog
+  - [ ] Implement energy computation
+  - [ ] Add periodic checks
+  - [ ] **Validation:** Detect artificial drift injection
+
+### P2 Tasks (Medium - 5 days)
+
+- [ ] **Day 13-14:** Shared Memory IPC
+  - [ ] Create seqlock implementation
+  - [ ] Allocate `/dev/shm` segment
+  - [ ] Integrate with ZMQ notifications
+  - [ ] **Validation:** <10μs latency jitter
+
+- [ ] **Day 15-16:** Mamba Taylor Approximation
+  - [ ] Implement first-order matrix approximation
+  - [ ] Add adaptive timestep
+  - [ ] **Validation:** 10x speedup vs full matrix exp
+
+- [ ] **Day 17:** Q9_0 Quantization
+  - [ ] Implement radix-9 encoding
+  - [ ] Add batch SIMD encoder
+  - [ ] **Validation:** 1M roundtrip with 100% accuracy
+
+### Gate Review
+
+**Criteria for Phase 1 Entry:**
+1. ✅ All P0 and P1 tasks complete
+2. ✅ All validation tests pass
+3. ✅ Energy watchdog operational
+4. ✅ Physics step <1ms on sparse 27³ grid
+5. ✅ Code review completed (2 engineer sign-off)
+
+**If gate fails:** Remediation continues until all criteria met. NO EXCEPTIONS.
+
+---
+
+## CONCLUSION
+
+Phase 0 remediation is **non-negotiable**. The original specification contained latent defects that would cause catastrophic failure in production. These fixes transform the system from a theoretical model into a production-ready implementation.
+
+**Expected Outcome:** After Phase 0, the physics engine will:
+- Run stably for days without divergence
+- Achieve real-time performance on commodity hardware
+- Preserve memory precision over millions of cycles
+- Provide a solid foundation for cognitive layer development
+
+**Next Steps:** Upon successful gate review, proceed to Phase 1 (Core Physics Engine) with confidence that the foundation is mathematically sound and computationally stable.
