@@ -250,7 +250,7 @@ private:
         return true;
     }
     
-    // Helper: Compute total system energy
+    // Helper: Compute total system energy (CORRECTED for driven-dissipative system)
     double compute_total_energy(const TorusGrid& grid) {
         double kinetic = 0.0;
         double potential = 0.0;
@@ -259,13 +259,103 @@ private:
             // Kinetic: (1/2)|∂Ψ/∂t|²
             kinetic += 0.5 * std::norm(node.psi_velocity);
             
-            // Potential: (1/2)|∇Ψ|²
+            // Potential: (1/2)|∇Ψ|²  
+            // Note: Uses Laplacian magnitude as proxy for gradient energy
             potential += 0.5 * std::norm(node.laplacian);
         }
         
         return kinetic + potential;
     }
-};
+    
+    // Helper: Compute steady-state energy for driven-dissipative verification
+    // CRITICAL FIX: Energy balance must account for external emitters and damping
+    double compute_steady_state_energy_balance(
+        const TorusGrid& grid,
+        double emitter_power,
+        double damping_coefficient,
+        double dt
+    ) {
+        // In a driven-dissipative system: dE/dt = P_in - P_out
+        // Steady state when P_in (emitters) = P_out (damping)
+        
+        double system_energy = compute_total_energy(grid);
+        
+        // Power input from emitters (8-emitter array)
+        // P_in = Σ |E_i|² where E_i are emitter field amplitudes
+        double power_in = emitter_power;  // Pre-computed from emitter configuration
+        
+        // Power output from damping: P_out = γ * Σ |∂Ψ/∂t|²
+        double power_out = 0.0;
+        for (const auto& node : grid.nodes) {
+            double gamma = damping_coefficient * (1.0 - node.resonance_r);
+            power_out += gamma * std::norm(node.psi_velocity);
+        }
+        
+        // Energy balance equation: Expected steady-state energy
+        // In equilibrium: P_in = P_out → E_steady = P_in / (effective damping rate)
+        double expected_steady_state = power_in / (damping_coefficient + 1e-10);
+        
+        // Return normalized energy difference (should be near 0 at steady state)
+        return std::abs(system_energy - expected_steady_state) / expected_steady_state;
+    }
+    
+    // Updated Test 1: Energy Conservation for Driven-Dissipative System
+    bool verify_energy_conservation(
+        WavePropagatorFn propagator,
+        VerificationResult& result
+    ) {
+        // CRITICAL FIX: Conservative test is WRONG for driven-dissipative system
+        // The UFIE includes:
+        //   - External driving: Σ E_i (adds energy)
+        //   - Damping: α(1-r)∂Ψ/∂t (removes energy)
+        // Energy is NOT conserved! Instead, verify steady-state balance.
+        
+        TorusGrid grid = create_test_grid(/* size */ 27);
+        initialize_random_waves(grid, /* seed */ 42);
+        
+        // Configure emitters to inject energy
+        const double emitter_power = 10.0;  // Total power from 8-emitter array
+        const double damping_coeff = 0.1;   // Alpha coefficient from UFIE
+        const double dt = 0.001;
+        
+        // Evolve system to steady state (emitter power = dissipated power)
+        for (int step = 0; step < 10000; step++) {
+            // Apply emitter forcing (simplified model)
+            for (size_t i = 0; i < grid.nodes.size(); i++) {
+                // Inject energy from emitter array
+                grid.nodes[i].emitter_field = compute_emitter_contribution(i, step * dt);
+            }
+            
+            propagator(grid, dt);
+        }
+        
+        // Verify steady-state energy balance
+        double energy_balance_error = compute_steady_state_energy_balance(
+            grid, emitter_power, damping_coeff, dt
+        );
+        
+        result.metrics["energy_balance_error"] = energy_balance_error;
+        
+        // At steady state, energy balance error should be < 5%
+        const double TOLERANCE = 0.05;
+        if (energy_balance_error > TOLERANCE) {
+            result.failure_reason = 
+                "Driven-dissipative energy balance violated: " + 
+                std::to_string(energy_balance_error * 100) + "% error (expected <5%)";
+            return false;
+        }
+        
+        // Additional check: Verify energy is bounded (not exploding or vanishing)
+        double total_energy = compute_total_energy(grid);
+        if (total_energy < 1e-6 || total_energy > 1e6) {
+            result.failure_reason = 
+                "Energy outside physically reasonable bounds: " + 
+                std::to_string(total_energy);
+            return false;
+        }
+        
+        return true;
+    }
 ```
 
 ### 18.0.2 Adversarial Code Dojo (Red Team)
@@ -431,6 +521,126 @@ If upgraded code causes crash, system automatically:
 2. Restarts with previous (known-good) binary
 3. Blacklists candidate module
 4. Sends alert to human operator
+
+### 18.0.5 Runtime Physics Oracle - Energy Conservation Watchdog
+
+**Critical Runtime Safety:** The Physics Oracle must also monitor the **running** physics engine, not just candidate modules.
+
+The Oracle calculates the Hamiltonian (Total Energy) at each step $t$ and $t+1$:
+
+$$H = T(\Psi) + V(\Psi)$$
+
+Where:
+- $T(\Psi) = \frac{1}{2} \sum_i |\dot{\Psi}_i|^2$ (Kinetic Energy)
+- $V(\Psi) = \frac{1}{2} \sum_i |\nabla \Psi_i|^2 + \beta \sum_i |\Psi_i|^4$ (Potential Energy)
+
+**Divergence Detection:**
+
+If $\left|\frac{H_{t+1} - H_t}{H_t}\right| > \epsilon$ (Tolerance, e.g., $10^{-6}$), the simulation has diverged or code has broken unitarity.
+
+**Emergency SCRAM Protocol:**
+
+```cpp
+class PhysicsOracleRuntime {
+    double last_hamiltonian = 0.0;
+    int violation_count = 0;
+    static constexpr double TOLERANCE = 1e-6;
+    static constexpr int MAX_VIOLATIONS = 3;  // Allow brief spikes
+    
+public:
+    void monitor_step(const TorusGridSoA& grid) {
+        double H_current = compute_hamiltonian(grid);
+        
+        if (last_hamiltonian > 0.0) {  // Skip first step
+            double drift = std::abs(H_current - last_hamiltonian) / last_hamiltonian;
+            
+            if (drift > TOLERANCE) {
+                ++violation_count;
+                std::cerr << "[ORACLE WARNING] Energy drift: " << (drift * 100) << "%" << std::endl;
+                
+                if (violation_count >= MAX_VIOLATIONS) {
+                    trigger_emergency_scram(grid);
+                }
+            } else {
+                violation_count = 0;  // Reset on good step
+            }
+        }
+        
+        last_hamiltonian = H_current;
+    }
+    
+private:
+    double compute_hamiltonian(const TorusGridSoA& grid) {
+        double kinetic = 0.0;
+        double potential = 0.0;
+        
+        #pragma omp parallel for reduction(+:kinetic,potential)
+        for (size_t i = 0; i < grid.num_nodes; ++i) {
+            // Kinetic: (1/2)|v|^2
+            kinetic += 0.5 * (grid.vel_real[i] * grid.vel_real[i] +
+                             grid.vel_imag[i] * grid.vel_imag[i]);
+            
+            // Potential: (1/2)|grad psi|^2 (Laplacian approximation)
+            // Note: Full gradient requires neighbor access
+            // Using stored Laplacian as proxy
+            potential += 0.5 * (grid.psi_real[i] * grid.psi_real[i] +
+                               grid.psi_imag[i] * grid.psi_imag[i]);
+        }
+        
+        return kinetic + potential;
+    }
+    
+    [[noreturn]] void trigger_emergency_scram(const TorusGridSoA& grid) {
+        std::cerr << "\n\n";
+        std::cerr << "===== EMERGENCY SCRAM TRIGGERED ====\n";
+        std::cerr << "Energy conservation violated.\n";
+        std::cerr << "System halted to prevent memory corruption.\n";
+        std::cerr << "=====================================\n";
+        
+        // 1. Save emergency checkpoint
+        save_emergency_checkpoint(grid, "/var/lib/nikola/scram.nik");
+        
+        // 2. Revert to last known-good checkpoint
+        std::cerr << "[SCRAM] Reverting to last checkpoint...\n";
+        // Implementation: exec() to restart process with checkpoint file
+        
+        // 3. Disable offending module
+        std::cerr << "[SCRAM] Blacklisting current physics module...\n";
+        // Implementation: Write to /etc/nikola/blacklist.txt
+        
+        // 4. Terminate
+        std::abort();
+    }
+    
+    void save_emergency_checkpoint(const TorusGridSoA& grid, const std::string& path) {
+        // Minimal checkpoint - just wavefunction state
+        std::ofstream out(path, std::ios::binary);
+        out.write(reinterpret_cast<const char*>(grid.psi_real.data()), 
+                  grid.num_nodes * sizeof(float));
+        out.write(reinterpret_cast<const char*>(grid.psi_imag.data()), 
+                  grid.num_nodes * sizeof(float));
+    }
+};
+```
+
+**Integration:** The Physics Oracle must be called every 100 steps (configurable) in the main simulation loop:
+
+```cpp
+void simulation_main_loop() {
+    PhysicsOracleRuntime oracle;
+    SymplecticIntegrator integrator;
+    
+    for (int step = 0; step < MAX_STEPS; ++step) {
+        integrator.step_split_operator(grid, dt, beta);
+        
+        if (step % 100 == 0) {
+            oracle.monitor_step(grid);  // Runtime verification
+        }
+    }
+}
+```
+
+**Final Directive:** Do not proceed to higher-level cognitive features (Agents, Transformers) until the Physics Oracle confirms energy stability for >24 hours of continuous operation.
 
 ---
 

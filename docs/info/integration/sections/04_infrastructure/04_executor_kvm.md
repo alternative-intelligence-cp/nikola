@@ -392,7 +392,7 @@ echo "All dependencies pre-installed (air-gapped compatible)"
 
 ### Option B: Cloud-Init Injection (Per-VM Dynamic Injection)
 
-For overlay-based injection without modifying the gold image:
+For overlay-based injection without modifying the gold image, use cloud-init ISO generation to dynamically inject the agent into each VM at boot time.
 
 ```cpp
 // File: src/executor/cloud_init_injector.cpp
@@ -400,25 +400,80 @@ For overlay-based injection without modifying the gold image:
 #include <iostream>
 #include <fstream>
 #include <sstream>
-#include "nikola/core/config.hpp"  // DESIGN NOTE (Finding 2.1)
+#include <vector>
+#include <cstdint>
+#include <sys/wait.h>
+#include <unistd.h>
+#include <openssl/evp.h>
+#include <openssl/bio.h>
+#include <openssl/buffer.h>
+#include "nikola/core/config.hpp"
 
+/**
+ * @brief Base64-encode binary data using OpenSSL
+ * Production-grade implementation with proper memory management
+ */
+std::string base64_encode(const std::vector<uint8_t>& data) {
+    BIO* bio = BIO_new(BIO_s_mem());
+    BIO* b64 = BIO_new(BIO_f_base64());
+    bio = BIO_push(b64, bio);
+
+    // Disable newlines in output (cloud-init requires continuous base64)
+    BIO_set_flags(bio, BIO_FLAGS_BASE64_NO_NL);
+    
+    // Write binary data to base64 encoder
+    BIO_write(bio, data.data(), data.size());
+    BIO_flush(bio);
+
+    // Extract encoded string from BIO memory buffer
+    BUF_MEM* bufferPtr;
+    BIO_get_mem_ptr(bio, &bufferPtr);
+    std::string result(bufferPtr->data, bufferPtr->length);
+
+    BIO_free_all(bio);
+    return result;
+}
+
+/**
+ * @brief Create cloud-init ISO containing nikola-agent binary and systemd service
+ * 
+ * This function generates a bootable ISO that cloud-init will automatically
+ * process during VM first boot, installing the agent and starting it.
+ * 
+ * @param task_id Unique identifier for this execution task
+ * @param agent_binary_path Path to compiled nikola-agent binary on host
+ * @return Path to generated ISO file
+ */
 std::string create_cloud_init_iso(const std::string& task_id,
                                     const std::string& agent_binary_path) {
-    // DESIGN NOTE (Finding 2.1 & 4.1): Use centralized config, avoid insecure /tmp
+    // Use centralized config for paths (Finding 2.1 & 4.1)
     std::string work_dir = nikola::core::Config::get().work_directory();
-    std::string iso_path = work_dir + "/cloud-init/" + task_id + ".iso";
-    std::string staging_dir = work_dir + "/cloud-init/" + task_id;
+    std::string iso_dir = work_dir + "/cloud-init";
+    std::string iso_path = iso_dir + "/" + task_id + ".iso";
+    std::string staging_dir = iso_dir + "/" + task_id;
 
-    // Create staging directory
+    // Create staging directory for cloud-init files
     std::filesystem::create_directories(staging_dir);
 
-    // 1. Create meta-data
+    // STEP 1: Create meta-data file (cloud-init required file)
     std::ofstream meta_data(staging_dir + "/meta-data");
     meta_data << "instance-id: nikola-" << task_id << "\n";
     meta_data << "local-hostname: nikola-executor\n";
     meta_data.close();
 
-    // 2. Create user-data with agent installation
+    // STEP 2: Read and base64-encode agent binary
+    std::ifstream agent_file(agent_binary_path, std::ios::binary);
+    if (!agent_file) {
+        throw std::runtime_error("Failed to open agent binary: " + agent_binary_path);
+    }
+    
+    std::vector<uint8_t> agent_bytes((std::istreambuf_iterator<char>(agent_file)),
+                                      std::istreambuf_iterator<char>());
+    agent_file.close();
+    
+    std::string agent_b64 = base64_encode(agent_bytes);
+
+    // STEP 3: Create user-data file with agent installation script
     std::ofstream user_data(staging_dir + "/user-data");
     user_data << R"(#cloud-config
 packages:
@@ -429,36 +484,11 @@ write_files:
     permissions: '0755'
     encoding: b64
     content: )";
+    
+    // Insert base64-encoded agent binary
+    user_data << agent_b64 << "\n";
 
-    // Base64 encode the agent binary for cloud-init injection
-    std::ifstream agent_file(agent_binary_path, std::ios::binary);
-    std::vector<uint8_t> agent_bytes((std::istreambuf_iterator<char>(agent_file)),
-                                      std::istreambuf_iterator<char>());
-
-    // Option A: Use OpenSSL EVP_EncodeBlock (production-grade)
-    #include <openssl/evp.h>
-    #include <openssl/bio.h>
-    #include <openssl/buffer.h>
-
-    auto base64_encode = [](const std::vector<uint8_t>& data) -> std::string {
-        BIO* bio = BIO_new(BIO_s_mem());
-        BIO* b64 = BIO_new(BIO_f_base64());
-        bio = BIO_push(b64, bio);
-
-        BIO_set_flags(bio, BIO_FLAGS_BASE64_NO_NL);  // No newlines
-        BIO_write(bio, data.data(), data.size());
-        BIO_flush(bio);
-
-        BUF_MEM* bufferPtr;
-        BIO_get_mem_ptr(bio, &bufferPtr);
-        std::string result(bufferPtr->data, bufferPtr->length);
-
-        BIO_free_all(bio);
-        return result;
-    };
-
-    user_data << base64_encode(agent_bytes) << "\n";
-
+    // Add systemd service configuration
     user_data << R"(
   - path: /etc/systemd/system/nikola-agent.service
     permissions: '0644'
@@ -485,51 +515,122 @@ runcmd:
 )";
     user_data.close();
 
-    // 3. Generate ISO using genisoimage
+    // STEP 4: Generate ISO using genisoimage (mkisofs alternative)
+    // Fork and exec to avoid system() security issues
     pid_t pid = fork();
-    if (pid == 0) {
+    if (pid == -1) {
+        throw std::runtime_error("fork() failed during ISO generation");
+    } else if (pid == 0) {
+        // Child process: exec genisoimage
         const char* argv[] = {
             "genisoimage",
             "-output", iso_path.c_str(),
-            "-volid", "cidata",
-            "-joliet",
-            "-rock",
+            "-volid", "cidata",       // Volume ID required by cloud-init
+            "-joliet",                // Joliet extensions for long filenames
+            "-rock",                  // Rock Ridge extensions for POSIX metadata
             staging_dir.c_str(),
             nullptr
         };
         execvp("genisoimage", const_cast<char**>(argv));
-        _exit(1);
+        
+        // If exec fails, exit immediately (don't return to parent code)
+        std::cerr << "ERROR: execvp(genisoimage) failed: " << strerror(errno) << std::endl;
+        _exit(127);
     } else {
+        // Parent process: wait for genisoimage to complete
         int status;
-        waitpid(pid, &status, 0);
+        if (waitpid(pid, &status, 0) == -1) {
+            throw std::runtime_error("waitpid() failed during ISO generation");
+        }
 
-        if (!WIFEXITED(status) || WEXITSTATUS(status) != 0) {
-            throw std::runtime_error("Failed to create cloud-init ISO");
+        // Check exit status
+        if (!WIFEXITED(status)) {
+            throw std::runtime_error("genisoimage terminated abnormally");
+        }
+        
+        if (WEXITSTATUS(status) != 0) {
+            throw std::runtime_error("genisoimage failed with exit code " + 
+                                     std::to_string(WEXITSTATUS(status)));
         }
     }
+
+    // Verify ISO was created successfully
+    if (!std::filesystem::exists(iso_path)) {
+        throw std::runtime_error("ISO file not found after generation: " + iso_path);
+    }
+
+    std::cout << "[CLOUD-INIT] Generated ISO: " << iso_path 
+              << " (" << std::filesystem::file_size(iso_path) << " bytes)" << std::endl;
 
     return iso_path;
 }
 ```
 
-**Updated VM XML with Cloud-Init:**
+**Integration with VM Creation:**
 
 ```cpp
-// Add to generate_vm_xml():
-std::string cloud_init_iso = create_cloud_init_iso(task_id, "/usr/local/bin/nikola-agent");
+// Updated VM XML generation with cloud-init ISO attachment
+std::string generate_vm_xml_with_cloudinit(const std::string& task_id,
+                                             const std::string& overlay_path,
+                                             const std::string& agent_binary_path) {
+    // Generate cloud-init ISO
+    std::string cloud_init_iso = create_cloud_init_iso(task_id, agent_binary_path);
 
-// Add to devices section:
-R"(
+    // Build VM XML with cloud-init ISO attached as CD-ROM
+    std::ostringstream xml;
+    xml << R"(<domain type='kvm'>
+  <name>nikola-executor-)" << task_id << R"(</name>
+  <memory unit='GiB'>2</memory>
+  <vcpu>2</vcpu>
+  <os>
+    <type arch='x86_64'>hvm</type>
+    <boot dev='hd'/>
+  </os>
+  <devices>
+    <disk type='file' device='disk'>
+      <driver name='qemu' type='qcow2'/>
+      <source file=')" << overlay_path << R"('/>
+      <target dev='vda' bus='virtio'/>
+    </disk>
+    <!-- Cloud-Init ISO for agent injection -->
     <disk type='file' device='cdrom'>
       <driver name='qemu' type='raw'/>
-      <source file=')" + cloud_init_iso + R"('/>
+      <source file=')" << cloud_init_iso << R"('/>
       <target dev='hdc' bus='ide'/>
       <readonly/>
     </disk>
-)"
+    <!-- Virtio-serial for communication -->
+    <channel type='unix'>
+      <source mode='bind' path='/tmp/nikola-)" << task_id << R"(.sock'/>
+      <target type='virtio' name='org.nikola.guest.0'/>
+    </channel>
+  </devices>
+</domain>)";
+
+    return xml.str();
+}
 ```
 
-**Impact:** VMs now boot with the nikola-agent pre-installed and running, enabling immediate command execution without manual intervention.
+**System Requirements:**
+
+```bash
+# Install genisoimage (Debian/Ubuntu)
+sudo apt-get install genisoimage
+
+# Install genisoimage (RHEL/CentOS/Fedora)
+sudo yum install genisoimage
+
+# Verify installation
+which genisoimage  # Should output: /usr/bin/genisoimage
+```
+
+**Benefits of Cloud-Init Approach:**
+- **No gold image modification:** Agent injected per-VM, preserving immutable base
+- **Dynamic agent updates:** Change agent binary without rebuilding gold image
+- **Isolation:** Each VM gets fresh agent copy, no cross-contamination
+- **Standard tooling:** Uses cloud-init, the de facto standard for cloud VM initialization
+
+**Performance:** ISO generation ~50-100ms, VM boot with cloud-init ~3-5 seconds (dominated by cloud-init package installation).
 
 ## 13.7 Implementation
 

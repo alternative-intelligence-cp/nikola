@@ -101,6 +101,20 @@ public:
 **Timeline:** 2 days  
 **Validation:** Physics kernel must achieve <1ms per step on sparse 27³ grid
 
+### 1.1 9D Dimensional Semantics
+
+Strict type enforcement for dimensional mapping:
+
+| Dimension | Symbol | Role | Data Type | Physics Interpretation |
+|-----------|--------|------|-----------|------------------------|
+| 1 | $r$ | Resonance | float [0.0, 1.0] | Damping coefficient $\gamma$. High $r$ = Low Damping (Long-term memory) |
+| 2 | $s$ | State | float [0.0, 2.0] | Refractive Index $\eta$. Defines local speed of light $c$ |
+| 3 | $t$ | Time | float (cyclic) | Temporal phase (modulo $2\pi$) |
+| 4-6 | $u,v,w$ | Quantum | float [0.0, 1.0] | Quantum state subspace dimensions |
+| 7-9 | $x,y,z$ | Spatial | float [0.0, 1.0] | Physical 3D embedding coordinates |
+
+**Constraint Enforcement:** All coordinate access must validate ranges. Out-of-range values indicate either programming errors or physics violations requiring immediate halt.
+
 ---
 
 ## 2. SPLIT-OPERATOR SYMPLECTIC INTEGRATION
@@ -197,6 +211,84 @@ void propagate_wave_split_operator(double dt) {
 2. **CUDA kernel:** Implement as 6 separate kernel launches (allows device synchronization)
 3. **Adaptive timestep:** Monitor $\max |\Psi|$ and reduce $\Delta t$ if it exceeds threshold
 4. **Energy watchdog:** Compute total energy $E = \int (|\nabla \Psi|^2 + |\Psi|^2) dV$ every 100 steps, abort if drift exceeds 0.01%
+
+**Priority:** P0 (Critical)  
+**Timeline:** 3 days  
+**Validation:** Energy conservation within 0.01% over 24-hour simulation
+
+---
+
+## 3. KAHAN COMPENSATED SUMMATION
+
+### Problem Statement
+
+The Laplacian operator in 9 dimensions involves summing contributions from neighbors. A standard finite difference stencil (27-point stencil in 3D, exponentially more in 9D) requires adding many small floating-point numbers to a potentially large accumulator.
+
+**Issue:** In IEEE 754 floating-point arithmetic (FP32), adding a small number to a large number loses precision due to mantissa alignment ("absorption"). This causes:
+
+- High-frequency, low-amplitude waves (subtle/distant memories) are numerically deleted
+- System suffers "numerical amnesia"
+- Loss of information in interference patterns
+
+### Solution: Kahan Summation
+
+Track low-order bits lost during addition using a compensation variable:
+
+```cpp
+struct KahanAccumulator {
+    float sum = 0.0f;
+    float correction = 0.0f;  // Stores lost low-order bits
+    
+    inline void add(float input) {
+        float y = input - correction;         // Subtract previous correction
+        float t = sum + y;                    // Add to sum (loses precision)
+        correction = (t - sum) - y;           // Recover lost low-order bits
+        sum = t;                              // Update sum
+    }
+};
+
+// Usage in Laplacian kernel
+void compute_laplacian_9d(const TorusGridSoA& grid, size_t node_idx) {
+    KahanAccumulator acc_real, acc_imag;
+    
+    // Sum contributions from all 2×9 = 18 neighbors in 9D
+    for (int dim = 0; dim < 9; ++dim) {
+        size_t idx_plus = grid.neighbor_index(node_idx, dim, +1);
+        size_t idx_minus = grid.neighbor_index(node_idx, dim, -1);
+        
+        // Second-order central difference: (ψ[i+1] - 2ψ[i] + ψ[i-1]) / h²
+        float contrib_real = grid.psi_real[idx_plus] - 2.0f * grid.psi_real[node_idx] + grid.psi_real[idx_minus];
+        float contrib_imag = grid.psi_imag[idx_plus] - 2.0f * grid.psi_imag[node_idx] + grid.psi_imag[idx_minus];
+        
+        acc_real.add(contrib_real);
+        acc_imag.add(contrib_imag);
+    }
+    
+    // Store final Laplacian result
+    grid.laplacian_real[node_idx] = acc_real.sum;
+    grid.laplacian_imag[node_idx] = acc_imag.sum;
+}
+```
+
+### Mathematical Analysis
+
+Standard floating-point addition accumulates error as $\epsilon_{\text{machine}} \times N$ where $N$ is the number of terms. For a 9D Laplacian with $N = 18$ neighbors:
+
+- **Without Kahan:** Error $\sim 18 \times 10^{-7} \approx 2 \times 10^{-6}$ (FP32)
+- **With Kahan:** Error $\sim 10^{-7}$ (near machine precision)
+
+For standing wave patterns with amplitude ratios spanning 6 orders of magnitude (fundamental vs. harmonics), Kahan summation prevents catastrophic cancellation.
+
+### Implementation Requirements
+
+1. **All Laplacian kernels** must use Kahan accumulators
+2. **All wave superposition operations** (>3 terms) must use Kahan summation
+3. **Metric tensor updates** must use compensated summation
+4. **Integration verification:** Test with manufactured solution having known high-frequency component
+
+**Priority:** P0 (Critical)  
+**Timeline:** 1 day  
+**Validation:** Preserve 10⁻⁶ amplitude waves in presence of unit-amplitude carrier over 10⁶ timesteps
 
 ### Performance Impact
 

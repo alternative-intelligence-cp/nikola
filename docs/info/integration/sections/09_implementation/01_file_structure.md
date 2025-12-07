@@ -198,6 +198,189 @@ nikola/
 │   └── CMakeLists.txt
 │
 ├── tests/                           # Test suites
+│   ├── validation/                  # ⚡ Phase 0 validation suite (Phase 0)
+│   │   ├── test_energy_conservation.cpp
+│   │   ├── test_symplectic_property.cpp
+│   │   ├── test_kahan_summation.cpp
+│   │   ├── test_wave_equation.cpp
+│   │   ├── test_boundary_wrapping.cpp
+│   │   └── test_numerical_stability.cpp
+│   ├── unit/
+│   │   ├── test_nit.cpp
+│   │   ├── test_coord9d.cpp
+│   │   ├── test_emitter_array.cpp
+│   │   └── CMakeLists.txt
+│   └── integration/
+│       ├── test_wave_propagation.cpp
+│       ├── test_mamba_ssm.cpp
+│       └── CMakeLists.txt
+│
+├── config/                          # Configuration files
+│   ├── default.toml                 # Default system config
+│   ├── physics_constants.toml       # Physical parameters
+│   ├── hazards.db                   # Resonance firewall patterns
+│   └── keys/                        # CurveZMQ keys (generated)
+│       ├── public.key
+│       └── secret.key
+│
+└── docs/                            # Documentation
+    ├── architecture.md
+    ├── api_reference.md
+    ├── phase0_validation.md         # ⚡ Phase 0 checklist
+    └── integration/                 # This documentation set
+
+## 26.2 Implementation Guide - Mandated Organization
+
+**CRITICAL:** To avoid "creative" organization, the engineering team MUST adhere to this exact directory mapping, which corresponds to architectural layers:
+
+```
+/src
+  /core
+    main.cpp              # Entry point, orchestrator initialization
+    config_loader.cpp     # JSON/TOML configuration parsing
+    
+  /physics                # The 9D Substrate Layer
+    torus_grid_soa.hpp    # ⚡ SoA Data Structure (The Substrate)
+    integrator.cpp        # ⚡ Symplectic Split-Operator Solver
+    ufie_kernels.cu       # CUDA Kernels for Laplacian/Nonlinearity
+    kahan_sum.cpp         # ⚡ Compensated Summation
+    shvo_grid.cpp         # Sparse Hyper-Voxel Octree logic
+    metric.cpp            # Metric tensor operations
+    emitter_array.cpp     # Golden ratio DDS emitters
+    
+  /cognitive              # The Cognitive Processing Layer
+    mamba_tsm.cpp         # ⚡ TSM (Topology→Matrix mapper)
+    transformer_np.cpp    # Neuroplastic Wave Attention
+    hilbert_curve.cpp     # BMI2-optimized Hilbert scanning
+    embedder.cpp          # Balanced nonary text encoder
+    
+  /autonomy               # The Autonomous Systems Layer
+    engs_system.cpp       # Neurochemistry state machine
+    dream_weave.cpp       # Counterfactual simulation engine
+    dopamine.cpp          # Reward/learning modulation
+    boredom.cpp           # Curiosity-driven exploration
+    
+  /infrastructure         # The Communication Backbone
+    spine_broker.cpp      # ZeroMQ Router implementation
+    kvm_manager.cpp       # Libvirt interface for Executors
+    shared_memory.cpp     # ⚡ Seqlock zero-copy IPC
+    proto/                # Compiled Protocol Buffers (.pb.cc)
+    
+  /types                  # The Arithmetic Foundation
+    nit_avx512.cpp        # ⚡ Optimized Nonary Arithmetic (AVX-512)
+    geometry.hpp          # 9D Coordinate utilities
+    morton_code.cpp       # ⚡ 128-bit Z-order encoding
+    
+  /security               # The Safety and Validation Layer
+    physics_oracle.cpp    # ⚡ Mathematical verification sandbox
+    adversarial_dojo.cpp  # ⚡ Red team attack testing
+    resonance_firewall.cpp # Spectral input filtering
+    
+  /persistence            # The Memory Durability Layer
+    dmc.cpp               # Delta Memory Compression checkpoints
+    lsm_dmc.cpp           # Log-Structured Merge persistence
+    gguf_export.cpp       # Llama.cpp interoperability
+    q9_encoder.cpp        # ⚡ Nonary quantization (Q9_0)
+    
+  /monitoring             # The Observability Layer
+    energy_watchdog.cpp   # ⚡ Runtime conservation checks
+    profiler.cpp          # ⚡ Performance tracking
+```
+
+### 26.2.1 Phase 0 Implementation Checklist (17-Day Sprint)
+
+**Critical Path - Immediate Engineering Tasks:**
+
+**Days 1-2:** Structure-of-Arrays Refactoring
+- [ ] Create `include/nikola/physics/torus_grid_soa.hpp`
+- [ ] Implement `TorusGridSoA` with 64-byte aligned vectors
+- [ ] Implement 45-component metric tensor storage (upper triangular)
+- [ ] Create `TorusNodeProxy` accessor class for API compatibility
+- [ ] Refactor all grid access code to use proxy pattern
+- [ ] Update CUDA kernels for coalesced memory access
+- [ ] Validation: Physics kernel achieves <1ms per step on 27³ grid
+
+**Days 3-5:** Split-Operator Symplectic Integration
+- [ ] Create `include/nikola/physics/symplectic_integrator.hpp`
+- [ ] Implement 6-step Strang splitting:
+  - Half-kick damping (analytical exponential decay)
+  - Half-kick conservative force (Laplacian + emitters)
+  - Full drift (position update)
+  - Nonlinear operator (RK2 implicit)
+  - Half-kick force (recompute at new position)
+  - Half-kick damping (final decay)
+- [ ] Replace all Velocity-Verlet code
+- [ ] Implement adaptive timestep monitoring
+- [ ] Implement energy watchdog (compute Hamiltonian every 100 steps)
+- [ ] Validation: Energy conservation within 0.01% over 24 hours
+
+**Day 6:** Kahan Compensated Summation
+- [ ] Create `include/nikola/physics/kahan_sum.hpp`
+- [ ] Implement `KahanAccumulator` struct
+- [ ] Refactor all Laplacian kernels to use Kahan summation
+- [ ] Refactor all wave superposition operations
+- [ ] Refactor metric tensor updates
+- [ ] Validation: Preserve 10⁻⁶ amplitude waves over 10⁶ timesteps
+
+**Day 7:** 128-bit Morton Code Hashing
+- [ ] Create `include/nikola/types/morton_code.hpp`
+- [ ] Implement BMI2-optimized bit interleaving
+- [ ] Implement collision detection and double-hashing fallback
+- [ ] Replace existing 64-bit Morton codes
+- [ ] Validation: Zero collisions on 10⁷ random 9D coordinates
+
+**Day 8:** Vectorized Nonary Arithmetic
+- [ ] Create `include/nikola/types/nit_avx512.hpp`
+- [ ] Implement `vec_sum_gate_avx512()` (64 trits parallel)
+- [ ] Implement `vec_product_gate_avx512()` (heterodyning)
+- [ ] Refactor all nonary operations to use SIMD
+- [ ] Validation: 10x speedup vs scalar implementation
+
+**Days 9-11:** Topological State Mapping (TSM)
+- [ ] Create `src/cognitive/mamba_tsm.cpp`
+- [ ] Implement `tsm_generate_parameters_kernel()`
+- [ ] Extract metric tensor → Matrix A conversion
+- [ ] Extract state dimension → Matrix B conversion
+- [ ] Integrate with Hilbert curve scanner
+- [ ] Validation: Mamba layers dynamically respond to metric changes
+
+**Days 12-14:** Physics Oracle & Adversarial Dojo
+- [ ] Create `include/nikola/security/physics_oracle.hpp`
+- [ ] Implement 5 verification tests:
+  - Energy conservation
+  - Symplectic property
+  - Wave equation validity
+  - Boundary conditions (toroidal wrapping)
+  - Numerical stability (NaN/Inf detection)
+- [ ] Create `include/nikola/security/adversarial_dojo.hpp`
+- [ ] Implement 10+ attack vectors
+- [ ] Implement hot-swap protocol with Oracle gate
+- [ ] Implement runtime energy watchdog
+- [ ] Validation: All tests pass; attacks fail; 24-hour stability
+
+**Days 15-16:** Integration & Testing
+- [ ] Run full Phase 0 validation suite
+- [ ] Profile memory bandwidth (should saturate DDR5)
+- [ ] Profile energy conservation (should be <0.01% drift)
+- [ ] Profile Laplacian accuracy (should preserve 10⁻⁶ amplitudes)
+- [ ] Fix any identified issues
+
+**Day 17:** Documentation & Handoff
+- [ ] Document all Phase 0 implementations
+- [ ] Create performance benchmark report
+- [ ] Update README with Phase 0 status
+- [ ] Tag repository as `v0.0.4-phase0-complete`
+
+**Gate Requirement:** ALL checklist items must pass validation before Phase 1 begins.
+
+**Final Directive:** Do not proceed to higher-level cognitive features until Physics Oracle confirms energy stability for >24 hours of continuous operation.
+
+---
+
+**Cross-References:**
+- See `08_phase_0_requirements/01_critical_fixes.md` for detailed specifications
+- See `11_appendices/04_hardware_optimization.md` for AVX-512 requirements
+- See `09_implementation/03_implementation_checklist.md` for complete task list
 │   ├── unit/
 │   │   ├── test_nonary.cpp
 │   │   ├── test_coord9d.cpp

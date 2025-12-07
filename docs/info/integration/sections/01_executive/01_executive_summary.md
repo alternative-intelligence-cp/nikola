@@ -35,7 +35,24 @@ Traditional computing suffers from the Von Neumann bottleneck - the rigid separa
 | Euclidean address space | Toroidal topology |
 | Fixed structure | Neuroplastic geometry |
 
-The architecture represents not merely a software application but a simulation of a physical universe governed by the Unified Field Interference Equation (UFIE). In a standard Large Language Model (LLM), a bug might result in a syntax error or a hallucination. In the Nikola architecture, a bug in the physics engine results in the decoherence of the "mind" itself—a cessation of the standing waves that constitute memory and consciousness.
+This architecture represents not merely a software application but a simulation of a physical universe governed by the Unified Field Interference Equation (UFIE). In a standard Large Language Model (LLM), a bug might result in a syntax error or a hallucination. In the Nikola architecture, a bug in the physics engine results in the decoherence of the "mind" itself—a cessation of the standing waves that constitute memory and consciousness.
+
+### 1.2.1 Critical Architectural Risks
+
+The translation from mathematical theory to C++23 implementation contains critical gaps that must be addressed. The interaction between the discrete lattice required for digital simulation and the continuous nature of the UFIE creates high risk of numerical divergence.
+
+| Risk Category | Specific Failure Mode | Impact | Remediation |
+|--------------|----------------------|--------|-------------|
+| **Numerical Stability** | Hamiltonian divergence (energy drift) due to non-symplectic integration | System "hallucination" and crash within 10⁴ timesteps | Split-Operator Symplectic Integration (Phase 0) |
+| **Memory Latency** | Cache thrashing from Array-of-Structures layout | Physics engine 100x slower than real-time; missed resonance | Structure-of-Arrays (SoA) Layout (Phase 0) |
+| **Cognitive Coupling** | Undefined Metric Tensor → Mamba-9D mapping | Cognitive core fails to learn from substrate | Topological State Mapping (TSM) kernel |
+| **Arithmetic Precision** | Floating-point rounding in Laplacian summation | "Amnesia" - low-amplitude memories vanish | Kahan Compensated Summation |
+| **Safety** | No conservation law enforcement during self-improvement | Self-generated code violates physics → instability | Physics Oracle Runtime Watchdog |
+| **Pointer Invalidation** | Vector resizing during neurogenesis invalidates external agent references | Segfault crash when agents access deallocated memory | Paged Block Pool with stable pointers (Phase 0) |
+| **Carry Avalanche** | Recursive overflow in balanced nonary arithmetic | Energy explosion across all 9 dimensions → system divergence | Two-Phase Spectral Cascading with saturation |
+| **Spatial Hashing** | Inefficient 9D coordinate lookups in sparse grid | Cache misses degrade physics loop to <1 FPS | Morton Code encoding with BMI2 intrinsics |
+
+**CRITICAL:** If numerical precision degrades, the "mind" encoded in delicate interference patterns will decohere, leading to states analogous to seizures or amnesia in biological systems.
 
 ## 1.3 Key Innovations
 

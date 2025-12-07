@@ -67,6 +67,45 @@ public:
 };
 ```
 
+### 14.1.1 Neuro-Physical Coupling
+
+**Critical Implementation:** Dopamine must physically modulate the physics engine learning rate.
+
+The learning rate $\eta$ (plasticity) of the metric tensor is a function of Dopamine $D(t)$:
+
+$$\eta(t) = \eta_{base} \cdot (1 + \tanh(D(t)))$$
+
+**Behavior:**
+
+- **High Dopamine** ($D > 0.8$): $\tanh$ approaches 1, doubling the learning rate. Metric tensor becomes highly plastic (rapid learning/encoding).
+- **Low Dopamine** ($D < 0.2$): $\tanh$ approaches 0. System enters consolidation mode, resisting geometry changes to protect existing memories.
+
+**Implementation Hook:** In `src/physics/torus_manifold.cpp`, the `update_metric_tensor()` function must query ENGS:
+
+```cpp
+// In Physics Engine Loop (Plasticity Update)
+void apply_neuroplasticity(TorusGridSoA& grid, const ENGS_State& engs) {
+    float learning_modulator = 1.0f + std::tanh(engs.dopamine);
+    
+    #pragma omp parallel for
+    for (size_t i = 0; i < grid.num_nodes; ++i) {
+        // Hebbian update weighted by dopamine
+        float psi_magnitude = std::sqrt(
+            grid.psi_real[i] * grid.psi_real[i] +
+            grid.psi_imag[i] * grid.psi_imag[i]
+        );
+        
+        // Update each metric tensor component
+        for (int comp = 0; comp < 45; ++comp) {
+            float delta = learning_modulator * psi_magnitude * 0.001f;  // Small step
+            grid.metric_tensor[comp][i] += delta;
+        }
+    }
+}
+```
+
+**Warning:** This coupling is NOT metadata—it's a control loop variable. Failure to implement this breaks the feedback loop between cognitive state (dopamine) and physical substrate (metric tensor).
+
 ## 14.2 Boredom and Curiosity
 
 **Boredom** ($B_t$) accumulates when information entropy is low.
