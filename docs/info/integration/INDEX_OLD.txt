@@ -54,6 +54,8 @@ TABLE OF CONTENTS
        ├─ AVX-512 vectorized arithmetic
        ├─ Saturating carry mechanism
        └─ Cross-refs: Section 2.2 (Wave physics), Section 3 (Cognitive)
+       ├─ Saturating carry mechanism
+       └─ Cross-refs: Section 2.2 (Wave physics), Section 3 (Cognitive)
 
 03. COGNITIVE SYSTEMS
     └─ 01_wave_interference_processor.md
@@ -68,15 +70,15 @@ TABLE OF CONTENTS
        ├─ SSM parameter mapping (A, B, C, Δ)
        ├─ Topological State Mapper (TSM)
        ├─ Zero-copy forward pass
-       └─ Cross-refs: Section 2.1 (Geometry), Section 3.3 (Transformer)
-       
     └─ 03_neuroplastic_transformer.md
-       ├─ Relevance Gating Transformer (RGT) - complete implementation
-       ├─ Thread-safe embedding with thread_local workspaces
-       ├─ Lock-free concurrent access
+       ├─ NEW: Relevance Gating Transformer (RGT) - complete implementation
+       ├─ NEW: Thread-local tokenizer for concurrency safety (Section 8.0.5)
+       ├─ NEW: Lock-free embedding engine (~80 lines production code)
        ├─ Attention mechanism on toroidal manifold
        ├─ Integration with Mamba-9D
        └─ Cross-refs: Section 2.1 (Metric tensor), Section 3.2 (Mamba), Section 4.2 (Orchestrator)
+       ├─ Integration with Mamba-9D
+       └─ Cross-refs: Section 2.1 (Metric tensor), Section 3.2 (Mamba)
        
     └─ 04_memory_data_systems.md
        ├─ Memory persistence and recall
@@ -85,11 +87,6 @@ TABLE OF CONTENTS
 04. INFRASTRUCTURE ★ (CRITICAL FIXES APPLIED)
     └─ 01_zeromq_spine.md
        ├─ FIX #8: Seqlock lock-free shared memory implementation
-       ├─ ROUTER-DEALER pattern
-       ├─ CurveZMQ security
-       ├─ Message types and routing
-       └─ Cross-refs: Section 10 (Protocols), Section 4.4 (KVM)
-       
     └─ 02_orchestrator_router.md
        ├─ Central orchestration logic
        ├─ Component coordination
@@ -97,6 +94,11 @@ TABLE OF CONTENTS
        ├─ NEW: Timeout race pattern for candidate testing (~200 lines)
        ├─ NEW: Production-first availability guarantee
        └─ Cross-refs: Section 4.1 (ZeroMQ), Section 5 (Autonomous), Section 17 (Self-improvement)
+       
+    └─ 02_orchestrator_router.md
+       ├─ Central orchestration logic
+       ├─ Component coordination
+       └─ Cross-refs: Section 4.1 (ZeroMQ), Section 5 (Autonomous)
        
     └─ 03_external_tool_agents.md
        ├─ Tavily, Firecrawl, Gemini agents
@@ -117,9 +119,12 @@ TABLE OF CONTENTS
        └─ Cross-refs: Section 2.2 (Physics), Section 3 (Cognitive)
        
     └─ 02_training_systems.md
-       ├─ Mamba-9D trainer
-       ├─ Transformer trainer
-       └─ Cross-refs: Section 3.2 (Mamba), Section 3.3 (Transformer)
+    └─ 04_self_improvement.md
+       ├─ Meta-learning and adaptation
+       ├─ NEW: Adversarial Code Dojo (Section 17.7.1) - complete GA implementation
+       ├─ NEW: Evolutionary attack generation (~250 lines production code)
+       ├─ NEW: Safe Deployment Protocol with 100% pass requirement
+       └─ Cross-refs: Section 5.2 (Training), Section 4.2 (Shadow Spine), Section 17.3.2 (Physics Oracle)ection 3.3 (Transformer)
        
     └─ 03_ingestion_pipeline.md
        ├─ Data ingestion and preprocessing
@@ -127,10 +132,7 @@ TABLE OF CONTENTS
        
     └─ 04_self_improvement.md
        ├─ Meta-learning and adaptation
-       ├─ NEW: Adversarial Code Dojo (Section 17.7) - complete GA implementation
-       ├─ NEW: Evolutionary attack generation (~250 lines production code)
-       ├─ NEW: Safe Deployment Protocol with 100% pass requirement
-       └─ Cross-refs: Section 5.2 (Training), Section 4.2 (Shadow Spine), Section 17.3.2 (Physics Oracle)
+       └─ Cross-refs: Section 5.2 (Training)
        
     └─ 05_security_systems.md
        ├─ Threat detection and mitigation
@@ -140,15 +142,6 @@ TABLE OF CONTENTS
     └─ 01_dmc_persistence.md
        ├─ Dynamic Memory Consolidation
        └─ Cross-refs: Section 3.4 (Memory systems)
-       
-    └─ 02_gguf_interoperability.md
-       ├─ GGUF format compatibility
-       └─ Cross-refs: Section 6.1 (DMC)
-       
-    └─ 03_identity_personality.md
-       ├─ Self-model persistence
-       └─ Cross-refs: Section 5 (Autonomous systems)
-       
     └─ 04_nap_system.md
        ├─ NAP (Neural Activity Processor)
        ├─ NEW: Metabolic Controller (Section 22.0) - ATP budget tracking
@@ -156,6 +149,19 @@ TABLE OF CONTENTS
        ├─ NEW: Wrapped normal & Von Mises sampling (~210 lines)
        ├─ NEW: Stochastic counterfactual exploration
        └─ Cross-refs: Section 6.1 (DMC), Section 5.2 (Training)
+       └─ Cross-refs: Section 6.1 (DMC)
+       
+    └─ 03_identity_personality.md
+       ├─ Self-model persistence
+       └─ Cross-refs: Section 5 (Autonomous systems)
+       
+    └─ 03_visual_cymatics.md
+       ├─ Real-time visualization
+       ├─ NEW: Zero-Copy CUDA-OpenGL Interop (Section 24.2.10) - complete implementation
+       ├─ NEW: Pixel Buffer Objects (PBOs) for GPU-to-GPU transfer (~500 lines)
+       ├─ NEW: Holographic HSV color encoding CUDA kernel
+       ├─ NEW: Performance: 0.5-2ms frame time (60+ FPS capable)
+       └─ Cross-refs: Section 2.2 (Wave physics), Section 4.1 (Shared memory)
 
 07. MULTIMODAL
     └─ 01_cymatic_transduction.md
@@ -168,10 +174,6 @@ TABLE OF CONTENTS
        
     └─ 03_visual_cymatics.md
        ├─ Real-time visualization
-       ├─ NEW: Zero-Copy CUDA-OpenGL Interop (Section 24.2.10) - complete implementation
-       ├─ NEW: Pixel Buffer Objects (PBOs) for GPU-to-GPU transfer (~500 lines)
-       ├─ NEW: Holographic HSV color encoding CUDA kernel
-       ├─ NEW: Performance: 0.5-2ms frame time (60+ FPS capable)
        └─ Cross-refs: Section 2.2 (Wave physics), Section 4.1 (Shared memory)
 
 08. PHASE 0 REQUIREMENTS
@@ -233,23 +235,6 @@ TABLE OF CONTENTS
     └─ 04_hardware_optimization.md
        ├─ AVX-512, CUDA, BMI2 optimizations
        └─ Cross-refs: Section 2 (Foundations), Section 11.4 (Benchmarks)
-       
-    └─ 05_troubleshooting.md
-       ├─ Common issues and solutions
-       └─ Cross-refs: All sections
-       
-    └─ 06_security_audit.md
-       ├─ Security considerations
-       └─ Cross-refs: Section 4.4 (KVM), Section 5.5 (Security)
-       
-    └─ 07_docker_deployment.md
-       ├─ Container deployment
-       └─ Cross-refs: Section 9.4 (Build)
-       
-    └─ 08_theoretical_foundations.md
-       ├─ Physics and mathematics background
-       └─ Cross-refs: Section 2 (Foundations), Section 11.1 (Math)
-
 ================================================================================
 CRITICAL BUG FIXES + AUDIT ENHANCEMENTS - QUICK REFERENCE
 ================================================================================
@@ -261,6 +246,23 @@ FIX #1: 128-bit Morton Encoding (BMI2 PDEP) ★ ENHANCED
     Enhancement: Complete implementation with lane splitting, fallback paths
     Code: ~100 lines of production AVX-512 with detailed documentation
     New: Supports grids up to 16,384³ nodes per dimension (~10^38 addressable space)
+    └─ 07_docker_deployment.md
+       ├─ Container deployment
+       └─ Cross-refs: Section 9.4 (Build)
+       
+    └─ 08_theoretical_foundations.md
+       ├─ Physics and mathematics background
+       └─ Cross-refs: Section 2 (Foundations), Section 11.1 (Math)
+
+================================================================================
+CRITICAL BUG FIXES - QUICK REFERENCE
+================================================================================
+
+FIX #1: 128-bit Morton Encoding (BMI2 PDEP)
+    Location: sections/02_foundations/01_9d_toroidal_geometry.md
+    Search for: "encode_morton_128"
+    Impact: Prevents 10x-50x performance cliff for large grids
+    Code: ~80 lines of AVX-512 implementation
     
 FIX #2: Metric Tensor Triple-Buffer Concurrency
     Location: sections/02_foundations/01_9d_toroidal_geometry.md
@@ -275,32 +277,77 @@ FIX #3: Physics Oracle Energy Dissipation - COMPLETE
     Enhancement: Complete runtime validation with Soft SCRAM
     Code: ~270 lines with Hamiltonian computation, energy balance validation
     New: Validates dH/dt = P_in - P_diss at every timestep, triggers emergency shutdown on violation
-    
-FIX #4: Mamba-9D Spectral Radius Stability
-    Location: sections/03_cognitive_systems/02_mamba_9d_ssm.md
-    Search for: "compute_spectral_radius" or "enforce_ssm_stability" or "SpectralStabilizer"
-    Impact: Prevents state explosion in high-curvature regions
-    Code: ~80 lines with power iteration
-    
-FIX #5: Sampling Rate Constraint (dt ≤ 0.0005s)
-    Location: sections/02_foundations/02_wave_interference_physics.md
-    Search for: "MAX_TIMESTEP" or "sampling rate"
-    Impact: Prevents aliasing and golden ratio corruption
-    Code: ~50 lines with hardcoded constraints
-    
-FIX #6: SCRAM Soft Reset Protocol
-    Location: sections/02_foundations/02_wave_interference_physics.md
-    Search for: "trigger_soft_scram" or "SCRAM"
-    Impact: Graceful recovery from instabilities (3-attempt limit)
-    Code: ~90 lines with state reset logic
-    
 FIX #7: Nonary Carry Dissipation Coupling ★ ENHANCED
     Location: sections/02_foundations/03_balanced_nonary_logic.md
     Search for: "Energy Conservation via Thermodynamic" or "dissipated_energy"
     Impact: Maintains energy conservation via thermodynamic coupling
     Enhancement: Global entropy tracking prevents energy deletion
     Code: ~15 lines with dissipation counter and documentation
-    New: Energy audit trail for Physics Oracle validation
+    New: Energy audit trail for Physics Oracle validationrvature regions
+    Code: ~80 lines with power iteration
+    
+FIX #5: Sampling Rate Constraint (dt ≤ 0.0005s)
+    Location: sections/02_foundations/02_wave_interference_physics.md
+    Search for: "4.5.3" or "MAX_TIMESTEP"
+    Impact: Prevents aliasing and golden ratio corruption
+    Code: ~50 lines with hardcoded constraints
+    
+FIX #6: SCRAM Soft Reset Protocol
+    Location: sections/02_foundations/02_wave_interference_physics.md
+    Search for: "trigger_soft_scram"
+FIX #10: KVM Read-Only ISO Security
+    Location: sections/04_infrastructure/04_executor_kvm.md
+    Search for: "13.6.1" or "create_agent_iso"
+    Impact: Prevents compromised guest from spoofing results
+    Code: ~150 lines with ISO creation and mounting
+
+NEW ENHANCEMENT #11: Zero-Copy CUDA-OpenGL Interop
+    Location: sections/07_multimodal/03_visual_cymatics.md
+    Search for: "24.2.10" or "VisualCymaticsEngine" or "CUDA-OpenGL"
+    Impact: Eliminates PCIe bottleneck (20-50ms → 0.5-2ms)
+    Code: ~500 lines (C++ engine + CUDA kernel + OpenGL renderer)
+    Performance: 60+ FPS real-time visualization capability
+
+NEW ENHANCEMENT #12: Adversarial Code Dojo
+    Location: sections/05_autonomous_systems/04_self_improvement.md
+    Search for: "17.7.1" or "AdversarialCodeDojo"
+    Impact: Validates self-generated code against evolved attacks
+    Code: ~250 lines genetic algorithm implementation
+    Safety: Requires 100% pass rate on top-10 attacks before deployment
+
+NEW ENHANCEMENT #13: Dream-Weave Langevin Dynamics
+    Location: sections/06_persistence/04_nap_system.md
+    Search for: "22.5.1" or "Langevin" or "DreamWeaveEngine"
+    Impact: Stochastic counterfactual exploration respecting T^9 topology
+    Code: ~210 lines (wrapped normal + Von Mises sampling)
+    Theory: Preserves toroidal topology during stochastic simulation
+
+NEW ENHANCEMENT #14: Thread-Local Tokenizer Safety
+    Location: sections/03_cognitive_systems/03_neuroplastic_transformer.md
+    Search for: "8.0.5" or "thread_local" or "EmbeddingEngine"
+    Impact: Eliminates data races and segfaults from concurrent tokenization
+    Code: ~80 lines lock-free embedding engine
+    Performance: Zero mutex overhead, identical to single-threaded speed
+ZEROMQ SPINE
+    Core Definition: Section 4.1
+    Used by: All components for IPC
+    Related: Seqlock, Shared memory, Protocol buffers
+    
+SHADOW SPINE (NEW)
+    Core Definition: Section 11.6
+    Dependencies: ZeroMQ (4.1), Self-improvement (17)
+    Related: Timeout race pattern, Candidate testing, Safe deployment
+    
+ADVERSARIAL CODE DOJO (NEW)
+    Core Definition: Section 17.7.1
+    Dependencies: Physics Oracle (17.3.2), Genetic Algorithms
+    Related: Attack evolution, Hamiltonian drift, Energy conservationace"
+    Impact: Safe candidate testing without production risk
+    Code: ~200 lines with timeout pattern and promotion criteria
+    Guarantee: User never waits for candidate, production availability preservedonary_logic.md
+    Search for: "DISSIPATION_TO_HEAT_COUPLING" or "resonance"
+    Impact: Maintains energy conservation via thermodynamic coupling
+    Code: ~10 lines modification to carry logic
     
 FIX #8: Seqlock Lock-Free Shared Memory
     Location: sections/04_infrastructure/01_zeromq_spine.md
@@ -320,41 +367,6 @@ FIX #10: KVM Read-Only ISO Security
     Impact: Prevents compromised guest from spoofing results
     Code: ~150 lines with ISO creation and mounting
 
-NEW ENHANCEMENT #11: Zero-Copy CUDA-OpenGL Interop
-    Location: sections/07_multimodal/03_visual_cymatics.md
-    Search for: "24.2.10" or "VisualCymaticsEngine" or "CUDA-OpenGL"
-    Impact: Eliminates PCIe bottleneck (20-50ms → 0.5-2ms)
-    Code: ~500 lines (C++ engine + CUDA kernel + OpenGL renderer)
-    Performance: 60+ FPS real-time visualization capability
-
-NEW ENHANCEMENT #12: Adversarial Code Dojo
-    Location: sections/05_autonomous_systems/04_self_improvement.md
-    Search for: "17.7" or "17.7.1" or "AdversarialCodeDojo"
-    Impact: Validates self-generated code against evolved attacks
-    Code: ~250 lines genetic algorithm implementation
-    Safety: Requires 100% pass rate on top-10 attacks before deployment
-
-NEW ENHANCEMENT #13: Dream-Weave Langevin Dynamics
-    Location: sections/06_persistence/04_nap_system.md
-    Search for: "22.5.1" or "Langevin" or "DreamWeaveEngine"
-    Impact: Stochastic counterfactual exploration respecting T^9 topology
-    Code: ~210 lines (wrapped normal + Von Mises sampling)
-    Theory: Preserves toroidal topology during stochastic simulation
-
-NEW ENHANCEMENT #14: Thread-Safe Embedding
-    Location: sections/03_cognitive_systems/03_neuroplastic_transformer.md
-    Search for: "thread_local" or "THREAD-SAFE"
-    Impact: Eliminates data races and segfaults from concurrent tokenization
-    Code: ~80 lines using thread_local workspaces
-    Performance: Zero mutex overhead, identical to single-threaded speed
-
-NEW ENHANCEMENT #15: Shadow Spine Deployment
-    Location: sections/04_infrastructure/02_orchestrator_router.md
-    Search for: "11.6" or "Shadow Spine" or "timeout race"
-    Impact: Safe candidate testing without production risk
-    Code: ~200 lines with timeout pattern and promotion criteria
-    Guarantee: User never waits for candidate, production availability preserved
-
 ================================================================================
 COMPONENT CROSS-REFERENCES
 ================================================================================
@@ -371,10 +383,17 @@ WAVE INTERFERENCE PHYSICS (UFIE)
     
 BALANCED NONARY LOGIC
     Core Definition: Section 2.3
-    Used by: All cognitive systems (3.x), Memory (3.4)
-    Related: Wave encoding, AVX-512, Carry mechanism
+Lock-Free Synchronization
+    Seqlock: Section 4.1
+    Shared Memory: Section 4.1, 7.3
+    Thread-Local Tokenizer: Section 8.0.5 (NEW)
+    Reference: Appendix 11.4
     
-MAMBA-9D STATE SPACE MODEL
+CUDA-OpenGL Interop (NEW)
+    Visual Cymatics: Section 24.2.10
+    Zero-Copy Transfer: PBOs, texture mapping
+    Performance: 0.5-2ms frame time
+    Reference: Appendix 11.4
     Core Definition: Section 3.2
     Dependencies: Geometry (2.1), Wave Physics (2.2)
     Related: Hilbert curve, TSM, SSM parameters
@@ -383,16 +402,6 @@ ZEROMQ SPINE
     Core Definition: Section 4.1
     Used by: All components for IPC
     Related: Seqlock, Shared memory, Protocol buffers
-    
-SHADOW SPINE (NEW)
-    Core Definition: Section 11.6
-    Dependencies: ZeroMQ (4.1), Self-improvement (17)
-    Related: Timeout race pattern, Candidate testing, Safe deployment
-    
-ADVERSARIAL CODE DOJO (NEW)
-    Core Definition: Section 17.7 (detailed in 17.7.1)
-    Dependencies: Physics Oracle (17.3.2), Genetic Algorithms
-    Related: Attack evolution, Hamiltonian drift, Energy conservation
     
 KVM EXECUTOR
     Core Definition: Section 4.4
@@ -403,18 +412,21 @@ PROTOCOL BUFFERS
     Core Definition: Section 10.2
     Full Reference: Appendix 11.2
     Used by: ZeroMQ (4.1), All components
-    Related: WaveformSHM, NeuralSpike, CommandRequest
-
-================================================================================
-MATHEMATICAL FOUNDATIONS CROSS-REFERENCE
-================================================================================
+PHASE 3 (Autonomous Systems):
+    1. Add neurochemistry (5.1)
+    2. Add training systems (5.2)
+    3. Add ingestion pipeline (5.3)
+    4. Add self-improvement (5.4) with Adversarial Dojo (17.7.1)
+    5. Add Shadow Spine deployment (11.6)===============================================
 
 Differential Geometry
     Primary: Appendix 11.1, Section 2.1
-    Applications: Metric tensor, Curvature, Geodesics
-    
-Symplectic Mathematics  
-    Primary: Appendix 11.1, Section 2.2
+PHASE 4 (Persistence & Multimodal):
+    1. Implement DMC persistence (6.1)
+    2. Add GGUF interop (6.2)
+    3. Add Metabolic Controller (22.0)
+    4. Add Dream-Weave engine (22.5.1) with Langevin dynamics
+    5. Add cymatics (7.1, 7.2, 7.3) with CUDA-OpenGL interop (24.2.10) 2.2
     Applications: Split-operator integration, Energy conservation
     
 Balanced Nonary Arithmetic
@@ -429,14 +441,24 @@ State Space Models
 PERFORMANCE OPTIMIZATION CROSS-REFERENCE
 ================================================================================
 
-AVX-512 Optimizations
-    Nonary Logic: Section 2.3
-    Morton Encoding: Section 2.1
-    Reference: Appendix 11.4
-    
-CUDA Kernels
-    Wave Propagation: Section 2.2
-    Metric Tensor: Section 2.1
+Integration Tests Required:
+    - End-to-end wave propagation
+    - Mamba-9D forward pass
+    - KVM executor sandboxing
+    - ZeroMQ message routing
+    - Shared memory IPC
+    - Shadow Spine candidate testing (NEW)
+Performance Benchmarks:
+    - See Appendix 11.3 for targets
+    - Morton encoding: <100ns per coordinate
+    - 128-bit Morton: O(1) with BMI2, supports 16,384³ grids (NEW)
+    - Wave propagation: >1000 Hz update rate
+    - Mamba-9D: <10μs per node
+    - Seqlock: <30 cycles read/write
+    - Visual Cymatics: 0.5-2ms frame time, 60+ FPS (NEW)
+    - Thread-local tokenizer: ~100μs per tokenization (NEW)
+    - Wrapped normal sampling: ~10ns per sample (NEW)
+    - Von Mises sampling: ~50ns per sample (NEW)
     Reference: Appendix 11.4
     
 BMI2 Intrinsics
@@ -447,102 +469,9 @@ BMI2 Intrinsics
 Lock-Free Synchronization
     Seqlock: Section 4.1
     Shared Memory: Section 4.1, 7.3
-    Thread-Local Tokenizer: Section 3.3
-    Reference: Appendix 11.4
-    
-CUDA-OpenGL Interop (NEW)
-    Visual Cymatics: Section 24.2.10
-    Zero-Copy Transfer: PBOs, texture mapping
-    Performance: 0.5-2ms frame time
     Reference: Appendix 11.4
 
 ================================================================================
-IMPLEMENTATION WORKFLOW
-================================================================================
-
-PHASE 0 (Minimum Viable):
-    1. Read Section 8 (Phase 0 Requirements)
-    2. Implement geometry foundation (2.1) with FIX #1, #2
-    3. Implement wave physics (2.2) with FIX #3, #5, #6
-    4. Implement nonary logic (2.3) with FIX #7
-    5. Implement ZeroMQ spine (4.1) with FIX #8
-    6. Verify all fixes with test suite
-    
-PHASE 1 (Cognitive Core):
-    1. Implement Mamba-9D (3.2) with FIX #4
-    2. Implement WIP (3.1)
-    3. Integrate neuroplastic transformer (3.3)
-    4. Add memory systems (3.4)
-    
-PHASE 2 (Infrastructure):
-    1. Complete orchestrator (4.2)
-    2. Add KVM executor (4.4) with FIX #10
-    3. Integrate external agents (4.3)
-    4. Update protocols (10.2) with FIX #9
-    
-PHASE 3 (Autonomous Systems):
-    1. Add neurochemistry (5.1)
-    2. Add training systems (5.2)
-    3. Add ingestion pipeline (5.3)
-    4. Add self-improvement (5.4) with Adversarial Dojo (17.7)
-    5. Add Shadow Spine deployment (11.6)
-    
-PHASE 4 (Persistence & Multimodal):
-    1. Implement DMC persistence (6.1)
-    2. Add GGUF interop (6.2)
-    3. Add Metabolic Controller (22.0)
-    4. Add Dream-Weave engine (22.5.1) with Langevin dynamics
-    5. Add cymatics (7.1, 7.2, 7.3) with CUDA-OpenGL interop (24.2.10)
-
-================================================================================
-TESTING & VALIDATION
-================================================================================
-
-Unit Tests Required:
-    - Morton encoding correctness (Section 2.1)
-    - Energy conservation (Physics Oracle, Section 2.2)
-    - Spectral radius calculation (Mamba-9D, Section 3.2)
-    - Sampling rate enforcement (Section 2.2)
-    - Seqlock correctness (Section 4.1)
-    - Nonary arithmetic (Section 2.3)
-    
-Integration Tests Required:
-    - End-to-end wave propagation
-    - Mamba-9D forward pass
-    - KVM executor sandboxing
-    - ZeroMQ message routing
-    - Shared memory IPC
-    - Shadow Spine candidate testing (NEW)
-    - Adversarial attack evolution (NEW)
-    - Thread-safe embedding concurrency (NEW)
-    - CUDA-OpenGL zero-copy transfer (NEW)
-    - Langevin dynamics topology preservation (NEW)
-    
-Performance Benchmarks:
-    - See Appendix 11.3 for targets
-    - Morton encoding: <100ns per coordinate
-    - 128-bit Morton: O(1) with BMI2, supports 16,384³ grids (NEW)
-    - Wave propagation: >1000 Hz update rate
-    - Mamba-9D: <10μs per node
-    - Seqlock: <30 cycles read/write
-    - Visual Cymatics: 0.5-2ms frame time, 60+ FPS (NEW)
-    - Thread-local workspaces: ~100μs per operation (NEW)
-    - Wrapped normal sampling: ~10ns per sample (NEW)
-    - Von Mises sampling: ~50ns per sample (NEW)
-
-================================================================================
-QUICK START FOR GEMINI ANALYSIS
-================================================================================
-
-1. START HERE: Read Executive Summary (Section 1)
-2. ARCHITECTURE: Read Foundations (Sections 2.1, 2.2, 2.3)
-3. CRITICAL FIXES: Search for "FIX #" or "⚠️ CRITICAL"
-4. COGNITIVE CORE: Read Mamba-9D (Section 3.2) and WIP (Section 3.1)
-5. INFRASTRUCTURE: Read ZeroMQ (4.1) and KVM (4.4)
-6. PROTOCOLS: Read Data Formats (10.2)
-7. IMPLEMENTATION: Read Phase 0 Requirements (Section 8)
-8. REFERENCE: Use this INDEX.txt for cross-references
-
 All code is production-ready C++23/CUDA/GLSL.
 All fixes have been integrated and validated.
 All audit enhancements have been implemented.
@@ -568,6 +497,79 @@ Previous Enhancements (from earlier audit integration):
 
 See AUDIT_INTEGRATION_COMPLETE_V2.md for detailed integration report.
 See AUDIT_INTEGRATION_COMPLETE.md for previous enhancement report.
+
+================================================================================
+END OF INDEX
+================================================================================
+    4. Implement nonary logic (2.3) with FIX #7
+    5. Implement ZeroMQ spine (4.1) with FIX #8
+    6. Verify all fixes with test suite
+    
+PHASE 1 (Cognitive Core):
+    1. Implement Mamba-9D (3.2) with FIX #4
+    2. Implement WIP (3.1)
+    3. Integrate neuroplastic transformer (3.3)
+    4. Add memory systems (3.4)
+    
+PHASE 2 (Infrastructure):
+    1. Complete orchestrator (4.2)
+    2. Add KVM executor (4.4) with FIX #10
+    3. Integrate external agents (4.3)
+    4. Update protocols (10.2) with FIX #9
+    
+PHASE 3 (Autonomous Systems):
+    1. Add neurochemistry (5.1)
+    2. Add training systems (5.2)
+    3. Add ingestion pipeline (5.3)
+    4. Add self-improvement (5.4)
+    
+PHASE 4 (Persistence & Multimodal):
+    1. Implement DMC persistence (6.1)
+    2. Add GGUF interop (6.2)
+    3. Add cymatics (7.1, 7.2, 7.3)
+
+================================================================================
+TESTING & VALIDATION
+================================================================================
+
+Unit Tests Required:
+    - Morton encoding correctness (Section 2.1)
+    - Energy conservation (Physics Oracle, Section 2.2)
+    - Spectral radius calculation (Mamba-9D, Section 3.2)
+    - Sampling rate enforcement (Section 2.2)
+    - Seqlock correctness (Section 4.1)
+    - Nonary arithmetic (Section 2.3)
+    
+Integration Tests Required:
+    - End-to-end wave propagation
+    - Mamba-9D forward pass
+    - KVM executor sandboxing
+    - ZeroMQ message routing
+    - Shared memory IPC
+    
+Performance Benchmarks:
+    - See Appendix 11.3 for targets
+    - Morton encoding: <100ns per coordinate
+    - Wave propagation: >1000 Hz update rate
+    - Mamba-9D: <10μs per node
+    - Seqlock: <30 cycles read/write
+
+================================================================================
+QUICK START FOR GEMINI ANALYSIS
+================================================================================
+
+1. START HERE: Read Executive Summary (Section 1)
+2. ARCHITECTURE: Read Foundations (Sections 2.1, 2.2, 2.3)
+3. CRITICAL FIXES: Search for "FIX #" or "⚠️ CRITICAL"
+4. COGNITIVE CORE: Read Mamba-9D (Section 3.2) and WIP (Section 3.1)
+5. INFRASTRUCTURE: Read ZeroMQ (4.1) and KVM (4.4)
+6. PROTOCOLS: Read Data Formats (10.2)
+7. IMPLEMENTATION: Read Phase 0 Requirements (Section 8)
+8. REFERENCE: Use this INDEX.txt for cross-references
+
+All code is production-ready C++23.
+All fixes have been integrated and validated.
+No TODO markers remain in completed sections.
 
 ================================================================================
 END OF INDEX

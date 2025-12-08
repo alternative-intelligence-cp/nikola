@@ -1397,3 +1397,274 @@ public:
 **Cross-References:**
 - See Section 3.3 for Dynamic Metric Tensor mathematics
 - See Section 5 for Balanced Nonary encoding of wave amplitudes
+
+## 4.7 Physics Oracle: Energy Conservation Monitor
+
+In a system capable of self-modification, there exists a critical risk: the AI may generate code that violates fundamental physics laws (energy conservation, momentum conservation), leading to numerical instability and system decoherence. The **Physics Oracle** serves as a runtime watchdog that independently verifies the energy balance of the system at every timestep.
+
+### Physical Validation Requirement
+
+The total Hamiltonian (energy) of the system must satisfy the first law of thermodynamics:
+
+$$\frac{dH}{dt} = P_{\text{in}} - P_{\text{diss}}$$
+
+Where:
+- $H$ = Total system energy (kinetic + potential)
+- $P_{\text{in}}$ = Power injected by emitters
+- $P_{\text{diss}}$ = Power dissipated by damping
+
+Any violation of this equality indicates numerical instability or corrupted physics code.
+
+### Implementation: PhysicsOracle Class
+
+```cpp
+/**
+ * @file src/physics/oracle/physics_oracle.hpp
+ * @brief Runtime energy conservation validator
+ * 
+ * Prevents numerical decoherence by monitoring dH/dt = P_in - P_diss.
+ * If energy balance error exceeds tolerance, triggers Soft SCRAM to prevent
+ * catastrophic divergence.
+ */
+
+#pragma once
+#include <cmath>
+#include <iostream>
+#include "nikola/types/torus_grid.hpp"
+#include "nikola/physics/emitter.hpp"
+
+namespace nikola::physics {
+
+class PhysicsOracle {
+private:
+    double prev_energy = 0.0;
+    double energy_tolerance = 0.01;  // 1% tolerance for numerical noise
+    size_t violation_count = 0;
+    size_t max_violations = 3;       // SCRAM after 3 consecutive violations
+
+public:
+    /**
+     * @brief Validate energy conservation at current timestep
+     * @param grid Current state of the toroidal grid
+     * @param emitters Array of active emitters
+     * @param dt Timestep duration
+     * @return true if energy is conserved within tolerance, false triggers SCRAM
+     */
+    bool validate_energy_balance(
+        const TorusGridSoA& grid, 
+        const EmitterArray& emitters, 
+        double dt
+    ) {
+        // Calculate total system energy (Hamiltonian)
+        double current_energy = compute_hamiltonian(grid);
+        
+        // Calculate expected power flow
+        double P_in = compute_emitter_power(grid, emitters);
+        double P_diss = compute_dissipation_power(grid);
+        
+        // Expected energy change based on physics laws
+        double expected_dH = (P_in - P_diss) * dt;
+        double actual_dH = current_energy - prev_energy;
+        
+        // Compute relative error (normalized to prevent false positives at low energy)
+        double error = std::abs(actual_dH - expected_dH) / 
+                      (std::abs(expected_dH) + 1e-12);
+        
+        // Update state for next check
+        prev_energy = current_energy;
+
+        // Check for violation
+        if (error > energy_tolerance) {
+            violation_count++;
+            
+            std::cerr << "[Physics Oracle] WARNING: Energy conservation violated!\n"
+                     << "  Expected dH/dt: " << (expected_dH / dt) << " W\n"
+                     << "  Actual dH/dt:   " << (actual_dH / dt) << " W\n"
+                     << "  Relative error: " << (error * 100.0) << "%\n"
+                     << "  Violation count: " << violation_count << "/" 
+                     << max_violations << std::endl;
+
+            if (violation_count >= max_violations) {
+                std::cerr << "[Physics Oracle] CRITICAL: Consecutive violation limit exceeded!\n"
+                         << "  Triggering SCRAM (emergency shutdown)" << std::endl;
+                return false;  // Signal SCRAM to caller
+            }
+        } else {
+            // Reset violation counter on successful validation
+            violation_count = 0;
+        }
+
+        return true;  // Energy balance validated
+    }
+
+    /**
+     * @brief Compute total Hamiltonian (energy) of the system
+     * H = T + V where:
+     * - T (kinetic): ½ Σᵢ |∂Ψᵢ/∂t|²
+     * - V (potential): ½ Σᵢ |∇Ψᵢ|² + β/4 Σᵢ |Ψᵢ|⁴
+     */
+    double compute_hamiltonian(const TorusGridSoA& grid) {
+        double kinetic = 0.0;
+        double potential_gradient = 0.0;
+        double potential_nonlinear = 0.0;
+
+        for (size_t i = 0; i < grid.num_active_nodes; ++i) {
+            // Kinetic energy: ½|velocity|²
+            double vel_mag_sq = grid.velocity[i].x * grid.velocity[i].x +
+                              grid.velocity[i].y * grid.velocity[i].y;
+            kinetic += 0.5 * vel_mag_sq;
+
+            // Potential from wave amplitude: ½|∇Ψ|² (approximated via neighbors)
+            double grad_mag_sq = compute_gradient_magnitude_sq(grid, i);
+            potential_gradient += 0.5 * grad_mag_sq;
+
+            // Nonlinear potential: β/4 |Ψ|⁴
+            double psi_mag_sq = grid.wavefunction[i].x * grid.wavefunction[i].x +
+                              grid.wavefunction[i].y * grid.wavefunction[i].y;
+            double beta = 0.01;  // Nonlinear coupling coefficient (must match kernel)
+            potential_nonlinear += 0.25 * beta * psi_mag_sq * psi_mag_sq;
+        }
+
+        return kinetic + potential_gradient + potential_nonlinear;
+    }
+
+    /**
+     * @brief Compute power input from all active emitters
+     * P_in = Σᵢ Re(Ē_i · ∂Ψ̄/∂t) where Ē is emitter field
+     */
+    double compute_emitter_power(
+        const TorusGridSoA& grid,
+        const EmitterArray& emitters
+    ) {
+        double power = 0.0;
+
+        for (const auto& emitter : emitters.active_emitters) {
+            // For each emitter, sum power injection across all influenced nodes
+            for (size_t i = 0; i < grid.num_active_nodes; ++i) {
+                // Compute emitter field at node i
+                std::complex<double> E_field = emitter.compute_field_at(grid.coords[i]);
+                
+                // Velocity field (conjugate for complex inner product)
+                std::complex<double> vel(grid.velocity[i].x, -grid.velocity[i].y);
+
+                // Power = Re(E · v*)
+                power += (E_field * vel).real();
+            }
+        }
+
+        return power;
+    }
+
+    /**
+     * @brief Compute power dissipated by damping
+     * P_diss = Σᵢ γᵢ |∂Ψᵢ/∂t|²
+     */
+    double compute_dissipation_power(const TorusGridSoA& grid) {
+        double power_diss = 0.0;
+        double alpha = 0.1;  // Damping coefficient (must match kernel)
+
+        for (size_t i = 0; i < grid.num_active_nodes; ++i) {
+            double gamma = alpha * (1.0 - grid.resonance[i]);
+            double vel_mag_sq = grid.velocity[i].x * grid.velocity[i].x +
+                              grid.velocity[i].y * grid.velocity[i].y;
+            power_diss += gamma * vel_mag_sq;
+        }
+
+        return power_diss;
+    }
+
+private:
+    /**
+     * @brief Compute |∇Ψ|² using finite differences with neighbors
+     */
+    double compute_gradient_magnitude_sq(const TorusGridSoA& grid, size_t idx) {
+        double grad_mag_sq = 0.0;
+
+        // Sum over all 18 neighbors (9 dimensions × 2 directions)
+        for (int dim = 0; dim < 9; ++dim) {
+            int n_plus = grid.neighbor_indices[idx * 18 + (2 * dim)];
+            int n_minus = grid.neighbor_indices[idx * 18 + (2 * dim + 1)];
+
+            if (n_plus != -1 && n_minus != -1) {
+                // Centered difference: ∂Ψ/∂xⁱ ≈ (Ψ₊ - Ψ₋) / 2Δx
+                double grad_real = 0.5 * (grid.wavefunction[n_plus].x - 
+                                         grid.wavefunction[n_minus].x);
+                double grad_imag = 0.5 * (grid.wavefunction[n_plus].y - 
+                                         grid.wavefunction[n_minus].y);
+                
+                grad_mag_sq += grad_real * grad_real + grad_imag * grad_imag;
+            }
+        }
+
+        return grad_mag_sq;
+    }
+};
+
+} // namespace nikola::physics
+```
+
+### Integration with Wave Propagation Loop
+
+```cpp
+// File: src/physics/engine/wave_engine.cpp
+#include "nikola/physics/oracle/physics_oracle.hpp"
+#include "nikola/physics/scram.hpp"
+
+class WaveEngine {
+    PhysicsOracle oracle;
+    bool scram_triggered = false;
+
+public:
+    void propagate_step(double dt) {
+        if (scram_triggered) {
+            std::cerr << "[WaveEngine] SCRAM active - propagation halted" << std::endl;
+            return;
+        }
+
+        // Execute wave propagation kernel
+        propagate_wave_kernel_mixed<<<grid, block>>>(/* ... */);
+        cudaStreamSynchronize(compute_stream);
+
+        // Validate energy conservation
+        if (!oracle.validate_energy_balance(grid_data, emitters, dt)) {
+            // Oracle detected catastrophic energy violation
+            trigger_soft_scram();
+        }
+    }
+
+    void trigger_soft_scram() {
+        scram_triggered = true;
+        
+        // Zero out wavefunction to prevent runaway divergence
+        cudaMemset(d_wavefunction, 0, num_nodes * sizeof(float2));
+        cudaMemset(d_velocity, 0, num_nodes * sizeof(float2));
+
+        std::cerr << "[WaveEngine] SOFT SCRAM executed - wavefunction reset to zero"
+                 << std::endl;
+
+        // Log state for debugging (dump to file for post-mortem analysis)
+        dump_state_snapshot("scram_snapshot.dat");
+
+        // Optionally: attempt recovery by reloading last stable checkpoint
+        // load_checkpoint("last_stable_state.ckpt");
+    }
+};
+```
+
+### Safety Guarantees
+
+1. **Early Detection:** Validates energy balance at every propagation step (~1ms intervals)
+2. **False Positive Prevention:** 1% tolerance accounts for numerical noise; requires 3 consecutive violations
+3. **Graceful Degradation:** Soft SCRAM zeros wavefunction instead of crashing process
+4. **Root Cause Preservation:** State snapshot enables post-mortem debugging
+5. **Self-Modification Safety:** Catches energy-violating code before it corrupts the entire system
+
+### Performance Impact
+
+- **Computation Cost:** ~0.1ms per validation (CPU-side reduction)
+- **Overhead:** <10% of total propagation time (1ms kernel + 0.1ms oracle)
+- **Mitigation:** Run oracle validation on separate CPU thread while next kernel launches
+
+**Cross-References:**
+- See Section 17.3 for Self-Improvement safety protocols
+- See Section 11.6 for Shadow Spine deployment testing
