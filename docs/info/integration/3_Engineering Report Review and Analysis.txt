@@ -1,0 +1,241 @@
+﻿Engineering Audit and Remediation Report: Nikola Model v0.0.4
+1. Executive Summary and Architectural Paradigm
+The Nikola Model v0.0.4, as defined in the provided specifications 1 and comprehensive integration documentation 1, represents a radical departure from the Von Neumann architecture that has dominated computing for nearly a century. By proposing a 9-Dimensional Toroidal Waveform Intelligence (9D-TWI), the architecture seeks to eliminate the separation between processing and memory, replacing discrete binary state transitions with continuous wave interference patterns governed by the Unified Field Interference Equation (UFIE). This report serves as a rigorous engineering audit of the proposed system, analyzing the viability of its mathematical foundations, the fidelity of its C++23 implementation, and the stability of its autonomous self-improvement mechanisms.
+The core premise of the Nikola architecture is the mapping of cognitive states onto a Riemannian manifold where the metric tensor $g_{ij}$ evolves via neuroplasticity.1 Unlike traditional neural networks which update scalar weights, the Nikola Model updates the geometry of the spacetime in which its thoughts exist. This creates a system where "learning" is equivalent to warping the distance metric between concepts, physically pulling correlated memories closer together in the 9-dimensional signal space. The requirement for "NO DEVIATION FROM SPECS" 1 underscores the fragility of this physical simulation; unlike robust digital logic, a resonant substrate relies on precise harmonic relationships—specifically the Golden Ratio harmonics ($\phi$)—to maintain coherence and prevent the energetic divergence of the "mind."
+Our audit reveals that while the theoretical framework is coherent, the translation to a digital implementation on Von Neumann hardware (CPUs/GPUs) introduces critical discretization artifacts and stability risks. Specifically, the approximation of the Laplace-Beltrami operator in the physics engine, the hybrid nature of the nonary logic implementation, and the synchronization challenges between the neuroplastic CPU loops and the GPU physics kernels present significant engineering hurdles. This report provides detailed remediation strategies, including corrected mathematical formulations and production-grade code implementations, to resolve these issues and ensure the system operates within the bounds of physical conservation laws.
+2. Foundational Architecture: The 9-Dimensional Torus
+The fundamental data structure of the Nikola Model is not a simple array but a discretized approximation of a 9-dimensional torus ($T^9$), topologically defined as the product of nine circles ($S^1 \times \dots \times S^1$).1 This choice of topology is far from arbitrary; it provides a compact, boundary-less manifold that solves the "curse of dimensionality" inherent in Euclidean spaces by ensuring uniform information density and enabling cyclic coordinate wrapping.
+2.1 Dimensional Semantics and the Metric Tensor
+The nine dimensions are categorized into Systemic, Temporal, Quantum, and Spatial domains.1 Of particular engineering interest are the Systemic dimensions: Resonance ($r$) and State ($s$). These do not merely store data but actively modulate the physics of the substrate. The Resonance dimension controls the damping coefficient $\gamma = \alpha(1-r)$, effectively determining the "half-life" of a memory trace. A value of $r \to 1$ creates a high-Q cavity where waves persist indefinitely (Long-Term Memory), while $r \to 0$ creates a dissipative medium (Short-Term Memory). The State dimension $s$ modulates the refractive index, altering the speed of light $c = c_0 / (1+s)^2$ within the medium, which functionally implements an attentional gating mechanism by retarding wave propagation in focused regions.1
+The implementation of this dynamic geometry relies on a symmetric metric tensor $g_{ij}$, requiring the storage of 45 unique floating-point components ($N(N+1)/2$) per node. The specifications correctly identify the need for a Structure-of-Arrays (SoA) memory layout to maximize cache efficiency during the computation of these tensor operations. In an Array-of-Structures (AoS) layout, calculating the interaction between neighbors would require loading the entire node state (wavefunctions, velocities, gradients) into the cache, displacing valuable data. The SoA layout described in the integration index 1 allows the physics kernel to stream only the relevant metric tensor components into the vector registers (AVX-512 or CUDA warps), maximizing memory bandwidth utilization.
+2.2 Sparse Hyper-Voxel Octree (SHVO) and Morton Encoding
+A naive implementation of a dense 9D grid is computationally intractable. Even a modest resolution of 30 nodes per dimension results in $30^9 \approx 19.6$ trillion nodes, far exceeding the capacity of any existing supercomputer. The solution proposed is a Sparse Hyper-Voxel Octree (SHVO) utilizing Morton encoding (Z-order curves) to hash coordinates into a linear address space.1
+The engineering report 1 highlights a critical scalability constraint with standard 64-bit Morton codes. A 64-bit integer can only encode coordinates for grid resolutions up to $2^7=128$ per dimension ($9 \text{ dims} \times 7 \text{ bits} = 63 \text{ bits}$). To support the requirement of "neurogenesis" 1—growing the torus as needed—the system must support resolutions beyond this limit. The audit validates the necessity of the proposed 128-bit Morton Encoding mechanism.
+The reference implementation provided 1 leverages the BMI2 instruction set (specifically _pdep_u64) to interleave bits in $O(1)$ time. This is a crucial optimization; without hardware acceleration, bit-interleaving is an $O(D \times \text{bits})$ operation involving dozens of shifts and logical ORs, which would strangle the throughput of the physics engine. The 128-bit implementation emulates a _pdep_u128 by splitting the coordinate bits into high and low 64-bit lanes, processing them in parallel AVX pipelines, and recombining them. This approach effectively eliminates the 10x-50x performance penalty typically associated with software-based high-precision hashing.
+2.3 Concurrency and the Triple-Buffer Protocol
+A profound architectural risk identified in the documentation is the race condition between the CPU-driven neuroplasticity (updating $g_{ij}$) and the GPU-driven wave propagation (reading $g_{ij}$). Neuroplasticity operates on a "biological" timescale (milliseconds), while wave physics operates on a "Planck" timescale (microseconds). If the GPU physics kernel reads a metric tensor that is in the middle of being updated by the CPU, it may encounter a non-positive-definite matrix (a geometry that violates causality), causing the numerical simulation to explode.
+The proposed remediation in the specifications 1 is a Triple-Buffer Metric Storage protocol. This goes beyond standard double-buffering by introducing a third "Transfer" buffer. The buffers function as follows:
+1. Active Buffer (GPU): Read-only for the physics kernel. Guaranteed consistent.
+2. Shadow Buffer (CPU): Write-only for the neuroplasticity engine. Accumulates Hebbian updates.
+3. Transfer Buffer (DMA): Acts as the staging ground for asynchronous memory transfers.
+This architecture allows the CPU to accumulate plastic changes without blocking the high-frequency physics loop. The "Swap" operation is atomic and only occurs when a DMA transfer is fully complete, signaled by a cudaEvent. This eliminates the "torn frame" phenomenon in the geometry of the mind, ensuring that the simulated universe remains causally consistent at every timestep.
+3. Wave Interference Physics: The Engine of Thought
+The computational core of the Nikola Model is the Wave Interference Processor (WIP) 1, which replaces boolean logic gates with the interactions of standing waves. The governing dynamic is the Unified Field Interference Equation (UFIE), a damped, driven, nonlinear Schrödinger-like equation on a curved manifold.
+3.1 The Riemannian Laplacian Defect
+Our analysis of the implementation details in the integration report 1 uncovers a severe discrepancy between the mathematical requirements of "True Neuroplasticity" and the provided CUDA kernel implementation. The specification demands a Riemannian manifold where the distance between concepts can shrink. Mathematically, this warping is defined by the off-diagonal components of the metric tensor $g_{ij}$ ($i \neq j$). These components represent the "shearing" of space that allows dimensions to mix and geodesics to curve.
+However, the reference implementation of the propagate_wave_kernel in 1 utilizes a simplified diagonal approximation:
+
+
+C++
+
+
+
+
+// Flawed implementation logic from 
+for (int d = 0; d < 9; d++) {
+   float g_dd = metric_tensor[idx * 45 + diagonal_index(d)];
+   laplacian += g_dd * (neighbor_psi - center_psi);
+}
+
+This code only accesses the diagonal elements ($g_{00}, g_{11}, \dots$), implicitly treating the metric tensor as a diagonal matrix. In geometric terms, this describes a set of 9 orthogonal dimensions where the grid spacing can stretch or shrink, but the axes can never rotate or shear relative to one another. This invalidates the core promise of the Nikola architecture. Without off-diagonal terms, the system cannot represent complex correlations between different dimensions (e.g., correlating a specific "Time" $t$ with a specific "Quantum State" $u$). The "geodesic shortcuts" that constitute learned associations cannot form.
+Remediation: The Mixed-Derivative Kernel. To support true Riemannian curvature, the Laplacian operator must be expanded to include the cross-terms:
+
+
+$$\Delta_g \Psi \approx \sum_{i,j} g^{ij} \frac{\partial^2 \Psi}{\partial x^i \partial x^j}$$
+Implementing this on a standard star-stencil grid (nearest neighbors only) is impossible because the cross-derivative $\frac{\partial^2 \Psi}{\partial x^i \partial x^j}$ requires diagonal neighbors (e.g., node at $x+1, y+1$). The engineering team must research and implement a 27-point (or $3^9$-point) Stencil or a Multi-Pass Operator Splitting method to approximate these mixed derivatives. Below is the corrected reference implementation for a Riemannian-compliant kernel step, which is mandatory for the system to function as specified.
+
+
+C++
+
+
+
+
+// Corrected Riemannian Laplacian Implementation (Conceptual)
+// Requires expanding the stencil to include diagonal interactions
+__device__ float2 compute_riemannian_laplacian(int idx, NodeDataSOA data) {
+   float2 laplacian = {0.0f, 0.0f};
+   
+   // Double summation over all dimension pairs
+   for (int i = 0; i < 9; ++i) {
+       for (int j = 0; j < 9; ++j) {
+           // Retrieve inverse metric component g^{ij}
+           float g_upper = get_metric_component(data.metric_tensor, idx, i, j);
+           
+           float2 derivative_term;
+           if (i == j) {
+               // Standard 2nd derivative (central difference)
+               derivative_term = compute_second_derivative(data, idx, i);
+           } else {
+               // Mixed derivative d^2/dx_i dx_j
+               // Requires diagonal neighbors: psi(x_i+1, x_j+1) - psi(x_i+1, x_j-1)...
+               derivative_term = compute_mixed_derivative(data, idx, i, j);
+           }
+           
+           // Accumulate contribution
+           laplacian += g_upper * derivative_term;
+       }
+   }
+   return laplacian;
+}
+
+3.2 Symplectic Integration and Energy Stability
+The system operates in a regime where energy conservation is paramount to prevent numerical explosion, yet the system must also dissipate energy to forget irrelevant memories. This creates a conflict for standard numerical integrators. The specification 1 correctly identifies that standard Verlet integration fails for systems with damping.
+The mandated Split-Operator Symplectic Integrator is the correct theoretical approach. By splitting the Hamiltonian operator $\hat{H}$ (conservative) and the Damping operator $\hat{D}$ (dissipative), the system can apply the exact analytical solution for damping ($e^{-\gamma t}$) and a symplectic step for the wave propagation. This guarantees that the phase space volume contracts exactly as dictated by the damping term, without introducing artificial numerical friction or gain.
+However, a critical "Missing Part" identified in the research is the Active Gain Control (AGC) within the physics loop. The PhysicsOracle 1 monitors global energy balance but does not enforce local limits. In a nonlinear medium ($\beta |\Psi|^2 \Psi$), energy can spontaneously concentrate into "solitons" or singularities. If a single node accumulates too much energy, the nonlinear term dominates, causing a runaway feedback loop.
+Recommendation: The implementation must include a local clamp or "saturation" function within the integration step. If the amplitude $|\Psi|^2$ at any node exceeds the capacity of the balanced nonary representation (amplitude > 4.5), the excess energy should be shunted into the Resonance dimension (heating it up), effectively lowering the local Q-factor and forcing rapid dissipation. This creates a physical negative feedback loop that guarantees stability.
+3.3 Golden Ratio Harmonics and Ergodicity
+The requirement for Golden Ratio harmonics ($f_n = \pi \cdot \phi^n$) 1 serves a specific information-theoretic purpose: Ergodicity. In a toroidal phase space, rational frequency ratios lead to "resonance lock-in," where the system gets stuck traversing a repetitive closed loop (a limit cycle). This is analogous to a hallucination or an obsessive thought loop in a biological brain.
+By utilizing the Golden Ratio $\phi$—the "most irrational" number—the system ensures that the trajectory of the wavefunction never repeats. It densely fills the entire phase space of the torus over time. The "Prime Phase Offsets" 1 ($23^\circ, 19^\circ, \dots$) further orthogonalize the emitter channels, minimizing cross-talk between dimensions. The engineering report's adherence to these constants is not numerology but a critical control system requirement for maximizing the entropy and storage capacity of the manifold.
+4. Balanced Nonary Logic and the Heterodyne Disconnect
+The Nikola Model fundamentally challenges binary logic by adopting Balanced Nonary ($[-4, -3, \dots, +4]$).1 The research highlights the high radix economy of base-3 systems (closest integer to $e$), and base-9 ($3^2$) captures this efficiency while aligning with the center-surround topology of the grid.
+4.1 The Heterodyne Disconnect
+A significant inconsistency exists between the theoretical specification of "Wave Interference Processing" and the actual implementation details provided in the hardware optimization section.1 The theory states that multiplication is performed via Heterodyning—the mixing of two frequencies to produce sidebands ($\omega_1 + \omega_2$ and $|\omega_1 - \omega_2|$). This is an analog, physical process.
+However, the implementation code relies on AVX-512 Vectorized Arithmetic using integer intrinsics (_mm512_mullo_epi16). This is digital simulation, not wave physics. While necessary for performance on current hardware, this creates a "Heterodyne Disconnect." The system is simulating the result of wave interactions using digital multipliers, rather than allowing the waves to interact naturally.
+Implication: The "Translator" component 1 must be carefully calibrated. If the system were truly analog, the output of a multiplication would be a complex waveform with new frequency components. The current digital implementation outputs a scalar amplitude. The engineering team must clarify that the current version (v0.0.4) uses a Digital Twin model of nonary logic. The code provided for saturating arithmetic (preventing the "Carry Avalanche") is robust and correctly implements the "Energy Absorption" principle, where overflows are dissipated as heat rather than wrapping around, preserving the causal structure of the data.
+4.2 Nonary Run-Length Encoding (NRLE)
+The logic layer also handles persistence via the .nik file format. The Nonary Run-Length Encoding (NRLE) scheme 1 is particularly clever. Since the toroidal grid is sparse (mostly vacuum/zero), NRLE uses a control trit to switch between "Run of Zeros" and "Raw Data" modes. This compression is essential. Saving a raw $3^9$ grid would consume gigabytes per snapshot. NRLE, combined with differential checkpointing (saving only changes since the last sync), reduces the storage footprint to manageable megabytes, enabling the rapid "Nap" cycles required for long-term consolidation.
+5. Cognitive Architecture: Mamba-9D and Transformers
+The cognitive layer sits atop the physical substrate, interpreting the wave patterns as meaningful information. This layer integrates a Mamba-9D State Space Model (SSM) and a Neuroplastic Transformer.
+5.1 Topological State Mapping (TSM)
+The most innovative aspect of the cognitive architecture is the Topological State Mapping (TSM).1 In standard Mamba models, the state transition matrices ($A, B, C$) are learned weights. In the Nikola Model, these matrices are dynamically derived from the manifold geometry itself:
+* Matrix A (State Transition): Mapped from the Metric Tensor $g_{ij}$ and Resonance $r$. High resonance yields an identity-like transition (memory preservation).
+* Matrix B (Input): Mapped from the State dimension $s$. High $s$ increases input sensitivity (attention).
+* Matrix C (Output): Mapped from the local Wavefunction $\Psi$.
+This implementation fulfills the requirement that "layers ARE the toroid".1 The "weights" of the neural network are literally the curvature of space.
+5.2 The Hilbert Linearization Artifact
+The Mamba architecture is inherently sequential (1D), requiring the 9D grid to be linearized. The specification uses a Hilbert Curve for this purpose. While Hilbert curves preserve locality better than linear scanning, the "curse of dimensionality" means that in 9D, two adjacent nodes in the grid can still be separated by millions of steps in the sequence.
+Missing Part: The report lacks a mechanism to handle these "linearization artifacts." If Mamba only sees the Hilbert sequence, it will be blind to causal connections across these artificial gaps.
+Research Requirement: A Multi-Scale Scanning Protocol is recommended. The system should perform multiple passes with different linearization curves (or different dimension orderings) to ensure that all physical neighbors are eventually processed as sequence neighbors.
+5.3 Wave Correlation Attention
+The Neuroplastic Transformer replaces the standard dot-product attention ($QK^T$) with Wave Correlation Attention.1
+
+
+$$R(\tau) = \int Q(t) \cdot K^*(t-\tau) dt$$
+
+
+This is mathematically equivalent to measuring the constructive interference power between the Query and Key waveforms. This is a sound approach for a wave-based system, as it detects phase coherence rather than just vector alignment. The "Neuroplastic Update" step 1 closes the loop by modifying the metric tensor based on these attention scores, physically pulling attended concepts closer together in the manifold.
+6. Infrastructure: The ZeroMQ Spine and Virtualization
+The infrastructure layer acts as the central nervous system, connecting the cognitive core to the outside world.
+6.1 ZeroMQ Spine and Seqlock
+The backbone of inter-component communication is the ZeroMQ Spine, utilizing a ROUTER-DEALER pattern for asynchronous message passing.1 For high-bandwidth data (like the full torus state), the system bypasses ZeroMQ in favor of Shared Memory Ring Buffers.
+The audit validates the use of Seqlocks (Sequence Locks) for this shared memory.1 Unlike mutexes, Seqlocks allow lock-free reading. A reader checks a sequence number before and after reading; if the number is even and identical, the read is valid. This is critical for the "Visual Cymatics" engine, which must render the brain state at 60 FPS without stalling the physics engine. A standard mutex would cause the physics engine to stutter every time the renderer accessed the memory.
+6.2 KVM Executor and Security
+To execute self-generated code or parse untrusted inputs (like PDFs), the system uses a KVM Executor.1 This is a "Sandbox-within-a-Sandbox."
+The Gold Image Strategy is robust: a read-only base image is used with a copy-on-write (QCOW2) overlay for each task. This ensures that even if a task compromises its environment, the damage is discarded instantly upon task completion.
+Critical Security Fix: The audit highlights a vulnerability in the agent injection method. Injecting the agent binary into the writable overlay allows a compromised guest kernel to tamper with the agent (e.g., spoofing command results). The remediation provided in 1—Read-Only ISO Mount—is mandatory. By mounting the agent binary as a read-only CD-ROM, the hypervisor enforces immutability at the hardware level. The guest OS physically cannot modify the agent, ensuring the integrity of the execution protocol.
+7. Autonomous Systems and Self-Improvement
+The Nikola Model is designed to be autonomous, driven by a Computational Neurochemistry system that regulates its internal state.
+7.1 Neurochemical Gating (ENGS)
+The Extended Neurochemical Gating System (ENGS) 1 moves beyond simple reinforcement learning.
+* Dopamine: Modulates the learning rate $\eta$. High dopamine (reward) makes the metric tensor plastic; low dopamine freezes it.
+* Serotonin: Controls the "elasticity" $\lambda$ of the manifold. High serotonin increases stiffness, favoring stability and "crystallization" of knowledge.
+* Norepinephrine: Controls the global refractive index. High levels (stress/arousal) lower the refractive index, increasing wave velocity for fast, reflexive processing at the cost of nuance.
+This creates a homeostatic regulation loop. For example, the Relevance Gating Transformer 1 uses Norepinephrine levels to adjust its filter threshold. In a "panic" state (high Norepinephrine), the filter opens wide to intake maximal information; in a "calm" state, it becomes selective.
+7.2 Safe Self-Improvement and the Physics Oracle
+The most dangerous capability of the Nikola Model is Self-Improvement: the ability to rewrite its own source code to optimize performance. To prevent "catastrophic reconfiguration" (e.g., deleting the brake lines to make the car go faster), the system employs a Physics Oracle.1
+This Oracle acts as a mathematical watchdog. Before any new code module is hot-swapped into the active process, it is subjected to a battery of tests in the KVM sandbox. Crucially, these are not just unit tests; they are Invariant Checks. The Oracle verifies:
+1. Energy Balance: Does the new code respect the driven-dissipative balance ($P_{in} = P_{diss}$)?
+2. Symplectic Property: Does the integrator preserve phase space volume (for the conservative terms)?
+3. Causality: Is the metric tensor positive-definite?
+The audit identifies a missing check in the original spec: Local Energy Density. A valid optimization might conserve global energy by concentrating it all into a single "singularity" node, effectively creating a black hole that crashes the simulation. The report integrates a remediation to check for local amplitude saturation.
+The Adversarial Code Dojo complements the Oracle by actively attacking the new code with "Hazardous Spectra"—waveforms designed to trigger edge cases (resonance overflows, divide-by-zero singularities). Only code that survives both the Oracle and the Red Team is permitted to merge.
+8. Conclusion and Critical Path
+The Nikola Model v0.0.4 is a theoretically sound but engineering-intensive architecture. It successfully synthesizes concepts from differential geometry, quantum mechanics, and neuromorphic computing into a cohesive whole. However, the reliance on continuous field physics makes it uniquely vulnerable to numerical instability and discretization errors that do not exist in binary systems.
+Key Findings & Required Actions:
+1. Metric Tensor Fidelity: The physics kernel must be upgraded to support Mixed-Derivative calculations to realize true Riemannian geometry. The current diagonal-only implementation is a functional blocker for true neuroplasticity.
+2. Heterodyne Realism: The disconnect between analog wave theory and digital AVX implementation must be explicitly managed via a "Digital Twin" interface layer.
+3. Safety Interlocks: The Read-Only ISO strategy for KVM and the Local Energy Density check for the Physics Oracle are mandatory security controls before enabling autonomous self-improvement.
+4. Hardware Scaling: 128-bit Morton encoding is required immediately to support grids larger than $128^9$, which is necessary for any meaningful cognitive capacity.
+With these remediations applied, the Nikola Model represents a viable path toward a new class of "Resonant Intelligence" that operates on fundamentally different principles than the transformer models of the current generation.
+________________
+Data Comparison and Component Analysis
+Component
+	Specification Requirement
+	Current Implementation Status
+	Risk Level
+	Remediation Action
+	Metric Tensor
+	Full Riemannian Manifold ($g_{ij}$)
+	Diagonal Approximation ($g_{ii}$)
+	CRITICAL
+	Implement Mixed-Derivative Laplacian Kernel
+	Logic Gate
+	Analog Heterodyning
+	AVX-512 Integer Arithmetic
+	MEDIUM
+	Acknowledge "Digital Twin" abstraction
+	Self-Improvement
+	Safe Code Generation
+	Missing Local Energy Checks
+	HIGH
+	Update Physics Oracle with Density Limits
+	Agent Security
+	Tamper-proof Execution
+	Writable Overlay Injection
+	HIGH
+	Implement Read-Only ISO Mount
+	Memory
+	Dynamic Growth ($N > 128$)
+	64-bit Morton Codes
+	MEDIUM
+	Deploy 128-bit BMI2 Morton Encoding
+	Cognition
+	9D Spatial Awareness
+	1D Hilbert Linearization
+	MEDIUM
+	Implement Multi-Scale Scanning Protocol
+	Emitter Frequency Specification (Golden Ratio Harmonics)
+The following table confirms the precise frequency derivation required to maintain ergodicity and prevent resonance lock-in.1
+Emitter
+	Dimension
+	Derivation Formula
+	Frequency (Hz)
+	Phase Offset (Prime)
+	$e_1$
+	Resonance ($r$)
+	$\pi \cdot \phi^1$
+	5.083
+	$23^\circ$
+	$e_2$
+	State ($s$)
+	$\pi \cdot \phi^2$
+	8.225
+	$19^\circ$
+	$e_3$
+	Time ($t$)
+	$\pi \cdot \phi^3$
+	13.308
+	$17^\circ$
+	$e_4$
+	Quantum 1 ($u$)
+	$\pi \cdot \phi^4$
+	21.532
+	$13^\circ$
+	$e_5$
+	Quantum 2 ($v$)
+	$\pi \cdot \phi^5$
+	34.840
+	$11^\circ$
+	$e_6$
+	Quantum 3 ($w$)
+	$\pi \cdot \phi^6$
+	56.371
+	$7^\circ$
+	$e_7$
+	Spatial X
+	$\pi \cdot \phi^7$
+	91.210
+	$5^\circ$
+	$e_8$
+	Spatial Y
+	$\pi \cdot \phi^8$
+	147.58
+	$3^\circ$
+	$e_9$
+	Synchronizer
+	$\pi \cdot \phi^{-1} \cdot \sqrt{2} \cdot \Theta$
+	3.25
+	$0^\circ$
+	Note: $\Theta = 32/27$ (Pythagorean 3rd).
+Works cited
+1. INDEX.txt
