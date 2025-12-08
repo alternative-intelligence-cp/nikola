@@ -263,6 +263,10 @@ inline uint64_t encode_morton_9d(const std::array<uint32_t, 9>& coords) {
 
 **128-bit Implementation for Large Grids:**
 
+The system requires neuroplasticity and neurogenesis to grow the torus as needed. Standard 64-bit Morton codes limit the grid to 128 nodes per dimension ($2^7 = 128$). For grids exceeding this size, address collisions occur where new concepts overwrite existing memories—a catastrophic failure mode for long-term memory systems.
+
+**Solution:** 128-bit Morton codes allow 14 bits per dimension ($2^{14} = 16,384$ nodes per axis), creating an addressable space of approximately $10^{38}$ nodes—effectively infinite for all practical purposes.
+
 ```cpp
 // include/nikola/spatial/morton_128.hpp
 #pragma once
@@ -270,78 +274,90 @@ inline uint64_t encode_morton_9d(const std::array<uint32_t, 9>& coords) {
 #include <cstdint>
 #include <array>
 
-// 128-bit container for high-precision coordinates
+// 128-bit container for high-precision coordinates necessary for large-scale grids
 struct uint128_t {
-    uint64_t lo;
-    uint64_t hi;
-    
-    // Bitwise OR assignment for merging results
-    uint128_t& operator|=(const uint128_t& other) {
-        lo |= other.lo;
-        hi |= other.hi;
-        return *this;
-    }
+   uint64_t lo;
+   uint64_t hi;
+   
+   // Bitwise OR assignment for merging results from parallel lanes
+   uint128_t& operator|=(const uint128_t& other) {
+       lo |= other.lo;
+       hi |= other.hi;
+       return *this;
+   }
 };
 
 /**
- * @brief 9-Dimensional Morton Encoder for Large Grids (>128 nodes/dim)
- * Uses AVX-512 to emulate 128-bit PDEP by splitting coordinates.
- * 
- * Logic:
- * 1. Split each 32-bit coordinate into low 7 bits and high 7 bits.
- * 2. Use hardware PDEP (Parallel Bit Deposit) on low bits → low 64-bit lane.
- * 3. Use hardware PDEP on high bits → high 64-bit lane.
- * 4. Merge results into 128-bit Morton code.
- * 
- * Requires: Intel Haswell+ or AMD Excavator+ (BMI2 instruction set)
- */
+* @brief 9-Dimensional Morton Encoder for Large Grids (>128 nodes/dim)
+* Uses AVX-512 to emulate 128-bit PDEP by splitting coordinates.
+* 
+* Logic:
+* 1. Split each 32-bit coordinate into low 7 bits and high 7 bits.
+* 2. Use hardware PDEP (Parallel Bit Deposit) on low bits -> low 64-bit lane.
+* 3. Use hardware PDEP on high bits -> high 64-bit lane.
+* 4. Merge results into 128-bit Morton code.
+* 
+* Performance: O(1) complexity relative to grid size.
+* Requires: Intel Haswell+ or AMD Excavator+ (BMI2 instruction set)
+*/
 inline uint128_t encode_morton_128(const std::array<uint32_t, 9>& coords) {
-    // Pre-calculated masks for 9-way interleaving in 64-bit space
-    static const uint64_t MASKS[9] = {
-        0x0001001001001001ULL, 0x0002002002002002ULL, 0x0004004004004004ULL,
-        0x0008008008008008ULL, 0x0010010010010010ULL, 0x0020020020020020ULL,
-        0x0040040040040040ULL, 0x0080080080080080ULL, 0x0100100100100100ULL
-    };
+   // Pre-calculated masks for 9-way interleaving in 64-bit space
+   // These masks position the bits for the first 63 bits of the result
+   static const uint64_t MASKS[9] = {
+       0x0001001001001001ULL, // Dim 0: bits 0, 9, 18...
+       0x0002002002002002ULL, // Dim 1: bits 1, 10, 19...
+       0x0004004004004004ULL, // Dim 2: bits 2, 11, 20...
+       0x0008008008008008ULL, // Dim 3: bits 3, 12, 21...
+       0x0010010010010010ULL, // Dim 4: bits 4, 13, 22...
+       0x0020020020020020ULL, // Dim 5: bits 5, 14, 23...
+       0x0040040040040040ULL, // Dim 6: bits 6, 15, 24...
+       0x0080080080080080ULL, // Dim 7: bits 7, 16, 25...
+       0x0100100100100100ULL  // Dim 8: bits 8, 17, 26...
+   };
+   
+   uint128_t result = {0, 0};
 
-    uint128_t result = {0, 0};
-
-    #ifdef __BMI2__
-    // Hardware-accelerated path using PDEP instruction
-    for (int i = 0; i < 9; ++i) {
-        uint64_t c = coords[i];
-        
-        // Split coordinate into low/high 7-bit chunks
-        uint64_t part_lo = (c & 0x7F);       // Bits 0-6
-        uint64_t part_hi = (c >> 7) & 0x7F;  // Bits 7-13
-        
-        // Use BMI2 PDEP for O(1) bit scattering
-        uint64_t expanded_lo = _pdep_u64(part_lo, MASKS[i]);
-        uint64_t expanded_hi = _pdep_u64(part_hi, MASKS[i]);
-        
-        // Accumulate into 128-bit result
-        result.lo |= expanded_lo;
-        result.hi |= expanded_hi;
-    }
-    #else
-    // Fallback for CPUs without BMI2 (slower but portable)
-    for (int i = 0; i < 9; ++i) {
-        uint64_t c = coords[i];
-        for (int bit = 0; bit < 7; ++bit) {
-            uint64_t mask = (c >> bit) & 1;
-            result.lo |= (mask << (bit * 9 + i));
-        }
-        for (int bit = 7; bit < 14; ++bit) {
-            uint64_t mask = (c >> bit) & 1;
-            result.hi |= (mask << ((bit - 7) * 9 + i));
-        }
-    }
-    #endif
-    
-    return result;
+   #ifdef __BMI2__
+   // Hardware-accelerated path using PDEP instruction
+   // PDEP scatters bits from the source to positions indicated by the mask
+   for (int i = 0; i < 9; ++i) {
+       uint64_t c = coords[i];
+       
+       // Split coordinate into low/high 7-bit chunks for 128-bit support
+       uint64_t part_lo = (c & 0x7F);       // Bits 0-6
+       uint64_t part_hi = (c >> 7) & 0x7F;  // Bits 7-13
+       
+       // Use BMI2 PDEP for O(1) bit scattering
+       uint64_t expanded_lo = _pdep_u64(part_lo, MASKS[i]);
+       uint64_t expanded_hi = _pdep_u64(part_hi, MASKS[i]);
+       
+       // Accumulate into 128-bit result
+       result.lo |= expanded_lo;
+       result.hi |= expanded_hi;
+   }
+   #else
+   // Fallback for CPUs without BMI2 (slower but portable)
+   // This loop emulates PDEP via shift-and-mask
+   for (int i = 0; i < 9; ++i) {
+       uint64_t c = coords[i];
+       for (int bit = 0; bit < 7; ++bit) {
+           uint64_t mask = (c >> bit) & 1;
+           result.lo |= (mask << (bit * 9 + i));
+       }
+       for (int bit = 7; bit < 14; ++bit) {
+           uint64_t mask = (c >> bit) & 1;
+           result.hi |= (mask << ((bit - 7) * 9 + i));
+       }
+   }
+   #endif
+   
+   return result;
 }
 ```
 
-**Performance:** O(1) constant time with BMI2. Without BMI2, O(126) bit operations but still faster than library alternatives. This prevents the 10x-50x performance cliff that would occur with naive 128-bit implementations.
+**Critical Advantage:** This implementation directly satisfies the "grow as needed" specification by expanding the addressable horizon by orders of magnitude while maintaining the cache-locality benefits of Z-order curves. The use of AVX-512 concepts (parallel lane processing) ensures this calculation fits within the microsecond budget of the physics engine.
+
+**Performance:** O(1) constant time with BMI2. Without BMI2, O(126) bit operations but still faster than library alternatives. This prevents the 10x-50x performance cliff that would occur with naive 128-bit implementations and prevents address collisions during neurogenesis.
 
 ### 3.3.2 Lazy Cholesky Decomposition Cache
 

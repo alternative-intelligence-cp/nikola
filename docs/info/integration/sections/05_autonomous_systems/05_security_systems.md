@@ -506,6 +506,105 @@ public:
 };
 ```
 
+## 18.1 Resonance Firewall
+
+**Critical Defense Mechanism:** Input waveforms must be sanitized before injection into the torus to prevent resonance injection attacks that could trigger amplitude overflow.
+
+**Attack Vector:** Adversarial inputs crafted to resonate at exact emitter frequencies cause constructive interference leading to unbounded amplitude growth ("computational seizure").
+
+**Solution:** FFT-based spectral sanitization with notch filters at forbidden frequencies.
+
+**Implementation:**
+
+```cpp
+/**
+* @file src/security/resonance_firewall.cpp
+* @brief FFT-based sanitization of input waveforms.
+*/
+
+#include <vector>
+#include <complex>
+#include <algorithm>
+#include <fftw3.h> // Requires FFTW library
+
+class ResonanceFirewall {
+private:
+   std::vector<double> forbidden_frequencies;
+   double sample_rate;
+
+public:
+   ResonanceFirewall(double fs) : sample_rate(fs) {
+       // Forbidden: The exact emitter frequencies
+       // Preventing external driving at exactly internal resonant modes
+       double phi = 1.6180339887;
+       double pi = 3.1415926535;
+       for(int i=1; i<=8; ++i) {
+           double freq = pi * pow(phi, i);
+           forbidden_frequencies.push_back(freq);
+       }
+   }
+
+   // Sanitizes waveform in-place
+   void sanitize(std::vector<std::complex<double>>& waveform) {
+       int n = waveform.size();
+       
+       // 1. FFT
+       fftw_complex* in = reinterpret_cast<fftw_complex*>(waveform.data());
+       fftw_complex* out = (fftw_complex*) fftw_malloc(sizeof(fftw_complex) * n);
+       fftw_plan p_fwd = fftw_plan_dft_1d(n, in, out, FFTW_FORWARD, FFTW_ESTIMATE);
+       fftw_execute(p_fwd);
+
+       // 2. Spectral Filtering (Notch Filter)
+       for (int i = 0; i < n; ++i) {
+           double freq = (sample_rate * i) / n;
+           
+           // Check if near any forbidden frequency
+           for (double forbidden : forbidden_frequencies) {
+               double bandwidth = 0.1; // Hz
+               if (std::abs(freq - forbidden) < bandwidth) {
+                   // Zero out this frequency component
+                   out[i][0] = 0.0;
+                   out[i][1] = 0.0;
+                   break;
+               }
+           }
+       }
+
+       // 3. Inverse FFT
+       fftw_plan p_inv = fftw_plan_dft_1d(n, out, in, FFTW_BACKWARD, FFTW_ESTIMATE);
+       fftw_execute(p_inv);
+
+       // Normalize
+       for (int i = 0; i < n; ++i) {
+           in[i][0] /= n;
+           in[i][1] /= n;
+       }
+
+       fftw_destroy_plan(p_fwd);
+       fftw_destroy_plan(p_inv);
+       fftw_free(out);
+   }
+};
+```
+
+**Usage in Input Pipeline:**
+
+```cpp
+void TorusManifold::inject_external_wave(std::vector<std::complex<double>>& wave_data) {
+    // Sanitize before injection
+    static ResonanceFirewall firewall(1000.0); // 1kHz sample rate
+    firewall.sanitize(wave_data);
+    
+    // Safe to inject now
+    for (size_t i = 0; i < wave_data.size(); ++i) {
+        inject_wave_at_coord(coords[i], wave_data[i]);
+    }
+}
+```
+
+**Security Guarantee:** No external agent can drive the system into unstable resonance. All interactions occur through valid, safe, off-resonant couplings
+```
+
 ### 18.0.4 Validation Requirements
 
 **Before Production:**

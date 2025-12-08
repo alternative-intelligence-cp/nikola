@@ -147,6 +147,93 @@ private:
         for (int i = 1; i < 9; ++i) {
             gray ^= (bits >> i);
         }
+        
+        // Reverse rotation
+        uint32_t result = ((gray >> rotation_amount) | (gray << (9 - rotation_amount))) & 0x1FF;
+        return result;
+    }
+};
+```
+
+## 7.2 Spectral Radius Stabilization
+
+**Critical Stability Constraint:** The translation from continuous metric tensor $g_{ij}$ to discrete SSM matrices $(A, B, C)$ requires spectral radius control. If local curvature creates eigenvalues exceeding the Nyquist limit, the hidden state will diverge exponentially.
+
+**Implementation:** Spectral Stabilizer with Adaptive Time-Step
+
+```cpp
+/**
+* @file src/cognitive/kernels/spectral_stabilizer.cpp
+* @brief Ensures SSM matrix stability by clamping spectral radius.
+*/
+
+#include <Eigen/Dense>
+#include <iostream>
+
+using namespace Eigen;
+
+class SpectralStabilizer {
+public:
+   // Stabilizes the continuous-time transition matrix A_c before discretization
+   // Returns a safe time-step Delta
+   static double stabilize_and_compute_delta(MatrixXd& A, double requested_delta) {
+       // 1. Compute Spectral Radius via Power Iteration
+       double rho = compute_spectral_radius_power_method(A);
+       
+       // 2. Check Stability Condition
+       // Enforce "Speed of Light" limit on information propagation
+       double max_growth_rate = 10.0;
+       
+       if (rho > max_growth_rate) {
+           // Clamp eigenvalues by scaling matrix
+           double scale = max_growth_rate / rho;
+           A *= scale;
+           rho = max_growth_rate;
+       }
+       
+       // 3. Adaptive Delta Adjustment
+       // Nyquist: Delta < 1 / (2 * rho)
+       double max_safe_delta = 0.5 / (rho + 1e-6);
+       
+       return std::min(requested_delta, max_safe_delta);
+   }
+
+private:
+   static double compute_spectral_radius_power_method(const MatrixXd& A, int max_iter=20) {
+       VectorXd b = VectorXd::Random(A.cols());
+       b.normalize();
+       
+       for(int i=0; i<max_iter; ++i) {
+           VectorXd b_new = A * b;
+           b_new.normalize();
+           if ((b_new - b).norm() < 1e-6) break;
+           b = b_new;
+       }
+       
+       // Rayleigh quotient approximation
+       return std::abs(b.dot(A * b) / b.dot(b)); 
+   }
+};
+```
+
+**Integration into Mamba9D Forward Pass:**
+
+```cpp
+void Mamba9D::forward(const TorusManifold& torus) {
+    // Extract metric tensor and convert to SSM matrix A
+    MatrixXd A = extract_ssm_matrix_from_metric(torus);
+    
+    // Stabilize and get safe timestep
+    double safe_delta = SpectralStabilizer::stabilize_and_compute_delta(A, requested_dt);
+    
+    // Discretize using safe timestep
+    MatrixXd A_discrete = bilinear_transform(A, safe_delta);
+    
+    // Continue with SSM forward pass...
+}
+```
+
+**Effect:** Dynamically throttles simulation speed when cognitive state becomes too complex, implementing a "cognitive reflex" that slows thinking to maintain coherence during high-stress inputs
 
         // Reverse circular rotation
         uint32_t unrotated = ((gray >> rotation_amount) | (gray << (9 - rotation_amount))) & 0x1FF;

@@ -348,6 +348,129 @@ private:
 
             static std::random_device rd;
             static std::mt19937 gen(rd());
+            std::uniform_int_distribution<> dis(0, meta_topics.size() - 1);
+
+            std::string topic = meta_topics[dis(gen)];
+            tavily_query(topic);
+        } else {
+            // PRODUCTION: Query highest-entropy frontier
+            std::sort(frontiers.begin(), frontiers.end(),
+                     [](const auto& a, const auto& b) { return a.entropy > b.entropy; });
+
+            std::string topic = frontiers[0].conceptual_description;
+            std::cout << "[CURIOSITY] Exploring knowledge frontier: " << topic << std::endl;
+            tavily_query(topic);
+        }
+
+        boredom.reset_boredom();
+    }
+};
+```
+
+## 14.6 Metabolic Energy Budget
+
+**Critical Thermodynamic Regulation:** Biological brains consume metabolic energy (ATP) and require rest when depleted. The Nikola Model implements analogous virtual energy management to prevent runaway plasticity and enforce natural consolidation cycles.
+
+**Implementation:**
+
+```cpp
+/**
+* @file include/nikola/autonomy/metabolic_controller.hpp
+* @brief Manages system energy budget and enforces rest cycles.
+*/
+#pragma once
+#include <atomic>
+#include <cmath>
+#include <chrono>
+
+namespace nikola::autonomy {
+
+class MetabolicController {
+private:
+   std::atomic<float> atp_reserve;
+   const float MAX_ATP = 10000.0f;
+   const float RECHARGE_RATE = 50.0f; // ATP per second during rest
+   
+   // Cost constants
+   const float COST_PROPAGATION_STEP = 0.1f;
+   const float COST_PLASTICITY_UPDATE = 1.5f; // Expensive!
+   const float COST_EXTERNAL_TOOL = 5.0f;     // Very expensive
+   
+public:
+   MetabolicController() : atp_reserve(MAX_ATP) {}
+
+   // Called by Physics Engine
+   void record_activity(int num_nodes, bool plasticity_active) {
+       float cost = num_nodes * COST_PROPAGATION_STEP;
+       if (plasticity_active) {
+           cost += num_nodes * COST_PLASTICITY_UPDATE;
+       }
+       consume(cost);
+   }
+
+   // Called by Orchestrator
+   void record_tool_usage() {
+       consume(COST_EXTERNAL_TOOL);
+   }
+
+   // Recharge function (called during "Nap" state)
+   void recharge(double dt_seconds) {
+       float current = atp_reserve.load();
+       float new_val = std::min(MAX_ATP, current + (float)(RECHARGE_RATE * dt_seconds));
+       atp_reserve.store(new_val);
+   }
+
+   // Returns a fatigue factor [0.0, 1.0]
+   // 0.0 = Fresh, 1.0 = Exhausted
+   float get_fatigue_level() const {
+       float current = atp_reserve.load();
+       return 1.0f - (current / MAX_ATP);
+   }
+
+   // Should the system enter forced nap mode?
+   bool requires_nap() const {
+       return atp_reserve.load() < (MAX_ATP * 0.15f); // 15% threshold
+   }
+
+private:
+   void consume(float amount) {
+       float current = atp_reserve.load();
+       float new_val = std::max(0.0f, current - amount);
+       atp_reserve.store(new_val);
+   }
+};
+
+} // namespace nikola::autonomy
+```
+
+**Integration with Orchestrator:**
+
+The controller forces scheduled "Nap" cycles when ATP reserves drop below 15%. During naps:
+- External inputs are ignored
+- System performs memory consolidation
+- State is saved to disk via DMC
+- Virtual energy recharges
+
+This mechanism naturally regulates the pace of learning and prevents catastrophic forgetting associated with continuous unbounded plasticity.
+
+**Integration with Physics Engine:**
+
+```cpp
+// In main physics loop
+void PhysicsEngine::step(double dt, MetabolicController& metabolism) {
+    // Record computational cost
+    bool plasticity_active = (dopamine_level > 0.3);
+    metabolism.record_activity(active_node_count, plasticity_active);
+    
+    // Check for forced rest
+    if (metabolism.requires_nap()) {
+        trigger_nap_cycle();
+        return; // Skip this physics step
+    }
+    
+    // Normal propagation
+    propagate_wave_kernel<<<blocks, threads>>>(grid, dt);
+}
             std::uniform_int_distribution<size_t> dist(0, meta_topics.size() - 1);
             std::string topic = meta_topics[dist(gen)];
 

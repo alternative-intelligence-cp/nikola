@@ -200,6 +200,115 @@ double VisualCymaticsEngine::measure_resonance_with_stored_pattern(const std::st
         // This detects phase-aligned components (constructive interference)
         std::complex<double> stored_conj = std::conj(stored_pattern[i].wavefunction);
         std::complex<double> current_wave = current_state[i].wavefunction;
+        
+        correlation_sum += stored_conj * current_wave;
+        
+        // Accumulate energies for normalization
+        stored_energy += std::norm(stored_pattern[i].wavefunction);
+        current_energy += std::norm(current_state[i].wavefunction);
+    }
+
+    // 4. Normalize correlation to [0, 1]
+    // This is the cosine similarity in complex vector space
+    double correlation_magnitude = std::abs(correlation_sum);
+    double normalization = std::sqrt(stored_energy * current_energy);
+    
+    if (normalization < 1e-10) {
+        // Avoid division by zero
+        return 0.0;
+    }
+    
+    double resonance = correlation_magnitude / normalization;
+    
+    return resonance;  // Range: [0, 1], where 1 = perfect match
+}
+
+std::string VisualCymaticsEngine::recognize_object(const cv::Mat& image) {
+    // 1. Inject image as wave pattern
+    inject_image(image);
+    
+    // 2. Measure resonance with all stored patterns
+    std::vector<std::pair<std::string, double>> resonances;
+    
+    for (const auto& label : memory_system.get_all_labels()) {
+        double resonance = measure_resonance_with_stored_pattern(label);
+        resonances.push_back({label, resonance});
+    }
+    
+    // 3. Sort by resonance (highest first)
+    std::sort(resonances.begin(), resonances.end(),
+             [](const auto& a, const auto& b) { return a.second > b.second; });
+    
+    // 4. Return label with highest resonance (if above threshold)
+    const double RECOGNITION_THRESHOLD = 0.7;  // 70% correlation required
+    
+    if (!resonances.empty() && resonances[0].second > RECOGNITION_THRESHOLD) {
+        return resonances[0].first;
+    }
+    
+    return "UNKNOWN";  // No match found
+}
+```
+
+## 24.2.6 Holographic Pixel Transduction
+
+**Enhanced Visual Encoding:** Map 9D node states to RGB pixels for visualization and debugging.
+
+**Implementation:**
+
+```cpp
+// include/nikola/multimodal/cymatics.hpp
+struct Pixel {
+   uint8_t r, g, b, a;
+};
+
+class VisualCymaticsEngine {
+public:
+   // Transduce a 9D node state into a pixel
+   static Pixel transduce(const physics::TorusNode& node) {
+       // Map Spatial (x,y,z) to base color using nonlinear tanh scaling
+       uint8_t r = (uint8_t)(std::tanh(node.coord.x * 0.1) * 127 + 128);
+       uint8_t g = (uint8_t)(std::tanh(node.coord.y * 0.1) * 127 + 128);
+       uint8_t b = (uint8_t)(std::tanh(node.coord.z * 0.1) * 127 + 128);
+       
+       // Map Resonance (r) to Alpha (Opacity)
+       // High resonance → opaque (persistent memory)
+       // Low resonance → transparent (fading memory)
+       uint8_t a = (uint8_t)(node.resonance * 255);
+       
+       // Modulate brightness by wavefunction amplitude
+       double amplitude = std::abs(node.wavefunction);
+       double brightness_factor = std::tanh(amplitude * 2.0);
+       
+       r = (uint8_t)(r * brightness_factor);
+       g = (uint8_t)(g * brightness_factor);
+       b = (uint8_t)(b * brightness_factor);
+       
+       return {r, g, b, a};
+   }
+   
+   // Generate full visualization frame
+   static cv::Mat generate_visualization(const physics::TorusManifold& torus, int width, int height) {
+       cv::Mat frame(height, width, CV_8UC4);
+       
+       // Map torus nodes to pixel grid
+       auto active_nodes = torus.get_active_nodes();
+       
+       for (const auto& node : active_nodes) {
+           // Project 9D coordinates to 2D screen space
+           // Use spatial dimensions (x, y) directly
+           int px = (node.coord.coords[6] % width + width) % width;
+           int py = (node.coord.coords[7] % height + height) % height;
+           
+           Pixel p = transduce(node);
+           frame.at<cv::Vec4b>(py, px) = cv::Vec4b(p.b, p.g, p.r, p.a);
+       }
+       
+       return frame;
+   }
+};
+        std::complex<double> stored_conj = std::conj(stored_pattern[i].wavefunction);
+        std::complex<double> current_wave = current_state[i].wavefunction;
 
         correlation_sum += stored_conj * current_wave;
 
@@ -685,7 +794,268 @@ public:
 };
 ```
 
-## 24.2.10 Applications
+## 24.2.10 Real-Time Holographic Visualization Shader
+
+**Purpose:** Render the 9D wavefunction as a 2D holographic projection for real-time debugging and visualization of the system's internal state.
+
+**Mapping Strategy:**
+- First 3 quantum dimensions ($u, v, w$) map to RGB color channels
+- Magnitude determines brightness
+- Phase determines hue
+
+**Fragment Shader Implementation:**
+
+```glsl
+// src/multimodal/cymatics_shader.glsl
+// Fragment Shader for 9D->2D Holographic Projection
+#version 450
+layout(location = 0) in vec2 uv;
+layout(location = 0) out vec4 outColor;
+
+// Shared memory input texture (2D slice of 9D torus)
+layout(binding = 0) uniform sampler2D wavefunctionTexture;
+
+void main() {
+   // Sample the complex wavefunction
+   // Texture stores: R=Re(u), G=Im(u), B=Re(v), A=Im(v)
+   vec4 wave = texture(wavefunctionTexture, uv);
+   
+   // Calculate magnitude (Brightness)
+   float mag_u = length(vec2(wave.r, wave.g));
+   float mag_v = length(vec2(wave.b, wave.a));
+   
+   // Calculate phase (Hue)
+   float phase_u = atan(wave.g, wave.r);
+   
+   // Holographic Color Mapping
+   // Hue = Phase, Saturation = 1.0, Value = Magnitude
+   vec3 color;
+   color.r = 0.5 + 0.5 * cos(phase_u);
+   color.g = 0.5 + 0.5 * cos(phase_u + 2.094); // +120 deg
+   color.b = 0.5 + 0.5 * cos(phase_u + 4.188); // +240 deg
+   
+   // Apply magnitude intensity
+   color *= (mag_u + mag_v);
+   
+   outColor = vec4(color, 1.0);
+}
+```
+
+**Vertex Shader (Quad Rendering):**
+
+```glsl
+// Vertex shader for full-screen quad
+#version 450
+layout(location = 0) out vec2 uv;
+
+void main() {
+   // Generate full-screen triangle
+   uv = vec2((gl_VertexIndex << 1) & 2, gl_VertexIndex & 2);
+   gl_Position = vec4(uv * 2.0 - 1.0, 0.0, 1.0);
+}
+```
+
+**Host Integration (C++):**
+
+```cpp
+// include/nikola/multimodal/gl_visualizer.hpp
+#pragma once
+#include <GL/glew.h>
+#include <GLFW/glfw3.h>
+#include "nikola/physics/torus_manifold.hpp"
+
+namespace nikola::multimodal {
+
+class GLVisualizer {
+    GLuint shader_program;
+    GLuint wavefunction_texture;
+    GLuint vao, vbo;
+    GLFWwindow* window;
+
+public:
+    GLVisualizer(int width, int height);
+    ~GLVisualizer();
+    
+    // Upload wavefunction data to GPU texture
+    void update_texture(const TorusManifold& torus);
+    
+    // Render one frame
+    void render_frame();
+    
+    // Main loop
+    void run(TorusManifold& torus);
+
+private:
+    void compile_shaders();
+    void create_texture();
+};
+
+} // namespace nikola::multimodal
+```
+
+**Implementation:**
+
+```cpp
+// src/multimodal/gl_visualizer.cpp
+#include "nikola/multimodal/gl_visualizer.hpp"
+#include <iostream>
+#include <fstream>
+#include <sstream>
+
+namespace nikola::multimodal {
+
+GLVisualizer::GLVisualizer(int width, int height) {
+    // Initialize GLFW
+    if (!glfwInit()) {
+        throw std::runtime_error("Failed to initialize GLFW");
+    }
+    
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 5);
+    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+    
+    window = glfwCreateWindow(width, height, "Nikola 9D Visualizer", nullptr, nullptr);
+    if (!window) {
+        glfwTerminate();
+        throw std::runtime_error("Failed to create GLFW window");
+    }
+    
+    glfwMakeContextCurrent(window);
+    
+    // Initialize GLEW
+    if (glewInit() != GLEW_OK) {
+        throw std::runtime_error("Failed to initialize GLEW");
+    }
+    
+    compile_shaders();
+    create_texture();
+    
+    // Create full-screen quad VAO (no vertex data needed)
+    glGenVertexArrays(1, &vao);
+    glBindVertexArray(vao);
+}
+
+void GLVisualizer::compile_shaders() {
+    // Load shader source from files
+    std::ifstream vert_file("shaders/cymatics.vert");
+    std::ifstream frag_file("shaders/cymatics.frag");
+    
+    std::stringstream vert_stream, frag_stream;
+    vert_stream << vert_file.rdbuf();
+    frag_stream << frag_file.rdbuf();
+    
+    std::string vert_code = vert_stream.str();
+    std::string frag_code = frag_stream.str();
+    
+    const char* vert_src = vert_code.c_str();
+    const char* frag_src = frag_code.c_str();
+    
+    // Compile vertex shader
+    GLuint vert_shader = glCreateShader(GL_VERTEX_SHADER);
+    glShaderSource(vert_shader, 1, &vert_src, nullptr);
+    glCompileShader(vert_shader);
+    
+    // Compile fragment shader
+    GLuint frag_shader = glCreateShader(GL_FRAGMENT_SHADER);
+    glShaderSource(frag_shader, 1, &frag_src, nullptr);
+    glCompileShader(frag_shader);
+    
+    // Link program
+    shader_program = glCreateProgram();
+    glAttachShader(shader_program, vert_shader);
+    glAttachShader(shader_program, frag_shader);
+    glLinkProgram(shader_program);
+    
+    glDeleteShader(vert_shader);
+    glDeleteShader(frag_shader);
+}
+
+void GLVisualizer::create_texture() {
+    glGenTextures(1, &wavefunction_texture);
+    glBindTexture(GL_TEXTURE_2D, wavefunction_texture);
+    
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+    
+    // Allocate texture storage (updated each frame)
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F, 512, 512, 0, GL_RGBA, GL_FLOAT, nullptr);
+}
+
+void GLVisualizer::update_texture(const TorusManifold& torus) {
+    // Extract 2D slice of wavefunction (Z=0 plane)
+    std::vector<float> texture_data(512 * 512 * 4);  // RGBA
+    
+    for (int y = 0; y < 512; ++y) {
+        for (int x = 0; x < 512; ++x) {
+            Coord9D coord;
+            coord.coords = {0, 0, 0, 0, 0, 0, x/6, y/6, 0};  // Map to 81x81 grid
+            
+            auto node = torus.get_node_safe(coord);
+            
+            int idx = (y * 512 + x) * 4;
+            if (node) {
+                texture_data[idx + 0] = node->quantum.u.real();  // Re(u)
+                texture_data[idx + 1] = node->quantum.u.imag();  // Im(u)
+                texture_data[idx + 2] = node->quantum.v.real();  // Re(v)
+                texture_data[idx + 3] = node->quantum.v.imag();  // Im(v)
+            } else {
+                texture_data[idx + 0] = 0.0f;
+                texture_data[idx + 1] = 0.0f;
+                texture_data[idx + 2] = 0.0f;
+                texture_data[idx + 3] = 0.0f;
+            }
+        }
+    }
+    
+    glBindTexture(GL_TEXTURE_2D, wavefunction_texture);
+    glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, 512, 512, GL_RGBA, GL_FLOAT, texture_data.data());
+}
+
+void GLVisualizer::render_frame() {
+    glClear(GL_COLOR_BUFFER_BIT);
+    
+    glUseProgram(shader_program);
+    glBindVertexArray(vao);
+    glBindTexture(GL_TEXTURE_2D, wavefunction_texture);
+    
+    // Draw full-screen quad (3 vertices for triangle)
+    glDrawArrays(GL_TRIANGLES, 0, 3);
+    
+    glfwSwapBuffers(window);
+    glfwPollEvents();
+}
+
+void GLVisualizer::run(TorusManifold& torus) {
+    while (!glfwWindowShouldClose(window)) {
+        update_texture(torus);
+        render_frame();
+        
+        // Cap at 60 FPS
+        std::this_thread::sleep_for(std::chrono::milliseconds(16));
+    }
+}
+
+GLVisualizer::~GLVisualizer() {
+    glDeleteTextures(1, &wavefunction_texture);
+    glDeleteVertexArrays(1, &vao);
+    glDeleteProgram(shader_program);
+    glfwDestroyWindow(window);
+    glfwTerminate();
+}
+
+} // namespace nikola::multimodal
+```
+
+**Visual Output:** The shader renders the wavefunction as a colorful holographic pattern where:
+- **Color** encodes phase relationships between quantum dimensions
+- **Brightness** represents wave amplitude (energy/information density)
+- **Patterns** reveal standing waves (memories) and propagating waves (active thoughts)
+
+This provides real-time visibility into the system's cognitive state for development and monitoring.
+
+## 24.2.11 Applications
 
 **Use Cases:**
 

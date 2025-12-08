@@ -200,6 +200,109 @@ uint8_t pack_nits(Nit nit_a, Nit nit_b) {
     uint8_t a = static_cast<uint8_t>(nit_a + 4);
     uint8_t b = static_cast<uint8_t>(nit_b + 4);
     
+    // Pack: high nibble = nit_b, low nibble = nit_a
+    return (b << 4) | a;
+}
+
+// Unpack byte to two nits
+std::pair<Nit, Nit> unpack_nits(uint8_t packed) {
+    uint8_t a = packed & 0x0F;
+    uint8_t b = (packed >> 4) & 0x0F;
+    
+    // Offset back to -4 to +4 range
+    return {static_cast<Nit>(a - 4), static_cast<Nit>(b - 4)};
+}
+```
+
+**Block Structure:**
+
+```cpp
+// Q9_0 Block: Stores 64 nits (32 bytes of packed data + 4-byte scale)
+struct BlockQ9_0 {
+    float scale;              // 4 bytes: Scaling factor for dequantization
+    uint8_t packed[32];       // 32 bytes: 64 nits packed as 2 per byte
+};
+
+static_assert(sizeof(BlockQ9_0) == 36, "Q9_0 block must be 36 bytes");
+```
+
+**Quantization Function:**
+
+```cpp
+BlockQ9_0 quantize_q9_0(const float* weights, int count) {
+    assert(count == 64 && "Q9_0 blocks must contain exactly 64 values");
+    
+    BlockQ9_0 block;
+    
+    // 1. Find scale factor (map to [-4, 4] range)
+    float max_abs = 0.0f;
+    for (int i = 0; i < count; ++i) {
+        max_abs = std::max(max_abs, std::abs(weights[i]));
+    }
+    block.scale = max_abs / 4.0f;  // Scale to fit [-4, 4]
+    
+    // 2. Quantize and pack
+    for (int i = 0; i < 32; ++i) {
+        // Get two consecutive weights
+        float w0 = weights[i * 2];
+        float w1 = weights[i * 2 + 1];
+        
+        // Quantize to [-4, +4] integer range
+        Nit nit0 = static_cast<Nit>(std::round(w0 / block.scale));
+        Nit nit1 = static_cast<Nit>(std::round(w1 / block.scale));
+        
+        // Clamp to valid range
+        nit0 = std::clamp(nit0, static_cast<Nit>(-4), static_cast<Nit>(4));
+        nit1 = std::clamp(nit1, static_cast<Nit>(-4), static_cast<Nit>(4));
+        
+        // Pack into byte
+        block.packed[i] = pack_nits(nit0, nit1);
+    }
+    
+    return block;
+}
+```
+
+**Dequantization Function:**
+
+```cpp
+void dequantize_q9_0(const BlockQ9_0& block, float* output) {
+    for (int i = 0; i < 32; ++i) {
+        auto [nit0, nit1] = unpack_nits(block.packed[i]);
+        
+        // Scale back to float
+        output[i * 2] = static_cast<float>(nit0) * block.scale;
+        output[i * 2 + 1] = static_cast<float>(nit1) * block.scale;
+    }
+}
+```
+
+**GGUF Integration:**
+
+```cpp
+// Register Q9_0 type in GGUF
+enum ggml_type {
+    GGML_TYPE_F32 = 0,
+    GGML_TYPE_F16 = 1,
+    // ... existing types ...
+    GGML_TYPE_Q9_0 = 99,  // Custom type ID
+};
+
+// Type info for llama.cpp
+static const struct ggml_type_traits {
+    const char* type_name;
+    int blck_size;  // Block size in elements
+    size_t type_size;  // Size in bytes
+} ggml_type_traits[GGML_TYPE_COUNT] = {
+    // ... existing types ...
+    [GGML_TYPE_Q9_0] = {
+        .type_name = "q9_0",
+        .blck_size = 64,
+        .type_size = sizeof(BlockQ9_0),
+    },
+};
+    uint8_t b = static_cast<uint8_t>(nit_b + 4);
+    
     // Pack: high 4 bits = nit_a, low 4 bits = nit_b
     return (a << 4) | b;
 }
