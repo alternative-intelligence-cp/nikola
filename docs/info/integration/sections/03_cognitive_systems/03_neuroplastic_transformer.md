@@ -67,6 +67,7 @@ RelevanceGatingTransformer::GatingResult RelevanceGatingTransformer::filter(
 
    // 2. Vectorize Query and Content (Float precision)
    // We use the raw embedding before nonary quantization for precision
+   // CRITICAL: Thread-safe embedding using thread_local tokenizer instances
    std::vector<float> query_vec = embedder.vectorize_text(query);
    std::vector<float> content_vec = embedder.vectorize_text(content);
 
@@ -155,6 +156,100 @@ void AutonomousIngestionPipeline::process_document(const std::string& doc_conten
 - **Calm state (norepinephrine ↓):** Higher threshold → Selective focus (process less data)
 
 This implements the biological attention mechanism where arousal states modulate sensory gating.
+
+### 8.0.5 Thread-Safe Embedding Engine
+
+**Critical Concurrency Issue:** The Orchestrator routes queries through a worker thread pool (`boost::asio`), causing concurrent calls to `embedder.vectorize_text()`. Standard tokenizers (e.g., Byte-Pair Encoding) maintain internal caches (`std::unordered_map` for merge rules) that are **NOT thread-safe**. Concurrent access causes data races, double-frees, and segmentation faults.
+
+**Solution:** Thread-local storage for tokenizer instances. Each worker thread gets its own independent tokenizer, eliminating lock contention and data races entirely.
+
+**Implementation:**
+
+```cpp
+// File: src/cognitive/embedding_engine.cpp
+#include "nikola/cognitive/embedding_engine.hpp"
+#include <mutex>
+#include <filesystem>
+
+namespace nikola::cognitive {
+
+class EmbeddingEngine {
+private:
+    std::string model_path;
+    std::string vocab_path;
+    
+    // Shared model weights (read-only, thread-safe)
+    std::shared_ptr<TransformerWeights> weights;
+    
+    // CRITICAL: Thread-local tokenizer instances
+    // Each thread gets its own tokenizer with independent cache
+    static thread_local std::unique_ptr<Tokenizer> tl_tokenizer;
+    static thread_local bool tl_tokenizer_initialized;
+
+public:
+    EmbeddingEngine(const std::string& model, const std::string& vocab)
+        : model_path(model), vocab_path(vocab)
+    {
+        // Load model weights once (shared across threads, read-only)
+        weights = std::make_shared<TransformerWeights>(model_path);
+    }
+
+    /**
+     * @brief Thread-safe text vectorization using thread_local tokenizers
+     * Each worker thread maintains its own tokenizer instance with independent cache.
+     * This prevents data races without mutex overhead.
+     */
+    std::vector<float> vectorize_text(const std::string& text) {
+        // Initialize thread-local tokenizer on first call from this thread
+        if (!tl_tokenizer_initialized) {
+            tl_tokenizer = std::make_unique<Tokenizer>(vocab_path);
+            tl_tokenizer_initialized = true;
+        }
+        
+        // Tokenization: Each thread uses its own tokenizer (no locks needed)
+        std::vector<int> token_ids = tl_tokenizer->encode(text);
+        
+        // Embedding lookup: Weights are read-only, naturally thread-safe
+        std::vector<float> embedding(weights->embedding_dim, 0.0f);
+        
+        for (int token_id : token_ids) {
+            const float* token_embedding = weights->get_embedding(token_id);
+            
+            // Accumulate embeddings (mean pooling)
+            for (size_t i = 0; i < weights->embedding_dim; ++i) {
+                embedding[i] += token_embedding[i];
+            }
+        }
+        
+        // Normalize by sequence length
+        float norm = 1.0f / static_cast<float>(token_ids.size());
+        for (float& val : embedding) {
+            val *= norm;
+        }
+        
+        return embedding;
+    }
+};
+
+// Thread-local storage initialization (static members)
+thread_local std::unique_ptr<Tokenizer> EmbeddingEngine::tl_tokenizer = nullptr;
+thread_local bool EmbeddingEngine::tl_tokenizer_initialized = false;
+
+} // namespace nikola::cognitive
+```
+
+**Performance Characteristics:**
+- **Lock-free:** Zero mutex overhead (each thread independent)
+- **Initialization cost:** One-time tokenizer allocation per thread (~10ms)
+- **Runtime cost:** Identical to single-threaded (~100μs per tokenization)
+- **Memory overhead:** N_threads × tokenizer_cache_size (~5MB each)
+
+**Thread Safety Guarantee:**
+- `thread_local` storage ensures each thread's tokenizer is completely isolated
+- Read-only model weights (`std::shared_ptr<TransformerWeights>`) are naturally thread-safe
+- No explicit locks required, preventing deadlock and priority inversion
+
+**Critical Advantage:** This pattern eliminates the production crash risk from concurrent tokenizer access while maintaining optimal performance. The Orchestrator can safely route requests to any worker thread without serialization bottlenecks.
 
 ## 8.1 Wave Correlation Attention
 

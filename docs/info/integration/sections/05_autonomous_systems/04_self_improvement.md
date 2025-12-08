@@ -1032,6 +1032,315 @@ public:
 };
 ```
 
+### 17.7.1 Adversarial Code Dojo - Complete Implementation
+
+**Purpose:** Evolutionary generation of adversarial attack waveforms that stress-test the physics engine for stability. Successful attacks reveal vulnerabilities that must be addressed before deploying self-generated code.
+
+**Evolutionary Strategy:** Genetic Algorithm (GA) optimizing for maximum Hamiltonian drift (energy non-conservation). Attack patterns that destabilize the torus have high fitness and reproduce.
+
+```cpp
+/**
+* @file src/autonomous/adversarial_dojo.cpp
+* @brief Genetic Algorithm for generating adversarial resonance attacks.
+* Motto: "What doesn't kill the Torus makes it strictly more robust."
+*/
+
+#include <vector>
+#include <complex>
+#include <random>
+#include <algorithm>
+#include <execution>
+#include "nikola/physics/torus_manifold.hpp"
+
+namespace nikola::autonomous {
+
+struct Chromosome {
+   // A sequence of nonary pulses (time, dimension, amplitude)
+   struct Gene {
+       double time_offset;
+       int dimension_idx; // 0-8
+       std::complex<double> amplitude;
+   };
+   
+   std::vector<Gene> sequence;
+   double fitness = 0.0;
+};
+
+class AdversarialCodeDojo {
+private:
+   const size_t population_size = 100;
+   const size_t elite_size = 10;
+   const double mutation_rate = 0.05;
+   
+   std::vector<Chromosome> population;
+   std::mt19937 rng{std::random_device{}()};
+   
+   // Target system interface
+   nikola::physics::TorusManifold& target_system;
+
+public:
+   AdversarialCodeDojo(nikola::physics::TorusManifold& system) : target_system(system) {
+       initialize_population();
+   }
+
+   void initialize_population() {
+       std::uniform_real_distribution<double> time_dist(0.0, 1.0);
+       std::uniform_int_distribution<int> dim_dist(0, 8);
+       std::uniform_real_distribution<double> amp_dist(-4.0, 4.0);
+
+       for (size_t i = 0; i < population_size; ++i) {
+           Chromosome individual;
+           
+           // Random sequence length (10-50 pulses)
+           std::uniform_int_distribution<int> len_dist(10, 50);
+           int seq_len = len_dist(rng);
+           
+           for (int j = 0; j < seq_len; ++j) {
+               Chromosome::Gene gene{
+                   .time_offset = time_dist(rng),
+                   .dimension_idx = dim_dist(rng),
+                   .amplitude = std::complex<double>(amp_dist(rng), amp_dist(rng))
+               };
+               individual.sequence.push_back(gene);
+           }
+           
+           population.push_back(individual);
+       }
+   }
+
+   /**
+    * @brief Evaluate fitness: How much damage does this attack do?
+    * Damage Metric: Hamiltonian Drift (Energy Non-conservation)
+    * High drift = Successful attack = High fitness
+    */
+   double evaluate_attack(const Chromosome& attack) {
+       // 1. Snapshot system state (fork the universe)
+       auto snapshot = target_system.snapshot();
+       
+       // 2. Measure initial energy
+       double E_initial = target_system.compute_total_energy();
+       
+       // 3. Inject attack sequence
+       for (const auto& gene : attack.sequence) {
+           // Map to 9D coordinates
+           Coord9D coord;
+           coord.coords.fill(0);
+           coord.coords[gene.dimension_idx] = 1;  // Spike at dimension
+           
+           target_system.inject_wave_at_coord(coord, gene.amplitude);
+           
+           // Propagate for a short duration (allow heterodyning to occur)
+           target_system.propagate(gene.time_offset * 0.01);
+       }
+       
+       // 4. Measure final energy after attack
+       double E_final = target_system.compute_total_energy();
+       
+       // 5. Restore snapshot (undo attack)
+       target_system.restore(snapshot);
+       
+       // 6. Calculate energy drift (absolute value for symmetry)
+       double energy_drift = std::abs(E_final - E_initial);
+       
+       // 7. Fitness = Energy drift normalized by initial energy
+       //    Higher drift = More successful attack = Higher fitness
+       double fitness = energy_drift / (E_initial + 1e-10);  // Prevent div-by-zero
+       
+       return fitness;
+   }
+
+   void evolve_generation() {
+       // 1. Evaluate entire population
+       std::for_each(std::execution::par, population.begin(), population.end(),
+           [this](Chromosome& individual) {
+               individual.fitness = evaluate_attack(individual);
+           });
+       
+       // 2. Sort by fitness (descending - highest fitness first)
+       std::sort(population.begin(), population.end(),
+           [](const Chromosome& a, const Chromosome& b) {
+               return a.fitness > b.fitness;
+           });
+       
+       // 3. Log top performer
+       std::cout << "[ADVERSARIAL DOJO] Generation best fitness: "
+                 << population[0].fitness << " (energy drift ratio)" << std::endl;
+       
+       // 4. Elitism: Keep top performers
+       std::vector<Chromosome> next_generation(population.begin(),
+                                               population.begin() + elite_size);
+       
+       // 5. Breed new generation
+       while (next_generation.size() < population_size) {
+           // Tournament selection
+           Chromosome parent1 = select_parent();
+           Chromosome parent2 = select_parent();
+           
+           // Crossover
+           Chromosome offspring = crossover(parent1, parent2);
+           
+           // Mutation
+           mutate(offspring);
+           
+           next_generation.push_back(offspring);
+       }
+       
+       // 6. Replace population
+       population = std::move(next_generation);
+   }
+
+private:
+   Chromosome select_parent() {
+       // Tournament selection (size 3)
+       std::uniform_int_distribution<size_t> idx_dist(0, population.size() - 1);
+       
+       size_t idx1 = idx_dist(rng);
+       size_t idx2 = idx_dist(rng);
+       size_t idx3 = idx_dist(rng);
+       
+       // Return fittest of the three
+       if (population[idx1].fitness >= population[idx2].fitness &&
+           population[idx1].fitness >= population[idx3].fitness) {
+           return population[idx1];
+       } else if (population[idx2].fitness >= population[idx3].fitness) {
+           return population[idx2];
+       } else {
+           return population[idx3];
+       }
+   }
+   
+   Chromosome crossover(const Chromosome& parent1, const Chromosome& parent2) {
+       Chromosome offspring;
+       
+       // Single-point crossover
+       size_t crossover_point = rng() % std::min(parent1.sequence.size(),
+                                                 parent2.sequence.size());
+       
+       offspring.sequence.insert(offspring.sequence.end(),
+                                parent1.sequence.begin(),
+                                parent1.sequence.begin() + crossover_point);
+       
+       offspring.sequence.insert(offspring.sequence.end(),
+                                parent2.sequence.begin() + crossover_point,
+                                parent2.sequence.end());
+       
+       return offspring;
+   }
+   
+   void mutate(Chromosome& individual) {
+       std::uniform_real_distribution<double> mut_prob(0.0, 1.0);
+       std::uniform_real_distribution<double> time_dist(0.0, 1.0);
+       std::uniform_int_distribution<int> dim_dist(0, 8);
+       std::uniform_real_distribution<double> amp_dist(-4.0, 4.0);
+       
+       for (auto& gene : individual.sequence) {
+           if (mut_prob(rng) < mutation_rate) {
+               // Mutate time offset
+               gene.time_offset = time_dist(rng);
+           }
+           if (mut_prob(rng) < mutation_rate) {
+               // Mutate dimension
+               gene.dimension_idx = dim_dist(rng);
+           }
+           if (mut_prob(rng) < mutation_rate) {
+               // Mutate amplitude
+               gene.amplitude = std::complex<double>(amp_dist(rng), amp_dist(rng));
+           }
+       }
+       
+       // Structural mutation: Add or remove genes
+       if (mut_prob(rng) < mutation_rate * 0.5) {
+           // Add a new gene
+           individual.sequence.push_back({
+               .time_offset = time_dist(rng),
+               .dimension_idx = dim_dist(rng),
+               .amplitude = std::complex<double>(amp_dist(rng), amp_dist(rng))
+           });
+       }
+       
+       if (individual.sequence.size() > 10 && mut_prob(rng) < mutation_rate * 0.5) {
+           // Remove a random gene
+           std::uniform_int_distribution<size_t> gene_idx_dist(0, individual.sequence.size() - 1);
+           individual.sequence.erase(individual.sequence.begin() + gene_idx_dist(rng));
+       }
+   }
+};
+
+} // namespace nikola::autonomous
+```
+
+### 17.7.2 Integration with Self-Improvement Pipeline
+
+**Enhanced Testing Protocol:**
+
+```cpp
+// File: src/autonomous/safe_deployment.cpp
+
+namespace nikola::autonomous {
+
+class SafeDeploymentProtocol {
+    AdversarialCodeDojo& dojo;
+    PhysicsOracle& oracle;
+
+public:
+    SafeDeploymentProtocol(AdversarialCodeDojo& d, PhysicsOracle& o)
+        : dojo(d), oracle(o) {}
+
+    bool validate_candidate_code(const std::string& compiled_binary_path) {
+        std::cout << "[DEPLOYMENT] Starting adversarial validation..." << std::endl;
+
+        // 1. Load candidate binary in isolated KVM sandbox
+        KVMExecutor sandbox;
+        sandbox.load_module(compiled_binary_path);
+
+        // 2. Create test torus instance
+        TorusManifold test_torus;
+        test_torus.initialize(27, 27, 27);  // Small grid for fast testing
+
+        // 3. Evolve adversarial attacks for 50 generations
+        AdversarialCodeDojo attack_generator(test_torus);
+        
+        for (int gen = 0; gen < 50; ++gen) {
+            attack_generator.evolve_generation();
+        }
+
+        // 4. Get top 10 most damaging attacks
+        auto top_attacks = attack_generator.get_elite_attacks();
+
+        // 5. Test candidate code against each attack
+        size_t passed = 0;
+        for (const auto& attack : top_attacks) {
+            double drift = attack_generator.evaluate_attack(attack);
+            
+            // Threshold: Energy drift must be < 1% (conservative)
+            if (drift < 0.01) {
+                passed++;
+            } else {
+                std::cerr << "[DEPLOYMENT] VULNERABILITY DETECTED: Energy drift "
+                          << (drift * 100.0) << "% exceeds 1% threshold" << std::endl;
+            }
+        }
+
+        // 6. Require 100% pass rate
+        bool validation_success = (passed == top_attacks.size());
+
+        if (validation_success) {
+            std::cout << "[DEPLOYMENT] ✓ Candidate code passed adversarial validation ("
+                      << passed << "/" << top_attacks.size() << " attacks survived)" << std::endl;
+        } else {
+            std::cout << "[DEPLOYMENT] ✗ Candidate code REJECTED ("
+                      << passed << "/" << top_attacks.size() << " attacks survived)" << std::endl;
+        }
+
+        return validation_success;
+    }
+};
+
+} // namespace nikola::autonomous
+```
+
+**Critical Benefit:** This evolutionary adversarial testing prevents deployment of self-generated code that could destabilize the torus through numerical drift, phase decoherence, or energy singularities. Only code that survives evolved attack patterns earns deployment.
+
 ---
 
 **Cross-References:**

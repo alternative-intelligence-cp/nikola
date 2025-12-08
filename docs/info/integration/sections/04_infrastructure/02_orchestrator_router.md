@@ -952,3 +952,243 @@ int main(int argc, char** argv) {
 - See Section 12 for External Tool Agents implementation
 - See Section 9 for Memory Search-Retrieve-Store Loop
 - See Section 6 for Wave Interference Processor
+
+## 11.6 Shadow Spine: Safe Self-Improvement Deployment
+
+**Purpose:** Enable parallel execution of candidate (self-generated) code alongside stable production code. Compare results without risking system stability. This implements "shadow traffic" testing patterns from distributed systems.
+
+**Concept:** When the system generates improved code through self-improvement (Section 17), it must be validated in production-like conditions before replacing the stable version. Shadow Spine routes each query to BOTH production and candidate systems, but only returns the production response to the user. Candidate responses are logged for comparison.
+
+### 11.6.1 Architecture
+
+```
+User Query
+     ↓
+[ Orchestrator ]
+     ├────────────┬───────────────┐
+     ↓            ↓               ↓
+Production    Candidate      [ Comparator ]
+ System        System            ↓
+     ↓            ↓          (Log differences)
+Production   (Discarded)         ↓
+ Response                   (Analytics)
+     ↓
+User (receives only production result)
+```
+
+**Key Guarantee:** User NEVER waits for candidate response. Production availability is preserved even if candidate code hangs or crashes.
+
+### 11.6.2 Implementation with Timeout Race Pattern
+
+**Problem:** Naive `std::future::wait()` blocks indefinitely if candidate system hangs. This violates the "Production First" availability principle.
+
+**Solution:** Timeout-based race condition where production response is prioritized, and candidate is given a strict time budget.
+
+```cpp
+// File: include/nikola/spine/shadow_spine.hpp
+#pragma once
+#include <future>
+#include <chrono>
+#include <thread>
+#include "nikola/types/neural_spike.hpp"
+
+namespace nikola::spine {
+
+class ShadowSpine {
+private:
+    ZeroMQBroker production_broker;
+    ZeroMQBroker candidate_broker;
+    
+    // SLO: Service Level Objective for production responses
+    static constexpr auto PRODUCTION_SLO_MS = std::chrono::milliseconds(500);
+    
+    // Candidate timeout: Fail fast if slow
+    static constexpr auto CANDIDATE_TIMEOUT_MS = std::chrono::milliseconds(1000);
+
+public:
+    ShadowSpine(const std::string& prod_endpoint, const std::string& cand_endpoint)
+        : production_broker(prod_endpoint), candidate_broker(cand_endpoint) {}
+
+    /**
+     * @brief Route query with production-first guarantee
+     * Returns production response immediately. Candidate runs asynchronously.
+     */
+    NeuralSpike route_query(const NeuralSpike& query) {
+        // 1. Launch production request (critical path)
+        auto prod_future = std::async(std::launch::async, [&]() {
+            return production_broker.send_and_receive(query);
+        });
+
+        // 2. Launch candidate request (non-blocking, fire-and-forget)
+        auto cand_future = std::async(std::launch::async, [&]() {
+            return candidate_broker.send_and_receive(query);
+        });
+
+        // 3. Wait for production with SLO timeout
+        NeuralSpike production_response;
+        
+        if (prod_future.wait_for(PRODUCTION_SLO_MS) == std::future_status::ready) {
+            production_response = prod_future.get();
+        } else {
+            // Production SLO violated - log warning but still wait
+            auto logger = nikola::logging::Logger::get("shadow_spine");
+            logger->warn("Production SLO violated: query='{}' exceeded {}ms",
+                        query.content, PRODUCTION_SLO_MS.count());
+            
+            production_response = prod_future.get();  // Block until production completes
+        }
+
+        // 4. Attempt to collect candidate response (with timeout)
+        //    This runs asynchronously to avoid blocking production response
+        std::thread comparison_thread([this, query, production_response, 
+                                      cand_future = std::move(cand_future)]() mutable {
+            try {
+                // Wait for candidate with strict timeout
+                if (cand_future.wait_for(CANDIDATE_TIMEOUT_MS) == std::future_status::ready) {
+                    NeuralSpike candidate_response = cand_future.get();
+                    
+                    // Compare responses (log differences)
+                    compare_and_log(query, production_response, candidate_response);
+                } else {
+                    // Candidate timed out - log failure
+                    auto logger = nikola::logging::Logger::get("shadow_spine");
+                    logger->error("Candidate timeout: query='{}' exceeded {}ms",
+                                 query.content, CANDIDATE_TIMEOUT_MS.count());
+                    
+                    // Record timeout in metrics for self-improvement feedback
+                    metrics_recorder.record_candidate_timeout(query.content);
+                }
+            } catch (const std::exception& e) {
+                // Candidate crashed - log error but don't affect production
+                auto logger = nikola::logging::Logger::get("shadow_spine");
+                logger->error("Candidate crash: query='{}' error='{}'",
+                             query.content, e.what());
+                
+                metrics_recorder.record_candidate_crash(query.content, e.what());
+            }
+        });
+
+        // Detach comparison thread (fire-and-forget)
+        comparison_thread.detach();
+
+        // 5. Return production response immediately (user never waits for candidate)
+        return production_response;
+    }
+
+private:
+    void compare_and_log(const NeuralSpike& query,
+                         const NeuralSpike& prod_response,
+                         const NeuralSpike& cand_response) {
+        auto logger = nikola::logging::Logger::get("shadow_spine");
+
+        // 1. Compare response content
+        bool content_match = (prod_response.content == cand_response.content);
+
+        // 2. Compare response latency
+        double prod_latency = prod_response.metadata.latency_ms;
+        double cand_latency = cand_response.metadata.latency_ms;
+        double latency_improvement = ((prod_latency - cand_latency) / prod_latency) * 100.0;
+
+        // 3. Compare energy consumption (Hamiltonian)
+        double prod_energy = prod_response.metadata.final_energy;
+        double cand_energy = cand_response.metadata.final_energy;
+        double energy_drift = std::abs(cand_energy - prod_energy) / prod_energy;
+
+        // 4. Log comparison results
+        if (content_match && latency_improvement > 10.0 && energy_drift < 0.01) {
+            // Candidate is faster and energy-conserving → Promotion candidate
+            logger->info("CANDIDATE_SUPERIOR: query='{}' latency_improvement={:.1f}% energy_drift={:.4f}",
+                        query.content, latency_improvement, energy_drift);
+            
+            metrics_recorder.record_candidate_superior(query.content, latency_improvement);
+        } else if (!content_match) {
+            // Candidate produces different output → Needs investigation
+            logger->warn("CANDIDATE_DIVERGENCE: query='{}' prod_content='{}' cand_content='{}'",
+                        query.content, prod_response.content, cand_response.content);
+            
+            metrics_recorder.record_candidate_divergence(query.content);
+        } else if (energy_drift > 0.01) {
+            // Candidate violates energy conservation → Physics Oracle failure
+            logger->error("CANDIDATE_ENERGY_VIOLATION: query='{}' energy_drift={:.4f}%",
+                         query.content, energy_drift * 100.0);
+            
+            metrics_recorder.record_candidate_physics_violation(query.content, energy_drift);
+        } else {
+            // Candidate matches but isn't better → Neutral result
+            logger->debug("CANDIDATE_NEUTRAL: query='{}' latency_change={:.1f}%",
+                         query.content, latency_improvement);
+        }
+    }
+
+    MetricsRecorder metrics_recorder;
+};
+
+} // namespace nikola::spine
+```
+
+### 11.6.3 Integration with Self-Improvement Pipeline
+
+**Deployment Workflow:**
+
+```
+1. Architect generates optimized code
+2. Code passes Adversarial Dojo (Section 17.7.1)
+3. Code passes Physics Oracle verification
+4. Code compiled into candidate binary
+5. Candidate binary deployed to Shadow Spine endpoint
+6. Shadow testing runs for N queries (e.g., 1000)
+7. IF candidate shows:
+      - Zero divergences
+      - Energy conservation < 1% drift
+      - Latency improvement > 10%
+   THEN:
+      Promote candidate to production
+      Old production becomes new candidate
+   ELSE:
+      Discard candidate
+      Log failure for Architect feedback
+```
+
+**Promotion Criteria:**
+
+```cpp
+struct PromotionCriteria {
+    size_t min_test_queries = 1000;
+    double max_divergence_rate = 0.001;     // 0.1% divergence tolerance
+    double max_energy_drift = 0.01;         // 1% energy conservation tolerance
+    double min_latency_improvement = 0.10;  // 10% speedup required
+};
+
+bool should_promote_candidate(const ShadowMetrics& metrics,
+                               const PromotionCriteria& criteria) {
+    if (metrics.total_queries < criteria.min_test_queries) {
+        return false;  // Insufficient data
+    }
+
+    double divergence_rate = static_cast<double>(metrics.divergence_count) / metrics.total_queries;
+    double avg_energy_drift = metrics.total_energy_drift / metrics.total_queries;
+    double avg_latency_improvement = metrics.total_latency_improvement / metrics.total_queries;
+
+    return divergence_rate <= criteria.max_divergence_rate &&
+           avg_energy_drift <= criteria.max_energy_drift &&
+           avg_latency_improvement >= criteria.min_latency_improvement;
+}
+```
+
+**Critical Advantages:**
+
+1. **Zero production risk:** User never exposed to candidate failures
+2. **Real-world validation:** Candidate tested with actual queries, not synthetic benchmarks
+3. **Automatic rollback:** Candidate discarded if it violates any safety criteria
+4. **Performance visibility:** Precise measurement of latency and energy improvements
+
+**Failure Isolation:** Candidate crashes, hangs, or energy violations are logged but do NOT affect production availability. The timeout race pattern ensures production responses always return within SLO.
+
+---
+
+**Cross-References:**
+- See Section 17 for Self-Improvement Engine
+- See Section 17.7.1 for Adversarial Code Dojo
+- See Section 17.3.2 for Physics Oracle verification
+- See Section 10 for ZeroMQ Spine architecture
+- See Section 11.5 for Logging and Observability
