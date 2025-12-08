@@ -560,3 +560,20 @@ private:
 - See Section 7 for Mamba-9D integration
 - See Section 8.3 (Work Package 2) for complete implementation
 - See Appendix B for attention mechanism mathematics
+
+
+## 8.7 Relevance Gating Transformer
+
+**Purpose:** Filter external tool data based on neurochemically-modulated relevance thresholds before injection into 9D torus.
+
+**Dynamic Threshold:**
+```cpp
+double get_dynamic_threshold() {
+    double norepinephrine = engs.get_norepinephrine_level(); // [0,1]
+    // High NE → lower threshold (hyper-vigilant)
+    // Low NE → higher threshold (selective)
+    return std::clamp(0.6 - (norepinephrine * 0.3), 0.1, 0.95);
+}
+```
+
+**Performance:** Prevents "mind pollution" from irrelevant web scrapes.

@@ -683,3 +683,10 @@ This architecture ensures that the SSM is not an external layer "on top of" the 
 - See Section 8 for Neuroplastic Transformer
 - See Section 8.3 (Work Package 2) for complete TSM implementation
 - See Appendix B for Hilbert curve mathematics
+
+
+## 7.8 Topological State Mapper (TSM)
+
+TSM compiles Mamba-9D SSM parameters (A,B,C,Δ) from 9D geometry in real-time.
+
+### Performance: ~8ms per compilation (1M nodes)
