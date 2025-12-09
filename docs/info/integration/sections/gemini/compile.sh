@@ -8,8 +8,8 @@ res="$wdir/responses" #gemini responses/audits
 dat="$wdir/.." #engineering plan files (sections directory)
 
 #full compilation output files
-datFull="$wdir/COMPILED.txt"
-resFull="$res/COMPILED.txt"
+datFull="$wdir/DAT_COMPILED.txt"
+resFull="$res/RES_COMPILED.txt"
 
 #split compilation output files
 dat0="$wdir/0.txt" #index
@@ -35,7 +35,7 @@ cd "$wdir"
 # Compile all response files into resFull
 echo "=== Compiling response files ==="
 > "$resFull"  # clear file
-find "$res" -type f \( -name "*.md" -o -name "*.txt" \) -not -name "COMPILED.txt" | sort | while read -r file; do
+find "$res" -type f \( -name "*.md" -o -name "*.txt" \) -not -name "RES_COMPILED.txt" | sort | while read -r file; do
     echo -e "\n\n### FILE: ${file#$res/} ###\n" >> "$resFull"
     cat "$file" >> "$resFull"
 done
