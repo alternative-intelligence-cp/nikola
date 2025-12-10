@@ -2588,3 +2588,125 @@ BM_FindExistingCycles/10000         : 2.3 ms
 - **Appendix G:** Graph Algorithms (DFS, topological sort theory)
 
 ---
+## 17.5 LOG-01: Goal DAG Integrity Checker for Circular Dependency Prevention
+
+**Audit**: Comprehensive Engineering Audit 13.0 (Logic Systems)
+**Severity**: MEDIUM
+**Subsystems Affected**: Goal System, Dopamine Propagation
+**Files Modified**: `src/autonomy/goal_integrity.hpp`
+
+### 17.5.1 Problem Analysis
+
+The Goal System allows adding prerequisites without cycle detection. Circular dependencies (A→B→A) cause **infinite recursion** during reward propagation, crashing the dopamine loop.
+
+**Root Cause**: No acyclicity enforcement
+
+```cpp
+// ❌ Allows cycles
+goal_system.add_prerequisite("LearnPhysics", "UnderstandMath");
+goal_system.add_prerequisite("UnderstandMath", "LearnPhysics");  // CYCLE!
+
+// Reward propagation:
+propagate_completion("LearnPhysics")
+  → check_prerequisites("LearnPhysics")  
+    → propagate_completion("UnderstandMath")
+      → check_prerequisites("UnderstandMath")
+        → propagate_completion("LearnPhysics")  // INFINITE LOOP
+```
+
+### 17.5.2 Remediation: Topological Sort Validation
+
+```cpp
+/**
+ * @file src/autonomy/goal_integrity.hpp
+ * @brief Cycle detection for goal DAG.
+ * @details Solves LOG-01 (Goal DAG Circularity).
+ */
+#pragma once
+
+#include <unordered_map>
+#include <unordered_set>
+#include <string>
+#include <vector>
+
+namespace nikola::autonomy {
+
+class GoalIntegrityChecker {
+private:
+    enum class VisitState { UNVISITED, VISITING, VISITED };
+
+    std::unordered_map<std::string, VisitState> visit_state_;
+    std::unordered_map<std::string, std::vector<std::string>> adj_list_;
+
+public:
+    /**
+     * @brief Check if adding edge creates cycle.
+     * @param parent Goal that depends on child
+     * @param child Prerequisite goal
+     * @return true if cycle detected
+     */
+    bool would_create_cycle(const std::string& parent, const std::string& child) {
+        // Temporarily add edge
+        adj_list_[child].push_back(parent);
+
+        // DFS from parent looking for parent (cycle detection)
+        visit_state_.clear();
+        bool has_cycle = dfs_detect_cycle(parent);
+
+        // Rollback temporary edge
+        adj_list_[child].pop_back();
+
+        return has_cycle;
+    }
+
+private:
+    bool dfs_detect_cycle(const std::string& node) {
+        if (visit_state_[node] == VisitState::VISITING) {
+            return true;  // Back edge = cycle
+        }
+
+        if (visit_state_[node] == VisitState::VISITED) {
+            return false;
+        }
+
+        visit_state_[node] = VisitState::VISITING;
+
+        for (const auto& neighbor : adj_list_[node]) {
+            if (dfs_detect_cycle(neighbor)) {
+                return true;
+            }
+        }
+
+        visit_state_[node] = VisitState::VISITED;
+        return false;
+    }
+};
+
+} // namespace nikola::autonomy
+```
+
+### 17.5.3 Integration
+
+```cpp
+void GoalSystem::add_prerequisite(const std::string& goal, const std::string& prereq) {
+    if (integrity_checker_.would_create_cycle(goal, prereq)) {
+        throw std::runtime_error("Circular dependency detected: " + goal + " → " + prereq);
+    }
+
+    prerequisites_[goal].push_back(prereq);
+}
+```
+
+### 17.5.4 Impact
+
+| Metric | Before LOG-01 | After LOG-01 |
+|--------|---------------|--------------|
+| Cycle crashes | Possible | Prevented |
+| Goal system stability | Fragile | Robust |
+
+### 17.5.5 Cross-References
+
+- **Section 14:** Goal System (prerequisite logic)
+- **Section 14.1:** Dopamine Propagation (reward traversal)
+
+---
