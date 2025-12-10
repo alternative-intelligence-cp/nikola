@@ -155,6 +155,178 @@ private:
 };
 ```
 
+## 7.1.1 Causal-Foliated Hilbert Scanning (INT-P0 Critical Fix)
+
+**Problem:** The standard 9D Hilbert curve treats the Time dimension ($t$) as just another spatial axis, creating sequences where timestamps appear in scrambled order (e.g., $t=10, t=1, t=100, t=5$). This violates causality - Mamba's recurrence $h_k = A h_{k-1} + B x_k$ requires strictly sequential time progression.
+
+**Impact:** Acausal sequences break the Arrow of Time, leading to training divergence and inability to reason about cause-and-effect.
+
+**Solution:** Mathematically treat the 9D manifold as a **foliation** of 8-dimensional spatial hypersurfaces evolving along 1D temporal curve. Separate Time from spatial hashing, ensuring $t_i < t_{i+1}$ universally.
+
+### Causal Ordering Requirement
+
+The sorting predicate must enforce temporal causality as the primary key:
+
+$$\text{Order}(a, b) = \begin{cases}
+t_a < t_b & \text{(Primary: Causal)} \\
+h_a < h_b & \text{if } t_a = t_b \text{ (Secondary: Spatial locality)}
+\end{cases}$$
+
+### Implementation
+
+```cpp
+/**
+ * @file src/cognitive/causal_scanner.cpp
+ * @brief Causal-Foliated Hilbert Scanner for Mamba-9D
+ * Resolves INT-P0 by enforcing strict temporal ordering
+ */
+
+#include "nikola/types/coord9d.hpp"
+#include "nikola/physics/soa_layout.hpp"
+#include <vector>
+#include <algorithm>
+#include <execution>
+#include <immintrin.h> // For _pdep_u64
+
+namespace nikola::cognitive {
+
+// 8D Coordinate type (excluding Time)
+using Coord8D = std::array<uint32_t, 8>;
+
+struct CausalIndex {
+    uint32_t time_step;       // Primary Sort Key
+    uint64_t spatial_hilbert; // Secondary Sort Key (8D)
+    size_t original_index;    // Pointer to SoA data
+};
+
+class CausalFoliationScanner {
+public:
+    /**
+     * @brief Transforms SoA grid into causally ordered sequence.
+     *
+     * Sorting: (t_a < t_b) || (t_a == t_b && h_a < h_b)
+     * Ensures all nodes at t=0 processed before t=1, maintaining
+     * causal integrity for SSM recurrence.
+     */
+    std::vector<size_t> generate_causal_sequence(
+        const nikola::physics::TorusGridSoA& grid
+    ) {
+        size_t active_count = grid.num_active_nodes;
+        std::vector<CausalIndex> indices(active_count);
+
+        // Parallel extraction of coordinates and Hilbert encoding
+        #pragma omp parallel for
+        for (size_t i = 0; i < active_count; ++i) {
+            // 1. Extract Time Dimension (index 2: r,s,t,u,v,w,x,y,z)
+            uint32_t t = grid.coords_t[i];
+
+            // 2. Extract 8D Spatial Coordinates (excluding t)
+            Coord8D space = {
+                grid.coords_r[i],
+                grid.coords_s[i],
+                grid.coords_u[i],
+                grid.coords_v[i],
+                grid.coords_w[i],
+                grid.coords_x[i],
+                grid.coords_y[i],
+                grid.coords_z[i]
+            };
+
+            // 3. Compute 8D Hilbert Index (Spatial Locality Only)
+            uint64_t h = compute_hilbert_8d_bmi2(space);
+
+            indices[i] = {t, h, i};
+        }
+
+        // Parallel Sort to establish Causal Order
+        std::sort(std::execution::par_unseq, indices.begin(), indices.end(),
+            [](const CausalIndex& a, const CausalIndex& b) {
+                if (a.time_step != b.time_step) {
+                    return a.time_step < b.time_step; // Causal priority
+                }
+                return a.spatial_hilbert < b.spatial_hilbert; // Spatial locality
+            }
+        );
+
+        // Extract ordered indices for Mamba consumption
+        std::vector<size_t> sequence;
+        sequence.reserve(active_count);
+        for (const auto& idx : indices) {
+            sequence.push_back(idx.original_index);
+        }
+
+        return sequence;
+    }
+
+private:
+    /**
+     * @brief Computes 8D Hilbert index using BMI2 Parallel Bit Deposit.
+     * Maps 8 dimensions × 8 bits = 64-bit index.
+     */
+    static inline uint64_t compute_hilbert_8d_bmi2(const Coord8D& p) {
+        uint64_t h = 0;
+
+        // Precomputed masks for 8-way interleaving
+        static const uint64_t MASKS[8] = {
+            0x0101010101010101ULL, 0x0202020202020202ULL,
+            0x0404040404040404ULL, 0x0808080808080808ULL,
+            0x1010101010101010ULL, 0x2020202020202020ULL,
+            0x4040404040404040ULL, 0x8080808080808080ULL
+        };
+
+        // Z-order bit interleaving (faster than full Hilbert rotation for 8D)
+        for (int i = 0; i < 8; ++i) {
+            h |= _pdep_u64(p[i], MASKS[i]);
+        }
+
+        return h;
+    }
+};
+
+} // namespace nikola::cognitive
+```
+
+### Usage in Mamba Forward Pass
+
+```cpp
+// In MambaEngine::forward()
+void process_grid(const TorusGridSoA& grid) {
+    CausalFoliationScanner scanner;
+
+    // Get causally ordered indices
+    auto sequence_indices = scanner.generate_causal_sequence(grid);
+
+    // Process in causal order
+    for (size_t idx : sequence_indices) {
+        // Access grid data at idx for Mamba processing
+        auto psi_real = grid.psi_real[idx];
+        auto psi_imag = grid.psi_imag[idx];
+
+        // Feed to SSM in strictly causal order
+        mamba_step(psi_real, psi_imag);
+    }
+}
+```
+
+### Verification
+
+To verify causality preservation:
+
+```cpp
+void test_causal_ordering() {
+    TorusGridSoA grid = create_test_grid_with_random_times();
+    CausalFoliationScanner scanner;
+    auto sequence = scanner.generate_causal_sequence(grid);
+
+    // Verify monotonic time progression
+    for (size_t i = 1; i < sequence.size(); ++i) {
+        uint32_t t_prev = grid.coords_t[sequence[i-1]];
+        uint32_t t_curr = grid.coords_t[sequence[i]];
+        assert(t_prev <= t_curr); // Strict causal ordering
+    }
+}
+```
+
 ## 7.2 Spectral Radius Stabilization
 
 **Critical Stability Constraint:** The translation from continuous metric tensor $g_{ij}$ to discrete SSM matrices $(A, B, C)$ requires spectral radius control. If local curvature creates eigenvalues exceeding the Nyquist limit, the hidden state will diverge exponentially.
@@ -547,7 +719,196 @@ void tsm_generate_parameters_kernel(
 - **Memory:** Zero allocations (output buffers pre-allocated)
 - **Throughput:** ~100 μs per 1024-sequence on modern CPU (8-core)
 
-## 7.4 Implementation
+## 7.4 SoA Compatibility Layer (CF-02 Critical Fix)
+
+**Problem:** The Mamba-9D and Transformer implementations assume Array-of-Structures (AoS) layout where `TorusNode` objects are contiguous in memory. However, the Phase 0 physics optimization mandated Structure-of-Arrays (SoA) layout (`TorusGridSoA`) where each field is stored in separate parallel arrays.
+
+**Impact:** Direct implementation of cognitive logic on SoA layout would require gather-scatter operations (reconstructing temporary `TorusNode` objects), reintroducing the exact memory bandwidth bottleneck that SoA was designed to eliminate. This creates "Cognitive-Memory Impedance Mismatch."
+
+**Solution:** Implement **Zero-Cost Proxy Accessor Pattern** that provides object-oriented API while compiling to direct array access.
+
+### Implementation: TorusAccessor Proxy
+
+```cpp
+/**
+ * @file include/nikola/physics/torus_proxy.hpp
+ * @brief Zero-overhead proxy for accessing node data in SoA layout
+ * Resolves CF-02 by bridging object-oriented cognitive logic with SoA physics memory
+ */
+
+#pragma once
+#include "nikola/physics/torus_grid_soa.hpp"
+#include <complex>
+#include <span>
+
+namespace nikola::physics {
+
+// Forward declaration of SoA container
+struct TorusGridSoA;
+
+/**
+ * @class TorusAccessor
+ * @brief Zero-overhead proxy for accessing node data in SoA layout
+ *
+ * Acts as reference to logical 'TorusNode' but performs reads/writes
+ * directly to underlying parallel SoA arrays. Allows high-level cognitive
+ * logic to interact with grid without breaking SoA performance optimizations.
+ */
+class TorusAccessor {
+private:
+    TorusGridSoA& grid;
+    const size_t index; // Linear index into parallel arrays
+
+public:
+    TorusAccessor(TorusGridSoA& g, size_t i) : grid(g), index(i) {}
+
+    // Wavefunction Access: Reconstructs complex on the fly
+    std::complex<float> get_wavefunction() const {
+        return {grid.psi_real[index], grid.psi_imag[index]};
+    }
+
+    void set_wavefunction(std::complex<float> psi) {
+        grid.psi_real[index] = psi.real();
+        grid.psi_imag[index] = psi.imag();
+    }
+
+    // Metric Tensor Access
+    // The metric tensor is 45 floats. In SoA, this is 45 separate vectors.
+    // We provide component-wise access which is what kernels need.
+
+    /**
+     * @brief Access specific component of metric tensor g_{ij}
+     * Handles symmetric indexing automatically.
+     */
+    float get_metric_component(int i, int j) const {
+        int comp_idx = symmetric_index(i, j);
+        return grid.metric_tensor[comp_idx][index];
+    }
+
+    void set_metric_component(int i, int j, float val) {
+        int comp_idx = symmetric_index(i, j);
+        grid.metric_tensor[comp_idx][index] = val;
+    }
+
+    // Convenience: Get full metric tensor as 9x9 matrix
+    void get_metric_matrix(float out[81]) const {
+        int k = 0;
+        for (int i = 0; i < 9; ++i) {
+            for (int j = i; j < 9; ++j) {
+                float val = get_metric_component(i, j);
+                out[i*9 + j] = val;
+                out[j*9 + i] = val; // Symmetric
+                ++k;
+            }
+        }
+    }
+
+    // Neurochemistry Access
+    float& resonance() { return grid.resonance[index]; }
+    const float& resonance() const { return grid.resonance[index]; }
+
+    float& state() { return grid.state[index]; }
+    const float& state() const { return grid.state[index]; }
+
+    // Coordinates (read-only for most algorithms)
+    uint32_t coord_r() const { return grid.coords_r[index]; }
+    uint32_t coord_s() const { return grid.coords_s[index]; }
+    uint32_t coord_t() const { return grid.coords_t[index]; }
+    // ... u, v, w, x, y, z similarly
+
+    // Nonary value
+    int8_t get_nonary_value() const { return grid.nonary_value[index]; }
+    void set_nonary_value(int8_t val) { grid.nonary_value[index] = val; }
+
+private:
+    // Maps 2D matrix coordinates to 1D packed triangular array index
+    static constexpr int symmetric_index(int i, int j) {
+        if (i > j) std::swap(i, j);
+        // Standard upper-triangular packing formula
+        return i * 9 - (i * (i + 1)) / 2 + j;
+    }
+};
+
+/**
+ * @class TorusIterator
+ * @brief Random-access iterator for SoA Grid compatible with STL algorithms
+ * Allows usage of std::for_each, std::transform, etc., over SoA grid
+ */
+class TorusIterator {
+    TorusGridSoA* grid;
+    size_t index;
+public:
+    using iterator_category = std::random_access_iterator_tag;
+    using value_type        = TorusAccessor;
+    using difference_type   = std::ptrdiff_t;
+    using pointer           = TorusAccessor;
+    using reference         = TorusAccessor;
+
+    TorusIterator(TorusGridSoA* g, size_t i) : grid(g), index(i) {}
+
+    TorusAccessor operator*() { return TorusAccessor(*grid, index); }
+
+    TorusIterator& operator++() { index++; return *this; }
+    TorusIterator operator++(int) { TorusIterator tmp = *this; ++(*this); return tmp; }
+
+    TorusIterator& operator--() { index--; return *this; }
+    TorusIterator operator--(int) { TorusIterator tmp = *this; --(*this); return tmp; }
+
+    TorusIterator& operator+=(difference_type n) { index += n; return *this; }
+    TorusIterator& operator-=(difference_type n) { index -= n; return *this; }
+
+    TorusIterator operator+(difference_type n) const { return TorusIterator(grid, index + n); }
+    TorusIterator operator-(difference_type n) const { return TorusIterator(grid, index - n); }
+
+    difference_type operator-(const TorusIterator& other) const { return index - other.index; }
+
+    bool operator==(const TorusIterator& other) const { return index == other.index; }
+    bool operator!=(const TorusIterator& other) const { return index != other.index; }
+    bool operator<(const TorusIterator& other) const { return index < other.index; }
+    bool operator<=(const TorusIterator& other) const { return index <= other.index; }
+    bool operator>(const TorusIterator& other) const { return index > other.index; }
+    bool operator>=(const TorusIterator& other) const { return index >= other.index; }
+
+    TorusAccessor operator[](difference_type n) { return TorusAccessor(*grid, index + n); }
+};
+
+// Helper methods for TorusGridSoA to support iteration
+inline TorusIterator TorusGridSoA::begin() { return TorusIterator(this, 0); }
+inline TorusIterator TorusGridSoA::end() { return TorusIterator(this, num_active_nodes); }
+
+} // namespace nikola::physics
+```
+
+### Usage in Mamba-9D
+
+```cpp
+// OLD (broken with SoA):
+// TorusNode& node = grid.get_node(coord);
+// auto metric = node.metric_tensor;
+
+// NEW (CF-02 compliant):
+TorusAccessor node(grid, index);
+float g_00 = node.get_metric_component(0, 0);
+node.set_metric_component(0, 1, new_value);
+
+// STL algorithm compatibility:
+std::for_each(grid.begin(), grid.end(), [](TorusAccessor node) {
+    node.set_nonary_value(quantize(node.resonance()));
+});
+```
+
+### Performance Impact
+
+| Metric | Gather-Scatter (Broken) | TorusAccessor (CF-02) |
+|--------|------------------------|----------------------|
+| Memory Copies | 2 per access (gather+scatter) | 0 (direct array access) |
+| Cache Misses | High (random access) | Low (sequential SoA access) |
+| Compilation | Indirect function calls | **Inlined to single load/store** |
+| SIMD Vectorization | ❌ Blocked by gather | ✅ Enabled by direct access |
+
+The proxy compiles away completely - the compiler generates identical assembly to manual array indexing while preserving readable object-oriented code.
+
+## 7.4.1 Mamba Implementation with SoA
 
 ### Mamba Forward Pass
 
@@ -558,10 +919,10 @@ class Mamba9D {
 public:
     Mamba9D() : hidden_state(Eigen::VectorXd::Zero(9)) {}
 
-    // Zero-copy forward pass: operate directly on TorusNode memory
+    // Zero-copy forward pass: operate directly on SoA memory via TorusAccessor
     // Fulfills "layers ARE the toroid" requirement
     // THREAD-SAFE: Uses thread_local workspaces for multi-threaded execution
-    Eigen::VectorXd forward(const std::vector<TorusNode*>& sequence) {
+    Eigen::VectorXd forward(TorusGridSoA& grid, const std::vector<size_t>& sequence_indices) {
         // CRITICAL: Thread-local workspaces to avoid allocations AND race conditions
         // Each thread gets its own workspace - no mutex needed, zero allocations
         // This is the ONLY production-grade solution for parallel Mamba inference

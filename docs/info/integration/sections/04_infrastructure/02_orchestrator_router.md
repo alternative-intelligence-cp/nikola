@@ -559,6 +559,185 @@ ProductionOrchestrator prod_orch(torus, emitters, embedder, tool_manager,
 ProductionOrchestrator dev_orch(torus, emitters, embedder, tool_manager, 1);
 ```
 
+## 11.4.1 Priority Queue Scheduling (INF-02 Critical Fix)
+
+**Problem:** Naive FIFO queue scheduling allows low-priority tasks (e.g., background ingestion, dream weave) to starve critical homeostatic signals (e.g., metabolic warnings, nap triggers), causing metabolic crash where the system runs out of virtual ATP and enters deadlock.
+
+**Impact:** System can freeze indefinitely during heavy load, unable to respond to critical internal signals.
+
+**Solution:** Implement **priority-based task scheduling** where critical homeostatic messages preempt background work.
+
+### Priority Levels
+
+```cpp
+enum class TaskPriority : uint8_t {
+    CRITICAL   = 0,  // Metabolic warnings, SCRAM triggers
+    HIGH       = 1,  // User queries, resonance checks
+    NORMAL     = 2,  // Tool responses, ingestion results
+    LOW        = 3,  // Background learning, dream weave
+    BACKGROUND = 4   // Maintenance, compaction
+};
+```
+
+### Implementation
+
+```cpp
+/**
+ * @file include/nikola/infrastructure/priority_queue.hpp
+ * @brief Priority-based task scheduler for Orchestrator
+ * Resolves INF-02 by preventing homeostatic signal starvation
+ */
+
+#pragma once
+#include <queue>
+#include <mutex>
+#include <condition_variable>
+#include <vector>
+#include "nikola/spine/neural_spike.pb.h"
+
+namespace nikola::infrastructure {
+
+struct PrioritizedTask {
+    TaskPriority priority;
+    uint64_t sequence_num;  // Tie-breaker for FIFO within same priority
+    NeuralSpike spike;
+
+    bool operator<(const PrioritizedTask& other) const {
+        if (priority != other.priority) {
+            return priority > other.priority;  // Lower enum value = higher priority
+        }
+        return sequence_num > other.sequence_num;  // FIFO tie-breaker
+    }
+};
+
+class PriorityTaskQueue {
+private:
+    std::priority_queue<PrioritizedTask> queue;
+    std::mutex mtx;
+    std::condition_variable cv;
+    uint64_t next_sequence = 0;
+    bool shutdown = false;
+
+public:
+    /**
+     * @brief Enqueue task with automatic priority detection
+     */
+    void enqueue(NeuralSpike spike) {
+        TaskPriority priority = classify_priority(spike);
+
+        std::lock_guard<std::mutex> lock(mtx);
+        queue.push({priority, next_sequence++, std::move(spike)});
+        cv.notify_one();
+    }
+
+    /**
+     * @brief Dequeue highest priority task (blocking)
+     */
+    std::optional<NeuralSpike> dequeue() {
+        std::unique_lock<std::mutex> lock(mtx);
+
+        cv.wait(lock, [this] { return !queue.empty() || shutdown; });
+
+        if (shutdown && queue.empty()) {
+            return std::nullopt;
+        }
+
+        PrioritizedTask task = queue.top();
+        queue.pop();
+
+        return std::move(task.spike);
+    }
+
+    /**
+     * @brief Classify task priority based on message type
+     */
+    static TaskPriority classify_priority(const NeuralSpike& spike) {
+        // Critical homeostatic signals
+        if (spike.has_metabolic_update()) {
+            float atp = spike.metabolic_update().atp_level();
+            if (atp < 0.15f) {
+                return TaskPriority::CRITICAL;  // Emergency nap required
+            }
+        }
+
+        if (spike.has_physics_scram()) {
+            return TaskPriority::CRITICAL;  // Safety halt
+        }
+
+        // High priority user interactions
+        if (spike.has_query_req()) {
+            return TaskPriority::HIGH;
+        }
+
+        if (spike.has_resonance_response()) {
+            return TaskPriority::HIGH;
+        }
+
+        // Normal tool responses
+        if (spike.has_command_resp() || spike.has_query_resp()) {
+            return TaskPriority::NORMAL;
+        }
+
+        // Background tasks
+        if (spike.has_neurogenesis_event()) {
+            return TaskPriority::BACKGROUND;
+        }
+
+        // Default: normal priority
+        return TaskPriority::NORMAL;
+    }
+
+    void request_shutdown() {
+        {
+            std::lock_guard<std::mutex> lock(mtx);
+            shutdown = true;
+        }
+        cv.notify_all();
+    }
+};
+
+} // namespace nikola::infrastructure
+```
+
+### Usage in Orchestrator
+
+```cpp
+class Orchestrator {
+private:
+    PriorityTaskQueue task_queue;
+
+public:
+    void run() {
+        while (true) {
+            auto spike_opt = task_queue.dequeue();
+            if (!spike_opt) break;  // Shutdown requested
+
+            NeuralSpike& spike = *spike_opt;
+
+            // Process based on type
+            if (spike.has_query_req()) {
+                handle_query(spike);
+            } else if (spike.has_metabolic_update()) {
+                handle_metabolic_update(spike);
+            }
+            // ... etc
+        }
+    }
+
+    // External agents enqueue via this method
+    void receive_spike(NeuralSpike spike) {
+        task_queue.enqueue(std::move(spike));
+    }
+};
+```
+
+### Benefits
+
+- **Homeostatic Safety:** Metabolic warnings always processed first
+- **Responsiveness:** User queries preempt background work
+- **Fairness:** FIFO within same priority level
+- **Deadlock Prevention:** Critical signals cannot be starved
+
 ## 11.5 Structured Logging with spdlog
 
 **Production Logging Infrastructure:**
