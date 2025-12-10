@@ -7,12 +7,11 @@ specs="$wdir/specs.txt" #nikola specs
 res="$wdir/responses" #gemini responses/audits
 dat="$wdir/.." #engineering plan files (sections directory)
 
-#full compilation output files
-datFull="$wdir/DAT_COMPILED.txt"
+#output files - 9 partials + 1 response compilation
 resFull="$res/RES_COMPILED.txt"
 
-#split compilation output files
-dat0="$wdir/0.txt" #index
+#split compilation output files (0-8 = 9 files total)
+dat0="$wdir/0.txt" #specs + index
 dat1="$wdir/1.txt"
 dat2="$wdir/2.txt"
 dat3="$wdir/3.txt"
@@ -20,17 +19,7 @@ dat4="$wdir/4.txt"
 dat5="$wdir/5.txt"
 dat6="$wdir/6.txt"
 dat7="$wdir/7.txt"
-
-# Compile all section files into datFull, including specs
-echo "=== Compiling section files ==="
-> "$datFull"  # clear file
-cat "$specs" >> "$datFull"
-echo -e "\n\n=== SECTIONS ===\n\n" >> "$datFull"
-cd "$dat" && find . -type f \( -name "*.md" -o -name "*.txt" \) ! -path "./gemini/*" | sort | while read -r file; do
-    echo -e "\n\n### FILE: ${file#./} ###\n" >> "$datFull"
-    cat "$file" >> "$datFull"
-done
-cd "$wdir"
+dat8="$wdir/8.txt"
 
 # Compile all response files into resFull
 echo "=== Compiling response files ==="
@@ -40,9 +29,9 @@ find "$res" -type f \( -name "*.md" -o -name "*.txt" \) -not -name "RES_COMPILED
     cat "$file" >> "$resFull"
 done
 
-# Split section files logically into 8 files (index + 7 sections)
-echo "=== Splitting into logical sections ==="
-> "$dat0"  # index
+# Split section files logically into 9 files
+echo "=== Splitting into 9 partial files ==="
+> "$dat0"
 > "$dat1"
 > "$dat2"
 > "$dat3"
@@ -50,6 +39,7 @@ echo "=== Splitting into logical sections ==="
 > "$dat5"
 > "$dat6"
 > "$dat7"
+> "$dat8"
 
 # dat0: specs + index
 cat "$specs" > "$dat0"
@@ -95,10 +85,16 @@ find "$dat/08_phase_0_requirements" -type f -name "*.md" 2>/dev/null | sort | wh
     cat "$file" >> "$dat6"
 done
 
-# dat7: Implementation + Protocols + Appendices (09-11)
-find "$dat/09_implementation" "$dat/10_protocols" "$dat/11_appendices" -type f -name "*.md" 2>/dev/null | sort | while read -r file; do
+# dat7: Implementation (09)
+find "$dat/09_implementation" -type f -name "*.md" 2>/dev/null | sort | while read -r file; do
     echo -e "\n### ${file#$dat/} ###\n" >> "$dat7"
     cat "$file" >> "$dat7"
+done
+
+# dat8: Protocols + Appendices (10-11)
+find "$dat/10_protocols" "$dat/11_appendices" -type f -name "*.md" 2>/dev/null | sort | while read -r file; do
+    echo -e "\n### ${file#$dat/} ###\n" >> "$dat8"
+    cat "$file" >> "$dat8"
 done
 
 # Verify line counts
@@ -107,35 +103,27 @@ echo -e "\n=== Verification ==="
 srcLines=$(cd "$dat" && find . -type f \( -name "*.md" -o -name "*.txt" \) ! -path "./gemini/*" -exec cat {} + | wc -l)
 specsLines=$(wc -l < "$specs")
 totalSrc=$((srcLines + specsLines))
-compiledLines=$(wc -l < "$datFull")
-splitLines=$(($(wc -l < "$dat0") + $(wc -l < "$dat1") + $(wc -l < "$dat2") + $(wc -l < "$dat3") + $(wc -l < "$dat4") + $(wc -l < "$dat5") + $(wc -l < "$dat6") + $(wc -l < "$dat7")))
+splitLines=$(($(wc -l < "$dat0") + $(wc -l < "$dat1") + $(wc -l < "$dat2") + $(wc -l < "$dat3") + $(wc -l < "$dat4") + $(wc -l < "$dat5") + $(wc -l < "$dat6") + $(wc -l < "$dat7") + $(wc -l < "$dat8")))
 
 resLines=$(find "$res" -type f \( -name "*.md" -o -name "*.txt" \) -not -name "COMPILED.txt" -exec cat {} + 2>/dev/null | wc -l || echo "0")
 resCompiledLines=$(wc -l < "$resFull" 2>/dev/null || echo "0")
 
 echo "Section sources: $totalSrc lines (specs: $specsLines + sections: $srcLines)"
-echo "COMPILED.txt: $compiledLines lines"
-echo "Split files (0-7): $splitLines lines total"
-echo "  0.txt (index): $(wc -l < "$dat0") lines"
+echo "Split files (0-8): $splitLines lines total"
+echo "  0.txt (specs+index): $(wc -l < "$dat0") lines"
 echo "  1.txt (exec+found): $(wc -l < "$dat1") lines"
 echo "  2.txt (cognitive): $(wc -l < "$dat2") lines"
 echo "  3.txt (infra): $(wc -l < "$dat3") lines"
 echo "  4.txt (autonomous): $(wc -l < "$dat4") lines"
 echo "  5.txt (persist+multi): $(wc -l < "$dat5") lines"
 echo "  6.txt (phase0): $(wc -l < "$dat6") lines"
-echo "  7.txt (impl+proto+app): $(wc -l < "$dat7") lines"
+echo "  7.txt (implementation): $(wc -l < "$dat7") lines"
+echo "  8.txt (proto+app): $(wc -l < "$dat8") lines"
 echo ""
 echo "Response sources: $resLines lines"
-echo "responses/COMPILED.txt: $resCompiledLines lines"
-
-# Summary or error
-if [ $((compiledLines - splitLines)) -gt 100 ] || [ $((splitLines - compiledLines)) -gt 100 ]; then
-    echo -e "\n⚠️  WARNING: Line count mismatch between COMPILED and split files (diff: $((compiledLines - splitLines)))"
-    echo "This is expected due to section headers added during splitting"
-fi
+echo "responses/RES_COMPILED.txt: $resCompiledLines lines"
 
 echo -e "\n✅ Compilation complete!"
-echo "Output files:"
-echo "  - $datFull"
-echo "  - $dat0 through $dat7"
-echo "  - $resFull"
+echo "Output files (9 partials + 1 response):"
+echo "  - $dat0 through $dat8 (9 partial files)"
+echo "  - $resFull (response compilation)"
