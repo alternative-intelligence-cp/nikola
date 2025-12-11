@@ -2937,667 +2937,177 @@ Deployment on AWS EC2 t3.large:
 
 ## 13.6 Overlay Filesystem Cleanup (VIRT-02 Critical Fix)
 
-**Problem:** The KVM Executor uses QCOW2 overlays (copy-on-write images) to preserve the gold base image. When a task completes, cleanup logic in the C++ destructor removes the overlay file. However, if the Nikola process terminates abnormally (SIGKILL from OOM killer, power failure, kernel panic), **C++ destructors are never invoked**, leaving orphaned overlay files accumulating in `/var/lib/nikola/work/overlays`.
+### Engineering Specification: Virtualization Infrastructure and Isolation
 
-**Symptoms:**
-- Disk space exhaustion over time (each overlay can be 1-10 GB)
-- Silent accumulation - no error messages, files just pile up
-- System crashes after 1-2 weeks of operation when disk reaches 100%
-- Overlays from dead processes remain indefinitely
-- Manual cleanup required via `rm -rf /var/lib/nikola/work/overlays/*`
+#### Part II: VIRT-02 Implementation
 
-**Measured Impact:**
-```
-Scenario: Production server with periodic OOM kills (memory pressure)
-- Average task overlay size: 3.2 GB
-- Task execution rate: ~50 tasks/day
-- OOM kill rate: 2-3 crashes/day (6% task failure rate)
-- Orphaned overlays: 2.5 crashes/day × 3.2 GB = 8 GB/day
-- Time to disk full (500GB partition): 62 days
+##### Overview
+2.1 Problem Analysis: The Virtualization Tax
+While the KVM sandboxing strategy mandated by INT-P5 provides essential security, it introduces a significant performance penalty known as the "Virtualization Tax." Booting a full Linux kernel for every file parse or code execution task incurs a latency of approximately 850ms (cold boot). In a high-frequency ingestion scenario, this overhead is prohibitive. Furthermore, an uncontrolled guest VM could flood the host with I/O operations via the virtio-serial channel, leading to host CPU starvation and priority inversion in the Orchestrator.1
+VIRT-02 addresses these issues through a tripartite remediation strategy:
+1. VMPool: A reservoir of pre-booted, "warm" VMs ready for instant task execution.
+2. IOGuard: A token-bucket rate limiter for Virtio-Serial communication.
+3. SecureChannel: A strict binary protocol replacing JSON to prevent parsing vulnerabilities.
+2.2 VMPool Architecture
+The VMPool maintains a queue of paused or idling VMs backed by QCOW2 overlays on a read-only gold image. When a request arrives (e.g., from SandboxedParser), the executor acquires a VM from the pool rather than spawning a new one.
+2.2.1 VMPool Implementation
+The implementation uses libvirt C++ bindings to manage the pool. It features a background maintenance thread that replenishes the pool when the number of available VMs drops below a threshold (MIN_POOL_SIZE).
 
-Result: Server becomes unresponsive after ~2 months, requires manual intervention
-```
 
-**Root Cause:**
-Reliance on C++ RAII (Resource Acquisition Is Initialization) for cleanup is insufficient for abnormal termination:
-```cpp
-// FRAGILE: Destructor-based cleanup
-class KVMTask {
-private:
-    std::filesystem::path overlay_path;
+C++
 
-public:
-    ~KVMTask() {
-        // ❌ NEVER CALLED on SIGKILL, power loss, kernel panic
-        std::filesystem::remove(overlay_path);
-    }
-};
-```
 
-**Solution:** Implement **OverlayJanitor** - a garbage collector service that:
-1. Runs at system startup (systemd oneshot service)
-2. Runs periodically during runtime (cron or systemd timer)
-3. Correlates overlay filenames (which embed PIDs) with live process table
-4. Removes overlays where the owning PID no longer exists
 
-### Remediation Strategy
 
-**Filename Convention:**
-```
-Format: task_<UUID>_<PID>.qcow2
-Example: task_a7b3c9d2-4e5f-6789-abcd-ef0123456789_12345.qcow2
-
-Components:
-- task_: Fixed prefix for pattern matching
-- <UUID>: Unique task identifier (36 chars, lowercase hex + dashes)
-- <PID>: Process ID of nikola-executor that created the overlay
-- .qcow2: File extension
-```
-
-**Liveness Detection:**
-```c
-// Use kill(pid, 0) to check process existence without sending actual signal
-int result = kill(pid, 0);
-
-if (result == 0) {
-    // Process exists and is alive
-} else if (errno == ESRCH) {
-    // Process does not exist → Orphan overlay
-} else if (errno == EPERM) {
-    // Process exists but owned by different user → Still alive
-}
-```
-
-**Cleanup Algorithm:**
-```
-1. Scan overlay directory: /var/lib/nikola/work/overlays
-2. For each *.qcow2 file:
-   a. Match filename against regex: task_[0-9a-f-]+_(\d+)\.qcow2
-   b. Extract PID from capture group
-   c. Check if PID exists using kill(pid, 0)
-   d. If PID dead: Add to removal queue
-3. Remove all queued overlay files
-4. Log cleanup statistics
-```
-
-### Production Implementation
-
-```cpp
-/**
- * @file include/nikola/executor/overlay_janitor.hpp
- * @brief Garbage collector for orphaned QCOW2 overlay files
- * Resolves VIRT-02 by cleaning up overlays from crashed Nikola processes
- */
-
-#pragma once
-
-#include <filesystem>
-#include <regex>
-#include <iostream>
-#include <signal.h>
-#include <vector>
-#include <chrono>
-#include <fstream>
-
-namespace fs = std::filesystem;
+// src/executor/vm_pool.cpp
+#include "nikola/executor/vm_pool.hpp"
 
 namespace nikola::executor {
 
-/**
- * @class OverlayJanitor
- * @brief Scans overlay directory and removes files from dead processes
- *
- * Thread-safety: NOT thread-safe (intended for single-threaded cron/systemd use)
- * Performance: O(N) where N = number of overlay files (typically <100)
- */
-class OverlayJanitor {
+class VMPool {
 private:
-    fs::path overlay_dir;
-    std::regex filename_pattern;
-
-    struct CleanupStatistics {
-        size_t total_files_scanned = 0;
-        size_t orphans_found = 0;
-        size_t orphans_removed = 0;
-        size_t bytes_freed = 0;
-        std::chrono::milliseconds scan_duration{0};
-    };
+   virConnectPtr conn;
+   std::queue<WarmVM*> available_vms;
+   std::mutex pool_mutex;
+   std::condition_variable pool_cv;
+   
+   const size_t MIN_POOL_SIZE = 3;
+   const size_t MAX_POOL_SIZE = 10;
+   std::atomic<bool> running{true};
+   std::thread pool_maintainer_thread;
 
 public:
-    /**
-     * @brief Constructs janitor for specified overlay directory
-     * @param path Path to overlay directory (e.g., /var/lib/nikola/work/overlays)
-     */
-    explicit OverlayJanitor(const std::string& path)
-        : overlay_dir(path),
-          filename_pattern(R"(task_[0-9a-f\-]+_(\d+)\.qcow2)")
-    {
-        if (!fs::exists(overlay_dir)) {
-            fs::create_directories(overlay_dir);
-        }
-    }
+   VMPool(virConnectPtr connection) : conn(connection) {
+       // Pre-warm pool
+       for(size_t i=0; i<MIN_POOL_SIZE; ++i) {
+           create_and_add_vm();
+       }
+       pool_maintainer_thread = std::thread([this](){ maintain_pool(); });
+   }
 
-    /**
-     * @brief Scans overlay directory and removes orphaned files
-     * @return CleanupStatistics with counts of scanned/removed files
-     */
-    CleanupStatistics cleanup_orphans() {
-        auto start_time = std::chrono::steady_clock::now();
-
-        CleanupStatistics stats;
-        std::vector<fs::path> to_remove;
-
-        std::cout << "[OverlayJanitor] Scanning " << overlay_dir << "..." << std::endl;
-
-        // Scan directory
-        try {
-            for (const auto& entry : fs::directory_iterator(overlay_dir)) {
-                if (!entry.is_regular_file()) {
-                    continue;
-                }
-
-                stats.total_files_scanned++;
-                std::string filename = entry.path().filename().string();
-                std::smatch matches;
-
-                // Match filename pattern
-                if (std::regex_match(filename, matches, filename_pattern)) {
-                    pid_t pid = std::stoi(matches[1].str());
-
-                    // Check if process is alive
-                    if (!is_process_alive(pid)) {
-                        std::cout << "[OverlayJanitor] Found orphan: " << filename
-                                  << " (PID " << pid << " dead)" << std::endl;
-
-                        stats.orphans_found++;
-                        to_remove.push_back(entry.path());
-                    }
-                } else {
-                    // Warn about non-conforming filenames
-                    std::cerr << "[OverlayJanitor] Warning: Skipping non-conforming file: "
-                              << filename << std::endl;
-                }
-            }
-        } catch (const std::filesystem::filesystem_error& e) {
-            std::cerr << "[OverlayJanitor] ERROR: Failed to scan directory: "
-                      << e.what() << std::endl;
-            return stats;
-        }
-
-        // Remove identified orphans
-        for (const auto& path : to_remove) {
-            try {
-                // Get file size before deletion
-                size_t file_size = fs::file_size(path);
-
-                fs::remove(path);
-
-                stats.orphans_removed++;
-                stats.bytes_freed += file_size;
-
-                std::cout << "[OverlayJanitor] Removed " << path.filename()
-                          << " (" << (file_size / 1024 / 1024) << " MB)" << std::endl;
-            } catch (const std::exception& e) {
-                std::cerr << "[OverlayJanitor] ERROR: Failed to remove "
-                          << path << ": " << e.what() << std::endl;
-            }
-        }
-
-        auto end_time = std::chrono::steady_clock::now();
-        stats.scan_duration = std::chrono::duration_cast<std::chrono::milliseconds>(
-            end_time - start_time);
-
-        print_summary(stats);
-        return stats;
-    }
-
-    /**
-     * @brief Writes cleanup statistics to log file for monitoring
-     * @param log_path Path to log file (e.g., /var/log/nikola/janitor.log)
-     */
-    void write_log(const std::string& log_path, const CleanupStatistics& stats) {
-        std::ofstream log(log_path, std::ios::app);
-
-        if (!log) {
-            std::cerr << "[OverlayJanitor] Warning: Could not open log file: "
-                      << log_path << std::endl;
-            return;
-        }
-
-        auto now = std::chrono::system_clock::now();
-        std::time_t timestamp = std::chrono::system_clock::to_time_t(now);
-
-        log << "[" << std::ctime(&timestamp)
-            << "] Scanned=" << stats.total_files_scanned
-            << " Orphans=" << stats.orphans_found
-            << " Removed=" << stats.orphans_removed
-            << " Freed=" << (stats.bytes_freed / 1024 / 1024) << "MB"
-            << " Duration=" << stats.scan_duration.count() << "ms"
-            << std::endl;
-    }
+   // Acquire a warm VM (blocking if pool empty but under max size)
+   WarmVM* acquire_vm() {
+       std::unique_lock<std::mutex> lock(pool_mutex);
+       
+       // If empty, try to create one on demand
+       if(available_vms.empty()) {
+           // If we hit cap, wait; otherwise create
+           if(vm_count < MAX_POOL_SIZE) {
+               // Unlock to create (don't block pool)
+               lock.unlock();
+               return create_vm_synchronous();
+           }
+           pool_cv.wait(lock, [this]{ return!available_vms.empty(); });
+       }
+       
+       WarmVM* vm = available_vms.front();
+       available_vms.pop();
+       
+       // Quick health check (ping agent)
+       if(!check_health(vm)) {
+           destroy_vm(vm);
+           return acquire_vm(); // Retry
+       }
+       
+       return vm;
+   }
 
 private:
-    /**
-     * @brief Checks if process with given PID is alive
-     * @param pid Process ID to check
-     * @return true if process exists, false if dead
-     *
-     * Uses kill(pid, 0) which sends no signal but checks process existence
-     */
-    bool is_process_alive(pid_t pid) {
-        // Special case: PID 0 and 1 are always alive (scheduler and init)
-        if (pid <= 1) {
-            return true;
-        }
-
-        // Send signal 0 (null signal) to check existence
-        if (kill(pid, 0) == 0) {
-            return true;  // Process exists and we can signal it
-        }
-
-        // Check errno to determine why kill() failed
-        if (errno == ESRCH) {
-            return false;  // No such process → Dead
-        } else if (errno == EPERM) {
-            return true;   // Permission denied → Process exists but owned by different user
-        }
-
-        // Other errors (EINVAL) → Conservative: assume alive
-        return true;
-    }
-
-    void print_summary(const CleanupStatistics& stats) {
-        std::cout << "\n[OverlayJanitor] ===== Cleanup Summary =====" << std::endl;
-        std::cout << "Files scanned:    " << stats.total_files_scanned << std::endl;
-        std::cout << "Orphans found:    " << stats.orphans_found << std::endl;
-        std::cout << "Orphans removed:  " << stats.orphans_removed << std::endl;
-        std::cout << "Disk space freed: " << (stats.bytes_freed / 1024 / 1024) << " MB" << std::endl;
-        std::cout << "Scan duration:    " << stats.scan_duration.count() << " ms" << std::endl;
-        std::cout << "=========================================\n" << std::endl;
-    }
+   void maintain_pool() {
+       while(running) {
+           std::unique_lock<std::mutex> lock(pool_mutex);
+           pool_cv.wait_for(lock, std::chrono::seconds(5));
+           
+           // Replenish if below minimum
+           while(available_vms.size() < MIN_POOL_SIZE && running) {
+               lock.unlock();
+               create_and_add_vm();
+               lock.lock();
+           }
+       }
+   }
 };
-
 } // namespace nikola::executor
-```
 
-### Systemd Integration
+1
+Performance Impact: The pool reduces task latency from ~850ms (cold boot) to ~20ms (unpause/assign). This 40x improvement transforms the ingestion pipeline from a sluggish batch process into a real-time stream.1
+2.3 IOGuard: Host Protection Mechanism
+To prevent a compromised or malfunctioning guest from performing a Denial of Service (DoS) attack on the host by flooding the log channel, VIRT-02 implements IOGuard.1 This component wraps the host-side file descriptor for the virtio-serial socket.
+It utilizes a Token Bucket algorithm. The bucket has a defined capacity (BURST_CAPACITY) and a refill rate (MAX_BYTES_PER_SEC). Every read operation consumes tokens. If the bucket is empty, the guarded_read function returns -1 immediately (applying backpressure) rather than blocking or buffering indefinitely. This forces the guest's virtio buffer to fill up, eventually blocking the guest process while keeping the host process responsive.
 
-#### Oneshot Service (Runs at Boot)
 
-```bash
-# File: /etc/systemd/system/nikola-janitor.service
+C++
 
-[Unit]
-Description=Nikola Overlay Janitor (Cleanup Orphaned QCOW2 Files)
-Documentation=https://github.com/your-org/nikola
-After=local-fs.target
-Before=nikola-executor.service
 
-[Service]
-Type=oneshot
-User=nikola
-Group=kvm
 
-# Environment
-Environment="NIKOLA_WORK_DIRECTORY=/var/lib/nikola/work"
 
-# Executable
-ExecStart=/usr/local/bin/nikola-janitor \
-    --overlay-dir ${NIKOLA_WORK_DIRECTORY}/overlays \
-    --log-file /var/log/nikola/janitor.log \
-    --dry-run false
-
-# Timeout (cleanup should complete quickly)
-TimeoutStartSec=60s
-
-# Security
-NoNewPrivileges=true
-PrivateTmp=true
-ProtectSystem=strict
-ReadWritePaths=/var/lib/nikola/work/overlays /var/log/nikola
-
-[Install]
-WantedBy=multi-user.target
-```
-
-#### Periodic Timer (Runs Every 6 Hours)
-
-```bash
-# File: /etc/systemd/system/nikola-janitor.timer
-
-[Unit]
-Description=Periodic Overlay Cleanup Timer
-Documentation=https://github.com/your-org/nikola
-
-[Timer]
-# Run 5 minutes after boot
-OnBootSec=5min
-
-# Run every 6 hours thereafter
-OnUnitActiveSec=6h
-
-# Randomize start time by up to 10 minutes to avoid thundering herd
-RandomizedDelaySec=10min
-
-[Install]
-WantedBy=timers.target
-```
-
-**Installation:**
-```bash
-# Install systemd units
-sudo cp nikola-janitor.service /etc/systemd/system/
-sudo cp nikola-janitor.timer /etc/systemd/system/
-
-# Reload systemd
-sudo systemctl daemon-reload
-
-# Enable timer (will auto-start on boot)
-sudo systemctl enable nikola-janitor.timer
-sudo systemctl start nikola-janitor.timer
-
-# Check timer status
-sudo systemctl list-timers nikola-janitor.timer
-
-# Manually trigger cleanup (for testing)
-sudo systemctl start nikola-janitor.service
-```
-
-### CLI Tool Implementation
-
-```cpp
-/**
- * @file src/executor/janitor_cli.cpp
- * @brief Command-line interface for OverlayJanitor
- */
-
-#include "nikola/executor/overlay_janitor.hpp"
-#include <cxxopts.hpp>
-#include <iostream>
-
-int main(int argc, char* argv[]) {
-    cxxopts::Options options("nikola-janitor", "Cleanup orphaned QCOW2 overlay files");
-
-    options.add_options()
-        ("overlay-dir", "Overlay directory path",
-         cxxopts::value<std::string>()->default_value("/var/lib/nikola/work/overlays"))
-        ("log-file", "Log file path",
-         cxxopts::value<std::string>()->default_value("/var/log/nikola/janitor.log"))
-        ("dry-run", "Simulate cleanup without removing files",
-         cxxopts::value<bool>()->default_value("false"))
-        ("h,help", "Print usage");
-
-    auto result = options.parse(argc, argv);
-
-    if (result.count("help")) {
-        std::cout << options.help() << std::endl;
-        return 0;
-    }
-
-    std::string overlay_dir = result["overlay-dir"].as<std::string>();
-    std::string log_file = result["log-file"].as<std::string>();
-    bool dry_run = result["dry-run"].as<bool>();
-
-    if (dry_run) {
-        std::cout << "[nikola-janitor] Running in DRY-RUN mode (no files will be deleted)"
-                  << std::endl;
-    }
-
-    try {
-        nikola::executor::OverlayJanitor janitor(overlay_dir);
-        auto stats = janitor.cleanup_orphans();
-
-        // Write log
-        janitor.write_log(log_file, stats);
-
-        return 0;
-    } catch (const std::exception& e) {
-        std::cerr << "FATAL ERROR: " << e.what() << std::endl;
-        return 1;
-    }
-}
-```
-
-### Integration with ExecutorKVM
-
-```cpp
-/**
- * @file src/executor/kvm_manager.cpp
- * @brief Modified KVMManager to use PID-based naming convention
- */
-
-#include "nikola/executor/kvm_manager.hpp"
-#include <unistd.h>  // For getpid()
-#include <uuid/uuid.h>
-
-namespace nikola::executor {
-
-class KVMManager {
-private:
-    std::string gold_image_path;
-    std::filesystem::path overlay_dir;
+// include/nikola/executor/io_guard.hpp
+class IOGuard {
+   const size_t MAX_BYTES_PER_SEC = 1024 * 1024; // 1MB/s
+   const size_t BURST_CAPACITY = 256 * 1024;
+   std::atomic<size_t> token_bucket;
+   std::chrono::steady_clock::time_point last_refill;
+   std::mutex guard_mutex;
 
 public:
-    std::filesystem::path create_overlay_for_task(const std::string& task_uuid) {
-        // Generate filename with PID embedded
-        pid_t current_pid = getpid();
-
-        std::string overlay_filename =
-            "task_" + task_uuid + "_" + std::to_string(current_pid) + ".qcow2";
-
-        std::filesystem::path overlay_path = overlay_dir / overlay_filename;
-
-        // Create QCOW2 overlay with backing file
-        std::string cmd = "qemu-img create -f qcow2 -b " + gold_image_path +
-                          " -F qcow2 " + overlay_path.string();
-
-        int result = std::system(cmd.c_str());
-        if (result != 0) {
-            throw std::runtime_error("Failed to create overlay: " + overlay_path.string());
-        }
-
-        std::cout << "[KVMManager] Created overlay: " << overlay_filename << std::endl;
-
-        return overlay_path;
-    }
-
-    // Destructor still attempts cleanup (best-effort)
-    ~KVMManager() {
-        // Note: This will NOT run on SIGKILL, but OverlayJanitor will handle orphans
-        cleanup_all_overlays();
-    }
+   ssize_t guarded_read(int fd, void* buf, size_t count) {
+       refill_tokens();
+       size_t current = token_bucket.load(std::memory_order_relaxed);
+       
+       if (current == 0) {
+           // Apply backpressure: do not read.
+           // Guest's virtio buffer will fill, blocking the guest process.
+           return -1; 
+       }
+       
+       size_t limit = std::min(count, current);
+       ssize_t bytes = ::read(fd, buf, limit);
+       
+       if (bytes > 0) {
+           token_bucket.fetch_sub(bytes, std::memory_order_relaxed);
+       }
+       return bytes;
+   }
 };
 
-} // namespace nikola::executor
-```
+1
+2.4 Secure Guest Channel Protocol (SEC-01)
+The communication between the Host Executor and the Guest Agent was originally specified as JSON. VIRT-02 mandates the replacement of this fragile text-based format with a Secure Binary Protocol (Finding SEC-01).
+JSON parsing is computationally expensive and prone to vulnerabilities like "JSON Bombs" (deeply nested arrays causing stack overflows) or type confusion attacks. The remediation introduces a protocol based on Length-Prefixed Protocol Buffers with CRC32 integrity checks.
+Protocol Definition:
+1. Magic Number (4 bytes): 0x4E494B4F ("NIKO") - Validates frame alignment.
+2. Payload Length (4 bytes): uint32 - Prevents buffer over-reads.
+3. CRC32 Checksum (4 bytes): Validates data integrity.
+4. Sequence ID (8 bytes): Prevents replay attacks.
+5. Payload (Variable): Protobuf serialized NeuralSpike.
 
-### Verification Tests
 
-```cpp
-#include <gtest/gtest.h>
-#include "nikola/executor/overlay_janitor.hpp"
-#include <filesystem>
-#include <fstream>
-#include <unistd.h>
+C++
 
-using nikola::executor::OverlayJanitor;
 
-class OverlayJanitorTest : public ::testing::Test {
-protected:
-    const std::filesystem::path test_dir = "/tmp/nikola_janitor_test";
 
-    void SetUp() override {
-        std::filesystem::create_directories(test_dir);
-    }
 
-    void TearDown() override {
-        std::filesystem::remove_all(test_dir);
-    }
-
-    void create_dummy_overlay(const std::string& filename, size_t size_mb = 1) {
-        std::filesystem::path path = test_dir / filename;
-        std::ofstream file(path, std::ios::binary);
-
-        // Write dummy data
-        std::vector<char> data(size_mb * 1024 * 1024, 0x42);
-        file.write(data.data(), data.size());
-    }
-};
-
-TEST_F(OverlayJanitorTest, DetectsOrphanedOverlay) {
-    // Create overlay with dead PID
-    create_dummy_overlay("task_abc123_99999.qcow2", 10);
-
-    OverlayJanitor janitor(test_dir.string());
-    auto stats = janitor.cleanup_orphans();
-
-    EXPECT_EQ(stats.orphans_found, 1);
-    EXPECT_EQ(stats.orphans_removed, 1);
-    EXPECT_GT(stats.bytes_freed, 0);
-
-    // Verify file was actually removed
-    EXPECT_FALSE(std::filesystem::exists(test_dir / "task_abc123_99999.qcow2"));
+// src/executor/secure_channel.cpp
+std::vector<uint8_t> wrap_message(const nikola::NeuralSpike& msg, uint64_t seq_id) {
+   std::string body = msg.SerializeAsString();
+   PacketHeader header;
+   header.magic = 0x4E494B4F;
+   header.payload_len = body.size();
+   header.crc32 = crc32(0, (Bytef*)body.data(), body.size());
+   header.sequence_id = seq_id;
+   
+   std::vector<uint8_t> packet(sizeof(header) + body.size());
+   memcpy(packet.data(), &header, sizeof(header));
+   memcpy(packet.data() + sizeof(header), body.data(), body.size());
+   return packet;
 }
 
-TEST_F(OverlayJanitorTest, PreservesLiveProcessOverlay) {
-    // Create overlay with current process PID (guaranteed alive)
-    pid_t my_pid = getpid();
-    std::string filename = "task_xyz789_" + std::to_string(my_pid) + ".qcow2";
-    create_dummy_overlay(filename, 5);
-
-    OverlayJanitor janitor(test_dir.string());
-    auto stats = janitor.cleanup_orphans();
-
-    EXPECT_EQ(stats.orphans_found, 0);
-    EXPECT_EQ(stats.orphans_removed, 0);
-
-    // Verify file was NOT removed
-    EXPECT_TRUE(std::filesystem::exists(test_dir / filename));
-}
-
-TEST_F(OverlayJanitorTest, IgnoresNonConformingFiles) {
-    // Create files with invalid naming patterns
-    create_dummy_overlay("random_file.qcow2");
-    create_dummy_overlay("task_no_pid.qcow2");
-    create_dummy_overlay("backup.tar.gz");
-
-    OverlayJanitor janitor(test_dir.string());
-    auto stats = janitor.cleanup_orphans();
-
-    // Should skip all non-conforming files
-    EXPECT_EQ(stats.orphans_found, 0);
-    EXPECT_EQ(stats.total_files_scanned, 3);
-}
-
-TEST_F(OverlayJanitorTest, HandlesEmptyDirectory) {
-    // No files in directory
-    OverlayJanitor janitor(test_dir.string());
-    auto stats = janitor.cleanup_orphans();
-
-    EXPECT_EQ(stats.total_files_scanned, 0);
-    EXPECT_EQ(stats.orphans_found, 0);
-}
-```
-
-### Performance Benchmarks
-
-**Scan Performance:**
-
-| Overlay Count | Scan Time | Removal Time (orphans) | Total Time |
-|---------------|-----------|------------------------|------------|
-| 10 files | 8 ms | 120 ms | 128 ms |
-| 50 files | 35 ms | 580 ms | 615 ms |
-| 100 files | 68 ms | 1150 ms | 1218 ms |
-| 500 files | 310 ms | 5800 ms | 6110 ms |
-
-**Disk I/O:**
-- Pattern matching: CPU-bound, negligible I/O
-- File removal: ~11ms per file (filesystem metadata update)
-
-**Memory Usage:**
-- Baseline: ~2 MB (janitor process overhead)
-- Per overlay entry: ~256 bytes (path + statistics)
-- 1000 overlays: ~2.25 MB total memory
-
-### Operational Impact
-
-**Before (No Janitor):**
-```
-Day 0: Nikola starts with 200 GB free disk space
-Day 1: 5 crashes → 5 orphans × 3.2 GB = 16 GB lost
-Day 7: 35 crashes → 112 GB lost (remaining: 88 GB)
-Day 14: 70 crashes → 224 GB OVERFLOW → System crash
-
-Manual recovery:
-1. SSH into server
-2. Find orphaned files: ls -lh /var/lib/nikola/work/overlays
-3. Manually delete: rm /var/lib/nikola/work/overlays/task_*.qcow2
-4. Restart Nikola
-5. Hope it doesn't happen again soon
-
-Operational cost: 30 minutes downtime + manual intervention
-```
-
-**After (Janitor Enabled):**
-```
-Day 0: Nikola starts, janitor runs at boot
-Day 1: 5 crashes → 5 orphans created → Janitor runs 4 times (every 6 hours) → All cleaned
-Day 7: 35 crashes → All orphans automatically cleaned within 6 hours
-Day 14+: System runs indefinitely, disk usage stable
-
-Manual recovery: NONE REQUIRED
-
-Operational cost: 0 minutes (fully automated)
-```
-
-**Quantitative Metrics:**
-
-| Metric | Before | After |
-|--------|--------|-------|
-| Disk space leak rate | 8 GB/day | 0 GB/day |
-| Time to disk-full (500GB) | 62 days | NEVER |
-| Manual interventions/month | 2-3 | 0 |
-| Downtime per incident | 30 minutes | 0 seconds |
-| Orphan cleanup delay | Manual (hours/days) | Automatic (<6 hours) |
-
-### Critical Implementation Notes
-
-1. **PID Reuse Risk**: Linux PIDs wrap around at 32768 (or 4194304 on some systems). If a PID is reused before the janitor runs, a live process could have its overlay deleted. **Mitigation**: Run janitor frequently (every 6 hours) to minimize PID reuse window.
-
-2. **Race Condition**: If the janitor runs while the executor is creating a new overlay, the PID check might occur before the qcow2 file is fully written. **Mitigation**: The executor should create the overlay file atomically (write to temp name, then rename).
-
-3. **Permission Requirements**: The janitor must run as the same user (`nikola`) that owns the overlay files, or as root with appropriate permissions. Running as root is discouraged for security.
-
-4. **Filesystem Atomicity**: The janitor uses `std::filesystem::remove()` which is atomic on modern filesystems (ext4, XFS). On network filesystems (NFS), atomicity is NOT guaranteed.
-
-5. **Logging**: Write cleanup statistics to `/var/log/nikola/janitor.log` for monitoring. Use log rotation (logrotate) to prevent the log file from growing indefinitely.
-
-6. **Dry-Run Mode**: Always test the janitor in dry-run mode first to verify it correctly identifies orphans without accidentally removing live overlays.
-
-7. **Signal Handling**: The janitor should handle SIGTERM gracefully to allow safe interruption during cleanup. Current implementation is simple and completes quickly (~1 second for 100 files).
-
-8. **Monitoring Integration**: Expose cleanup statistics via metrics endpoint (Prometheus) for alerting on disk space trends:
-   ```cpp
-   // Example metric
-   overlay_orphans_removed_total{job="nikola-janitor"} 127
-   overlay_disk_freed_bytes{job="nikola-janitor"} 408944640
-   ```
-
-9. **Cold Start Optimization**: On first boot after migration to the new naming convention, the janitor will find many non-conforming overlays from the old system. Log warnings but don't delete them automatically - require manual confirmation.
-
-10. **Multi-Executor Deployments**: If multiple executor processes run on the same host (different ports), each embeds its own PID in overlay names. The janitor correctly handles this by checking each PID independently.
-
-### Cross-References
-
-- See [Section 13.3](#133-gold-image-strategy) for QCOW2 overlay creation and backing file strategy
-- See [Section 13.5](#135-hybrid-deployment-architecture-int-p6-critical-fix) for systemd service integration patterns
-- See [Section 19.5](../06_persistence/01_dmc_persistence.md#195-production-grade-optimizations) for disk space management in DMC persistence layer
-- See [Appendix D](../11_appendices/08_operational_runbooks.md) for disk space monitoring and alerting procedures
-
----
-
-**Cross-References:**
-- See Section 10 for ZeroMQ Spine integration with executor commands
-- See Section 11 for Orchestrator integration
-- See Section 17 for Self-Improvement compilation pipeline
-- See Appendix C for CommandRequest/CommandResponse Protocol Buffer schemas
+1
+This protocol acts as a firewall against malformed inputs, ensuring that a compromised guest cannot exploit the host's deserialization logic to escape the sandbox.
+2.5 Hybrid Deployment Architecture (INT-P6)
+A critical operational finding (INT-P6) revealed that running the KVM Executor inside a Docker container (Nested Virtualization) creates stability and performance issues on public clouds (AWS/GCP). VIRT-02 specifies a Hybrid Deployment strategy:
+* Nikola Core (Physics/Cognition): Runs in a Docker container for portability.
+* Executor Service: Runs on the Bare Metal Host as a systemd service (nikola-executor.service), with direct access to /dev/kvm.
+* Bridge: The two communicate via the ZeroMQ Spine over a TCP socket (e.g., 172.17.0.1:5556).
+This eliminates the nested virtualization penalty, restoring native performance for the sandboxes while maintaining containerization for the core application.1
+________________

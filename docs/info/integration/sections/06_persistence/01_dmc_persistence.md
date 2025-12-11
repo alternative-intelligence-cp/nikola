@@ -160,471 +160,79 @@ void write_varint(std::vector<uint8_t>& output, size_t value) {
 
 ### 19.3.1 High-Fidelity Quantization (Finding INT-P2)
 
-**Critical Audit Finding:** Standard rounding during float→Nit quantization introduces massive information loss, causing progressive amnesia as low-amplitude memories (weak associations) are systematically destroyed over multiple nap cycles.
+#### Engineering Specification: Quantization Protocol
 
-#### 19.3.1.1 Problem Analysis
 
-The current NRLE implementation quantizes continuous wave amplitudes (64-bit `double`) to discrete balanced nonary integers (8-bit `Nit`, values $\{-4, \ldots, +4\}$) using simple rounding:
+// include/nikola/security/bootstrap_auth.hpp
 
-```cpp
-// Current naive quantization (LOSSY)
-Nit quantize_naive(double amplitude) {
-    int rounded = static_cast<int>(std::round(amplitude));
-    return static_cast<Nit>(std::clamp(rounded, -4, 4));
-}
-```
-
-**Measured Symptoms:**
-- **Amplitude 3.4 → 3:** Loses 0.4 (11.8% error)
-- **Amplitude 0.4 → 0:** Weak association completely erased (100% loss)
-- **After 10 nap cycles:** 47% of low-amplitude memories (<1.0) destroyed
-- **After 100 nap cycles:** Only "screaming" memories (|ψ| > 3.5) survive
-
-**Root Cause:** This acts as a **low-pass filter** in amplitude space. Over multiple save/load cycles:
-
-$$\Psi_{\text{after } n \text{ naps}} = \text{Quantize}^n(\Psi_0) \xrightarrow{n \to \infty} \{\pm 4, 0\}$$
-
-The system suffers **progressive amnesia**, retaining only the loudest, crudest memories while subtle associations (the "subconscious") are systematically erased.
-
-**Critical Impact:**
-- Weak semantic associations vanish (e.g., "cat" → "whiskers" link strength 0.3 rounds to 0)
-- Long-term memory degrades to binary extremes (love/hate, no nuance)
-- Violates thermodynamic reversibility required for coherent quantum-like dynamics
-- Dream-Weave counterfactuals lose fidelity (can't imagine subtle scenarios)
-
-#### 19.3.1.2 Mathematical Remediation
-
-To preserve statistical information content despite quantization, we employ:
-
-**1. Logarithmic Mapping (Weber-Fechner Law):**
-
-Human perception and information density follow log scales. Allocate more precision to small values (where subtle memories live) than large values:
-
-$$x_{\text{log}} = \text{sgn}(x) \cdot \ln(1 + |x|)$$
-
-This compresses large amplitudes while preserving linearity near zero.
-
-**2. Stochastic Dithering:**
-
-Instead of deterministic rounding, round probabilistically:
-- If value is 3.4, map to 3 (60% chance) or 4 (40% chance)
-- Expected value: $E[\text{Q}(3.4)] = 0.6 \cdot 3 + 0.4 \cdot 4 = 3.4$ ✓
-
-When averaged over spatial neighborhoods (during Laplacian calculation), the expected value is preserved in aggregate statistics.
-
-**Mathematical Formulation:**
-
-For amplitude $x$:
-
-$$\text{Quantize}(x) = \begin{cases}
-\text{sgn}(x) \cdot \lfloor s \cdot \ln(1 + |x|) + U \rfloor & \text{with probability } (s \cdot \ln(1 + |x|) \bmod 1) \\
-\text{sgn}(x) \cdot \lfloor s \cdot \ln(1 + |x|) \rfloor & \text{otherwise}
-\end{cases}$$
-
-Where:
-- $s = 1.5$ is the scale factor (tunable for dynamic range)
-- $U \sim \text{Uniform}(0, 1)$ is random dither
-- Result clamped to $[-4, 4]$
-
-#### 19.3.1.3 Production Implementation
-
-**File:** `include/nikola/persistence/high_fidelity_quantizer.hpp`
-
-```cpp
-/**
- * @file include/nikola/persistence/high_fidelity_quantizer.hpp
- * @brief High-fidelity quantization to prevent memory entropy over nap cycles.
- *
- * CRITICAL: Preserves low-amplitude signals using logarithmic scaling and
- * stochastic dithering. Prevents progressive amnesia.
- *
- * @see Section 19.3 (NRLE) for compression context
- * @see Section 22 (Nap System) for save/load cycle
- */
 #pragma once
+#include <string>
+#include <chrono>
+#include <sodium.h>
+#include <fstream>
+#include <iostream>
+#include <filesystem>
 
-#include "nikola/types/nit.hpp"
-#include <cmath>
-#include <random>
-#include <stdexcept>
+namespace nikola::security {
 
-namespace nikola::persistence {
-
-/**
- * @class HighFidelityQuantizer
- * @brief Logarithmic + stochastic dither quantizer for Nit encoding.
- *
- * Uses Weber-Fechner logarithmic compression to allocate more precision
- * to small amplitudes, combined with probabilistic rounding to preserve
- * statistical expectation values.
- */
-class HighFidelityQuantizer {
+class BootstrapAuthenticator {
 private:
-    // Scale factor for log-nonary mapping (tunable: 1.0-2.0)
-    // Higher = more dynamic range, lower = more precision near zero
-    static constexpr double SCALE_FACTOR = 1.5;
-
-    // Thread-local RNG for stochastic dithering
-    // Each thread gets independent RNG to avoid contention
-    static thread_local std::mt19937 rng_;
+   std::string admin_token_;
+   std::chrono::steady_clock::time_point creation_time_;
+   bool active_ = false;
+   static constexpr int TIMEOUT_SECONDS = 300; // 5 minute window
 
 public:
-    HighFidelityQuantizer() = default;
-
-    /**
-     * @brief Quantizes float amplitude to Nit using log-dither algorithm.
-     *
-     * @param amplitude Wave amplitude to quantize (typically in range [-5, +5])
-     * @return Quantized Nit value in [-4, +4]
-     *
-     * ALGORITHM:
-     * 1. Extract sign
-     * 2. Apply logarithmic compression: log(1+|x|)
-     * 3. Scale to Nit range
-     * 4. Stochastic rounding based on fractional part
-     * 5. Clamp to [-4, +4]
-     *
-     * PROPERTIES:
-     * - Preserves expected value: E[Q(x)] ≈ x (in aggregate)
-     * - More precision near zero (where subtle memories are)
-     * - Minimal distortion for small signals (|x| < 1.0)
-     *
-     * THREAD SAFETY: Thread-safe via thread_local RNG.
-     */
-    Nit quantize(double amplitude) const {
-        // 1. Sign extraction
-        double sign = (amplitude >= 0.0) ? 1.0 : -1.0;
-        double mag = std::abs(amplitude);
-
-        // 2. Logarithmic compression (Weber-Fechner law)
-        // log1p(x) = ln(1 + x) preserves linearity near 0
-        double log_mag = std::log1p(mag);
-
-        // 3. Scale to match Nit range [-4, +4]
-        double scaled = log_mag * SCALE_FACTOR;
-
-        // 4. Stochastic dithering
-        double integer_part;
-        double fractional_part = std::modf(scaled, &integer_part);
-
-        // Probabilistic rounding: round up with probability = fractional part
-        std::uniform_real_distribution<double> dist(0.0, 1.0);
-        if (dist(rng_) < fractional_part) {
-            integer_part += 1.0;  // Round up
-        }
-        // Else: implicit round down (keep integer_part)
-
-        // 5. Clamping and sign reapplication
-        int result = static_cast<int>(integer_part * sign);
-        result = std::clamp(result, -4, 4);
-
-        return static_cast<Nit>(result);
-    }
-
-    /**
-     * @brief Dequantizes Nit back to approximate float amplitude.
-     *
-     * @param nit Balanced nonary value to dequantize
-     * @return Approximate original amplitude
-     *
-     * NOTE: Cannot recover stochastic dither noise, but recovers
-     * expected magnitude. Single-sample error ~10-20%, but aggregate
-     * statistics over neighborhoods are preserved.
-     *
-     * INVERSE FORMULA: x ≈ sgn(nit) · (exp(|nit|/s) - 1)
-     */
-    double dequantize(Nit nit) const {
-        int val = static_cast<int>(nit);
-        double sign = (val >= 0) ? 1.0 : -1.0;
-        double mag = std::abs(val);
-
-        // Inverse scaling
-        double log_mag = mag / SCALE_FACTOR;
-
-        // Inverse logarithm: exp(x) - 1
-        // expm1(x) = exp(x) - 1, numerically stable for small x
-        double amplitude = sign * std::expm1(log_mag);
-
-        return amplitude;
-    }
-
-    /**
-     * @brief Batch quantization for efficient processing.
-     *
-     * @param amplitudes Vector of wave amplitudes
-     * @return Vector of quantized Nit values
-     *
-     * PERFORMANCE: ~2.5× faster than individual calls due to reduced
-     * virtual function overhead and better cache locality.
-     */
-    std::vector<Nit> quantize_batch(const std::vector<double>& amplitudes) const {
-        std::vector<Nit> results;
-        results.reserve(amplitudes.size());
-
-        for (double amp : amplitudes) {
-            results.push_back(quantize(amp));
-        }
-
-        return results;
-    }
-
-    /**
-     * @brief Batch dequantization.
-     */
-    std::vector<double> dequantize_batch(const std::vector<Nit>& nits) const {
-        std::vector<double> results;
-        results.reserve(nits.size());
-
-        for (Nit nit : nits) {
-            results.push_back(dequantize(nit));
-        }
-
-        return results;
-    }
-};
-
-// Initialize thread_local RNG with hardware entropy
-thread_local std::mt19937 HighFidelityQuantizer::rng_(std::random_device{}());
-
-} // namespace nikola::persistence
-```
-
-#### 19.3.1.4 Integration with Persistence Layer
-
-**File:** `src/persistence/persistence_manager.cpp` (modification)
-
-```cpp
-#include "nikola/persistence/high_fidelity_quantizer.hpp"
-
-class PersistenceManager {
-private:
-    HighFidelityQuantizer quantizer_;  // Use instead of naive rounding
-
-public:
-    void write_hyper_page(uint64_t page_id, const std::vector<TorusNode>& nodes) {
-        std::vector<uint8_t> serialized_nodes;
-
-        for (const auto& node : nodes) {
-            // 1. Quantize wavefunction with high-fidelity algorithm
-            double psi_real = node.wavefunction.real();
-            double psi_imag = node.wavefunction.imag();
-
-            Nit nit_real = quantizer_.quantize(psi_real);
-            Nit nit_imag = quantizer_.quantize(psi_imag);
-
-            // Store complex quantized value (2 bytes instead of 16)
-            serialized_nodes.push_back(static_cast<uint8_t>(nit_real));
-            serialized_nodes.push_back(static_cast<uint8_t>(nit_imag));
-
-            // Continue with metric tensor, resonance, state...
-            // (Full node serialization as before)
-        }
-
-        // Compress and write as before...
-    }
-
-    TorusNode load_node(const std::vector<uint8_t>& data, size_t& offset) {
-        TorusNode node;
-
-        // Dequantize with inverse transform
-        Nit nit_real = static_cast<Nit>(data[offset++]);
-        Nit nit_imag = static_cast<Nit>(data[offset++]);
-
-        double psi_real = quantizer_.dequantize(nit_real);
-        double psi_imag = quantizer_.dequantize(nit_imag);
-
-        node.wavefunction = std::complex<double>(psi_real, psi_imag);
-
-        // Load remaining fields...
-        return node;
-    }
-};
-```
-
-#### 19.3.1.5 Verification Tests
-
-**Test 1: Expected Value Preservation (Aggregate)**
-
-```cpp
-TEST(HighFidelityQuantizerTest, ExpectedValuePreservation) {
-    HighFidelityQuantizer quantizer;
-
-    // Test value with fractional part
-    double original = 3.4;
-
-    // Quantize many times to measure expectation
-    std::vector<int> results;
-    for (int i = 0; i < 10000; ++i) {
-        Nit quantized = quantizer.quantize(original);
-        results.push_back(static_cast<int>(quantized));
-    }
-
-    // Compute empirical mean
-    double mean = std::accumulate(results.begin(), results.end(), 0.0) / results.size();
-
-    // Should be very close to original value
-    EXPECT_NEAR(mean, original, 0.05);  // Within 5% tolerance
-
-    // Verify both 3 and 4 appear (not deterministic rounding)
-    int count_3 = std::count(results.begin(), results.end(), 3);
-    int count_4 = std::count(results.begin(), results.end(), 4);
-
-    EXPECT_GT(count_3, 1000);  // ~60% should be 3
-    EXPECT_GT(count_4, 1000);  // ~40% should be 4
-}
-```
-
-**Test 2: Low-Amplitude Preservation**
-
-```cpp
-TEST(HighFidelityQuantizerTest, LowAmplitudePreservation) {
-    HighFidelityQuantizer quantizer;
-
-    // Weak association (would be lost with naive rounding)
-    double weak_signal = 0.4;
-
-    // Quantize many times
-    std::vector<Nit> results;
-    for (int i = 0; i < 1000; ++i) {
-        results.push_back(quantizer.quantize(weak_signal));
-    }
-
-    // Compute mean (should preserve non-zero signal)
-    double mean_nit = 0.0;
-    for (Nit nit : results) {
-        mean_nit += static_cast<double>(static_cast<int>(nit));
-    }
-    mean_nit /= results.size();
-
-    // Should NOT collapse to zero (naive rounding would give 0)
-    EXPECT_GT(mean_nit, 0.2);  // Preserved in expectation
-
-    // Verify some non-zero values appear
-    int non_zero_count = std::count_if(results.begin(), results.end(),
-        [](Nit n) { return n != Nit::ZERO; });
-
-    EXPECT_GT(non_zero_count, 200);  // At least 20% non-zero
-}
-```
-
-**Test 3: Round-Trip Fidelity (Aggregate)**
-
-```cpp
-TEST(HighFidelityQuantizerTest, RoundTripAggregateFidelity) {
-    HighFidelityQuantizer quantizer;
-
-    // Test range of amplitudes
-    std::vector<double> test_values = {-4.0, -2.5, -0.3, 0.0, 0.7, 1.9, 3.6};
-
-    for (double original : test_values) {
-        // Perform many round-trips to measure aggregate error
-        double sum_reconstructed = 0.0;
-        int trials = 1000;
-
-        for (int i = 0; i < trials; ++i) {
-            Nit quantized = quantizer.quantize(original);
-            double reconstructed = quantizer.dequantize(quantized);
-            sum_reconstructed += reconstructed;
-        }
-
-        double mean_reconstructed = sum_reconstructed / trials;
-
-        // Aggregate error should be minimal
-        double error = std::abs(mean_reconstructed - original);
-        EXPECT_LT(error, 0.15);  // < 15% aggregate error
-    }
-}
-```
-
-**Test 4: Multi-Cycle Stability**
-
-```cpp
-TEST(HighFidelityQuantizerTest, MultiCycleStability) {
-    HighFidelityQuantizer quantizer;
-
-    // Simulate 10 nap cycles (save/load)
-    std::vector<double> amplitudes = {0.5, 1.2, 2.8, -0.4, -1.7};
-    std::vector<double> current = amplitudes;
-
-    for (int cycle = 0; cycle < 10; ++cycle) {
-        // Quantize (save)
-        std::vector<Nit> quantized = quantizer.quantize_batch(current);
-
-        // Dequantize (load)
-        current = quantizer.dequantize_batch(quantized);
-    }
-
-    // After 10 cycles, compute aggregate loss
-    double total_error = 0.0;
-    for (size_t i = 0; i < amplitudes.size(); ++i) {
-        total_error += std::abs(current[i] - amplitudes[i]);
-    }
-    double mean_error = total_error / amplitudes.size();
-
-    // Should not have catastrophic drift (naive: ~80% loss)
-    EXPECT_LT(mean_error, 0.3);  // < 30% drift after 10 cycles
-}
-```
-
-#### 19.3.1.6 Performance Benchmarks
-
-**System:** Intel Xeon W-2145 (8C/16T), 64GB DDR4-2666, Ubuntu 22.04
-
-| Operation | Latency (ns) | Throughput | Overhead vs Naive |
-|-----------|--------------|------------|-------------------|
-| `quantize()` single | 45 | 22M ops/sec | 3.8× slower |
-| `quantize_batch()` 1K | 28,500 | 35M ops/sec | 2.4× slower |
-| `dequantize()` single | 18 | 55M ops/sec | 1.5× slower |
-| `dequantize_batch()` 1K | 12,000 | 83M ops/sec | 1.2× slower |
-
-**Naive Rounding Baseline:**
-- Single quantize: 12ns (no RNG, no log)
-- Batch 1K: 11,800ns
-
-**Memory Footprint Comparison:**
-
-| Quantizer | Per-Node | 19,683 Nodes | 7.6M Nodes (full) |
-|-----------|----------|--------------|-------------------|
-| Naive (double) | 16 bytes | 315 KB | 122 MB |
-| Nit (8-bit) | 1 byte | 19 KB | 7.6 MB |
-| **Savings** | **16×** | **16×** | **16×** |
-
-**Critical Insight:** The 2-4× performance penalty for high-fidelity quantization is negligible compared to the ~16× storage savings and elimination of progressive amnesia. During nap cycles (~100-500ms total), quantization overhead is <5ms.
-
-####19.3.1.7 Operational Impact
-
-By integrating high-fidelity quantization:
-
-1. **Prevents Progressive Amnesia:** Weak associations (|ψ| < 1.0) survive multiple nap cycles instead of vanishing. Long-term memory retains nuance.
-
-2. **Thermodynamic Reversibility:** Save/load cycles preserve information entropy in aggregate, maintaining coherent wave dynamics.
-
-3. **Dream Fidelity:** Counterfactual simulations can explore subtle scenarios (not just binary extremes).
-
-4. **Biological Realism:** Mirrors how biological synapses use stochastic neurotransmitter release to preserve analog signals despite discrete spikes.
-
-5. **Compression Without Catastrophic Loss:** Achieves 16× compression while preserving statistical properties of the wavefunction.
-
-#### 19.3.1.8 Critical Implementation Notes
-
-1. **Thread-Local RNG:** Each thread gets independent `std::mt19937` to avoid mutex contention. Critical for parallel quantization.
-
-2. **Scale Factor Tuning:** $s = 1.5$ is optimized for amplitude range $[-5, +5]$. If wave dynamics change (different damping), may need adjustment.
-
-3. **Dither Distribution:** Uses uniform distribution $U(0,1)$ for simplicity. Could use triangular dither for better noise shaping if needed.
-
-4. **Aggregate vs Single-Sample Accuracy:** Single dequantized value has ~10-20% error. But averaged over Laplacian stencil (26 neighbors), error drops to <5%.
-
-5. **Deterministic Testing:** For unit tests, seed RNG deterministically: `rng_.seed(42);`. For production, use `std::random_device`.
-
-6. **Complex Quantization:** For complex amplitudes, quantize real/imaginary parts independently (2 bytes total vs 16 bytes for `complex<double>`).
-
-7. **Performance Trade-off:** If quantization becomes bottleneck, consider LUT-based approximation of log/exp functions (reduces latency from 45ns to ~15ns).
-
-8. **Compatibility:** Can coexist with naive quantization. Use high-fidelity for critical memories, naive for transient states (e.g., scratch buffers).
-
----
-
+   /**
+    * @brief Attempt to enter bootstrap mode.
+    * Only succeeds if the whitelist file is missing or empty.
+    */
+   bool try_initialize(const std::string& whitelist_path) {
+       // Check if whitelist exists and has content
+       if (std::filesystem::exists(whitelist_path)) {
+           std::ifstream file(whitelist_path);
+           if (file.peek()!= std::ifstream::traits_type::eof()) {
+               active_ = false;
+               return false; // System is already secured
+           }
+       }
+
+       // Generate 32 bytes (256 bits) of high entropy
+       unsigned char buf;
+       randombytes_buf(buf, 32);
+       
+       // Convert to Hex string for display
+       char hex;
+       sodium_bin2hex(hex, 65, buf, 32);
+       admin_token_ = std::string(hex);
+       
+       active_ = true;
+       creation_time_ = std::chrono::steady_clock::now();
+       
+       // CRITICAL: Output to secure log. This is the "Out-of-Band" channel.
+       std::cout << "\n==================================================\n";
+       std::cout << " SYSTEM UNINITIALIZED. BOOTSTRAP MODE ACTIVE.\n";
+       std::cout << " ADMIN TOKEN: " << admin_token_ << "\n";
+       std::cout << " Token expires in " << TIMEOUT_SECONDS << " seconds.\n";
+       std::cout << "==================================================\n\n";
+       
+       return true;
+   }
+
+   /**
+    * @brief Validate a client's pairing attempt.
+    * @param provided_token_hash SHA256 of the token provided by client.
+    */
+   bool validate(const std::string& provided_token_hash) {
+       if (!active_) return false;
+
+       // Check Timeout
+       auto now = std::chrono::steady_clock::now();
+       if (std::chrono::duration_cast<std::chrono::seconds>(now - creation_time_).count() > TIMEOUT_SECONDS) {
+           active_ = false;
+           std::cout << " Bootstrap token EXPIRED. Restart required to pair.\n";
+           return false;
+       }
 ## 19.4 Nap Cycle and Flush Logic
 
 **Nap Triggers:**

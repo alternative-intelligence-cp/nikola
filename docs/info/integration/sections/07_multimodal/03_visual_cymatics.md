@@ -1721,475 +1721,374 @@ void VisualCymaticsBridge::check_errors() {
 
 ## 24.2.12 Holographic Image Reconstruction (Finding INT-P1)
 
-**Critical Audit Finding:** The visual system can inject images (`inject_image`) but cannot reconstruct them from wave patterns, creating write-only vision that prevents imagination, dream visualization, and memory verification.
+### Engineering Report: Multimodal Integration Enhancements
 
-### 24.2.12.1 Problem Analysis
+#### Overview
+2.1 Theoretical Approach: Holographic Interference
+In conventional deep learning, multimodal fusion typically involves concatenating feature vectors from different encoders (e.g., a CNN for images and an RNN/Transformer for audio) and passing them through a fully connected layer. In the Nikola 9D-TWI architecture, such an approach is fundamentally incompatible with the wave-based substrate. Fusion must be implemented as a physical interference phenomenon.
+We introduce the Holographic Interference Arbiter (HIA). The HIA does not merely mix signals; it orchestrates the constructive and destructive interference of sensory waves before they are committed to long-term memory in the torus. The goal is to produce a single, unified wavefunction $\Psi_{global}$ that encodes the highest-confidence reality while preserving the spectral nuances of the source modalities.
+This requires addressing three specific challenges identified in the plan files:
+1. Cross-Modal Attention: How the presence of a signal in one modality (e.g., seeing a moving mouth) amplifies sensitivity in another (e.g., hearing speech).1
+2. Adaptive Weighting: How to dynamically down-weight a sensor stream that becomes noisy or unreliable (e.g., occlusion in vision, static in audio).1
+3. Conflict Resolution: How to arbitrate when high-confidence signals from different modalities contradict each other.1
+2.2 Subsystem Architecture: The Holographic Interference Arbiter
+The HIA sits in the transduction pipeline between the Sensory Cortex (which handles raw buffering and synchronization, see CF-05 in 1) and the Torus Manifold (the physics engine).
+2.2.1 Cross-Modal Attention via Resonance Modulation
+Standard cross-attention computes a softmax over dot products. In our wave substrate, attention is physically realized as Resonance Modulation. The "Attention" that Modality A pays to Modality B is implemented by Modality A modulating the Resonance ($r$) and State ($s$) dimensions of Modality B's wave packet.
+Mechanism:
+If the visual system detects a high-saliency event (e.g., rapid motion), it generates a "pilot wave" in the State dimension ($s$). Since wave velocity $c = c_0 / (1 + s)$ 1, increasing $s$ locally creates a "slow light" region.1 When the audio wave packet enters this region, it slows down, increasing its energy density and interaction time. This is the physical equivalent of "focus."
+Mathematical Formulation:
+Let $\Psi_A$ be the audio field and $\Psi_V$ be the visual field. We define the Cross-Modal Attention Function $A(\Psi_Q, \Psi_K)$ as a phase-coherent interaction integral:
 
-The current VisualCymaticsEngine implements a mathematically complete **forward transform** (image → wave) via `inject_hierarchical()` (Section 24.2.6.3). However, there is no corresponding **inverse transform** (wave → image).
 
-**Current Capabilities (Forward Only):**
-- ✅ Encode RGB images as standing waves using Gaussian pyramids
-- ✅ Map image pyramids to frequency bands (8.0 Hz, 4.0 Hz, 2.0 Hz, 1.0 Hz, 0.5 Hz)
-- ✅ Store visual patterns in 9D toroidal manifold
-- ✅ Measure resonance between stored and new patterns (recognition)
 
-**Missing Capabilities (No Inverse):**
-- ❌ **"Draw" internal state:** Cannot visualize what the system is "thinking"
-- ❌ **Verify memory fidelity:** Cannot check if stored visual memories have degraded
-- ❌ **Enable dreaming:** Dream-Weave (Section 22.5) cannot generate visual scenarios
-- ❌ **Support imagination:** System cannot produce novel images from counterfactual states
 
-**Measured Impact:**
-- Dream-Weave limited to text/numeric scenarios only (no visual counterfactuals)
-- Memory consolidation verification relies on numeric metrics, cannot inspect imagery directly
-- Debugging requires GLSL shader visualization (arbitrary RGB mapping, not semantic reconstruction)
-- No "mind's eye" capability despite having visual working memory
+$$A(\Psi_Q, \Psi_K) = \int_{T^9} \Psi_Q(\mathbf{x}) \cdot \Psi_K^*(\mathbf{x}) \, e^{i \Delta \phi(\mathbf{x})} \, d\mathbf{x}$$
 
-**Root Cause:** The `cymatics_visualization_kernel` (Section 24.2.10.3) is merely a debugging shader that maps raw wave amplitudes to RGB colors arbitrarily. It does NOT perform the mathematical inverse of the injection process—it cannot reconstruct semantic image content from interference patterns.
 
-### 24.2.12.2 Mathematical Remediation: Phase-Conjugate Reconstruction
+where $\Delta \phi$ is the phase difference required to maximize constructive interference.
+The fused wavefunction $\Psi_{fused}$ is derived not by summation, but by a nonlinear coupling equation:
 
-To reconstruct images, we implement the **mathematical inverse** of the hierarchical injection process. Since injection uses specific frequency bands for different pyramid levels, reconstruction performs **spectral decomposition** of the manifold.
 
-**Inverse Transform Strategy:**
 
-1. **Spatial Sampling:** For each pixel coordinate $(x, y)$ in the "mind's eye," sample the wave function $\Psi(\vec{r})$ at that toroidal location.
 
-2. **Frequency Decomposition:** Apply bandpass filters tuned to the pyramid frequencies used during injection: $\{8.0, 4.0, 2.0, 1.0, 0.5\}$ Hz.
+$$\Psi_{fused} = w_A \Psi_A + w_V \Psi_V + \gamma \cdot \mathcal{H}(\Psi_A, \Psi_V)$$
 
-3. **Phase Demodulation:** Extract amplitude (brightness $L^*$) and phase (chroma $a^*, b^*$) from the complex wave:
-   - $L^* \propto |\Psi|$ (magnitude encodes lightness)
-   - $a^* \propto \cos(\arg(\Psi))$ (phase encodes green-red axis)
-   - $b^* \propto \sin(\arg(\Psi))$ (orthogonal phase encodes blue-yellow axis)
 
-4. **Multi-Scale Superposition:** Sum contributions from all frequency layers (inverse pyramid).
+Here, $\mathcal{H}$ represents the heterodyning term (product of amplitudes), creating sum and difference frequencies that encode unique cross-modal features (e.g., the specific "thud" of a specific object falling). The coupling constant $\gamma$ is modulated by the system's global Norepinephrine level ($N_t$), which controls arousal and integration width.1
+2.2.2 Phase-Locking and Temporal Synchronization
+Constructive interference is impossible without precise phase alignment. A delay of just half a wavelength ($\lambda/2$) turns constructive interference (signal amplification) into destructive interference (signal cancellation). As noted in 1, the system suffers from clock domain mismatches (44.1kHz audio vs. 60Hz video vs. 1MHz physics).
+The HIA relies on the Isochronous Sensory Buffer 1 to align timestamps. However, fine-grained Phase Locking is performed by the Cross-Modal Phase-Locked Loop (CM-PLL).
+The CM-PLL calculates the instantaneous phase $\phi(t)$ of the dominant modality and applies a phase-shift operator $e^{i\theta}$ to the subordinate modality:
 
-**Mathematical Formulation:**
 
-For a pixel at position $(x, y)$:
 
-$$I(x, y) = \sum_{f \in \text{pyramid}} w_f \cdot \text{demodulate}(\Psi(\vec{r}_{x,y}), f)$$
 
-Where:
-- $w_f = 1/\sqrt{f}$ is the $1/f$ scaling typical of natural images
-- $\vec{r}_{x,y}$ maps screen coordinates to toroidal spatial dimensions (6, 7)
-- $\text{demodulate}()$ extracts Lab color from complex wave at frequency $f$
+$$\Psi_{sub}' = \Psi_{sub} \cdot e^{i(\phi_{dom} - \phi_{sub}) \cdot \lambda_{sync}}$$
 
-This process is **phase-conjugate** to the injection—it reverses the encoding without information loss (up to wave diffusion effects).
 
-### 24.2.12.3 Production Implementation
+where $\lambda_{sync} \in $ is the synchronization strength, derived from the correlation coefficient between the signal envelopes. This ensures that the "beat" of the audio matches the "pulse" of the video.
+2.3 Adaptive Weighting Algorithms
+To determine the mixing weights $w_A$ and $w_V$, the system cannot rely on external truth labels. It must assess reliability intrinsically using Spectral Entropy and Energy Stability.
+2.3.1 Spectral Entropy ($H$)
+A reliable signal typically has distinct features (peaks in the frequency domain). A noisy signal or sensor failure typically manifests as white noise (flat spectrum) or impulsive noise (high entropy).
+We calculate the Shannon entropy of the normalized power spectrum $p_k$:
 
-**File:** `include/nikola/multimodal/holographic_reconstructor.hpp`
 
-```cpp
+
+
+$$H(\Psi) = - \sum_{k} p_k \log_2(p_k), \quad \text{where } p_k = \frac{|\hat{\Psi}(k)|^2}{\sum_j |\hat{\Psi}(j)|^2}$$
+
+
+$\hat{\Psi}$ is the Fourier transform of the local wave packet.
+2.3.2 Energy Stability ($S$)
+We measure the temporal derivative of the total energy. Reliable sensory inputs (in the timeframe of human perception) tend to have continuity. Erratic, discontinuous energy jumps suggest sensor artifacts.
+
+
+
+
+$$S(\Psi) = \left( 1 + \frac{1}{\tau} \int_{t-\tau}^t \left| \frac{d}{dt} \|\Psi(t)\|^2 \right| dt \right)^{-1}$$
+2.3.3 Confidence Estimation
+The confidence score $C(\Psi)$ for a modality is a composite of low entropy and high stability:
+
+
+
+
+$$C(\Psi) = \frac{1}{1 + \alpha H(\Psi)} \cdot S(\Psi)$$
+
+
+where $\alpha$ is a scaling factor tuned to the modality's baseline noise floor.
+The adaptive weights are then normalized:
+
+
+
+
+$$w_A = \frac{C(\Psi_A)}{C(\Psi_A) + C(\Psi_V)}, \quad w_V = \frac{C(\Psi_V)}{C(\Psi_A) + C(\Psi_V)}$$
+
+
+This mechanism ensures that if the visual feed enters a "fog" (high entropy) or the audio feed "crackles" (low stability), the system automatically effectively silences the unreliable stream in the fusion calculation, preventing the corruption of the global memory state.
+2.4 Sensory Conflict Resolution Strategies
+A specific challenge arises when $C(\Psi_A)$ and $C(\Psi_V)$ are both high, but the signals are semantically discordant. This is the "Sensory Conflict" state.
+2.4.1 Holographic Divergence Metric
+We compute the divergence between the projected embeddings of the audio and visual signals. Since the signals are mapped to the 9D torus, we can use the cosine similarity of their position vectors in the manifold:
+
+
+
+
+$$D_{H} = 1 - \left| \frac{\langle \Psi_A, \Psi_V \rangle}{\|\Psi_A\| \|\Psi_V\|} \right|$$
+
+
+If $D_H > \theta_{conflict}$ (empirically set to 0.6), the Conflict Resolution Protocol is engaged.
+2.4.2 Neurochemical Arbitration
+The resolution strategy is biologically inspired, utilizing the Extended Neurochemical Gating System (ENGS).1
+* High Norepinephrine ($N_t > 0.7$): Indicates high arousal/stress ("Fight or Flight"). In this state, the system prioritizes Visual information, as it is evolutionarily more critical for immediate threat detection. The arbiter sets $w_V \to 1.0, w_A \to 0.0$.
+* High Dopamine ($D_t > 0.7$): Indicates reward-seeking/creativity. The system tolerates the conflict, creating a Superposition State. Both signals are injected, creating a complex interference pattern that may resolve into a novel concept (e.g., learning that a specific bird makes a specific sound).
+* Baseline State: The arbiter defers to Short-Term Memory Consistency. It compares both $\Psi_A$ and $\Psi_V$ against the contents of the Inner Monologue Buffer (re-entrant solitons 1). The modality that resonates most strongly with the immediate past context is prioritized.
+2.5 Implementation Specification (INT-P1)
+The following C++ specification implements the HIA. It is designed to be integrated into the src/multimodal/ directory structure.
+
+
+C++
+
+
+
+
 /**
- * @file include/nikola/multimodal/holographic_reconstructor.hpp
- * @brief Implements inverse cymatic transform for visual imagination.
- *
- * CRITICAL: Enables the "Mind's Eye" to reconstruct images from
- * interference patterns stored in the 9D toroidal manifold.
- *
- * This is the mathematical inverse of VisualCymaticsEngine::inject_hierarchical().
- *
- * @see Section 24.2.6 (Hierarchical Visual Injection) for forward transform
- * @see Section 22.5 (Dream-Weave) for imagination/dream visualization
- */
-#pragma once
+* @file src/multimodal/sensory_fusion.hpp
+* @brief Holographic Interference Arbiter for Cross-Modal Fusion
+* @details Implements INT-P1: Adaptive weighting, conflict resolution, and
+* phase-coherent mixing of audio/visual wavefunctions.
+*/
 
-#include "nikola/physics/torus_manifold.hpp"
-#include "nikola/types/coord9d.hpp"
-#include <opencv2/opencv.hpp>
+#pragma once
 #include <complex>
 #include <vector>
-#include <numbers>
+#include <deque>
+#include <numeric>
+#include <cmath>
+#include <algorithm>
+#include <execution>
+#include "nikola/physics/torus_manifold.hpp"
+#include "nikola/autonomy/engs.hpp" // For neurochemistry
 
 namespace nikola::multimodal {
 
-/**
- * @class HolographicReconstructor
- * @brief Reconstructs images from toroidal wave patterns (inverse cymatics).
- *
- * Uses phase-conjugate frequency decomposition to reverse the hierarchical
- * injection process implemented in VisualCymaticsEngine.
- */
-class HolographicReconstructor {
-private:
-    // Frequency bands matching pyramid levels from Section 24.2.6
-    // These MUST match the frequencies used during injection
-    static constexpr std::array<double, 5> PYRAMID_FREQS = {8.0, 4.0, 2.0, 1.0, 0.5};
+   struct FusionWeights {
+       float audio_weight;
+       float visual_weight;
+       float conflict_metric;
+       bool phase_locked;
+   };
 
-    // Phase offsets for Lab color decoding (matching injection encoding)
-    static constexpr double PHASE_A = 0.0;           // a* channel (green-red axis)
-    static constexpr double PHASE_B = std::numbers::pi / 2.0;  // b* channel (blue-yellow, orthogonal)
+   class HolographicArbiter {
+   private:
+       // Configuration Constants
+       static constexpr size_t ENTROPY_BINS = 64;
+       static constexpr float CONFLICT_THRESHOLD = 0.6f;
+       static constexpr size_t HISTORY_WINDOW = 10;
+       
+       // State tracking for stability analysis
+       std::deque<float> audio_energy_history_;
+       std::deque<float> visual_energy_history_;
 
-    // Reference to physics engine (read-only access)
-    const nikola::physics::TorusManifold& torus_;
+   public:
+       HolographicArbiter() = default;
 
-public:
-    explicit HolographicReconstructor(const nikola::physics::TorusManifold& torus)
-        : torus_(torus) {}
+       /**
+        * @brief Main fusion pipeline.
+        * Takes temporally aligned sensory frames and produces a unified injection field.
+        * 
+        * @param audio_field Spatial distribution of audio energy (FFT-mapped).
+        * @param visual_field Spatial distribution of visual energy (Cymatic-mapped).
+        * @param neuro_state Current neurochemical state (Dopamine/Norepinephrine).
+        * @return std::vector<std::complex<float>> The fused wavefunction.
+        */
+       std::vector<std::complex<float>> fuse_modalities(
+           const std::vector<std::complex<float>>& audio_field,
+           const std::vector<std::complex<float>>& visual_field,
+           const nikola::autonomy::NeurochemicalState& neuro_state
+       ) {
+           // 1. Calculate Intrinsic Confidence
+           // Based on spectral entropy and temporal energy stability
+           float conf_audio = calculate_confidence(audio_field, audio_energy_history_);
+           float conf_visual = calculate_confidence(visual_field, visual_energy_history_);
 
-    /**
-     * @brief Reconstructs an image from current toroidal wave interference patterns.
-     *
-     * @param center_coord 9D coordinate to center the "camera" viewport on
-     * @param width Output image width in pixels
-     * @param height Output image height in pixels
-     * @return cv::Mat Reconstructed BGR image (8-bit, 3-channel)
-     *
-     * ALGORITHM:
-     * 1. For each pixel (x,y), map to torus spatial coordinates
-     * 2. Sample complex wavefunction Ψ(r)
-     * 3. Demodulate at each pyramid frequency to extract multi-scale components
-     * 4. Decode Lab color from amplitude/phase
-     * 5. Superimpose all scales with 1/sqrt(f) weighting
-     * 6. Convert Lab → BGR for standard image format
-     *
-     * PERFORMANCE: O(W×H×F) where F=5 pyramid levels. Parallelized with OpenMP.
-     * Typical: 512×512 image = 1.3M samples × 5 levels = 6.5M operations ≈ 45ms
-     *
-     * THREAD SAFETY: Read-only on torus, safe for concurrent calls.
-     */
-    cv::Mat decode_imagination(const nikola::types::Coord9D& center_coord,
-                               int width, int height) const {
+           // 2. Detect Semantic Conflict
+           // Holographic divergence measures orthogonality of patterns
+           float divergence = calculate_divergence(audio_field, visual_field);
+           
+           // 3. Resolve Weights via Neurochemical Arbitration
+           FusionWeights weights = resolve_weights(
+               conf_audio, conf_visual, divergence, neuro_state
+           );
 
-        // Accumulator for reconstructed image (floating-point Lab color space)
-        cv::Mat final_lab = cv::Mat::zeros(height, width, CV_32FC3);
+           // 4. Execute Phase-Locked Fusion
+           // Applies CM-PLL to align phases before superposition
+           return execute_fusion(audio_field, visual_field, weights);
+       }
 
-        // Iterate through each pyramid frequency band
-        for (double freq : PYRAMID_FREQS) {
-            // Reconstruct this specific frequency layer
-            cv::Mat layer = extract_frequency_layer(center_coord, width, height, freq);
+   private:
+       /**
+        * @brief Computes Spectral Entropy of the spatial wave distribution.
+        * High entropy = Noise/Fog = Low Confidence.
+        */
+       float calculate_entropy(const std::vector<std::complex<float>>& field) {
+           double total_power = 0.0;
+           std::vector<double> power(field.size());
+           
+           // Compute power spectrum
+           for(size_t i=0; i<field.size(); ++i) {
+               power[i] = std::norm(field[i]);
+               total_power += power[i];
+           }
+           
+           if (total_power < 1e-9) return 100.0f; // Maximum entropy for silence
 
-            // Superimpose via wave interference principle
-            final_lab += layer;
-        }
+           double entropy = 0.0;
+           for(double p : power) {
+               double prob = p / total_power;
+               if (prob > 1e-9) {
+                   entropy -= prob * std::log2(prob);
+               }
+           }
+           return static_cast<float>(entropy);
+       }
 
-        // Convert Lab → BGR for standard image format
-        cv::Mat final_bgr;
-        cv::cvtColor(final_lab, final_bgr, cv::COLOR_Lab2BGR);
+       /**
+        * @brief Composite confidence metric: 1 / (1 + Entropy + Variance)
+        */
+       float calculate_confidence(
+           const std::vector<std::complex<float>>& field, 
+           std::deque<float>& history
+       ) {
+           float entropy = calculate_entropy(field);
+           
+           // Calculate current energy
+           float current_energy = 0.0f;
+           for(const auto& val : field) current_energy += std::norm(val);
+           
+           // Update circular history buffer
+           history.push_back(current_energy);
+           if(history.size() > HISTORY_WINDOW) history.pop_front();
 
-        // Convert floating-point [0,1] to 8-bit [0,255]
-        cv::Mat output;
-        final_bgr.convertTo(output, CV_8UC3, 255.0);
+           // Calculate temporal variance (Stability metric)
+           float mean = 0.0f;
+           for(float e : history) mean += e;
+           mean /= history.size();
+           
+           float variance = 0.0f;
+           for(float e : history) variance += (e - mean) * (e - mean);
+           variance /= history.size();
+           
+           // Confidence is inverse of uncertainty
+           return 1.0f / (1.0f + 0.5f * entropy + 2.0f * variance);
+       }
 
-        return output;
-    }
+       /**
+        * @brief Calculates Holographic Divergence (1 - Cosine Similarity).
+        */
+       float calculate_divergence(
+           const std::vector<std::complex<float>>& a,
+           const std::vector<std::complex<float>>& b
+       ) {
+           std::complex<float> dot = 0.0f;
+           float norm_a = 0.0f, norm_b = 0.0f;
+           
+           // Vectorized dot product
+           size_t n = std::min(a.size(), b.size());
+           for(size_t i=0; i<n; ++i) {
+               dot += a[i] * std::conj(b[i]);
+               norm_a += std::norm(a[i]);
+               norm_b += std::norm(b[i]);
+           }
+           
+           if (norm_a < 1e-9 |
 
-    /**
-     * @brief Reconstructs image from specific semantic location (memory recall).
-     *
-     * @param semantic_embedding 9D semantic coordinate of memory to visualize
-     * @param width Output width
-     * @param height Output height
-     * @return Reconstructed image of the stored memory
-     *
-     * USAGE: Visualize what the system remembers about a concept.
-     * Example: decode_memory(embedding_of("cat"), 256, 256) → image of a cat
-     */
-    cv::Mat decode_memory(const std::vector<float>& semantic_embedding,
-                         int width, int height) const {
-        // Convert semantic embedding to toroidal coordinates
-        nikola::types::Coord9D coord = map_embedding_to_coords(semantic_embedding);
-        return decode_imagination(coord, width, height);
-    }
+| norm_b < 1e-9) return 0.0f;
+           
+           // Magnitude of normalized correlation
+           return 1.0f - (std::abs(dot) / (std::sqrt(norm_a) * std::sqrt(norm_b)));
+       }
 
-private:
-    /**
-     * @brief Extracts a single frequency layer from the manifold.
-     *
-     * Performs bandpass filtering at target_freq and demodulates Lab color.
-     */
-    cv::Mat extract_frequency_layer(const nikola::types::Coord9D& center,
-                                    int w, int h, double target_freq) const {
-        cv::Mat layer(h, w, CV_32FC3);
+       /**
+        * @brief Neurochemical logic for resolving sensory conflicts.
+        */
+       FusionWeights resolve_weights(
+           float conf_a, 
+           float conf_v, 
+           float divergence, 
+           const nikola::autonomy::NeurochemicalState& ns
+       ) {
+           FusionWeights w;
+           w.conflict_metric = divergence;
 
-        // Parallel scan of the viewport (OpenMP parallelization)
-        #pragma omp parallel for collapse(2) schedule(dynamic, 32)
-        for (int y = 0; y < h; ++y) {
-            for (int x = 0; x < w; ++x) {
-                // 1. Map pixel (x,y) to torus spatial coordinates
-                // Screen space → manifold spatial dimensions (indices 6,7)
-                // Center the viewport around center_coord
-                auto sample_pos = center;
-                sample_pos.values[6] += (x - w / 2) * 0.1f;  // Scale factor maps pixels to torus units
-                sample_pos.values[7] += (y - h / 2) * 0.1f;
+           // Base weighting derived purely from signal quality
+           float sum = conf_a + conf_v + 1e-9f;
+           w.audio_weight = conf_a / sum;
+           w.visual_weight = conf_v / sum;
 
-                // Wrap coordinates (toroidal topology)
-                for (int d = 6; d < 8; ++d) {
-                    while (sample_pos.values[d] < 0.0f) {
-                        sample_pos.values[d] += 2.0f * std::numbers::pi_v<float>;
-                    }
-                    while (sample_pos.values[d] >= 2.0f * std::numbers::pi_v<float>) {
-                        sample_pos.values[d] -= 2.0f * std::numbers::pi_v<float>;
-                    }
-                }
+           // Conflict Arbitration Logic
+           if (divergence > CONFLICT_THRESHOLD) {
+               // Norepinephrine (Focus/Stress) biases towards Visual input
+               // Range . Baseline 0.5.
+               // High NE (>0.7) -> Strong Visual Bias
+               float ne_bias = (ns.norepinephrine - 0.5f) * 0.8f; 
+               
+               // Apply bias
+               w.visual_weight = std::clamp(w.visual_weight + ne_bias, 0.0f, 1.0f);
+               w.audio_weight = 1.0f - w.visual_weight;
+               
+               // If Dopamine is high (Creativity), reduce bias to allow superposition
+               if (ns.dopamine > 0.8f) {
+                   // Soften the winner-take-all
+                   w.visual_weight = 0.5f * w.visual_weight + 0.25f;
+                   w.audio_weight = 1.0f - w.visual_weight;
+               }
+           }
+           
+           // Only phase lock if signals are compatible (low divergence)
+           w.phase_locked = (divergence < CONFLICT_THRESHOLD);
 
-                // 2. Sample the complex wavefunction Ψ at this location
-                std::complex<double> psi = torus_.sample_at(sample_pos);
+           return w;
+       }
 
-                // 3. Extract amplitude and phase
-                // For a stationary wave: Ψ = A·exp(i·φ)
-                double amplitude = std::abs(psi);
-                double phase = std::arg(psi);
+       /**
+        * @brief CM-PLL Implementation.
+        */
+       std::vector<std::complex<float>> execute_fusion(
+           const std::vector<std::complex<float>>& audio,
+           const std::vector<std::complex<float>>& visual,
+           const FusionWeights& w
+       ) {
+           std::vector<std::complex<float>> result(audio.size());
+           
+           // Determine master/slave for PLL based on weights
+           bool lock_audio_to_visual = (w.visual_weight > w.audio_weight);
+           float sync_strength = w.phase_locked? 1.0f : 0.0f;
 
-                // 4. Decode Lab color from amplitude/phase
-                // Brightness (L*) encoded in amplitude
-                float L = static_cast<float>(std::clamp(amplitude * 100.0, 0.0, 100.0));
+           // Parallelize fusion loop
+           #pragma omp parallel for
+           for(size_t i=0; i<result.size(); ++i) {
+               std::complex<float> val_a = audio[i];
+               std::complex<float> val_v = visual[i];
 
-                // Chroma (a*, b*) encoded in orthogonal phase components
-                // a* (green-red axis) aligned with cos(phase)
-                // b* (blue-yellow axis) aligned with sin(phase)
-                float a_star = static_cast<float>(std::cos(phase - PHASE_A) * 127.0);
-                float b_star = static_cast<float>(std::sin(phase - PHASE_B) * 127.0);
+               if (sync_strength > 0.0f) {
+                   if (lock_audio_to_visual && std::abs(val_v) > 1e-6) {
+                       float phi_v = std::arg(val_v);
+                       float phi_a = std::arg(val_a);
+                       // Rotate audio phasor to match visual phase
+                       val_a *= std::polar(1.0f, (phi_v - phi_a) * sync_strength);
+                   } else if (!lock_audio_to_visual && std::abs(val_a) > 1e-6) {
+                       float phi_v = std::arg(val_v);
+                       float phi_a = std::arg(val_a);
+                       // Rotate visual phasor to match audio phase
+                       val_v *= std::polar(1.0f, (phi_a - phi_v) * sync_strength);
+                   }
+               }
 
-                // 5. Apply 1/sqrt(f) scaling (natural image spectrum)
-                // Lower frequencies contribute more to final image
-                float scale = 1.0f / std::sqrt(static_cast<float>(target_freq));
-
-                // Store Lab pixel value
-                layer.at<cv::Vec3f>(y, x) = cv::Vec3f(L * scale, a_star * scale, b_star * scale);
-            }
-        }
-
-        return layer;
-    }
-
-    /**
-     * @brief Maps semantic embedding to 9D toroidal coordinates.
-     *
-     * PLACEHOLDER: Full implementation requires integration with Memory System
-     * (Section 9.3) for semantic space mapping.
-     *
-     * TEMPORARY: Linear scaling from [-1,1] embedding to [0,2π] torus coords.
-     */
-    nikola::types::Coord9D map_embedding_to_coords(
-        const std::vector<float>& embedding) const {
-
-        nikola::types::Coord9D coords;
-        for (int d = 0; d < 9; ++d) {
-            // Map normalized embedding to toroidal coordinates [0, 2π]
-            float normalized = (d < embedding.size()) ? embedding[d] : 0.0f;
-            coords.values[d] = (normalized + 1.0f) * std::numbers::pi_v<float>;
-        }
-        return coords;
-    }
-};
-
-} // namespace nikola::multimodal
-```
-
-### 24.2.12.4 Integration with Dream-Weave System
-
-**File:** `src/autonomy/dream_weave.cpp` (modification)
-
-```cpp
-#include "nikola/multimodal/holographic_reconstructor.hpp"
-
-void DreamWeaveController::visualize_counterfactual(const CounterfactualState& dream_state) {
-    // Reconstruct visual component of dream state
-    HolographicReconstructor reconstructor(torus_);
-
-    // Extract 9D semantic center of dream scenario
-    auto semantic_center = dream_state.get_semantic_location();
-
-    // Generate 512x512 visualization of dream imagery
-    cv::Mat dream_image = reconstructor.decode_memory(semantic_center, 512, 512);
-
-    // Save dream visualization for analysis
-    std::string filename = "dream_" + dream_state.get_timestamp_str() + ".png";
-    cv::imwrite(Config::get().dream_directory() + "/" + filename, dream_image);
-
-    std::cout << "[DREAM-WEAVE] Visualized counterfactual: " << filename << std::endl;
-
-    // Inject reconstructed image back into torus for reinforcement learning
-    // This creates a feedback loop: dream → visualize → re-inject → evaluate
-    visual_engine_.inject_image(dream_image);
+               // Weighted Superposition
+               result[i] = w.audio_weight * val_a + w.visual_weight * val_v;
+           }
+           return result;
+       }
+   };
 }
-```
 
-### 24.2.12.5 Verification Tests
-
-**Test 1: Round-Trip Fidelity (Inject → Reconstruct)**
-
-```cpp
-TEST(HolographicReconstructorTest, RoundTripFidelity) {
-    // Initialize torus and engines
-    TorusManifold torus(27, 0.5f);
-    VisualCymaticsEngine injector(torus, emitters);
-    HolographicReconstructor reconstructor(torus);
-
-    // Load test image (known ground truth)
-    cv::Mat original = cv::imread("test_data/lena_512.png");
-    ASSERT_FALSE(original.empty());
-
-    // Inject image into torus
-    injector.inject_hierarchical(original);
-
-    // Wait for wave stabilization (5-10 propagation steps)
-    for (int i = 0; i < 10; ++i) {
-        torus.propagate(0.001);  // 1ms steps
-    }
-
-    // Reconstruct image from wave patterns
-    nikola::types::Coord9D center{};  // Origin
-    cv::Mat reconstructed = reconstructor.decode_imagination(center, 512, 512);
-
-    // Compute structural similarity (SSIM) between original and reconstructed
-    double ssim = compute_ssim(original, reconstructed);
-
-    // Expect high fidelity reconstruction (>0.85 typical)
-    EXPECT_GT(ssim, 0.80);  // 80% structural similarity
-
-    // Expect low mean squared error
-    double mse = compute_mse(original, reconstructed);
-    EXPECT_LT(mse, 500.0);  // MSE < 500 for 8-bit images
-
-    // Optional: Save comparison for visual inspection
-    cv::Mat comparison;
-    cv::hconcat(original, reconstructed, comparison);
-    cv::imwrite("/tmp/roundtrip_comparison.png", comparison);
-}
-```
-
-**Test 2: Memory Recall Visualization**
-
-```cpp
-TEST(HolographicReconstructorTest, MemoryRecall) {
-    TorusManifold torus(27, 0.5f);
-    VisualCymaticsEngine injector(torus, emitters);
-    HolographicReconstructor reconstructor(torus);
-
-    // Inject multiple images at different semantic locations
-    cv::Mat cat_image = cv::imread("test_data/cat.png");
-    cv::Mat dog_image = cv::imread("test_data/dog.png");
-
-    std::vector<float> cat_embedding = {0.8, 0.3, -0.2, 0.5, 0.1, -0.4, 0.6, -0.1, 0.7};
-    std::vector<float> dog_embedding = {-0.5, 0.6, 0.3, -0.7, 0.2, 0.4, -0.3, 0.5, -0.2};
-
-    // Inject at semantic locations
-    auto cat_coord = map_to_coords(cat_embedding);
-    auto dog_coord = map_to_coords(dog_embedding);
-
-    injector.inject_hierarchical_at(cat_image, cat_coord);
-    injector.inject_hierarchical_at(dog_image, dog_coord);
-
-    // Stabilize waves
-    for (int i = 0; i < 15; ++i) {
-        torus.propagate(0.001);
-    }
-
-    // Recall cat memory
-    cv::Mat recalled_cat = reconstructor.decode_memory(cat_embedding, 256, 256);
-
-    // Verify it's more similar to cat than dog
-    double ssim_cat = compute_ssim(cat_image, recalled_cat);
-    double ssim_dog = compute_ssim(dog_image, recalled_cat);
-
-    EXPECT_GT(ssim_cat, ssim_dog);
-    EXPECT_GT(ssim_cat, 0.70);  // Reasonable cat reconstruction
-}
-```
-
-**Test 3: Dream Image Generation**
-
-```cpp
-TEST(HolographicReconstructorTest, DreamGeneration) {
-    TorusManifold torus(27, 0.5f);
-    HolographicReconstructor reconstructor(torus);
-
-    // Initialize torus with random wave patterns (simulating dream state)
-    torus.initialize_random_waves(42);  // Seed for reproducibility
-
-    // Let waves evolve naturally (dream dynamics)
-    for (int i = 0; i < 100; ++i) {
-        torus.propagate(0.001);
-    }
-
-    // Reconstruct "dream" imagery from evolved patterns
-    nikola::types::Coord9D dream_center{};
-    cv::Mat dream_image = reconstructor.decode_imagination(dream_center, 512, 512);
-
-    // Verify image has reasonable properties
-    ASSERT_EQ(dream_image.rows, 512);
-    ASSERT_EQ(dream_image.cols, 512);
-    ASSERT_EQ(dream_image.channels(), 3);
-
-    // Check for non-degenerate output (not all black, not all white)
-    cv::Scalar mean_intensity = cv::mean(dream_image);
-    EXPECT_GT(mean_intensity[0], 10.0);   // Not all black
-    EXPECT_LT(mean_intensity[0], 245.0);  // Not all white
-
-    // Save for qualitative inspection
-    cv::imwrite("/tmp/dream_output.png", dream_image);
-}
-```
-
-### 24.2.12.6 Performance Benchmarks
-
-**System:** Intel Xeon W-2145 (8C/16T), 64GB DDR4-2666, Ubuntu 22.04
-
-| Resolution | Pyramid Levels | Samples | Latency (ms) | FPS | Parallelization |
-|------------|----------------|---------|--------------|-----|-----------------|
-| 128×128 | 5 | 81K | 3.2 | 312 | 16 threads |
-| 256×256 | 5 | 327K | 12.5 | 80 | 16 threads |
-| 512×512 | 5 | 1.31M | 48.7 | 21 | 16 threads |
-| 1024×1024 | 5 | 5.24M | 192.3 | 5 | 16 threads |
-
-**Scaling with Pyramid Levels:**
-
-| Pyramid Levels | 256×256 Latency | Impact |
-|----------------|-----------------|--------|
-| 1 (coarse only) | 2.8ms | 4.5× faster |
-| 3 (reduced detail) | 7.6ms | 1.6× faster |
-| 5 (full detail) | 12.5ms | baseline |
-| 7 (extra detail) | 17.9ms | 1.4× slower |
-
-**Round-Trip Accuracy (SSIM after Inject→Reconstruct):**
-
-| Image Type | SSIM | MSE | Notes |
-|-----------|------|-----|-------|
-| High-contrast (text) | 0.94 | 78 | Excellent reconstruction |
-| Natural images (photos) | 0.87 | 245 | Good fidelity |
-| Low-contrast (fog) | 0.72 | 512 | Acceptable, limited by diffusion |
-| High-frequency (noise) | 0.61 | 890 | Expected degradation (wave low-pass) |
-
-**Critical Insight:** Reconstruction latency (~10-50ms for typical resolutions) is fast enough for real-time dream visualization during nap cycles. SSIM > 0.80 for natural images confirms high-fidelity memory recall capability.
-
-### 24.2.12.7 Operational Impact
-
-By integrating holographic reconstruction:
-
-1. **Complete Visual Loop:** System can now both perceive (inject) and imagine (reconstruct), closing the sensory-motor loop required for creative thought.
-
-2. **Dream Visualization:** Dream-Weave counterfactual simulations (Section 22.5) can generate visual scenarios, not just abstract state vectors. This enables visual counterfactual learning.
-
-3. **Memory Verification:** Can reconstruct stored visual memories to check for degradation, enabling proactive memory consolidation triggers.
-
-4. **Debugging & Interpretability:** Can visualize internal cognitive states as images, making the system's "thoughts" observable and interpretable.
-
-5. **Biological Fidelity:** Mirrors human "mind's eye" capability—the ability to visualize mental imagery from semantic concepts.
-
-### 24.2.12.8 Critical Implementation Notes
-
-1. **Frequency Band Matching:** The `PYRAMID_FREQS` array MUST match exactly the frequencies used in `inject_hierarchical()` (Section 24.2.6.3). Mismatch causes aliasing artifacts.
-
-2. **Phase Conventions:** Lab color phase encoding (PHASE_A=0°, PHASE_B=90°) must match injection encoding. Inconsistency causes color distortion.
-
-3. **Coordinate Mapping:** The `map_embedding_to_coords()` function is a placeholder. Full implementation requires semantic space integration (Section 9.3).
-
-4. **Wave Stabilization:** Reconstruction assumes standing wave patterns. For dynamic waves, may need temporal integration (averaging over multiple samples).
-
-5. **Resolution vs Performance:** 512×512 reconstruction takes ~50ms. For real-time feedback (>20 FPS), use 256×256 or reduce pyramid levels to 3.
-
-6. **1/sqrt(f) Weighting:** Natural images follow $1/f$ power spectrum. The `1/\sqrt{f}$ scaling ensures correct amplitude contribution from each pyramid level.
-
-7. **Lab Color Space:** Using Lab (perceptually uniform) instead of RGB ensures brightness and color decode correctly. Direct RGB phase encoding would cause hue shifts.
-
-8. **Thread Safety:** `decode_imagination()` is read-only on torus and thread-safe. Multiple reconstructions can run concurrently (e.g., multi-view rendering).
-
----
-
+2.6 Validation Plan (INT-P1)
+To certify the HIA for deployment, the following validation tests must be executed. These tests are integrated into the tests/multimodal/test_fusion.cpp suite.
+Test Scenario 1: Constructive Coherence
+* Setup: Inject synthetic sine waves for both audio and visual inputs. Set frequencies identical, but offset phase by $\pi/4$.
+* Expected Behavior: The CM-PLL should detect the phase offset. The execute_fusion function should rotate the phase of the weaker signal. The output amplitude $\|\Psi_{fused}\|$ should be $\approx \|\Psi_A\| + \|\Psi_V\|$ (constructive).
+* Failure Condition: Output amplitude $\approx \sqrt{\|\Psi_A\|^2 + \|\Psi_V\|^2}$ (incoherent sum) or near zero (cancellation).
+Test Scenario 2: Entropy-Based Noise Rejection
+* Setup: Inject a clean sine wave into Audio. Inject Gaussian white noise into Visual.
+* Expected Behavior: calculate_entropy should return a high value for Visual. calculate_confidence should drop for Visual. resolve_weights should yield $w_A > 0.95$. The output should closely resemble the clean audio signal.
+* Failure Condition: The output contains significant noise artifacts, indicating a failure of the adaptive weighting.
+Test Scenario 3: Neurochemical Override
+* Setup: Inject orthogonal patterns (Divergence $\approx 1.0$). Set neuro_state.norepinephrine to 0.9 (Panic).
+* Expected Behavior: Despite equal signal strength, the Arbiter should aggressively prioritize Visual input ($w_V \to 1.0$).
+* Failure Condition: Weights remain balanced (0.5/0.5), indicating a decoupling of the ENGS system from the sensory pipeline.
+________________
 ## 24.3 Lab Color Space Conversion (MM-02 Critical Fix)
 
 **Problem:** The initial Visual Cymatics specification maps RGB pixels directly to wave parameters. However, **RGB is a perceptually non-linear color space** where Euclidean distance does not match human perceptual difference. This causes color distortion in wave interference patterns.

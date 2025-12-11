@@ -327,6 +327,200 @@ private:
 };
 ```
 
+
+### 10.3.1 SEC-04: Bootstrap Authentication Pairing Protocol
+
+#### Engineering Specification: Secure Pairing Protocol
+
+##### Overview: Bootstrap Authentication Pairing Protocol
+4.1 Problem Analysis: The Bootstrap Paradox
+The Nikola Infrastructure relies on the ZeroMQ Spine architecture, utilizing the CurveZMQ Ironhouse pattern for all inter-component communication. This pattern mandates that every connection is mutually authenticated using Curve25519 public/private key pairs. The Server (Orchestrator) maintains a whitelist of authorized Client public keys. Any connection attempt from a key not in the whitelist is silently dropped.
+This creates a Bootstrap Paradox (or "Fortress without a Door" problem):
+* To add a key to the whitelist, you must send a command to the Orchestrator.
+* To send a command to the Orchestrator, you must be authenticated (in the whitelist).
+* On a fresh install, the whitelist is empty.
+Legacy systems often solve this with default passwords (security risk) or disabling auth during setup (attack window). Nikola requires a "Secure by Design" solution that adheres to the Deny-by-Default principle while allowing a legitimate administrator to claim ownership of a fresh instance.
+4.2 Protocol Specification: Time-Limited Token Pairing
+We introduce a Trust-On-First-Use (TOFU) protocol mediated by a high-entropy, ephemeral Admin Token. This token serves as a one-time proof-of-possession for the administrator.
+State Machine:
+1. State: LOCKED (Default). The system enforces strict whitelist checking.
+2. State: BOOTSTRAP (Exception). Entered only if the whitelist is empty on startup.
+   * Generates a 256-bit random token $T_{admin}$.
+   * Prints $T_{admin}$ to the secure system log (stdout/journald).
+   * Starts a countdown timer (default 300 seconds).
+3. State: PAIRING. A client connects using the Bootstrap Protocol.
+The Protocol Flow:
+1. Admin: Starts Nikola. Sees "BOOTSTRAP MODE" and token abc123... in logs.
+2. Admin: Runs CLI command: twi-ctl pair <token>.
+3. Client (CLI):
+   * Generates its own permanent Curve25519 keypair ($C_{pub}, C_{priv}$).
+   * Computes $H = \text{SHA256}(T_{admin})$.
+   * Connects to the Orchestrator using the Server's public key (known from config).
+   * Sends a generic ZMQ HELLO message but attaches the token hash $H$ as metadata: X-Nikola-Token: <H>.
+4. Server (ZAP Handler):
+   * Intercepts the handshake.
+   * Detects BOOTSTRAP state.
+   * Verifies X-Nikola-Token matches the hash of its local $T_{admin}$.
+   * If Valid:
+      * Adds $C_{pub}$ to the persistent authorized_keys file.
+      * Transitions state to LOCKED.
+      * Wipes $T_{admin}$ from memory.
+   * If Invalid: Rejects connection.
+4.3 Implementation Details
+The implementation centers on the BootstrapAuthenticator class and modifications to the ZeroMQ Authentication Protocol (ZAP) handler thread.
+4.3.1 Bootstrap Authenticator Class
+This class manages the lifecycle of the token and the validation logic. It relies on libsodium for cryptographic operations.
+
+
+C++
+
+
+
+
+// include/nikola/security/bootstrap_auth.hpp
+
+#pragma once
+#include <string>
+#include <chrono>
+#include <sodium.h>
+#include <fstream>
+#include <iostream>
+#include <filesystem>
+
+namespace nikola::security {
+
+class BootstrapAuthenticator {
+private:
+   std::string admin_token_;
+   std::chrono::steady_clock::time_point creation_time_;
+   bool active_ = false;
+   static constexpr int TIMEOUT_SECONDS = 300; // 5 minute window
+
+public:
+   /**
+    * @brief Attempt to enter bootstrap mode.
+    * Only succeeds if the whitelist file is missing or empty.
+    */
+   bool try_initialize(const std::string& whitelist_path) {
+       // Check if whitelist exists and has content
+       if (std::filesystem::exists(whitelist_path)) {
+           std::ifstream file(whitelist_path);
+           if (file.peek()!= std::ifstream::traits_type::eof()) {
+               active_ = false;
+               return false; // System is already secured
+           }
+       }
+
+       // Generate 32 bytes (256 bits) of high entropy
+       unsigned char buf;
+       randombytes_buf(buf, 32);
+       
+       // Convert to Hex string for display
+       char hex;
+       sodium_bin2hex(hex, 65, buf, 32);
+       admin_token_ = std::string(hex);
+       
+       active_ = true;
+       creation_time_ = std::chrono::steady_clock::now();
+       
+       // CRITICAL: Output to secure log. This is the "Out-of-Band" channel.
+       std::cout << "\n==================================================\n";
+       std::cout << " SYSTEM UNINITIALIZED. BOOTSTRAP MODE ACTIVE.\n";
+       std::cout << " ADMIN TOKEN: " << admin_token_ << "\n";
+       std::cout << " Token expires in " << TIMEOUT_SECONDS << " seconds.\n";
+       std::cout << "==================================================\n\n";
+       
+       return true;
+   }
+
+   /**
+    * @brief Validate a client's pairing attempt.
+    * @param provided_token_hash SHA256 of the token provided by client.
+    */
+   bool validate(const std::string& provided_token_hash) {
+       if (!active_) return false;
+
+       // Check Timeout
+       auto now = std::chrono::steady_clock::now();
+       if (std::chrono::duration_cast<std::chrono::seconds>(now - creation_time_).count() > TIMEOUT_SECONDS) {
+           active_ = false;
+           std::cout << " Bootstrap token EXPIRED. Restart required to pair.\n";
+           return false;
+       }
+
+       // Validate Hash
+       // We compute SHA256(admin_token_) locally to compare with client input.
+       unsigned char hash;
+       crypto_hash_sha256(hash, (const unsigned char*)admin_token_.c_str(), admin_token_.length());
+       
+       char hex_hash;
+       sodium_bin2hex(hex_hash, 65, hash, crypto_hash_sha256_BYTES);
+       
+       // Constant-time comparison to prevent timing attacks
+       if (sodium_memcmp(hex_hash, provided_token_hash.c_str(), 64) == 0) {
+           // Success! 
+           // WIPE the token immediately.
+           sodium_memzero((void*)admin_token_.data(), admin_token_.size());
+           active_ = false;
+           std::cout << " Client paired successfully. Bootstrap disabled.\n";
+           return true;
+       }
+
+       return false;
+   }
+   
+   bool is_active() const { return active_; }
+};
+
+}
+
+4.3.2 ZAP Handler Integration
+The ZAPHandler processes authentication requests coming from the ZeroMQ monitor socket. We extend it to check the Bootstrap Authenticator if the whitelist check fails.
+
+
+C++
+
+
+
+
+// src/spine/zap_handler.cpp (excerpt)
+
+void ZAPHandler::process_auth_request(const std::vector<std::string>& msg) {
+   // msg structure: [version, sequence, domain, address, identity, mechanism, credentials...]
+   std::string client_key = msg; // The Curve public key
+   std::string metadata = (msg.size() > 6)? msg : ""; // ZMQ properties
+   
+   bool authorized = false;
+
+   // 1. Standard Whitelist Check
+   if (whitelist_.count(client_key)) {
+       authorized = true;
+   }
+   // 2. Bootstrap Fallback
+   else if (bootstrap_auth_.is_active()) {
+       // Extract X-Nikola-Token from metadata
+       std::string token_hash = extract_metadata(metadata, "X-Nikola-Token");
+       
+       if (bootstrap_auth_.validate(token_hash)) {
+           authorized = true;
+           // PERSISTENCE: Save new key to disk immediately
+           add_to_whitelist_file(client_key);
+           whitelist_.insert(client_key);
+       }
+   }
+
+   // Send response (200 OK or 400 ERROR)
+   send_zap_response(authorized);
+}
+
+4.4 Security Validation and Threat Model
+Threat 1: Brute Force. The token is 256 bits (32 bytes). The entropy is sufficient to make brute-forcing thermodynamically impossible within the 300-second window.
+Threat 2: Timing Attacks. The verification uses sodium_memcmp, which compares memory in constant time regardless of how many bytes match. This prevents attackers from deducing the token byte-by-byte.
+Threat 3: Token Sniffing. The token is never sent over the wire in plain text. The client sends the hash of the token inside an encrypted CurveZMQ channel (even during handshake, metadata is protected by the server's public key). Even if the channel were compromised, the attacker would only see the hash, not the token itself.
+Threat 4: Race Condition. An attacker with read access to the server logs could see the token and race the admin to pair.
+* Mitigation: Access to server stdout/logs implies local privilege (or comprised logging infrastructure). If an attacker has this level of access, the system is already compromised beyond the scope of network authentication. This protocol effectively delegates trust to the OS's file permission/logging security.
+________________
+
 ## 10.4 High-Performance Shared Memory Transport
 
 **Critical Performance Issue:** Passing gigabytes of wavefunction data via Protobuf serialization over TCP loopback creates massive bottlenecks.
@@ -3749,3 +3943,56 @@ This is the difference between a security system that is **theoretically perfect
 - **Whitelist Management**: Authorized client key storage
 
 ---
+
+---
+
+## 10.12 AUDIT #21 Section 9: Protocol Buffer Schemas and Zero-Copy Optimization
+
+**Classification**: Implementation Specification  
+**Domain**: Inter-Process Communication / Data Serialization  
+**Audit Cycle**: #21 (Final Engineering Specification)  
+**Status**: READY FOR IMPLEMENTATION
+
+### NeuralSpike Unified Schema
+
+```protobuf
+syntax = "proto3";
+package nikola;
+
+message NeuralSpike {
+   string request_id = 1;
+   int64 timestamp = 2;
+   enum ComponentID { ORCHESTRATOR=0; PHYSICS=1; MEMORY=2; EXECUTOR=3; }
+   ComponentID sender = 3;
+   ComponentID recipient = 4;
+
+   oneof payload {
+       WaveformSHM waveform_shm = 5;       // Zero-copy reference
+       CommandRequest command_req = 6;     // KVM instruction
+       CommandResponse command_resp = 7;   // KVM result
+       NeurogenesisEvent neurogenesis = 8; // Topology update
+       NeurochemicalState neurochem = 9;   // ENGS update
+   }
+}
+```
+
+### WaveformSHM Zero-Copy Fix
+
+**Problem**: Embedding gigabyte-scale float arrays in protobuf messages caused 1GB+ serialization latency.
+
+**Solution**: Shared memory descriptors instead of data copying.
+
+```protobuf
+message WaveformSHM {
+   string shm_path = 1;      // e.g. "/dev/shm/wave_123"
+   uint64 size_bytes = 2;
+   uint64 offset = 3;
+   repeated int32 dims = 4;  // Grid dimensions
+}
+```
+
+**Impact**: Reduces message size from GB to ~100 bytes. Enables microsecond-latency transfers.
+
+**Status**: IMPLEMENTATION SPECIFICATION COMPLETE  
+**Cross-References**: ZeroMQ Spine (Section 10.1-10.11), Sparse Waveform Serialization (NET-02)
+

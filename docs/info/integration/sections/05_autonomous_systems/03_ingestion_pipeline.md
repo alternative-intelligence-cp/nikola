@@ -456,612 +456,245 @@ The parallel pipeline **saturates available CPU cores** for extraction and embed
 
 ## 16.6 Sandboxed File Parsing (INT-P5)
 
-**Finding ID:** INT-P5
-**Severity:** Medium (Security / RCE Risk)
-**Component:** Ingestion Sentinel
-**Source:** Integration Audit 6, Section 7.1
+### Engineering Specification: Autonomous Ingestion Pipeline Optimizations
 
-### 16.6.1 Problem Analysis
+#### Part I: INT-P5 Implementation
 
-**Symptom:** The current `extract_text_from_file()` placeholder (line 390) suggests parsing PDFs and other complex formats directly within the main Orchestrator process. This is a **critical Remote Code Execution (RCE) vulnerability**.
+##### Overview
+1.1 Problem Analysis: The Physics of Cognitive Starvation
+The initial architectural specification for the Nikola Model relied on a naive, single-threaded ingestion strategy. In this now-deprecated model, the central Orchestrator would detect a new file, pause the physics engine, invoke a parser process, wait synchronously for completion, embed the text, and finally inject it into the Torus.1 This linear dependency chain created a severe performance regression identified in Audit 12.0 as "Cognitive Starvation."
+The physics engine, designed to run at a strict 1000 Hz loop (1 ms timestep) to maintain the numerical stability of the symplectic integrator, cannot tolerate blocking operations. When processing a training corpus of 10,000 documents, the GPU-based physics engine—capable of millions of wave updates per second—would sit idle for approximately 99% of the runtime, waiting for the single-threaded CPU ingestor to extract text from PDFs or decompress archives. This I/O-bound latency effectively freezes time within the simulation, destroying the temporal coherence required for dynamic memory formation and resonant pattern recognition.1
+Furthermore, the ingestion of complex, untrusted file formats (PDF, DOCX, ZIP) within the main privileged process introduced an unacceptable attack surface. Common vulnerabilities in parsing libraries (e.g., libpoppler or libarchive) could lead to Remote Code Execution (RCE), compromising the entire system including the cryptographic keys managed by the Spine Broker.1
+INT-P5 mandates a radical restructuring into a Parallel Ingestion Pipeline. This architecture decouples file processing from the physics loop, utilizing a producer-consumer model with a worker pool to saturate CPU cores while the GPU continues uninterrupted wave propagation.
+1.2 Architectural Specification: The Threaded Pipeline
+The remediation architecture establishes a robust, asynchronous pipeline designed to maximize throughput and ensure thread safety. The pipeline consists of five distinct stages, operating concurrently to transform raw bytes into 9D waveforms.
+Table 1: Ingestion Pipeline Stages
+Stage
+	Component
+	Role
+	Concurrency
+	1. Sentinel
+	IngestionSentinel
+	Monitors filesystem events (inotify) and queues paths.
+	Single Thread
+	2. Dispatch
+	Dispatcher
+	Identifies MIME types (libmagic) and routes to extractors.
+	Single Thread
+	3. Extraction
+	WorkerPool
+	Executes heavy parsing (PDF/DOCX/OCR) via Sandboxed Parser.
+	std::thread::hardware_concurrency()
+	4. Embedding
+	NonaryEmbedder
+	Converts text to 9D waveform and maps via Hilbert projection.
+	Parallel (Thread-Local Tokenizers)
+	5. Injection
+	Injector
+	Consumes results and updates the SoA Grid via atomic writes.
+	Main Physics Loop (1000 Hz)
+	1.2.1 ParallelIngestionPipeline Implementation
+The core orchestrator of this process is the ParallelIngestionPipeline class. It manages the lifecycle of worker threads, ensuring that the heavy lifting of text extraction and embedding vectorization occurs outside the critical path of the physics engine.
+The implementation utilizes strict mutex discipline to manage the path_queue (input) and result_queue (output). The worker threads execute a continuous loop, pulling file paths, processing them, and pushing the resulting IngestionResult objects.
 
-**Measured Impact:**
-- Attack surface: Any user who can write to `/var/lib/nikola/ingest/` can execute arbitrary code
-- Privilege escalation risk: Orchestrator runs with access to CurveZMQ private keys
-- Common PDF parser vulnerabilities: CVE-2018-16065 (poppler), CVE-2020-36023 (libpoppler)
-- Historical RCE rate: ~12 critical CVEs/year across major parsing libraries
 
-**Root Cause:**
+C++
 
-Complex file parsers (PDFs, DOC, images) are notorious RCE vectors:
-1. **Memory Corruption:** Buffer overflows in parser state machines
-2. **Type Confusion:** Malicious metadata triggers unsafe casts
-3. **Script Injection:** Embedded JavaScript in PDFs can execute via parser
-4. **Font Exploits:** Malformed TrueType fonts trigger kernel vulnerabilities
 
-**Example Attack Scenario:**
-```
-1. Attacker drops malicious.pdf into ingest folder
-2. IngestionSentinel calls pdftotext directly in-process
-3. Exploit in poppler's Gfx::opSetExtGState() triggers buffer overflow
-4. Attacker gains shell with Orchestrator privileges
-5. Private keys exfiltrated → full system compromise
-```
 
-**Defense Inadequacy:**
 
-Traditional "defense in depth" (ASLR, stack canaries) is insufficient:
-- Zero-day exploits bypass these mitigations
-- Parser libraries are complex (poppler: 500K+ LOC)
-- Attack surface too large to audit comprehensively
-
-### 16.6.2 Mathematical Remediation
-
-**Strategy:** Process untrusted files in disposable, air-gapped KVM instances. Only allow text output back to Orchestrator.
-
-**Security Model:**
-
-Define trust boundary $\mathcal{T}$:
-- **Trusted Zone:** Orchestrator, Torus, Physics Engine
-- **Untrusted Zone:** User-provided files, parser processes
-- **Communication Channel:** Uni-directional text pipe (untrusted → trusted)
-
-**Isolation Invariant:**
-
-$$\text{Compromise}(\text{Parser}) \not\Rightarrow \text{Compromise}(\text{Orchestrator})$$
-
-Achieved via:
-1. **Process Isolation:** Parser runs in separate PID namespace (KVM guest)
-2. **Network Isolation:** No network access for parser VM
-3. **Filesystem Isolation:** Read-only mount of input file, no disk writes
-4. **Temporal Isolation:** VM destroyed immediately after parsing (ephemeral)
-
-**Attack Surface Reduction:**
-
-Before (direct parsing):
-$$A_{\text{before}} = \text{LOC}(\text{parser}) + \text{LOC}(\text{kernel}) \approx 10^6 \text{ lines}$$
-
-After (sandboxed):
-$$A_{\text{after}} = \text{LOC}(\text{ZMQ handler}) + \text{LOC}(\text{text validator}) \approx 10^3 \text{ lines}$$
-
-Reduction factor: **1000×**
-
-### 16.6.3 Production Implementation
-
-```cpp
 /**
- * @file src/autonomous/sandboxed_parser.cpp
- * @brief Delegate file parsing to disposable KVM instances
- * Resolves INT-P5
- */
-
-#include "nikola/spine/executor_client.hpp"
-#include "nikola/autonomous/mime_detector.hpp"
+* @file include/nikola/autonomous/parallel_ingest.hpp
+* @brief High-Throughput Parallel Ingestion Pipeline
+* Resolves AUTO-02 by saturating CPU cores during data preparation
+*/
+#pragma once
+#include <vector>
+#include <thread>
+#include <queue>
+#include <mutex>
+#include <condition_variable>
+#include <functional>
+#include <future>
 #include <filesystem>
-#include <fstream>
-#include <regex>
+#include "nikola/ingestion/nonary_embedder.hpp"
 
 namespace nikola::autonomous {
 
-class SandboxedParser {
+// Fully processed result, ready for instant injection
+struct IngestionResult {
+   std::string filename;
+   std::vector<nikola::ingestion::Nit> waveform;
+   bool success;
+};
+
+class ParallelIngestionPipeline {
 private:
-    nikola::spine::ExecutorClient& executor_;
+   // Input Queue (Raw File Paths)
+   std::queue<std::filesystem::path> path_queue;
+   std::mutex path_mutex;
+   std::condition_variable path_cv;
 
-    // Security: Maximum allowed output size (prevent memory exhaustion)
-    static constexpr size_t MAX_OUTPUT_BYTES = 10 * 1024 * 1024;  // 10 MB
+   // Output Queue (Computed Waveforms)
+   std::queue<IngestionResult> result_queue;
+   std::mutex result_mutex;
+   std::condition_variable result_cv; 
 
-    // Timeout for parser execution (prevent DoS via infinite loops)
-    static constexpr int PARSER_TIMEOUT_MS = 30000;  // 30 seconds
+   std::vector<std::thread> workers;
+   std::atomic<bool> running{true};
+   
+   // Reference to the embedding engine (must be thread-safe or thread-local)
+   nikola::ingestion::NonaryEmbedder& embedder;
 
 public:
-    explicit SandboxedParser(nikola::spine::ExecutorClient& executor)
-        : executor_(executor) {}
+   ParallelIngestionPipeline(nikola::ingestion::NonaryEmbedder& emb, size_t num_workers) 
+       : embedder(emb) {
+       // Spawn worker threads
+       for(size_t i = 0; i < num_workers; ++i) {
+           workers.emplace_back(&ParallelIngestionPipeline::worker_loop, this);
+       }
+   }
 
-    /**
-     * @brief Parse file in sandboxed KVM and return extracted text
-     * @param file_path Path to file to parse
-     * @return Extracted text (empty string on failure)
-     */
-    std::string extract_text_securely(const std::filesystem::path& file_path) {
-        // 1. Detect MIME type
-        std::string mime = detect_mime_type(file_path);
+   ~ParallelIngestionPipeline() {
+       running = false;
+       path_cv.notify_all();
+       for(auto& t : workers) {
+           if(t.joinable()) t.join();
+       }
+   }
 
-        // 2. Build sandbox command based on file type
-        nikola::spine::CommandRequest cmd = build_parser_command(mime, file_path);
-        if (cmd.command.empty()) {
-            // Unsupported file type
-            return "";
-        }
+   void queue_file(const std::filesystem::path& p) {
+       {
+           std::lock_guard<std::mutex> lock(path_mutex);
+           path_queue.push(p);
+       }
+       path_cv.notify_one();
+   }
 
-        // 3. Execute in isolated KVM
-        try {
-            auto result = executor_.execute_sandboxed(cmd, file_path);
-
-            // 4. Validate result
-            if (result.exit_code != 0) {
-                log_security_event("Parser failed with exit code " +
-                                 std::to_string(result.exit_code) +
-                                 " for file: " + file_path.string());
-                return "";
-            }
-
-            // 5. Sanitize output (remove control characters, validate UTF-8)
-            std::string sanitized = sanitize_text_output(result.stdout);
-
-            return sanitized;
-
-        } catch (const std::exception& e) {
-            log_security_event("Sandbox execution failed: " + std::string(e.what()));
-            return "";
-        }
-    }
+   // Non-blocking retrieval for the main physics loop
+   std::vector<IngestionResult> pop_results(size_t max_count) {
+       std::vector<IngestionResult> batch;
+       std::lock_guard<std::mutex> lock(result_mutex);
+       while(!result_queue.empty() && batch.size() < max_count) {
+           batch.push_back(std::move(result_queue.front()));
+           result_queue.pop();
+       }
+       return batch;
+   }
 
 private:
-    /**
-     * @brief Detect MIME type using libmagic
-     */
-    std::string detect_mime_type(const std::filesystem::path& path) {
-        // Use libmagic for robust MIME detection (not just file extension)
-        magic_t magic = magic_open(MAGIC_MIME_TYPE);
-        magic_load(magic, nullptr);
+   void worker_loop() {
+       while(running) {
+           std::filesystem::path p;
+           {
+               std::unique_lock<std::mutex> lock(path_mutex);
+               path_cv.wait(lock, [this]{ return!path_queue.empty() ||!running; });
+               if(!running && path_queue.empty()) return;
+               
+               if(path_queue.empty()) continue; // Spurious wake
+               p = path_queue.front();
+               path_queue.pop();
+           }
 
-        const char* mime = magic_file(magic, path.c_str());
-        std::string result = mime ? mime : "application/octet-stream";
+           // Heavy lifting happens here in parallel
+           IngestionResult res;
+           res.filename = p.string();
+           try {
+               // 1. Read File & Extract Text (Potentially via SandboxedParser)
+               std::string content = extract_text_from_file(p);
+               
+               // 2. Embed (Expensive math operation)
+               res.waveform = embedder.embed(content);
+               res.success = true;
+           } catch (const std::exception& e) {
+               // Log failure but do not crash worker
+               res.success = false; 
+           }
 
-        magic_close(magic);
-        return result;
-    }
+           // Push ready result to output queue
+           {
+               std::lock_guard<std::mutex> lock(result_mutex);
+               result_queue.push(std::move(res));
+           }
+       }
+   }
 
-    /**
-     * @brief Build sandbox command for specific MIME type
-     */
-    nikola::spine::CommandRequest build_parser_command(
-        const std::string& mime,
-        const std::filesystem::path& file_path)
-    {
-        nikola::spine::CommandRequest cmd;
-        cmd.task_id = generate_uuid();
-        cmd.timeout_ms = PARSER_TIMEOUT_MS;
-
-        // File will be bind-mounted as /mnt/input_file inside VM
-        cmd.input_file_path = "/mnt/input_file";
-
-        if (mime == "application/pdf") {
-            // Use pdftotext from poppler-utils (well-tested, widely deployed)
-            cmd.command = "pdftotext";
-            cmd.args = {
-                "-layout",          // Preserve layout
-                "-nopgbrk",         // No page breaks
-                "-enc", "UTF-8",    // Force UTF-8 output
-                "/mnt/input_file",  // Input (mapped from host)
-                "-"                 // Output to stdout
-            };
-
-        } else if (mime == "application/vnd.openxmlformats-officedocument.wordprocessingml.document") {
-            // Microsoft Word (docx)
-            cmd.command = "docx2txt";
-            cmd.args = {"/mnt/input_file", "-"};
-
-        } else if (mime == "text/html") {
-            // HTML (strip tags, extract text)
-            cmd.command = "html2text";
-            cmd.args = {
-                "--ignore-links",
-                "--ignore-images",
-                "/mnt/input_file"
-            };
-
-        } else if (mime.find("image/") == 0) {
-            // Images: Use Tesseract OCR (sandboxed)
-            cmd.command = "tesseract";
-            cmd.args = {
-                "/mnt/input_file",
-                "stdout",           // Output to stdout
-                "-l", "eng",        // English language
-                "--psm", "3"        // Fully automatic page segmentation
-            };
-
-        } else if (mime == "text/plain" || mime.find("text/") == 0) {
-            // Plain text: No parsing needed, but still sandbox for safety
-            cmd.command = "cat";
-            cmd.args = {"/mnt/input_file"};
-
-        } else {
-            // Unsupported format - return empty command
-            return cmd;
-        }
-
-        return cmd;
-    }
-
-    /**
-     * @brief Sanitize parser output to prevent injection attacks
-     * @param raw_output Raw stdout from parser
-     * @return Sanitized text safe for embedding
-     */
-    std::string sanitize_text_output(const std::string& raw_output) {
-        // 1. Truncate to maximum size (prevent memory exhaustion)
-        std::string output = raw_output.substr(0, MAX_OUTPUT_BYTES);
-
-        // 2. Remove control characters (except whitespace)
-        std::string sanitized;
-        sanitized.reserve(output.size());
-
-        for (char c : output) {
-            if (c == '\n' || c == '\r' || c == '\t' || c == ' ') {
-                sanitized += c;  // Allowed whitespace
-            } else if (std::iscntrl(static_cast<unsigned char>(c))) {
-                // Skip control characters (potential escape sequences)
-                continue;
-            } else if (std::isprint(static_cast<unsigned char>(c)) ||
-                      static_cast<unsigned char>(c) >= 0x80) {
-                // Printable ASCII or valid UTF-8 multi-byte
-                sanitized += c;
-            }
-        }
-
-        // 3. Validate UTF-8 encoding (prevent malformed sequences)
-        if (!is_valid_utf8(sanitized)) {
-            log_security_event("Invalid UTF-8 in parser output, replacing");
-            sanitized = replace_invalid_utf8(sanitized);
-        }
-
-        // 4. Strip ANSI escape codes (some parsers emit colored output)
-        sanitized = strip_ansi_codes(sanitized);
-
-        return sanitized;
-    }
-
-    /**
-     * @brief Validate UTF-8 encoding
-     */
-    bool is_valid_utf8(const std::string& str) {
-        const unsigned char* bytes = reinterpret_cast<const unsigned char*>(str.data());
-        size_t len = str.size();
-
-        for (size_t i = 0; i < len; ) {
-            unsigned char c = bytes[i];
-
-            if (c <= 0x7F) {
-                // ASCII: 0xxxxxxx
-                i += 1;
-            } else if ((c & 0xE0) == 0xC0) {
-                // 2-byte: 110xxxxx 10xxxxxx
-                if (i + 1 >= len || (bytes[i+1] & 0xC0) != 0x80) return false;
-                i += 2;
-            } else if ((c & 0xF0) == 0xE0) {
-                // 3-byte: 1110xxxx 10xxxxxx 10xxxxxx
-                if (i + 2 >= len ||
-                    (bytes[i+1] & 0xC0) != 0x80 ||
-                    (bytes[i+2] & 0xC0) != 0x80) return false;
-                i += 3;
-            } else if ((c & 0xF8) == 0xF0) {
-                // 4-byte: 11110xxx 10xxxxxx 10xxxxxx 10xxxxxx
-                if (i + 3 >= len ||
-                    (bytes[i+1] & 0xC0) != 0x80 ||
-                    (bytes[i+2] & 0xC0) != 0x80 ||
-                    (bytes[i+3] & 0xC0) != 0x80) return false;
-                i += 4;
-            } else {
-                return false;  // Invalid UTF-8 start byte
-            }
-        }
-
-        return true;
-    }
-
-    /**
-     * @brief Replace invalid UTF-8 sequences with replacement character
-     */
-    std::string replace_invalid_utf8(const std::string& str) {
-        std::string result;
-        result.reserve(str.size());
-
-        const unsigned char* bytes = reinterpret_cast<const unsigned char*>(str.data());
-        size_t len = str.size();
-
-        for (size_t i = 0; i < len; ) {
-            unsigned char c = bytes[i];
-
-            if (c <= 0x7F) {
-                result += c;
-                i += 1;
-            } else {
-                // Attempt multi-byte sequence
-                int seq_len = 0;
-                if ((c & 0xE0) == 0xC0) seq_len = 2;
-                else if ((c & 0xF0) == 0xE0) seq_len = 3;
-                else if ((c & 0xF8) == 0xF0) seq_len = 4;
-
-                bool valid = true;
-                if (i + seq_len > len) valid = false;
-                else {
-                    for (int j = 1; j < seq_len; ++j) {
-                        if ((bytes[i+j] & 0xC0) != 0x80) {
-                            valid = false;
-                            break;
-                        }
-                    }
-                }
-
-                if (valid) {
-                    // Copy valid sequence
-                    result.append(reinterpret_cast<const char*>(&bytes[i]), seq_len);
-                    i += seq_len;
-                } else {
-                    // Replace with UTF-8 replacement character (U+FFFD)
-                    result += "\xEF\xBF\xBD";
-                    i += 1;
-                }
-            }
-        }
-
-        return result;
-    }
-
-    /**
-     * @brief Strip ANSI escape codes
-     */
-    std::string strip_ansi_codes(const std::string& str) {
-        // Match ANSI escape sequences: ESC [ ... m
-        std::regex ansi_regex("\x1B\\[[0-9;]*m");
-        return std::regex_replace(str, ansi_regex, "");
-    }
-
-    /**
-     * @brief Generate UUID for task IDs
-     */
-    std::string generate_uuid() {
-        // Simple UUID v4 generator (replace with proper implementation)
-        std::random_device rd;
-        std::mt19937_64 gen(rd());
-        std::uniform_int_distribution<uint64_t> dis;
-
-        uint64_t a = dis(gen);
-        uint64_t b = dis(gen);
-
-        char uuid[37];
-        snprintf(uuid, sizeof(uuid),
-                "%08x-%04x-4%03x-%04x-%012lx",
-                static_cast<uint32_t>(a >> 32),
-                static_cast<uint16_t>(a >> 16),
-                static_cast<uint16_t>(a) & 0x0FFF,
-                static_cast<uint16_t>(b >> 48) & 0x3FFF | 0x8000,
-                b & 0xFFFFFFFFFFFF);
-
-        return std::string(uuid);
-    }
-
-    /**
-     * @brief Log security event to audit log
-     */
-    void log_security_event(const std::string& message) {
-        // Write to security audit log (append-only, protected)
-        std::ofstream log("/var/log/nikola/security.log", std::ios::app);
-        auto now = std::chrono::system_clock::now();
-        auto timestamp = std::chrono::system_clock::to_time_t(now);
-
-        log << "[" << std::ctime(&timestamp) << "] " << message << std::endl;
-    }
+   std::string extract_text_from_file(const std::filesystem::path& p);
 };
 
 } // namespace nikola::autonomous
-```
 
-### 16.6.4 Integration with IngestionSentinel
+1
+This design ensures that the main physics thread only interacts with the queue_file (push) and pop_results (pop) methods, both of which are essentially $O(1)$ operations involving only a mutex lock, rather than the $O(N)$ latency of parsing.
+1.3 Security: The Sandboxed Extraction Strategy
+The ingestion pipeline is the primary vector for external attacks. To mitigate the risk of exploiting parser vulnerabilities, INT-P5 strictly mandates the use of the SandboxedParser. This component creates a security boundary by delegating the actual parsing of untrusted files to an ephemeral KVM virtual machine via the Executor service (detailed in VIRT-02).1
+1.3.1 SandboxedParser Protocol
+The SandboxedParser does not execute binaries like pdftotext directly. Instead, it serializes a CommandRequest protobuf message 1 and transmits it over the ZeroMQ spine to the EXECUTOR_KVM component. This request includes the command, arguments, and a strictly enforced timeout.
+The file to be parsed is made available to the VM via a read-only bind mount at /mnt/input. The parser executed inside the VM writes its output to stdout, which is streamed back to the host via a secure channel.
 
-**Updated Digester Loop:**
 
-```cpp
-// File: src/autonomous/ingestion_sentinel.cpp (modified)
+C++
 
-void IngestionSentinel::digester_loop() {
-    // Create sandboxed parser (connects to Executor via ZMQ)
-    nikola::spine::ExecutorClient executor_client(/* ZMQ endpoint */);
-    nikola::autonomous::SandboxedParser parser(executor_client);
 
-    while (running) {
-        auto path = ingest_queue.pop_with_timeout(std::chrono::seconds(1));
-        if (!path.has_value()) continue;
 
-        try {
-            // SECURITY: Parse in isolated KVM (not in Orchestrator process)
-            std::string text = parser.extract_text_securely(path.value());
 
-            if (text.empty()) {
-                // Parsing failed or unsupported format
-                continue;
-            }
-
-            // Embed extracted text (safe, already sanitized)
-            auto embedding = embedder.vectorize_text(text);
-
-            // Store in result queue
-            result_queue.push({
-                .path = path.value(),
-                .embedding = embedding,
-                .success = true
-            });
-
-        } catch (const std::exception& e) {
-            // Log and skip failed files
-            std::cerr << "Ingestion failed for " << path.value() << ": "
-                     << e.what() << std::endl;
-        }
-    }
-}
-```
-
-### 16.6.5 Verification Tests
-
-```cpp
-// File: tests/autonomous/test_sandboxed_parser.cpp
-#include <gtest/gtest.h>
+// src/autonomous/sandboxed_parser.cpp
 #include "nikola/autonomous/sandboxed_parser.hpp"
+#include "nikola/spine/component_client.hpp"
 
-/**
- * Test 1: Valid PDF Extraction
- * Verify safe PDF parsing returns expected text
- */
-TEST(SandboxedParser, ValidPDFExtraction) {
-    MockExecutorClient executor;
-    SandboxedParser parser(executor);
+namespace nikola::autonomous {
 
-    // Create test PDF
-    std::filesystem::path test_pdf = create_test_pdf("Hello World");
+std::string SandboxedParser::extract_text_securely(const std::filesystem::path& file_path) {
+   // 1. Detect MIME type
+   std::string mime = detect_mime_type(file_path);
+   
+   // 2. Prepare execution request
+   nikola::spine::CommandRequest req;
+   req.set_task_id("ingest_" + generate_uuid());
+   req.set_timeout_ms(30000); // 30s timeout for safety
+   
+   if (mime == "application/pdf") {
+       req.set_command("pdftotext");
+       req.add_args("/mnt/input");
+       req.add_args("-"); // Output to stdout
+   } else if (mime == "application/vnd.openxmlformats-officedocument.wordprocessingml.document") {
+       req.set_command("docx2txt");
+       req.add_args("/mnt/input");
+   } else {
+       // Fallback or skip
+       return "";
+   }
 
-    // Mock executor returns expected text
-    executor.set_mock_output(0, "Hello World\n");
+   // 3. Send to Executor via ZMQ
+   auto response = executor_client_.execute(req);
+   
+   if (response.exit_code()!= 0) {
+       throw std::runtime_error("Parser failed with code " + std::to_string(response.exit_code()));
+   }
 
-    std::string text = parser.extract_text_securely(test_pdf);
-
-    EXPECT_EQ(text, "Hello World\n");
-    EXPECT_EQ(executor.get_command_run(), "pdftotext");
+   // 4. Return sanitized text
+   return sanitize_utf8(response.stdout());
 }
 
-/**
- * Test 2: Malicious PDF Isolation
- * Verify exploit in PDF does not affect Orchestrator
- */
-TEST(SandboxedParser, MaliciousPDFIsolation) {
-    MockExecutorClient executor;
-    SandboxedParser parser(executor);
+} // namespace nikola::autonomous
 
-    // Malicious PDF that triggers fake exploit
-    std::filesystem::path malicious_pdf = create_exploit_pdf();
-
-    // Executor reports failure (exploit killed sandbox)
-    executor.set_mock_output(139, "");  // Exit code 139 = SIGSEGV
-
-    std::string text = parser.extract_text_securely(malicious_pdf);
-
-    // Parser returns empty string (safe failure)
-    EXPECT_EQ(text, "");
-
-    // Orchestrator process still alive (not compromised)
-    EXPECT_TRUE(getpid() > 0);
-}
-
-/**
- * Test 3: Output Sanitization
- * Verify control characters and ANSI codes removed
- */
-TEST(SandboxedParser, OutputSanitization) {
-    SandboxedParser parser(/* mock executor */);
-
-    // Raw output with ANSI codes and control chars
-    std::string raw = "Hello\x1B[31mWorld\x1B[0m\x00\x01\x02";
-
-    std::string sanitized = parser.sanitize_text_output(raw);
-
-    // Control chars removed, ANSI codes stripped
-    EXPECT_EQ(sanitized, "HelloWorld");
-}
-
-/**
- * Test 4: UTF-8 Validation
- * Verify malformed UTF-8 replaced with replacement char
- */
-TEST(SandboxedParser, UTF8Validation) {
-    SandboxedParser parser(/* mock executor */);
-
-    // Invalid UTF-8: truncated multi-byte sequence
-    std::string invalid = "Hello\xC3";  // Incomplete 2-byte sequence
-
-    std::string fixed = parser.sanitize_text_output(invalid);
-
-    // Replaced with U+FFFD (UTF-8: 0xEF 0xBF 0xBD)
-    EXPECT_EQ(fixed, "Hello\xEF\xBF\xBD");
-}
-```
-
-### 16.6.6 Performance Benchmarks
-
-**System Configuration:**
-- Host: Ubuntu 22.04 LTS
-- Executor: QEMU/KVM with 1 vCPU, 512 MB RAM (minimal guest)
-- Network: Isolated (no external connectivity)
-
-| Operation | Latency | Notes |
-|-----------|---------|-------|
-| KVM boot (cold) | 850 ms | First VM spawn (image cache miss) |
-| KVM boot (warm) | 180 ms | Subsequent spawns (cached) |
-| PDF parse (10 pages) | 420 ms | pdftotext execution time |
-| DOCX parse (50 KB) | 310 ms | docx2txt execution time |
-| OCR (image 1920×1080) | 2.3 s | Tesseract OCR (CPU-bound) |
-| ZMQ RPC overhead | 2 ms | Request serialization + network |
-| **Total (PDF)** | **~600 ms** | Boot + parse + shutdown |
-
-**Overhead vs Direct Parsing:**
-- Direct (in-process): ~40 ms per PDF
-- Sandboxed (KVM): ~600 ms per PDF
-- **Overhead:** 15× slower
-
-**Trade-off Analysis:**
-- Security benefit: **Complete RCE isolation**
-- Performance cost: **560 ms additional latency**
-- Acceptable for autonomous ingestion (not user-facing)
-- Can parallelize (10 concurrent VMs = 60 files/min)
-
-### 16.6.7 Operational Impact
-
-**Before INT-P5 Fix:**
-- Attack surface: 500K+ LOC of parser libraries in Orchestrator process
-- RCE risk: HIGH (direct path from untrusted file to kernel memory)
-- Privilege escalation: Orchestrator compromise = full system compromise
-- Exploitability: Trivial (drop malicious.pdf in ingest folder)
-
-**After INT-P5 Fix:**
-- Attack surface: ~1000 LOC (ZMQ handler + text validator)
-- RCE risk: LOW (parser exploits contained in disposable VM)
-- Privilege escalation: Minimal (VM has no network, no persistent storage)
-- Exploitability: Requires chain of exploits (VM escape + ZMQ vuln)
-
-**Key Benefits:**
-1. **Defense in Depth:** Parser exploits do not compromise Orchestrator
-2. **Zero Trust:** Treat all user files as potentially malicious
-3. **Auditability:** All parsing failures logged to security audit log
-4. **Temporal Isolation:** VMs destroyed after each parse (no persistent state)
-
-### 16.6.8 Critical Implementation Notes
-
-1. **MIME Type Detection:**
-   - Use `libmagic` (not file extension) to prevent MIME spoofing
-   - Attacker cannot bypass by renaming `exploit.pdf` to `safe.txt`
-   - Magic bytes verified before selecting parser
-
-2. **Resource Limits:**
-   - `MAX_OUTPUT_BYTES = 10 MB` prevents memory exhaustion
-   - `PARSER_TIMEOUT_MS = 30 seconds` prevents DoS via infinite loops
-   - KVM guest limited to 512 MB RAM (enforced by Executor)
-
-3. **Output Sanitization:**
-   - Strip control characters (prevent terminal escape sequences)
-   - Validate UTF-8 (prevent malformed sequences in embedder)
-   - Remove ANSI codes (some parsers emit colored output)
-
-4. **Error Handling:**
-   - Parser failures logged to `/var/log/nikola/security.log`
-   - Failed files skipped (not retried indefinitely)
-   - Exit code 139 (SIGSEGV) indicates likely exploit attempt
-
-5. **KVM Configuration:**
-   - No network access (`-net none`)
-   - Read-only root filesystem
-   - Input file bind-mounted as `/mnt/input_file`
-   - VM destroyed immediately after execution (ephemeral)
-
-### 16.6.9 Cross-References
-
-- **Section 13.4:** Executor/KVM Architecture (sandbox implementation)
-- **Section 11.2:** CurveZMQ Security (protected from RCE)
-- **Section 16.1:** inotify File Watching (triggers sandboxed parsing)
-- **Section 16.5:** Parallel Ingestion Pipeline (integration point)
-- **Section 16.7:** Archive Handler (Finding ING-01: recursive extraction for bulk datasets)
-- **Appendix D:** Security Audit Procedures (threat modeling)
-
----
-
+1
+This architecture ensures that if a parser exploit is triggered (e.g., a buffer overflow in pdftotext), it occurs inside a disposable VM with no network access, a read-only root filesystem, and strict resource limits. The host system remains completely isolated from the compromise.
+1.4 Archive Handling and Recursion Logic
+The pipeline must support deep introspection of compressed archives (.zip,.tar.gz,.7z) to extract knowledge buried within file structures. The IngestionSentinel utilizes libarchive to perform this decompression in a secure manner.
+When an archive is detected, it is decompressed into a temporary directory identified by a UUID. The pipeline then recursively walks this directory, queuing valid files for ingestion. To prevent "Zip Bomb" attacks (recursive expansion intended to exhaust disk space), the extractor monitors the expansion ratio. If the extracted size exceeds 500x the archive size, or if the total size exceeds a configured threshold, the operation is immediately aborted, the temporary directory is purged, and a security alert is logged.1
+1.5 Finding IMP-04: Semantic Chunker for Context Overflow
+A critical omission in the original specification was the lack of handling for documents exceeding the embedder's context window. If a 200,000-token document is passed to an embedder with a 512-token limit, simplistic truncation results in massive data loss.
+INT-P5 incorporates the Semantic Chunker (Finding IMP-04). This component splits large texts into overlapping windows to preserve sentence boundaries and semantic continuity.
+Chunking Strategy:
+* Window Size: 512 tokens (matching the embedder model).
+* Overlap: 50 tokens (ensures no semantic disconnect at boundaries).
+* Logic: $Chunks = \lceil (N - \text{overlap}) / (\text{window} - \text{overlap}) \rceil$. For a 200k token document, this results in ~433 chunks.
+This ensures that the ParallelIngestionPipeline processes the entirety of large technical manuals or books, preserving the complete knowledge graph within the Torus.1
+1.6 Finding SEM-01: Projective Locality Mapper
+The final stage of ingestion involves mapping the 768-dimensional embedding vector onto the 9-dimensional Torus. The original plan referenced a "hash-based" approach, which Audit 14.0 identified as a "Cognitive Lobotomy" risk. Standard hashing destroys locality—semantically similar vectors (e.g., "Apple" and "Fruit") would be hashed to random, distant coordinates, preventing wave interference.
+INT-P5 implements the Projective Topology Mapper (SEM-01). This utilizes the Johnson-Lindenstrauss lemma to perform a random projection from $\mathbb{R}^{768} \to \mathbb{R}^9$ using a static, Gaussian-distributed projection matrix. This deterministic reduction preserves the Euclidean distance relationships between concepts, ensuring that semantically related terms cluster physically in the Torus, enabling the physics of wave interference to perform associative reasoning.1
+________________
 ## 16.7 Recursive Archive Handler for Bulk Dataset Ingestion (Finding ING-01)
 
 **Audit Finding:** ING-01: Archive Traversal Blindness (MEDIUM Severity)
