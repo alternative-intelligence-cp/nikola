@@ -648,5 +648,340 @@ namespace nikola::security {
 
 ---
 
+## GAP-019: Distributed Partition Table Update Protocol
+
+**SOURCE**: Gemini Deep Research Round 2, Batch 19-21
+**INTEGRATION DATE**: December 15, 2025
+**GAP ID**: GAP-019 (TASK-019)
+**PRIORITY**: CRITICAL
+**STATUS**: FABRICATION-READY SPECIFICATION
+
+### Problem Statement: Thermodynamics of Distributed Neurogenesis
+
+Nikola's **Neurogenic** architecture dynamically allocates new nodes in response to learning events (high-energy convergence). Semantic concepts cluster tightly in specific 9D manifold regions (power-law distribution), creating massive load imbalances.
+
+**Failure Modes**:
+1. **Memory Exhaustion (OOM)**: Dense rank hits VRAM ceiling (e.g., 80GB H100)
+2. **Temporal Drag**: Compute-heavy rank cannot complete integration within 1ms physics budget (Straggler Problem)
+
+**Core Challenge**: Atomically move 45-component metric tensor and complex wavefunction from GPU A to GPU B without:
+- Dropping messages targeting that node
+- Violating causal ordering
+- Corrupting symplectic structure of manifold
+
+### Two-Phase Epoch Barrier Protocol (2P-EBP)
+
+Treats partition table update as distributed transaction.
+
+#### Partition Table Versioning (Epochs)
+
+- **Epoch ID** ($\epsilon$): Monotonically increasing 64-bit integer defining global sharding state
+- **Partition Table** ($PT_\epsilon$): Immutable, sorted list of 128-bit Morton Key split points
+- **Ownership**: $Rank_i$ owns range $[PT_\epsilon[i-1], PT_\epsilon[i])$
+
+#### Phase 1: Monitoring & Trigger
+
+**Load Imbalance Factor (LIF)**:
+
+$$LIF = \frac{\max(N_i) - \min(N_i)}{\bar{N}}$$
+
+- **Trigger**: If $LIF > 0.2$ (20% imbalance), Orchestrator initiates rebalancing
+- **Calculation**: Compute $PT_{\epsilon+1}$ using CDF equalization (integral load $\int \rho(k) dk$ equal across ranks)
+
+#### Phase 2: PREPARE Barrier ("Micro-Pause")
+
+Orchestrator broadcasts `PREPARE_MIGRATION` with full $PT_{\epsilon+1}$ definition.
+
+**Worker Actions** (Local):
+1. **Suspension**: Complete current physics tick $T$, then suspend physics loop → PAUSED state
+2. **Ingestion Lock**: Stop pulling new queries from input queue
+3. **Candidate Identification**: Iterate through TorusGridSoA, compare Morton keys against $PT_{\epsilon+1}$:
+   - Export Set: Nodes currently owned that belong to different rank in $\epsilon+1$
+   - Import Expectation: Calculate expected memory footprint of incoming nodes
+4. **Safety Check**: If estimated post-migration memory $> 90\%$ VRAM → send ABORT, else send PREPARE_ACK
+
+**Critical Insight**: Must freeze wavefunction $\Psi$ during migration to ensure data satisfies conservation laws (Hamiltonian $H = T + V$).
+
+#### Phase 3: MIGRATION Transaction (Data Plane)
+
+Upon receiving PREPARE_ACK from all ranks, Orchestrator broadcasts `BEGIN_MIGRATION`.
+
+**Worker Transport**:
+1. **Serialization**: Serialize "Export Set" using SoA-to-AoS packing:
+   - Payload: 128-bit Morton Key (Big Endian), $\Psi_{real}$, $\Psi_{imag}$, $\dot{\Psi}_{real}$, $\dot{\Psi}_{imag}$, Metric Tensor $g_{ij}$ (45 floats), Neurochemical State ($r, s, u, v, w$)
+
+2. **Direct Transport**: Temporary PAIR sockets between peers (bypass Orchestrator) for bulk data
+
+3. **In-Flight Message Handling**:
+   - Outgoing Buffer: Messages targeting exported node → ForwardingBuffer
+   - Incoming Buffer: Messages targeting imported node (not arrived yet) → PendingBuffer
+
+4. **Ghosting**: Sender flags nodes as GHOST_CANDIDATE (allows instant rollback, doesn't delete yet)
+
+#### Phase 4: Verification & COMMIT
+
+Receivers unpack data into staging area (separate TorusGridSoA), perform CRC32C checksum validation and SPD metric check.
+
+1. **Validation**: Workers send MIGRATION_ACK to Orchestrator
+2. **Commit**: Orchestrator broadcasts COMMIT_EPOCH
+3. **Finalization** (Atomic Switch):
+   - Merge staging grid into main grid (MEM-05 compaction)
+   - Delete GHOST_CANDIDATE nodes, reclaim memory
+   - Pointer swap: $PT_{current} \leftarrow PT_{\epsilon+1}$
+   - Flush buffers: Process ForwardingBuffer (re-route), process PendingBuffer (apply to new nodes)
+   - Resume physics loop at tick $T+1$
+
+### Failure Modes and Recovery
+
+#### Network Partition During Migration
+
+- **Condition**: Orchestrator timeout (5000ms) waiting for MIGRATION_ACK
+- **Action**: Broadcast ROLLBACK_MIGRATION
+- **Recovery**:
+  - Senders strip GHOST_CANDIDATE flag, reinstate as active
+  - Receivers discard staging buffers
+  - Revert to STABLE state in Epoch $\epsilon$
+  - **Penalty**: StabilityPenalty counter incremented, prevent rebalance for 1 hour
+
+#### "Zombie" Node (Partial Crash)
+
+- **Condition**: Rank crashes mid-transfer, detected by Heartbeat Sentinel
+- **Action**: Hard Cluster Failure declared
+- **Recovery**:
+  - Orchestrator sends SCRAM_RESET to all survivors
+  - System reboots from last LSM-DMC Checkpoint
+  - **Rationale**: Torn manifold violates UFIE, creates infinite energy spikes; safer to restart than patch "hole in spacetime"
+
+#### Message Causality Consistency
+
+All ZeroMQ messages carry EpochID header.
+
+**Logic**:
+- **Msg.Epoch < Local.Epoch**: Stale but valid → Check if still own target; if yes, process; if no, forward to new owner via $PT_{\epsilon}$
+- **Msg.Epoch > Local.Epoch**: From future (sender migrated faster) → Buffer until local transition to $\epsilon+1$
+
+### Protocol Buffer Specification
+
+```protobuf
+syntax = "proto3";
+package nikola.spine;
+
+message PartitionControl {
+    enum Type {
+        HEARTBEAT = 0;
+        PREPARE_MIGRATION = 1;
+        BEGIN_MIGRATION = 2;
+        COMMIT_EPOCH = 3;
+        ROLLBACK = 4;
+        ABORT = 5;
+    }
+
+    Type type = 1;
+    uint64 current_epoch = 2;
+    uint64 target_epoch = 3;
+    string sender_rank_id = 4;
+
+    // Sorted list of split points (128-bit Morton keys, 16-byte big-endian)
+    repeated bytes partition_table = 5;
+
+    // Resource estimation for safety checks
+    map<uint32, uint64> expected_node_counts = 6; // Rank -> Count
+}
+
+message MigrationPayload {
+    uint64 target_epoch = 1;
+    uint32 source_rank = 2;
+    uint32 target_rank = 3;
+
+    // Structure-of-Arrays batch data (all same length)
+    repeated bytes morton_keys = 4;      // 16 bytes each
+    repeated float psi_real = 5;
+    repeated float psi_imag = 6;
+    repeated float metric_tensor = 7;    // 45 floats per node
+    repeated float resonance = 8;
+    repeated float state = 9;
+
+    // Data integrity
+    uint32 checksum_crc32c = 10;
+}
+```
+
+### Performance Characteristics
+
+- **Trigger Threshold**: LIF > 0.2 (20% imbalance)
+- **Pause Duration**: ~10-50ms (depends on export set size)
+- **Transport**: Direct peer-to-peer PAIR sockets (not via Orchestrator)
+- **Validation**: CRC32C checksum, SPD metric tensor verification
+- **Rollback Timeout**: 5000ms
+- **Stability Penalty**: 1 hour cooldown after rollback
+
+### Integration Points
+
+1. **Orchestrator**: Monitors load, triggers rebalancing, coordinates 2P-EBP
+2. **Physics Engine**: Suspends at tick boundary for PREPARE
+3. **TorusGridSoA**: Exports/imports nodes via SoA-to-AoS packing
+4. **ZeroMQ Spine**: EpochID header in all messages, ForwardingBuffer/PendingBuffer
+5. **LSM-DMC**: Rollback to last checkpoint on Hard Cluster Failure
+
+### Cross-References
+
+- [ZeroMQ Spine Architecture](./01_zeromq_spine.md)
+- [TorusGridSoA Memory Layout](../02_foundations/01_9d_toroidal_geometry.md)
+- [Morton Code Spatial Hashing](../02_foundations/01_9d_toroidal_geometry.md)
+- [LSM-DMC Checkpointing](../06_persistence/01_dmc_persistence.md)
+
+---
+
+## GAP-020: Temporal Decoherence Detection Thresholds
+
+**SOURCE**: Gemini Deep Research Round 2, Batch 19-21
+**INTEGRATION DATE**: December 15, 2025
+**GAP ID**: GAP-020 (TASK-020)
+**PRIORITY**: CRITICAL
+**STATUS**: FABRICATION-READY SPECIFICATION
+
+### Problem Statement: The Physics of Synchronization
+
+**Temporal Decoherence**: Information arriving at node refers to simulation state $T_{source}$ that implies causal violation with respect to local state $T_{local}$.
+
+**Phase Error** for node at $T_{now}$ integrating signal from $T_{past}$:
+
+$$\Delta \phi = \omega \cdot (T_{now} - T_{past})$$
+
+Where $\omega$ = angular frequency of wave packet.
+
+**Critical Threshold**: If $\Delta \phi$ exceeds Rayleigh criterion of $\lambda/4$ (or $\pi/2$ radians), interference shifts from constructive to destructive. Delayed signal becomes inverted signal, actively erasing memory it was meant to reinforce.
+
+**Result**: Spectral Entropy - energy dissipates into noise, "mind" decoheres.
+
+### Threshold Derivation: Emitter Array Spectral Analysis
+
+**Base Frequency** (Golden Ratio $\phi \approx 1.618$):
+
+$$f_1 = \pi \cdot \phi^1 \approx 5.083 \text{ Hz}$$
+
+**Maximum Driven Frequency** (8th order harmonic):
+
+$$f_8 = \pi \cdot \phi^8 \approx 146.6 \text{ Hz}$$
+
+**Internal Harmonic Limit** (Nyquist compliance, nonlinear $\hat{N}$ operator):
+
+$$f_{max} \approx 441 \text{ Hz}$$
+
+**Phase Integrity Constraint**: Bound phase error to $\epsilon_{\phi} = \pi/10$ (18°), ensuring interference retains $>95\%$ theoretical amplitude ($\cos(18°) \approx 0.95$).
+
+**Maximum Allowable Time Delay**:
+
+$$\tau_{max} = \frac{\epsilon_{\phi}}{2\pi f_{max}} = \frac{\pi/10}{2\pi \cdot 441} = \frac{1}{20 \cdot 441} \approx 113 \mu s$$
+
+**Conclusion**: High-frequency internal harmonics require **113 microseconds** latency tolerance.
+
+**Implication**: Standard TCP/IP loopback latency (500-1500 μs) is **order of magnitude too slow**. Validates requirement for **Shared Memory (Seqlock) IPC** for Data Plane.
+
+### Adaptive Threshold Specification
+
+Tiered thresholding strategy balances strict physics against operational robustness:
+
+| Message Class | Carrier Frequency | Max Latency ($\tau_{max}$) | Transport Layer | Action on Violation |
+|---------------|-------------------|----------------------------|-----------------|---------------------|
+| High-Freq Physics | 441 Hz (Harmonic limit) | **113 μs** | SHM / NVLink | **Hard Drop** - Phase-corrupt signal adds entropy |
+| Visual Input | 60 Hz (Frame Rate) | 8.3 ms ($1/2f$) | Isochronous Buffer | **Interpolate** - Sample-and-hold or optical flow |
+| Cognitive State | 13.3 Hz (Theta/Alpha) | 10 ms | TCP (Spine) | **Predictive Coding** - Kalman filter project to $T_{now}$ |
+| Control / Admin | DC (0 Hz) | 100 ms | TCP (Router) | **Process** - Atemporal state changes |
+| Sensory (Audio) | 44.1 kHz (PCM) | 50 ms (Buffer) | Isochronous Buffer | **Jitter Buffer** - Re-clock to physics time |
+
+### Clock Synchronization: Precision Time Protocol (PTP)
+
+**Requirement**: Standard NTP (1-10ms accuracy) is **insufficient**. System MUST use **PTP / IEEE 1588** (sub-microsecond synchronization with hardware timestamping).
+
+**Problem**: If Node A and Node B differ by 1ms, permanently decohered relative to physics threshold (113 μs).
+
+#### Physics Oracle Timekeeper State Machine
+
+1. **Startup (Handshake)**: PTP exchange establishes Master/Slave hierarchy, calculate offset $\theta$ and delay $\delta$
+2. **Lock State**: If $|\theta| < 50 \mu s$ → SYNC_LOCKED (physics simulation permitted)
+3. **Drift Warning**: If $50 \mu s < |\theta| < 100 \mu s$ → SYNC_WARNING (Oracle compensates via Virtual Time Dilation)
+4. **Decoherence SCRAM**: If $|\theta| > 150 \mu s$ (exceeds 113 μs limit + margin) → Soft SCRAM (detach from cluster to prevent pollution)
+
+### Implementation: Timestamp Enforcement
+
+Every NeuralSpike message includes 64-bit nanosecond timestamp.
+
+```cpp
+/**
+ * @brief Validates temporal coherence of incoming messages.
+ * @param msg_timestamp_ns Creation time (PTP source).
+ * @param type Message classification for adaptive thresholding.
+ * @return true if coherent, false if decoherent.
+ */
+bool verify_temporal_coherence(int64_t msg_timestamp_ns, MessageType type) {
+    // Current time from high-resolution PTP-disciplined clock
+    int64_t now_ns = std::chrono::system_clock::now().time_since_epoch().count();
+
+    // Calculate age
+    int64_t age_ns = now_ns - msg_timestamp_ns;
+
+    // Future-check: Allow small skew for clock jitter
+    if (age_ns < -50000) { // -50us tolerance
+        LOG_WARN("Message from future detected: %ld ns", age_ns);
+        return false;
+    }
+
+    // Select threshold
+    int64_t limit_ns = 0;
+    switch(type) {
+        case PHYSICS_UPDATE: limit_ns = 113000; break;   // 113 us
+        case COGNITIVE_STATE: limit_ns = 10000000; break; // 10 ms
+        case CONTROL_SIGNAL: limit_ns = 100000000; break; // 100 ms
+        default: limit_ns = 100000000; break;
+    }
+
+    if (age_ns > limit_ns) {
+        // Log decoherence event for Physics Oracle analysis
+        Metrics::record_decoherence_drop(type, age_ns);
+        return false; // DROP
+    }
+
+    return true;
+}
+```
+
+### Isochronous Sensory Buffer Integration
+
+For sensory inputs (Audio/Video), cannot simply "drop" late packets (creates perception gaps).
+
+**Mechanism**:
+- **Presentation Delay**: Buffer incoming data for fixed window (e.g., 50ms)
+- **Retiming**: Re-clock data (video frame arrives at $T=10ms$, presented at $T=60ms$)
+- **Interpolation**: Missing packet at presentation time → interpolate from history (Audio: Linear, Video: Sample-and-Hold)
+- **Integration**: Isolates physics engine from external jitter, ensuring "Perceived Now" is always coherent (though slightly delayed relative to "Wall Clock Now")
+
+### Performance Characteristics
+
+- **Physics Threshold**: 113 μs (441 Hz harmonic limit)
+- **Cognitive Threshold**: 10 ms (13.3 Hz Theta/Alpha)
+- **Control Threshold**: 100 ms (DC atemporal)
+- **Clock Sync**: PTP sub-microsecond (hardware timestamping)
+- **SCRAM Trigger**: Clock drift > 150 μs
+- **Sensory Buffer**: 50 ms presentation delay (jitter isolation)
+
+### Integration Points
+
+1. **Physics Engine**: 1ms timestep ($\Delta t_{phys}$), symplectic integrator
+2. **ZeroMQ Spine**: 64-bit nanosecond timestamp in all NeuralSpike messages
+3. **Physics Oracle**: Temporal health monitoring, SCRAM triggers
+4. **PTP Stack**: IEEE 1588 hardware timestamping (NIC support)
+5. **Isochronous Buffer**: 50ms audio/video retiming
+
+### Cross-References
+
+- [ZeroMQ Spine Architecture](./01_zeromq_spine.md)
+- [Physics Engine Timing](../02_foundations/02_wave_interference_physics.md)
+- [Isochronous Sensory Buffer](../07_multimodal/01_cymatic_transduction.md)
+- [Physics Oracle](../02_foundations/02_wave_interference_physics.md)
+- [Emitter Array](../07_multimodal/01_cymatic_transduction.md)
+
+---
+
 	Works cited
 1. part_1_of_9.txt

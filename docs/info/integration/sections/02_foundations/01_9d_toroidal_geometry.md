@@ -3438,6 +3438,221 @@ Standing wave in Time/Resonance dimensions provides baseline "hum" for receptivi
 
 **Execution**: Must occur after memory allocation, before first physics tick.
 
-**Status**: IMPLEMENTATION SPECIFICATION COMPLETE  
+**Status**: IMPLEMENTATION SPECIFICATION COMPLETE
 **Cross-References**: Christoffel Symbols (Section 4), Symplectic Integration (Section 2)
+
+---
+
+## GAP-021: TorusGridSoA Memory Alignment Guarantees
+
+**SOURCE**: Gemini Deep Research Round 2, Batch 19-21
+**INTEGRATION DATE**: December 15, 2025
+**GAP ID**: GAP-021 (TASK-021)
+**PRIORITY**: CRITICAL
+**STATUS**: FABRICATION-READY SPECIFICATION
+
+### Problem Statement: The Vectorization Imperative
+
+Nikola Model must update millions of nodes within 1ms. This throughput is **impossible with scalar code** - requires **Single Instruction, Multiple Data (SIMD)** parallelism:
+- **CPUs**: AVX-512
+- **GPUs**: Coalesced memory access
+
+**Phase 0 Mandate**: Transition from Array-of-Structures (AoS) to Structure-of-Arrays (SoA).
+
+**Memory Layout Comparison**:
+- **AoS**: `[Real, Imag, g11, g12, ...], [Real, Imag, g11, g12, ...]` → Good for OOP, terrible for hardware (loading one value pulls unrelated data into cache)
+- **SoA**: `[Real, Real, Real...], [Imag, Imag, Imag...]` → Perfect for vectorization
+
+### AVX-512 Alignment Constraint
+
+**ZMM Registers**: 512 bits (64 bytes) wide
+
+- **Aligned Load** (`vmovaps`): Requires memory address divisible by 64 → **Extremely fast**
+- **Unaligned Load** (`vmovups`): Works on any address but:
+  - Performance penalty (especially older microarchitectures)
+  - **Cache line splitting**: Data straddles two 64-byte cache lines, doubling L1 cache bandwidth pressure
+
+**The Trap**: Standard C++ containers (`std::vector`) align to 16 bytes (`max_align_t`) or element size. They **DO NOT guarantee** 64-byte alignment. Standard allocation will likely **crash** kernel compiled with `-O3 -march=native` if attempting aligned load on 16-byte boundary.
+
+### Alignment Specification
+
+Rigorous alignment policy for TorusGridSoA and underlying allocators.
+
+#### Compile-Time Enforcement
+
+Leverage C++23 features (`alignas`, `static_assert`) for type system enforcement:
+
+```cpp
+// include/nikola/physics/soa_layout.hpp
+
+// Define alignment constant for AVX-512 (64 bytes = 512 bits)
+constexpr size_t AVX512_ALIGNMENT = 64;
+
+/**
+ * @brief Custom allocator ensuring 64-byte alignment for STL containers.
+ * Critical for AVX-512 vectorization stability.
+ */
+template <typename T>
+struct AlignedAllocator {
+    using value_type = T;
+
+    T* allocate(size_t n) {
+        if (n > std::numeric_limits<size_t>::max() / sizeof(T))
+            throw std::bad_array_new_length();
+
+        // std::aligned_alloc requires size to be multiple of alignment
+        size_t bytes = n * sizeof(T);
+        size_t aligned_bytes = (bytes + AVX512_ALIGNMENT - 1) & ~(AVX512_ALIGNMENT - 1);
+
+        void* ptr = std::aligned_alloc(AVX512_ALIGNMENT, aligned_bytes);
+        if (!ptr) throw std::bad_alloc();
+        return static_cast<T*>(ptr);
+    }
+
+    void deallocate(T* p, size_t) {
+        std::free(p);
+    }
+};
+
+struct TorusBlock {
+    // 3^9 = 19683 nodes per dense block
+    static constexpr int BLOCK_SIZE = 19683;
+
+    // Enforce alignment on arrays themselves
+    alignas(AVX512_ALIGNMENT) std::array<float, BLOCK_SIZE> psi_real;
+    alignas(AVX512_ALIGNMENT) std::array<float, BLOCK_SIZE> psi_imag;
+
+    // Metric Tensor: 45 components
+    alignas(AVX512_ALIGNMENT) std::array<std::array<float, BLOCK_SIZE>, 45> metric_tensor;
+};
+
+// Static verification to prevent regression
+static_assert(alignof(TorusBlock) == AVX512_ALIGNMENT,
+              "TorusBlock must be 64-byte aligned");
+static_assert(offsetof(TorusBlock, psi_real) % AVX512_ALIGNMENT == 0,
+              "psi_real offset misalignment");
+static_assert(offsetof(TorusBlock, psi_imag) % AVX512_ALIGNMENT == 0,
+              "psi_imag offset misalignment");
+```
+
+### Dynamic Memory Management: Paged Block Pool
+
+System uses **Paged Block Pool** for neurogenesis. Standard `new TorusBlock` is insufficient (heap allocator doesn't guarantee 64-byte alignment for object start).
+
+**Requirement**: Paged Block Pool must use `posix_memalign` (or Windows `_aligned_malloc`) internally.
+
+**Page Specification**:
+- **Page Size**: Each page holds $N$ blocks
+- **Page Start**: MUST be 64-byte aligned
+- **Block Padding**: `sizeof(TorusBlock)` must be padded to multiple of 64 bytes → ensures in array `TorusBlock blocks[N]`, if `blocks[0]` is aligned, `blocks[i]` is also aligned
+
+```cpp
+// Ensure struct size preserves alignment in arrays
+static_assert(sizeof(TorusBlock) % AVX512_ALIGNMENT == 0,
+              "TorusBlock size must be multiple of 64 bytes to maintain alignment in arrays");
+```
+
+### Misaligned Data Handling (Serialization & Persistence)
+
+When loading from persistent storage (LSM-DMC.nik files) or network buffers (Protobuf), incoming byte stream is effectively raw `char*` and **rarely aligned**.
+
+**Hazard**: Casting buffer pointer directly (`reinterpret_cast<float*>(msg.data())`) and passing to AVX kernel will cause immediate **Segfault (General Protection Fault)** if buffer starts at address `0x...04`.
+
+#### Efficient Copy-on-Load Routine
+
+Implement "Copy-on-Load" strategy. Data is **never processed in-place** from I/O buffers. Always copied into aligned TorusGridSoA structures first.
+
+```cpp
+/**
+ * @brief Safely loads potentially misaligned data into aligned storage.
+ * Uses optimized memcpy which handles alignment internally.
+ */
+void load_block_data(const std::vector<uint8_t>& raw_bytes, TorusBlock& target) {
+    const float* source = reinterpret_cast<const float*>(raw_bytes.data());
+
+    // Check if source happens to be aligned (Optimization)
+    if (reinterpret_cast<uintptr_t>(source) % AVX512_ALIGNMENT == 0) {
+        // Fast path: Aligned load possible
+        // std::memcpy detects alignment and uses aligned SIMD loads/stores
+        std::memcpy(target.psi_real.data(), source, sizeof(target.psi_real));
+    } else {
+        // Slow path: Unaligned source
+        // Target is GUARANTEED aligned by type system
+        // std::memcpy handles unaligned read -> aligned write efficiently
+        std::memcpy(target.psi_real.data(), source, sizeof(target.psi_real));
+    }
+}
+```
+
+**Insight**: Modern `std::memcpy` (glibc implementation) uses AVX instructions internally. It checks alignment of source and destination at runtime. By guaranteeing target is 64-byte aligned (via AlignedAllocator), we allow `memcpy` to use aligned stores (`vmovaps`), even if loads are unaligned.
+
+### Runtime Verification: Physics Oracle Watchdog
+
+To catch regressions (e.g., developer accidentally using `std::vector<float>` without allocator), Physics Oracle runs verification pass during:
+- System startup
+- After every Neurogenesis event
+
+```cpp
+void verify_grid_alignment(const TorusGridSoA& grid) {
+    auto check = [](const void* ptr, const char* name) {
+        if (reinterpret_cast<uintptr_t>(ptr) % AVX512_ALIGNMENT != 0) {
+            // CRITICAL FAILURE: Physics kernel will crash
+            throw std::runtime_error(std::string("Misaligned pointer: ") + name);
+        }
+    };
+
+    check(grid.wavefunction_real.data(), "psi_real");
+    check(grid.wavefunction_imag.data(), "psi_imag");
+
+    // Verify Metric Tensor (all 45 components)
+    for(int i=0; i<45; ++i) {
+        check(grid.metric_tensor[i].data(), "metric_tensor");
+    }
+}
+```
+
+### Integration with GGUF & Quantization (Q9_0)
+
+Alignment requirement extends to GGUF Export process.
+
+**Q9_0 Quantization**: Packs balanced nonary weights into blocks.
+
+**Constraint**: GGUF writer must ensure tensor data start in `.gguf` file is aligned to 32 bytes (or 64 bytes) relative to file start → allows mmap'd inference engines (like llama.cpp) to use vectorized loads directly from disk.
+
+**Implementation**: GGUFWriter class must insert padding bytes before writing tensor data to satisfy `offset % 64 == 0`.
+
+### Performance Characteristics
+
+**Memory Alignment**:
+- **AVX-512 Requirement**: 64-byte alignment (512-bit ZMM registers)
+- **Block Size**: 3^9 = 19,683 nodes per TorusBlock
+- **Allocator**: Custom AlignedAllocator with `std::aligned_alloc`
+- **Verification**: Runtime checks at startup and neurogenesis
+
+**Impact on 1ms Loop Time**:
+- **Aligned Load Speed**: ~2-4× faster than unaligned
+- **Cache Line Splitting**: Eliminated (prevents 2× L1 bandwidth pressure)
+- **Vectorization Stability**: Prevents segfaults on `-march=native`
+
+**GGUF Export**:
+- **File Offset Alignment**: 64-byte padding for mmap compatibility
+- **llama.cpp Compatibility**: Direct vectorized loads from disk
+
+### Integration Points
+
+1. **TorusGridSoA**: All field arrays aligned via AlignedAllocator
+2. **Paged Block Pool**: posix_memalign for page allocation
+3. **Physics Oracle**: Runtime alignment verification watchdog
+4. **Serialization**: Copy-on-Load from network/disk buffers
+5. **GGUF Writer**: File offset padding for mmap compatibility
+
+### Cross-References
+
+- [TorusGridSoA Structure](./01_9d_toroidal_geometry.md) - Section 3.6
+- [Physics Engine Loop](../02_foundations/02_wave_interference_physics.md)
+- [GGUF Export Format](../06_persistence/02_gguf_interoperability.md)
+- [Q9_0 Quantization](../02_foundations/03_balanced_nonary_logic.md)
+- [Paged Block Pool](./01_9d_toroidal_geometry.md) - Section 3.7
+
+---
 
