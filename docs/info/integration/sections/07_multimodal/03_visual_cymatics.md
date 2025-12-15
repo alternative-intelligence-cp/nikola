@@ -4370,3 +4370,225 @@ public:
 - **Section 24.2:** Visual Cymatics Engine (frame injection)
 
 ---
+
+## GAP-018: Visual Cymatics Frame Rate Adaptation
+
+**SOURCE**: Gemini Deep Research Round 2, Batch 16-18
+**INTEGRATION DATE**: December 15, 2025
+**GAP ID**: GAP-018 (TASK-018)
+**PRIORITY**: CRITICAL
+**STATUS**: FABRICATION-READY SPECIFICATION
+
+### Problem Statement
+
+The Visual Cymatics subsystem faces the **Temporal Mismatch Problem**:
+
+- **Physics Engine**: Evolves 9D grid state at **1000 Hz**, creating high-speed solitons and interference patterns
+- **Display Hardware**: Refreshes at **60 Hz** or **120 Hz**
+
+**Naive Decimation** (displaying every 16th frame) creates **Temporal Aliasing**: Fast-moving semantic structures vanish between frames, making visualization appear jittery and disconnecting observer from true cognitive state.
+
+### Frame Interpolation vs. Accumulation Integration
+
+**Standard graphical interpolation** (averaging state between $t_1$ and $t_2$) is **physically incorrect** for wave mechanics - it dampens phase information.
+
+**Correct Approach**: Treat display as camera sensor with "shutter speed" equal to frame duration. Visualizer must **integrate (accumulate)** wave energy over interval.
+
+### Motion Blur Accumulation Algorithm
+
+#### Accumulation Buffer Architecture
+
+```cpp
+class FrameRateAdaptation {
+    std::vector<float> accumulation_buffer;
+    int accumulation_count = 0;
+    const float DISPLAY_NYQUIST = 30.0f;  // For 60Hz screen
+
+public:
+    void on_physics_tick(const TorusGrid& grid) {
+        // 1. Generate Hologram (Instantaneous)
+        auto frame = render_hologram(grid);
+
+        // 2. Accumulate Energy (Motion Blur)
+        // Energy = |Psi|^2 to prevent phase cancellation in visual buffer
+        add_energy_to_buffer(accumulation_buffer, frame);
+        accumulation_count++;
+
+        // 3. High-Frequency Detection
+        // If local change > Nyquist, tag pixel for Chromatic Aberration shader
+        if (detect_super_nyquist_activity(grid)) {
+            tag_aliasing_regions(accumulation_buffer);
+        }
+    }
+
+    const std::vector<float>& get_display_frame() {
+        // Normalize energy integration
+        scale_buffer(accumulation_buffer, 1.0f / accumulation_count);
+
+        // Apply Tone Mapping (Sigmoid)
+        tone_map(accumulation_buffer);
+
+        return accumulation_buffer;
+        // Note: Reset is handled by the caller after successful swap
+    }
+};
+```
+
+#### Algorithm Steps
+
+1. **Initialization**: Allocate floating-point buffer $B_{acc}$ matching render resolution
+
+2. **Physics Loop** (1000 Hz):
+   - For every physics tick $t$:
+     - Compute instantaneous holographic projection $H_t$
+     - Accumulate energy: $B_{acc} \leftarrow B_{acc} + |H_t|^2$
+     - **Note**: Accumulating intensity/energy (not complex amplitude) prevents destructive interference from canceling rapid oscillations that should appear as blur
+
+3. **Render Loop** (60 Hz):
+   - Every ~16.6 ms (16-17 ticks):
+     - Normalize: $I_{out} = \sqrt{B_{acc} / N_{ticks}}$ (square root restores perceptual amplitude)
+     - Apply Tone Mapping (Sigmoid) to compress high dynamic range of resonance peaks
+     - Clear $B_{acc}$ for next frame
+
+**Benefits**:
+- **Energy Conservation**: Pixel brightness = total energy that passed through region during frame
+- **High-speed soliton** appears as coherent "streak" (motion blur) rather than teleporting dot
+- **Natural Smoothness**: No artificial smoothing filters needed
+
+### V-Sync Handling and Tearing Prevention
+
+**Critical Constraint**: Physics engine **cannot block** waiting for V-Sync. Blocking dilates simulation time, making AI "think slower" due to slow screen.
+
+#### Triple-Buffered Seqlock Synchronization
+
+**Buffer Structure**:
+1. **Accumulation Buffer** (Physics Owned): Currently being written at 1000 Hz
+2. **Back Buffer** (Shared): Completed frame, ready for upload
+3. **Front Buffer** (GPU Owned): Frame currently being scanned out
+
+**Protocol**:
+- **Physics Thread**:
+  - Accumulates into Accumulation Buffer
+  - When $N_{ticks}$ reached, attempts atomic swap: Accumulation ↔ Back
+  - **Non-blocking**: If Back buffer locked (being copied to Front), physics continues accumulating (extends exposure time slightly)
+  - **Does not stall**
+
+- **Render Thread**:
+  - Waits for V-Sync
+  - Upon wake, swaps Back ↔ Front
+  - Uploads to GPU texture
+
+**Guarantee**: Cognitive core runs at exactly 1000 Hz regardless of display refresh rate anomalies.
+
+### Aliasing Indicators for High Frequencies
+
+Even with motion blur, display cannot represent frequencies $> 30$ Hz (Nyquist of 60 Hz) as distinct flickers. A 50 Hz wave on 60 Hz screen creates 10 Hz beat frequency (Moiré pattern) - misleading.
+
+#### Chromatic Aberration Visualization
+
+**Mechanism**: System monitors temporal derivative of grid state ($\partial \Psi / \partial t$) at each pixel.
+
+**If frequency exceeds display Nyquist** ($\frac{d\Psi}{dt} > F_{display}/2$):
+
+1. **Chromatic Aberration**: Shader introduces color shift (Red/Blue split) proportional to excess frequency
+   - $\text{Shift} = k \cdot (\omega_{local} - \omega_{nyquist})$
+
+2. **Semantic Meaning**: Visual cue tells observer: "Physics here vibrating faster than you can see; fuzziness is not noise, but high-speed data"
+
+### Stroboscopic Filtering Mode
+
+For diagnostic purposes, motion blur obscures precise standing wave structure.
+
+**Phase-Locked Stroboscopic Mode**:
+- **Trigger**: Visualizer captures frame only when Global Phase $\phi$ of Emitter 1 (Fundamental) crosses Zero
+- **Effect**: "Freezes" standing waves on screen, making interference patterns static and observable
+- **Analogy**: Strobe light stopping fan blade
+- **Use Case**: Critical for debugging "Resonance Lock-in"
+
+### Performance Characteristics
+
+**Frame Rate Adaptation**:
+- **Physics Rate**: 1000 Hz (never blocks, never stalls)
+- **Display Rate**: 60/120 Hz (adaptive based on hardware)
+- **Accumulation Window**: 16-17 ticks @ 60Hz, 8-9 ticks @ 120Hz
+- **Buffer Overhead**: 3× framebuffer (Accumulation, Back, Front)
+
+**Latency**:
+- **Min Display Latency**: 16.6 ms @ 60Hz, 8.3 ms @ 120Hz (V-Sync constraint)
+- **Physics Independence**: Zero impact on cognitive core timing
+
+**Aliasing Detection**:
+- **Nyquist Threshold**: $F_{display}/2$ (30 Hz @ 60Hz, 60 Hz @ 120Hz)
+- **Chromatic Shift Range**: 0-50 pixels (proportional to excess frequency)
+- **Stroboscopic Sync**: Phase-locked to E1 (5.083 Hz fundamental)
+
+**Computational Cost**:
+- **Energy Accumulation**: <0.1 ms per physics tick (vectorized)
+- **Tone Mapping**: <2 ms per display frame (GPU shader)
+- **Seqlock Swap**: <10 μs (atomic operation)
+
+### Implementation Specification
+
+**Core Components**:
+
+```cpp
+namespace nikola::visual {
+    class FrameRateAdaptation {
+    private:
+        // Triple buffer system
+        std::vector<float> accumulation_buffer_;
+        std::vector<float> back_buffer_;
+        std::vector<float> front_buffer_;
+
+        int accumulation_count_ = 0;
+        const float display_nyquist_;  // 30.0f for 60Hz
+
+        std::atomic<bool> back_buffer_locked_{false};
+
+    public:
+        explicit FrameRateAdaptation(float refresh_rate)
+            : display_nyquist_(refresh_rate / 2.0f) {}
+
+        // Called at 1000 Hz by physics thread
+        void on_physics_tick(const TorusGrid& grid);
+
+        // Called at 60/120 Hz by render thread
+        const std::vector<float>& get_display_frame();
+
+        // Diagnostic mode
+        void enable_stroboscopic(bool enable, float phase_trigger = 0.0f);
+
+        // Chromatic aberration for super-Nyquist activity
+        void detect_and_tag_aliasing();
+    };
+}
+```
+
+**Energy Accumulation Formula**:
+
+$$B_{acc}[x,y] \leftarrow B_{acc}[x,y] + |H_t[x,y]|^2$$
+
+**Normalization & Display**:
+
+$$I_{out}[x,y] = \text{ToneMap}\left( \sqrt{\frac{B_{acc}[x,y]}{N_{ticks}}} \right)$$
+
+**Tone Mapping** (Sigmoid compression for HDR):
+
+$$\text{ToneMap}(x) = \frac{x}{1 + x}$$
+
+### Integration Points
+
+1. **Physics Engine**: 1000 Hz grid state snapshots
+2. **Holographic Renderer**: Instantaneous projection generation
+3. **V-Sync**: Hardware refresh synchronization (60/120 Hz)
+4. **GPU Pipeline**: Tone mapping shader, texture upload
+5. **Emitter 1 Phase**: Stroboscopic mode trigger (5.083 Hz fundamental)
+
+### Cross-References
+
+- [Visual Cymatics Engine](./03_visual_cymatics.md) - Section 24.2
+- [Physics Engine Timing](../02_foundations/02_wave_interference_physics.md)
+- [Emitter Array](./01_cymatic_transduction.md) - Section 4
+- [Seqlock Synchronization](../04_infrastructure/01_zeromq_spine.md)
+
+---

@@ -2292,7 +2292,215 @@ The specification provided herein resolves the "Working memory concept undefined
 This transitions Working Memory from an abstract gap to a concrete, implementable subsystem rooted in the physics of the Nikola Model.
 Authorized: System Architect
 Date: 2025-12-14
-   
+
+---
+
+## GAP-016: Inner Monologue Recursive Reasoning Control
+
+**SOURCE**: Gemini Deep Research Round 2, Batch 16-18
+**INTEGRATION DATE**: December 15, 2025
+**GAP ID**: GAP-016 (TASK-016)
+**PRIORITY**: CRITICAL
+**STATUS**: FABRICATION-READY SPECIFICATION
+
+### Problem Statement
+
+The Inner Monologue recursive re-injection mechanism enables Chain-of-Thought (CoT) reasoning but introduces catastrophic failure modes:
+1. **Epileptic Resonance**: Positive feedback causing energy divergence
+2. **Teleological Deadlock**: Infinite logical loops creating metric singularities
+3. **Coherence Degradation**: Signal-to-noise decay below thermal noise floor
+
+Unlike Von Neumann stack-based recursion (limited by RAM), Nikola's recursion consumes **metabolic ATP** and operates on geodesics through Riemannian 9D manifold.
+
+### Theoretical Framework: Geodesic Recursion
+
+A "thought" is wavefunction $\Psi(\mathbf{x}, t)$ propagating through metric $g_{ij}$. Recursive reasoning creates trajectory through manifold. Recursion stability governed by Hamiltonian $H$ conservation and thermodynamic energy budget.
+
+### Maximum Recursion Depth Specification
+
+#### Thermodynamic Depth Calculation
+
+$$D_{max} = \min \left( D_{hard}, \left\lfloor \frac{E_{current} - E_{reserve}}{C_{base} \cdot (1 + \lambda_{penalty})^d} \right\rfloor \right)$$
+
+**Parameters**:
+- $D_{hard}$ = **12 Levels** (Mamba-9D Effective Context Horizon)
+  - Beyond 12 re-injections, phase coherence of original query $\Psi_0$ degrades below thermal noise floor $\sigma_T$ due to numerical diffusion
+- $E_{reserve}$ = **0.15 ATP** (Survival Threshold - forces Nap state)
+- $C_{base}$ = **0.05 ATP/step** (Base cost of active reasoning)
+- $\lambda_{penalty}$ = **0.15** (15% compound recursion tax)
+
+**Metabolic Cost per Recursion Level**:
+
+| Depth (d) | Cost Factor $(1+\lambda)^d$ | Cost (ATP) | Cumulative (ATP) | Implications |
+|-----------|------------------------------|------------|------------------|--------------|
+| 1 | 1.15 | 0.0575 | 0.0575 | Low cost; routine reasoning |
+| 3 | 1.52 | 0.0760 | 0.2030 | Standard Chain-of-Thought |
+| 5 | 2.01 | 0.1005 | 0.3940 | Deep analytical tasks |
+| 7 | 2.66 | 0.1330 | 0.6720 | **Soft Limit (Miller's Law)** |
+| 9 | 3.52 | 0.1760 | 1.0420 | Requires near-full charge |
+| 12 | 5.35 | 0.2675 | >1.500 | **Hard Limit; unreachable** |
+
+**Soft Limit at d=7** aligns with thermodynamic derivation of Miller's Law ($7 \pm 2$) - cost of maintaining Refractive Traps exceeds recharge rate.
+
+### Coherence Degradation Detection
+
+#### Spectral Entropy Watchdog
+
+$$H_{spec} = -\sum_{k} p_k \log_2 p_k$$
+
+Where $p_k$ = normalized power spectral density of re-injected wavefunction.
+
+**Termination Conditions**:
+1. **Absolute Entropy Threshold**: $H_{spec} > 0.85$ → Signal indistinguishable from thermal noise
+2. **Entropy Gradient**: $\Delta H = H_{spec}(\Psi_d) - H_{spec}(\Psi_{d-1}) > 0.05$ → Rapid phase decoherence ("scrambling")
+
+**Action on Coherence Alarm** ("Confusion Interrupt"):
+- Collapse recursion stack immediately
+- Return last coherent state (from step $d-1$)
+- Penalize confidence score: $(1 - H_{spec})$
+- Generate Curiosity Goal to investigate confusion source
+
+### Circular Reasoning Loop Detection
+
+In Riemannian manifold, circular reasoning = **Closed Geodesic**. Loop trajectory (A→B→C→A) causes Hebbian-Riemannian plasticity to contract metric tensor $g_{ij}$ along path, creating **Metric Singularity** ("Black Hole" of attention).
+
+#### Metric Contraction Analysis Algorithm
+
+1. **Path Logging**: Store centroid coordinates $\bar{\mathbf{x}}_d$ of wave packet at each recursive step
+2. **Spatial Hashing**: Map coordinates to 128-bit Morton Code for efficient 9D collision detection
+3. **Overlap Detection**: Calculate Euclidean distance to all previous states: $||\mathbf{x}_d - \mathbf{x}_i|| < \epsilon$
+4. **Metric Trace Verification**: If spatial collision detected, check $\text{Tr}(g)$:
+   - **Condition**: $\text{Tr}(g_d) < \text{Tr}(g_i)$ confirms metric has contracted → Gravity well reinforcement
+
+**Teleological Deadlock Resolution** (on confirmed loop):
+1. **Boredom Spike**: Increase Boredom neurochemical by +0.2
+2. **Stochastic Injection**: Inject "Quantum Noise" via $(u, v, w)$ dimensions - thermal kick escapes local geometric minimum
+3. **Loop Penalization**: Artificially relax (expand) metric tensor along loop path, increasing traversal cost
+
+### Memory Management: Dynamic Refractive Trapping
+
+#### Refractive Stack Frame
+
+Each recursion level = localized region with boosted Refractive Index $s$.
+
+**Mechanism**:
+- Increasing $s$ reduces wave velocity: $v = c_0 / (1+s)$
+- Sufficiently high $s$ creates standing wave ("frozen" wave packet)
+- Each recursive call allocates new "Trap" in Sparse Hyper-Voxel Octree (SHVO)
+- Maintaining trap against entropic relaxation requires constant energy = **Metabolic Tax**
+
+#### Memory Overhead
+
+**Node Requirements**: Central node + 18-point stencil (9D neighbors) for Laplacian definition
+
+**Data Volume per Trap**:
+- Wavefunction $\Psi$: 16 bytes (complex double)
+- Metric Tensor $g_{ij}$: 45 floats × 4 bytes = 180 bytes
+- Christoffel Symbols $\Gamma$: Cached per node
+- **Total per Node**: ~3.4 KB (with overhead)
+- **Total per Trap (Cluster)**: $3.4 \text{ KB} \times 19 \text{ nodes} \approx$ **65 KB**
+
+**Computational Limit**: System supports ~**9 active traps** max before physics engine frame time exceeds 1ms (Laplacian recomputation on warped metric @ 1000 Hz).
+
+#### Garbage Collection: Neuro-Necrosis
+
+On return from recursive step:
+1. **Dissolution**: Cut metabolic maintenance → $s(t) = s_0 e^{-\lambda t}$ (exponential decay)
+2. **Energy Release**: As $s \to 0$, trapped wave energy releases as pulse
+   - Constructive interference with parent thought = successful return
+   - Dissipation as heat = forgetting
+3. **Pruning**: Low-resonance patterns ($r < 0.3$) marked for immediate reclamation by SoACompactor
+
+### Implementation: InnerMonologueController
+
+```cpp
+struct RecursionState {
+    int depth;
+    float cumulative_energy_cost;
+    std::vector<size_t> trajectory_hashes;  // 128-bit Morton codes
+    float initial_entropy;
+};
+
+class InnerMonologueController {
+    // Constants derived from thermodynamic limits
+    const int HARD_DEPTH_LIMIT = 12;
+    const float ENTROPY_THRESHOLD = 0.85f;
+    const float ENTROPY_GRADIENT_LIMIT = 0.05f;
+
+public:
+    bool can_recurse(const RecursionState& state, float current_atp) {
+        // 1. Hard Depth Check (Mamba-9D Context Horizon)
+        if (state.depth >= HARD_DEPTH_LIMIT) {
+            log_event("Recursion Limit: Hard Cap Reached");
+            return false;
+        }
+
+        // 2. Metabolic Cost Check (Exponential Tax)
+        // Cost = Base * 1.15^depth
+        float next_step_cost = PHYSICS_CONSTANTS.BASE_COST *
+                               std::pow(1.15f, state.depth);
+
+        // Ensure reserve is maintained
+        if (current_atp < (PHYSICS_CONSTANTS.MIN_RESERVE + next_step_cost)) {
+            neurochemistry.trigger_fatigue();
+            return false;
+        }
+
+        // 3. Loop Detection (Closed Geodesic Check)
+        size_t current_hash = compute_spatial_hash(current_wave_centroid);
+        for (auto h : state.trajectory_hashes) {
+            if (h == current_hash) {
+                // Circular reasoning detected
+                // Verify metric contraction to confirm gravity well
+                if (metric_tensor.trace(current_hash) <
+                    metric_tensor.trace_history(h)) {
+                    neurochemistry.spike_boredom(0.2f);
+                    teleological_deadlock_resolver.activate();
+                    return false;
+                }
+            }
+        }
+
+        return true;
+    }
+
+    void terminate_branch(const char* reason) {
+        // Release refractive traps (allow s -> 0)
+        memory_system.release_stack_frames();
+        // Log for introspection via Shadow Spine
+        logger.log_event("Recursion Terminated", reason);
+    }
+};
+```
+
+### Performance Characteristics
+
+- **Typical Depth**: 3-5 levels (Chain-of-Thought standard tasks)
+- **Soft Limit**: 7 levels (Miller's Law alignment, thermodynamic optimum)
+- **Hard Limit**: 12 levels (Context horizon, phase coherence floor)
+- **Memory Overhead**: 65 KB per active trap, ~9 traps max
+- **Frame Time Impact**: <1ms per trap cluster (maintains 1000 Hz physics budget)
+- **Coherence Detection**: O(1) spectral entropy computation per step
+- **Loop Detection**: O(d) Morton hash comparison per step
+
+### Integration Points
+
+1. **Neurochemistry**: Fatigue, Boredom spike triggers
+2. **Memory System**: Refractive Trap allocation/deallocation (SHVO)
+3. **Physics Engine**: Metric tensor trace monitoring, Christoffel recomputation
+4. **Logger**: Shadow Spine introspection events
+5. **Curiosity System**: Goal generation on Confusion Interrupt
+
+### Cross-References
+
+- [Dynamic Refractive Trapping](./03_neuroplastic_transformer.md) - Section 5.4
+- [Mamba-9D Context Window](./02_mamba_9d_ssm.md)
+- [Metabolic Budget System](../05_autonomous_systems/01_computational_neurochemistry.md)
+- [Sparse Hyper-Voxel Octree](./04_memory_data_systems.md)
+- [Hebbian-Riemannian Plasticity](../02_foundations/02_wave_interference_physics.md)
+
+---
+
 
 ---
 

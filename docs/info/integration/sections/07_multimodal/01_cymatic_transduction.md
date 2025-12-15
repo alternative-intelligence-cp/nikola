@@ -828,6 +828,171 @@ The measured performance improvements (96% accuracy, 0.91 coherence) validate th
 
 ---
 
+## GAP-017: Cymatic Transduction Sampling Rate Specification
+
+**SOURCE**: Gemini Deep Research Round 2, Batch 16-18
+**INTEGRATION DATE**: December 15, 2025
+**GAP ID**: GAP-017 (TASK-017)
+**PRIORITY**: CRITICAL
+**STATUS**: FABRICATION-READY SPECIFICATION
+
+### Problem Statement
+
+The Cymatic Audio Transduction system must bridge external acoustic reality with Nikola's internal wave physics. Unlike standard DSP optimized for human hearing (20Hz–20kHz perceptual fidelity), Nikola requires **Physical Coupling** with 8 Golden Ratio harmonic emitters while maintaining **<10ms latency** for real-time cognitive response.
+
+### Emitter Frequency Specification
+
+8 emitters derived from Golden Ratio ($\phi \approx 1.618$) for ergodicity (prevents resonance lock-in):
+
+| Emitter | Formula | Frequency (Hz) | Cognitive Band | Function |
+|---------|---------|----------------|----------------|----------|
+| E1 | $\pi \cdot \phi^1$ | 5.083 | Delta | Metacognitive Timing |
+| E2 | $\pi \cdot \phi^2$ | 8.225 | Theta | Working Memory |
+| E3 | $\pi \cdot \phi^3$ | 13.308 | Alpha | Idle State / Relaxed Focus |
+| E4 | $\pi \cdot \phi^4$ | 21.532 | Beta | Active Processing |
+| E5 | $\pi \cdot \phi^5$ | 34.840 | Gamma (Low) | Feature Binding |
+| E6 | $\pi \cdot \phi^6$ | 56.371 | Gamma (High) | Memory Retrieval |
+| E7 | $\pi \cdot \phi^7$ | 91.209 | Ripple | Sharp Wave Ripples |
+| E8 | $\pi \cdot \phi^8$ | 147.576 | Fast Ripple | Error Correction / Precision |
+
+**Critical Requirement**: Signal processing must isolate energy at these specific frequencies. Energy outside these bands = entropy that destabilizes grid.
+
+### Sampling Rate Calculation
+
+#### Physics Engine Constraint
+
+Physics engine operates at **1ms timestep** (1000 Hz tick rate). Grid Nyquist limit:
+
+$$F_{Nyquist\_Grid} = \frac{F_{Physics}}{2} = \frac{1000 \text{ Hz}}{2} = 500 \text{ Hz}$$
+
+Direct injection of 48kHz audio into 1kHz simulation causes massive aliasing - high-frequency noise (e.g., 20kHz) folds into cognitive bands causing hallucinations.
+
+#### Multi-Rate Solution
+
+Distinguish between **Capture Rate** and **Injection Rate**:
+
+1. **Capture Rate**: **48,000 Hz** (hardware native)
+   - Necessary to push analog anti-aliasing filter of ADC far above cognitive bands
+   - Preserves phase linearity in low frequencies
+
+2. **Injection Rate**: **1,000 Hz** (locked to physics clock)
+   - Signal decimated to match physics tick
+
+**Minimum Sampling Rate Validation**:
+- Highest frequency of interest: E8 = 147.58 Hz
+- Nyquist requirement: $F_s > 2 \cdot 147.58 \approx 295 \text{ Hz}$
+- Target: Capture 3rd harmonic of E8: $3 \cdot 147.58 = 442.7 \text{ Hz}$
+- **1000 Hz injection rate supports this**: $500 \text{ Hz} > 442.7 \text{ Hz}$ ✓
+
+**Optimal Specification**:
+- Hardware Sampling: **48 kHz**
+- Decimation Factor: **48**
+- Target Rate: **1000 Hz** (Locked to Physics Tick)
+
+### Anti-Aliasing Filter Specifications
+
+Downsampling from 48kHz to 1kHz requires high-order low-pass filter with **Linear Phase**. Non-linear phase filters (IIR Butterworth) introduce frequency-dependent delays that destroy semantic information encoded in relative phase between E1 (5 Hz) and E8 (147 Hz).
+
+**Filter Requirements**:
+- **Topology**: Finite Impulse Response (FIR) Equiripple
+- **Passband**: 0 Hz – 150 Hz (Flat response for all emitters)
+- **Transition Band**: 150 Hz – 450 Hz
+- **Stopband**: > 450 Hz (Attenuation start before 500 Hz Nyquist)
+- **Attenuation**: **-60 dB**
+  - Required to prevent high-amplitude noise from aliasing into Balanced Nonary range ([-4, +4])
+  - Even small aliased signals could flip trit values
+
+### Buffer Sizing and Latency Analysis
+
+**Latency Budget Breakdown** (Target: <10ms):
+
+1. **Hardware Buffer** (ALSA/WASAPI): 128 samples @ 48kHz
+   - $T_{hw} = 128 / 48000 \approx 2.66 \text{ ms}$
+
+2. **Filter Group Delay**: Linear Phase FIR
+   - Delay = $N/2$ samples
+   - For -60dB attenuation with 300Hz transition (150-450): $N \approx 300$ taps
+   - $T_{filter} = 150 \text{ samples} / 48000 \text{ Hz} \approx 3.12 \text{ ms}$
+
+3. **Processing & Injection**: FFT and mapping
+   - $T_{proc} \approx 0.5 \text{ ms}$
+
+4. **Physics Tick Window**: 1ms quanta
+   - $T_{tick} = 1.0 \text{ ms}$
+
+**Total System Latency**:
+
+$$T_{total} = 2.66 + 3.12 + 0.5 + 1.0 = \mathbf{7.28 \text{ ms}}$$
+
+**✓ Meets <10ms requirement**
+
+### Dual-Path Architecture
+
+Resolves conflict between <10ms real-time requirement and 50ms Isochronous Sensory Buffer:
+
+1. **Direct Injection Path** (<10ms):
+   - Used for Cymatic Transduction
+   - Audio modulates emitters immediately after filtering
+   - Physics engine reacts to sound in real-time (reflexive attention)
+   - Accepts occasional jitter
+
+2. **Isochronous Path** (50ms):
+   - Used for Multimodal Binding (e.g., associating sound with video)
+   - Delayed to match video latency
+   - Ensures perfect phase alignment across modalities
+
+### Frequency Response Validation
+
+**Sliding Discrete Fourier Transform (S-DFT)** centered on 8 emitter frequencies:
+
+For each Emitter $n$ ($n \in 1..8$) with target frequency $f_n$:
+
+$$A_n(t) = \left| \sum_{k=0}^{W-1} x(t-k) \cdot e^{-j \frac{2\pi f_n k}{F_{injection}}} \right|$$
+
+**Parameters**:
+- Window ($W$): 48 samples (1ms @ 48kHz capture, instantaneous for physics engine)
+
+**Validation Tests**:
+1. Inject pure sine wave at $f_n$
+   - Verify: Emitter $n$ output $A_n \approx 1.0$
+   - Verify: All other emitters $A_{m \neq n} < 0.01$ (-40dB crosstalk)
+
+2. Inject White Noise
+   - Verify: Total energy injected is bounded
+   - Verify: Does not trigger "Soft SCRAM" protection
+
+**Implementation Optimization**: AudioResonanceEngine utilizes **SIMD-accelerated Goertzel algorithms** for 8 specific frequencies (rather than full FFT), reducing computational overhead to microseconds and ensuring 1ms budget is met.
+
+### Performance Characteristics
+
+- **Capture Resolution**: 48 kHz (hardware native, phase-linear ADC filtering)
+- **Injection Resolution**: 1000 Hz (physics-locked, deterministic)
+- **Decimation Ratio**: 48:1
+- **Filter**: 300-tap FIR Equiripple, Linear Phase
+- **Total Latency**: 7.28 ms (<10ms requirement ✓)
+- **Frequency Coverage**: E1-E8 (5.083 Hz – 147.576 Hz) + 3rd harmonics
+- **Attenuation**: -60 dB @ 450 Hz (prevents nonary logic corruption)
+- **Crosstalk**: <-40 dB between emitters
+- **Computational Cost**: <1 ms per physics tick (Goertzel SIMD)
+
+### Integration Points
+
+1. **Physics Engine**: 1000 Hz tick synchronization
+2. **Emitter Array**: 8 Golden Ratio frequency modulators (E1-E8)
+3. **Isochronous Buffer**: 50ms multimodal synchronization path
+4. **SCRAM Protection**: Energy overflow detection
+5. **Balanced Nonary Logic**: Trit quantization ([-4, +4] range protection)
+
+### Cross-References
+
+- [Audio Resonance Engine](./01_cymatic_transduction.md) - Section 24.1
+- [Isochronous Sensory Buffer](./01_cymatic_transduction.md) - Section 11
+- [Golden Ratio Emitters](./01_cymatic_transduction.md) - Section 4
+- [UFIE Physics Engine](../02_foundations/01_unified_field.md)
+- [Balanced Nonary Logic](../02_foundations/03_balanced_nonary_logic.md)
+
+---
+
 **Cross-References:**
 - See Section 24.1 for Audio Resonance Engine details
 - See Section 24.2 for Visual Cymatics Engine details
