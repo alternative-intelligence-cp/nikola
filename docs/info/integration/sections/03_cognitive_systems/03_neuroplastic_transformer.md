@@ -2192,6 +2192,97 @@ This validates the metabolic capacity constraints.
    * As $N$ exceeds 9, the Metabolic Controller should trigger prune_weakest_trap().
    * The oldest/weakest tokens should vanish.
    * $E_{sys}$ should plateau, not explode.
+
+---
+
+### GAP-011 RESOLUTION: Mamba-9D ↔ Transformer Covariant State Synchronization
+
+**SOURCE**: Gemini Deep Research - Round 2, Tasks 10-12 (December 14, 2025)
+**INTEGRATION DATE**: December 15, 2025
+**GAP ID**: GAP-011 (CRITICAL PRIORITY)
+**STATUS**: SPECIFICATION COMPLETE
+
+#### The Cognitive Duality Problem
+
+The bicameral architecture creates a fundamental challenge:
+- **Mamba-9D SSM**: Sequential scanning with hidden state $h_t$ (stream of consciousness)
+- **Neuroplastic Transformer**: Global attention driving metric tensor updates (insight/epiphany)
+
+**Failure Mode ("Waking Amnesia")**: When Transformer rewires the brain (changes $g_{ij}$), Mamba's state vector $h_t$ becomes invalid—it points in a direction that no longer exists in the deformed geometry.
+
+#### Covariant State Transport (COG-03)
+
+Preserve information content via invariant norm preservation:
+
+$$||h_{new}||_{g_{new}} = ||h_{old}||_{g_{old}}$$
+
+**Solution via Cholesky Decomposition Frames**:
+
+Since metric tensors are SPD: $g = LL^T$ where $L$ is the "frame field"
+
+**Transport Operator**:
+1. Decompose: $g_{old} = L_{old}L_{old}^T$, $g_{new} = L_{new}L_{new}^T$
+2. Pull back to flat space: $v_{flat} = L_{old}^T h_{old}$
+3. Push forward to new geometry: $h_{new} = L_{new}^{-T} v_{flat}$
+
+Combined transport operator:
+$$T = L_{new}^{-T} L_{old}^T$$
+$$h_{new} = T h_{old}$$
+
+#### Triple-Buffered Synchronization Protocol
+
+**Memory Buffers**:
+- $G_{active}$: Read-only for Mamba (current scan)
+- $G_{shadow}$: Write-target for Transformer (plasticity updates)
+- $G_{transfer}$: Staging area for atomic swaps
+
+**Synchronization Sequence**:
+1. Mamba scans using $G_{active}$
+2. Transformer computes updates on $G_{shadow}$
+3. **Barrier** (<50μs micro-pause):
+   - Atomic pointer swap: `std::atomic<float*>::exchange`
+   - Apply transport: $h_{new} = T h_{old}$
+   - Mamba resumes with updated geometry
+
+#### Structure-of-Arrays (SoA) Layout
+
+```cpp
+struct TorusGridSoA {
+    alignas(64) float* wavefunction_real;  // Fast: Mamba reads
+    alignas(64) float* wavefunction_imag;
+    alignas(64) std::array<float*, 45> metric_tensor;  // Slow: Transformer writes
+    alignas(64) float* resonance_r;
+    alignas(64) float* state_s;
+};
+```
+
+**Benefits**: Eliminates cache thrashing (Mamba/Transformer access different fields at different rates)
+
+**Implementation**:
+```cpp
+namespace nikola::sync {
+    void transport_mamba_state(
+        VectorXd& h_old,
+        const Matrix9d& g_old,
+        const Matrix9d& g_new
+    ) {
+        // Cholesky decomposition
+        auto L_old = g_old.llt().matrixL();
+        auto L_new = g_new.llt().matrixL();
+
+        // Transport operator: T = L_new^{-T} * L_old^T
+        auto T = L_new.transpose().inverse() * L_old.transpose();
+
+        // Apply transport
+        h_old = T * h_old;
+    }
+}
+```
+
+**Performance**: Micro-pause <50μs maintains 1kHz physics budget
+
+---
+
 ________________
 8. Conclusion
 The specification provided herein resolves the "Working memory concept undefined" issue by implementing Dynamic Refractive Trapping (DRT). This architecture:

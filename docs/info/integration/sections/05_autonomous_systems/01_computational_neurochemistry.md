@@ -532,6 +532,94 @@ Neurochemical
 	Goal Generation
 	$\alpha(1 - \tanh(k \cdot H(\Psi)))$
 	Drive for Information
+
+---
+
+### GAP-012 RESOLUTION: Metabolic Cost Calibration via Hardware Benchmarking
+
+**SOURCE**: Gemini Deep Research - Round 2, Tasks 10-12 (December 14, 2025)
+**INTEGRATION DATE**: December 15, 2025
+**GAP ID**: GAP-012 (CRITICAL PRIORITY)
+**STATUS**: SPECIFICATION COMPLETE
+
+#### Grounding Virtual Physiology in Physical Hardware
+
+The Extended Neurochemical Gating System (ENGS) uses a simulated ATP budget to constrain autonomous behavior. However, "1.0 ATP" is meaningless without calibration to actual hardware performance. The system must automatically derive Nikola Metabolic Units (NMUs) from measured FLOPS and memory bandwidth.
+
+#### Benchmark Suite Methodology
+
+**Three-Component Hardware Characterization**:
+
+1. **FLOPS Benchmark**: AVX-512 nonary addition loop ($10^9$ ops)
+   - Measures peak computational throughput
+
+2. **Bandwidth Benchmark**: Sequential 1GB memcpy
+   - Measures DDR5/HBM memory throughput (GB/s)
+
+3. **Latency Benchmark**: Host↔Device round-trip
+   - Measures PCIe/cudaMemcpy latency (μs)
+
+**Normalization Formula**:
+$$\text{Base NMU} = (\text{FLOPS} \times 10^{-12}) + (\text{BW}_{GB/s} \times 10^{-3})$$
+
+This anchors "1.0 NMU" to the cost of 1ms identity maintenance.
+
+#### Operation Cost Taxonomy
+
+| Operation | Base Cost | Biological Analog | Hardware Justification |
+|-----------|-----------|-------------------|------------------------|
+| Wave Propagation | 0.1 NMU/step | Maintaining consciousness | Laplacian computation (compute-bound) |
+| Neuroplasticity | 1.5 NMU/update | Synaptic growth | Cholesky updates (memory-bound) |
+| External Tool | 5.0 NMU/action | Physical motion | Context switching + I/O latency |
+
+#### Dynamic Cost Adjustment
+
+**Thermal Coupling**:
+$$M(T) = 1 + \max\left(0, \left(\frac{T_{gpu} - T_{target}}{T_{crit} - T_{target}}\right)^2\right)$$
+
+As GPU approaches thermal limit ($T_{crit} \approx 85°C$), cost multiplier rises exponentially → forces "Nap" state.
+
+**Neurochemical Modulation**:
+- **Norepinephrine**: $C_{eff} = C_{raw} / (1 + N_t)$ → Lower cost during stress (enables "sprint")
+- **Serotonin**: Higher cost for impulsive actions → Promotes stable focus
+
+#### Implementation: MetabolicCalibrator
+
+```cpp
+class MetabolicCalibrator {
+    struct HardwareStats {
+        double peak_flops;
+        double memory_bandwidth_gbs;
+        double pcie_latency_us;
+    };
+
+    HardwareStats run_bootstrap_benchmark() {
+        // 1. FLOPS: AVX-512 nonary ops
+        // 2. Bandwidth: 1GB sequential write
+        // 3. Latency: Host↔Device ping
+        return stats;
+    }
+
+public:
+    void calibrate(MetabolicController& controller) {
+        auto hw = run_bootstrap_benchmark();
+
+        // Normalize 1.0 NMU to 1ms identity cost
+        float base_nmu = (hw.peak_flops * 1e-12) + (hw.memory_bandwidth_gbs * 1e-3);
+
+        controller.set_constants({
+            .propagation = base_nmu * 0.1f,  // Thinking
+            .plasticity  = base_nmu * 1.5f,  // Learning
+            .tool_usage  = base_nmu * 5.0f   // Acting
+        });
+    }
+};
+```
+
+**Self-Regulation Property**: Agent on embedded device (low FLOPS) naturally "thinks slower" and "sleeps more" than one on H100 cluster—no manual tuning required.
+
+---
+
 	The implementation of these structures within the src/autonomy/ directory is now the primary objective for the Engineering Team in Phase 3.
 Status: APPROVED FOR IMMEDIATE IMPLEMENTATION.
 Works cited
