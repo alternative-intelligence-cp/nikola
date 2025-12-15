@@ -1,0 +1,25 @@
+{
+  "task_id": "bug_sweep_008_engs",
+  "title": "ENGS Computational Neurochemistry Complete Specification",
+  "created": "2025-12-11T12:28:11.239484",
+  "priority": "medium",
+  "status": "pending",
+  "problem_statement": "\nThe ENGS (dopamine/reward system) needs detailed mathematical specification:\n\n1. Neurochemical formulas not fully defined\n2. Reward calculation algorithms incomplete\n3. Curiosity metric undefined\n4. Boredom detection mechanism missing\n\nThis prevents implementing autonomous motivation and learning systems.\n",
+  "deliverables": [
+    "Complete neurochemical formulas with biological basis",
+    "Reward, curiosity, and boredom calculation algorithms",
+    "Integration strategy with training systems"
+  ],
+  "relevant_files": [
+    {
+      "file": "part_1_of_9.txt",
+      "description": "Section 5.1 - Computational Neurochemistry (ENGS)"
+    },
+    {
+      "file": "part_5_of_9.txt",
+      "description": "ENGS implementation details"
+    }
+  ],
+  "context": "",
+  "notes": []
+}

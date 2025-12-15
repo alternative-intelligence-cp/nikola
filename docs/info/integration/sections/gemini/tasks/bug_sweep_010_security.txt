@@ -1,0 +1,62 @@
+# RESEARCH TASK: Security System Complete Implementation
+
+**Task ID:** bug_sweep_010_security
+**Priority:** HIGH
+**Status:** PENDING
+**Created:** 2025-12-11 12:28
+
+---
+
+## PROBLEM STATEMENT
+
+
+The security system needs comprehensive specification:
+
+1. Threat detection algorithms undefined
+2. Input validation strategies incomplete
+3. Permission check mechanisms not specified
+4. Audit logging format missing
+
+This is critical for safe deployment.
+
+
+---
+
+## DELIVERABLES
+
+1. Threat detection and prevention algorithms
+2. Input validation framework with examples
+3. Audit logging specification and permission model
+
+---
+
+## RELEVANT PLAN SECTIONS
+
+- **part_1_of_9.txt**: Section 5.5 - Security Systems
+- **part_5_of_9.txt**: Security implementation details
+
+---
+
+## INSTRUCTIONS FOR GEMINI
+
+Please provide detailed research and analysis for each deliverable listed above. 
+Reference the relevant plan sections provided to ensure consistency with the 
+overall architecture. If you find gaps or inconsistencies in the plan sections, 
+please note them in your response.
+
+**IMPORTANT - HOW TO FIND SECTIONS:** 
+- Each compilation file has clear section markers like:
+  ================================================================================
+  SECTION X.Y: Component Name
+  ================================================================================
+- Use text search (Ctrl+F) for keywords instead of section numbers
+- The files have internal numbering that differs from the TOC - IGNORE internal numbers
+- Search for concepts like "Wave Interference", "Mamba", "ZeroMQ", etc.
+- All relevant content is in the files listed above
+
+**DELIVERABLES:**
+- Focus on providing concrete, implementable solutions
+- Include code snippets, formulas, or specifications where applicable
+- Flag any assumptions you need to make
+- If you can't find something, note what's missing rather than making assumptions
+

@@ -1,0 +1,63 @@
+# RESEARCH TASK: ZeroMQ Spine Complete Protocol Specification
+
+**Task ID:** bug_sweep_006_zeromq
+**Priority:** HIGH
+**Status:** PENDING
+**Created:** 2025-12-11 12:28
+
+---
+
+## PROBLEM STATEMENT
+
+
+The ZeroMQ spine architecture lacks implementation details:
+
+1. Message protocol format undefined
+2. Connection management strategy incomplete
+3. Routing logic not fully specified
+4. Error handling mechanisms missing
+
+This prevents implementing inter-component communication.
+
+
+---
+
+## DELIVERABLES
+
+1. Complete message protocol specification with schema definitions
+2. Connection management and routing algorithms with failure handling
+3. Error recovery strategies and retry policies
+
+---
+
+## RELEVANT PLAN SECTIONS
+
+- **part_1_of_9.txt**: Section 4.1 - ZeroMQ Spine Architecture
+- **part_2_of_9.txt**: ZeroMQ implementation details
+- **part_9_of_9.txt**: Protocol specifications
+
+---
+
+## INSTRUCTIONS FOR GEMINI
+
+Please provide detailed research and analysis for each deliverable listed above. 
+Reference the relevant plan sections provided to ensure consistency with the 
+overall architecture. If you find gaps or inconsistencies in the plan sections, 
+please note them in your response.
+
+**IMPORTANT - HOW TO FIND SECTIONS:** 
+- Each compilation file has clear section markers like:
+  ================================================================================
+  SECTION X.Y: Component Name
+  ================================================================================
+- Use text search (Ctrl+F) for keywords instead of section numbers
+- The files have internal numbering that differs from the TOC - IGNORE internal numbers
+- Search for concepts like "Wave Interference", "Mamba", "ZeroMQ", etc.
+- All relevant content is in the files listed above
+
+**DELIVERABLES:**
+- Focus on providing concrete, implementable solutions
+- Include code snippets, formulas, or specifications where applicable
+- Flag any assumptions you need to make
+- If you can't find something, note what's missing rather than making assumptions
+

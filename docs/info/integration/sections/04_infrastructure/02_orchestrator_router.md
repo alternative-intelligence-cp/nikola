@@ -1933,3 +1933,39 @@ Self-Improvement Engine (Section 17)
 - See Section 17.3.2 for Physics Oracle verification
 - See Section 10 for ZeroMQ Spine architecture
 - See Section 11.5 for Logging and Observability
+
+---
+
+## AUDIT #21 Section 7: Orchestrator State Machine Specification
+
+**Classification**: Implementation Specification  
+**Domain**: System Orchestration / Control Flow  
+**Audit Cycle**: #21 (Final Engineering Specification)  
+**Status**: READY FOR IMPLEMENTATION
+
+### Hierarchical State Machine
+
+| State | Triggers | Actions | Next State |
+|-------|----------|---------|------------|
+| BOOT | Power On | Load nikola.conf, Init ZeroMQ, Run Manifold Seeder | IDLE / ERROR |
+| IDLE | NeuralSpike Rx | Check Priority Queue | PROCESSING |
+| PROCESSING | - | → EMBED | INJECT |
+| EMBED | NonaryEmbedder::embed() | Process input | INJECT |
+| INJECT | Torus::inject_wave() | Inject to grid | PROPAGATE |
+| PROPAGATE | Physics::step(100) | Run physics | RESONATE |
+| RESONATE | Mamba::scan() | Generate response | GENERATE |
+| GENERATE | Emit Response | Send output | IDLE |
+| NAP | ATP < 15% | Pause I/O, DreamWeave, Flush DMC | IDLE |
+| SHUTDOWN | SIGTERM | Save Checkpoint, Kill KVMs | OFF |
+
+### Async Priority Architecture
+
+**Dual-Socket Design**:
+- **Control Plane**: `ipc://.../ control` (High Priority) - Pause, Resume, Shutdown
+- **Data Plane**: `ipc://.../data` (Low Priority) - User queries
+
+Prevents priority inversion where shutdown waits behind 10k thought loops.
+
+**Status**: IMPLEMENTATION SPECIFICATION COMPLETE  
+**Cross-References**: ZeroMQ Spine (Section 9), Physics Loop (Section 2)
+

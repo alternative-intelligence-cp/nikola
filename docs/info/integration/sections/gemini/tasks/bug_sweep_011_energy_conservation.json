@@ -1,0 +1,21 @@
+{
+  "task_id": "bug_sweep_011_energy_conservation",
+  "title": "Physics Oracle Energy Conservation Implementation",
+  "created": "2025-12-11T12:28:11.240297",
+  "priority": "critical",
+  "status": "pending",
+  "problem_statement": "\nLine 5038 in part_1 identifies a critical bug with false-positive SCRAM resets:\n\nThe naive Physics Oracle detects missing energy as a violation of conservation \nlaws (energy destruction) and triggers false-positive SCRAM resets, interrupting \nthe AI's thought process.\n\nThis needs a proper energy accounting system.\n",
+  "deliverables": [
+    "Complete energy conservation tracking algorithm",
+    "False-positive detection and filtering mechanism",
+    "SCRAM reset policy with appropriate thresholds"
+  ],
+  "relevant_files": [
+    {
+      "file": "part_1_of_9.txt",
+      "description": "Lines around 5038 - Physics Oracle issues"
+    }
+  ],
+  "context": "",
+  "notes": []
+}

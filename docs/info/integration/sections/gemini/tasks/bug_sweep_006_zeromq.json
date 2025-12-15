@@ -1,0 +1,29 @@
+{
+  "task_id": "bug_sweep_006_zeromq",
+  "title": "ZeroMQ Spine Complete Protocol Specification",
+  "created": "2025-12-11T12:28:11.238926",
+  "priority": "high",
+  "status": "pending",
+  "problem_statement": "\nThe ZeroMQ spine architecture lacks implementation details:\n\n1. Message protocol format undefined\n2. Connection management strategy incomplete\n3. Routing logic not fully specified\n4. Error handling mechanisms missing\n\nThis prevents implementing inter-component communication.\n",
+  "deliverables": [
+    "Complete message protocol specification with schema definitions",
+    "Connection management and routing algorithms with failure handling",
+    "Error recovery strategies and retry policies"
+  ],
+  "relevant_files": [
+    {
+      "file": "part_1_of_9.txt",
+      "description": "Section 4.1 - ZeroMQ Spine Architecture"
+    },
+    {
+      "file": "part_2_of_9.txt",
+      "description": "ZeroMQ implementation details"
+    },
+    {
+      "file": "part_9_of_9.txt",
+      "description": "Protocol specifications"
+    }
+  ],
+  "context": "",
+  "notes": []
+}

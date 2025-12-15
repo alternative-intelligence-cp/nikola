@@ -1,0 +1,402 @@
+﻿9D Toroidal Geometry Complete Mathematical Specification: A Foundational Analysis of the Nikola Model v0.0.4
+1. Introduction: The Geometric Basis of Resonant Intelligence
+1.1 The Architectural Paradigm Shift
+The Nikola Model v0.0.4 represents a distinct divergence from contemporary connectionist architectures. While the prevailing paradigm in Large Language Models (LLMs) relies on high-dimensional vector spaces manipulated via static matrix multiplication, the Nikola architecture posits that true general intelligence requires a dynamic, continuous substrate capable of sustaining wave interference patterns. This substrate is not merely a passive container for data but an active participant in the computational process, governed by the Unified Field Interference Equation (UFIE).
+To support this physics-based approach, the underlying geometry cannot be a flat Euclidean space ($\mathbb{R}^n$). Euclidean spaces suffer from boundary conditions that dissipate energy (information) and "curse of dimensionality" issues that render distance metrics meaningless as dimensions increase. Instead, the Nikola Model mandates a compact, boundary-less manifold: a 9-dimensional torus ($T^9$).
+This document serves as the definitive mathematical specification for this geometry. It bridges the gap between abstract topological definitions and concrete C++23 implementation, detailing the coordinate systems, transformation matrices, and traversal logic required to instantiate the "mind" of the Nikola system.
+1.2 The Necessity of Toroidal Topology
+The choice of a toroidal topology $T^9 = S^1 \times S^1 \times \dots \times S^1$ is driven by thermodynamic and information-theoretic constraints critical to long-running autonomous agents.
+1. Energy Conservation and Recurrence: In a finite Euclidean grid, waves propagating outward eventually hit a boundary. Depending on the boundary condition (Dirichlet or Neumann), the information carried by the wave is either reflected (creating standing wave noise) or absorbed (destroyed). A torus possesses periodic boundary conditions in all dimensions. A wave packet encoding a specific memory or concept can propagate indefinitely, wrapping around the manifold. This property allows for information recycling, where weak signals (long-term memories) can be re-amplified via constructive interference with new inputs, a physical analog to associative recall.1
+2. Homogeneity: The torus is a homogeneous manifold; every point is geometrically indistinguishable from every other point. There is no "center" and no "edge." This eliminates the bias found in bounded grids where nodes at the center have more neighbors than nodes at the periphery. In the Nikola architecture, every concept-node has an identical topological neighborhood, ensuring uniform processing physics regardless of the data's semantic location.
+3. Compactness: The compactness of $T^9$ ensures that the phase space volume is finite. This is essential for the application of ergodic theory, specifically the requirement that the system's trajectory eventually explores all possible states. The emitter frequencies are tuned to the Golden Ratio ($\phi$) specifically to generate ergodic trajectories on this compact manifold, preventing resonance lock-in (hallucinations).1
+1.3 Scope of Specification
+This specification addresses the four critical implementation gaps identified in Task bug_sweep_002_9d_geometry:
+1. Dimension Mapping: Formal definitions of the 9 dimensions and their mapping to physical memory.
+2. Coordinate Transformations: Algorithms for converting between semantic embeddings, continuous manifold coordinates, and discrete storage indices.
+3. Spatial Matrices: The definitions of the metric tensor $g_{ij}$ and global transformation matrices.
+4. Traversal Logic: The "Causal-Foliated Hilbert Scan" algorithm required to linearize the multi-dimensional space for the Mamba-9D cognitive core.
+________________
+2. The 9-Dimensional Coordinate System
+The coordinate system of the Nikola Model is a hybrid construction, utilizing continuous coordinates for physics calculations and discrete integer coordinates for memory addressing. The space is defined as the Cartesian product of nine sub-manifolds, each playing a specific role in the cognitive physics.
+2.1 Dimensional Semantics and Anisotropy
+Unlike a standard hypercube where all dimensions are spatial and interchangeable, the Nikola $T^9$ is highly anisotropic. The dimensions are categorized into four groups: Systemic, Temporal, Quantum, and Spatial.
+Index (μ)
+	Symbol
+	Category
+	Domain (Normalized)
+	Domain (Physical)
+	Implementation Type
+	0
+	$r$
+	Systemic
+	$$.
+	
+
+	
+
+	* State ($s$): Controls the local refractive index $n(x)$ and thus the wave propagation velocity.
+   * $v_{phase} = c_0 / (1 + s)$.
+   * High $s$ creates a "dense" medium, slowing down information propagation. This physically implements "attention" or "focus" by allowing more time for wave interference interactions in specific semantic regions.1
+2.1.2 Temporal Dimension ($t$)
+While time flows globally for the simulation step, the $t$ dimension in the manifold represents the temporal index of a memory. Because the manifold is toroidal, time is cyclic.
+* Topology: A circle $S^1$.
+* Causality: To prevent causality violations (future affecting past) in a cyclic buffer, the read/write heads must respect a "Causal Horizon." The traversal algorithms (Section 4) specifically account for this by foliating the manifold along $t$.
+2.1.3 Quantum Dimensions ($u, v, w$)
+These dimensions are reserved for the vector components of the wavefunction $\Psi$. In the "Holographic" encoding scheme, these dimensions provide the degrees of freedom for superposition.
+* Interpretation: They form a 3D complex vector space attached to each spatial point, akin to a fiber bundle.
+* Noise Injection: The Dream-Weave system utilizes $u, v, w$ as the primary channels for stochastic Langevin noise injection during consolidation cycles, allowing the system to explore counterfactual states without disrupting the structural stability of the spatial dimensions ($x, y, z$).1
+2.1.4 Spatial Dimensions ($x, y, z$)
+These correspond to the standard 3D lattice used for semantic addressing.
+* Resolution: Typically $64^3$ or $128^3$ in the Sparse Hyper-Voxel Octree (SHVO).
+* Locality: Semantic closeness is mapped to Euclidean distance in these dimensions.
+2.2 Discrete Coordinate Encoding
+For efficient memory access and storage in the Structure-of-Arrays (SoA) layout 1, the continuous coordinates are discretized.
+2.2.1 Balanced Nonary Encoding
+The system standard mandates "Balanced Nonary" logic.1 While the hardware (CPU/GPU) is binary, the logical interpretation of values adheres to base-9 centered around zero: $\{-4, -3, -2, -1, 0, 1, 2, 3, 4\}$.
+However, for coordinate addressing (indices), we utilize standard unsigned integers to interface with memory controllers, while applying balanced nonary logic to the values stored at those coordinates.
+2.2.2 The Coord9D Structure
+The fundamental C++ type for addressing a point in the manifold is defined as follows. Note that the bit-width per dimension is variable based on the resolution requirements of that specific dimension group.
+
+
+C++
+
+
+
+
+struct Coord9D {
+   // Systemic (Low resolution sufficient for parameter tuning)
+   uint32_t r : 4; // 16 levels
+   uint32_t s : 4; // 16 levels
+   
+   // Temporal (High resolution for sequence depth)
+   uint32_t t : 14; // 16384 timesteps (cyclic buffer)
+   
+   // Quantum (Medium resolution for amplitude bins)
+   uint32_t u : 8; 
+   uint32_t v : 8;
+   uint32_t w : 8;
+   
+   // Spatial (High resolution for semantic capacity)
+   uint32_t x : 14; // 16384 grid points
+   uint32_t y : 14; 
+   uint32_t z : 14; 
+   
+   // Helper to convert to normalized float 
+   std::array<float, 9> to_normalized() const {
+       return {
+           static_cast<float>(r) / 15.0f,
+           static_cast<float>(s) / 15.0f,
+           static_cast<float>(t) / 16383.0f,
+           //... etc
+       };
+   }
+};
+
+Total Bits: $4+4+14+8+8+8+14+14+14 = 88$ bits. This fits comfortably within a uint128_t (128-bit integer), leaving 40 bits for metadata or flags (e.g., active state, dirty bit).
+2.3 Boundary Condition Mathematics
+The toroidal topology requires that all coordinate operations are performed modulo the dimension size.
+Let $N_\mu$ be the size of dimension $\mu$. For any coordinate update $x^\mu \to x^\mu + \delta$:
+
+
+
+
+$$x^\mu_{new} = (x^\mu + \delta) \pmod{N_\mu}$$
+Handling Negative Offsets:
+In C++, the % operator can return negative values for negative operands. The rigorous toroidal wrap function is:
+
+
+C++
+
+
+
+
+inline int wrap(int k, int N) {
+   int r = k % N;
+   return r < 0? r + N : r;
+}
+
+This ensures that moving "left" from index 0 correctly wraps to index $N-1$, topologically gluing the faces of the hypercube.
+________________
+3. Transformation Matrices and Algorithms
+The geometric engine requires three classes of transformations:
+1. Injection: Mapping external high-dimensional data (text/image embeddings) onto the 9D manifold.
+2. Plasticity: Deforming the manifold itself via the metric tensor to encode learning.
+3. Global: Rigid body rotations for scanning and perspective shifting.
+3.1 Injection: The Projective Locality Mapper (SEM-01)
+The problem identified in audit SEM-01 1 is that standard hashing destroys semantic locality. If "Apple" and "Fruit" are close in embedding space, they must be close in Toroidal space for wave interference to occur.
+We employ the Johnson-Lindenstrauss Lemma combined with Quantile Normalization to map $\mathbb{R}^{768} \to T^9$.
+3.1.1 The Projection Matrix $\mathbf{P}$
+We define a static projection matrix $\mathbf{P}$ of size $9 \times 768$.
+The elements $P_{ij}$ are drawn from a Gaussian distribution $\mathcal{N}(0, 1)$ and fixed at initialization (seeded deterministically).
+Let $\mathbf{v} \in \mathbb{R}^{768}$ be the input embedding (e.g., from BERT or the internal Mamba hidden state).
+The raw projected vector $\mathbf{y} \in \mathbb{R}^9$ is:
+
+
+
+
+$$\mathbf{y} = \mathbf{P} \mathbf{v}$$
+
+
+$$y_i = \sum_{j=0}^{767} P_{ij} v_j$$
+3.1.2 Lattice Quantization via Error Function
+The raw projection $y_i$ will be normally distributed (Central Limit Theorem). To utilize the grid uniformly (maximizing entropy), we map this Gaussian distribution to a Uniform distribution using the Error Function ($\text{erf}$), which acts as the Cumulative Distribution Function (CDF) for the normal distribution.
+For each dimension $\mu \in \{0..8\}$:
+1. Normalize: $y'_\mu = y_\mu / (\sigma \sqrt{2})$, where $\sigma \approx ||v|| \approx 1$ (if normalized).
+2. Uniform Map: $u_\mu = 0.5 \cdot (1 + \text{erf}(y'_\mu))$. This maps $\mathbb{R} \to (0, 1)$.
+3. Scale to Grid: $x_\mu = \lfloor u_\mu \cdot N_\mu \rfloor$.
+Algorithm Specification:
+
+
+C++
+
+
+
+
+std::array<uint32_t, 9> map_embedding_to_torus(
+   const std::vector<float>& embedding, // 768-dim
+   const Matrix<9, 768>& P,             // Static Projection Matrix
+   const std::array<uint32_t, 9>& dims  // Grid resolutions
+) {
+   std::array<uint32_t, 9> coords;
+   for (int i = 0; i < 9; ++i) {
+       float dot = 0.0f;
+       // SIMD-optimized dot product
+       for (int j = 0; j < 768; ++j) {
+           dot += P(i, j) * embedding[j];
+       }
+       
+       // Normalize (assuming embedding is unit length, variance is 1/dim)
+       // Adjust sigma based on embedding dimension
+       float sigma = 1.0f; 
+       float norm = dot / (sigma * 1.41421356f); // sqrt(2)
+       
+       // erf maps to [-1, 1], scale to 
+       float u = 0.5f * (1.0f + std::erf(norm));
+       
+       // Map to integer coordinate
+       coords[i] = static_cast<uint32_t>(u * dims[i]);
+       if (coords[i] >= dims[i]) coords[i] = dims[i] - 1;
+   }
+   return coords;
+}
+
+3.2 Plasticity: The Metric Tensor $g_{ij}$ Transformation
+In the Nikola architecture, learning is equivalent to geometry deformation. The distance between two concepts is determined by the Riemannian metric tensor $g_{ij}$.
+
+
+$$ds^2 = \sum_{i,j} g_{ij} dx^i dx^j$$
+Initially, the manifold is Euclidean (flat): $g_{ij} = \delta_{ij}$ (Identity matrix).
+When concepts $A$ and $B$ are associated, the "distance" between them must shrink. This corresponds to the metric tensor contracting along the geodesic connecting $A$ and $B$.
+3.2.1 Hebbian-Riemannian Update Rule
+The deformation is driven by wave correlation (Hebbian learning).
+Let $\Psi(\mathbf{x}, t)$ be the wavefunction. The update rule for $g_{ij}$ at location $\mathbf{x}$ is:
+
+
+$$\frac{\partial g_{ij}}{\partial t} = -\eta \cdot \text{Re}(\Psi_i \Psi_j^*) + \lambda (g_{ij} - \delta_{ij})$$
+1. Contraction Term: $-\eta \cdot \text{Re}(\Psi_i \Psi_j^*)$.
+   * $\Psi_i$ is the partial derivative or component of the wave in dimension $i$.
+   * If wave activity is correlated in dimensions $i$ and $j$, $g_{ij}$ decreases. A smaller metric component implies shorter physical distance for the same coordinate difference $dx$, effectively "pulling" the manifold together.
+2. Relaxation Term: $+\lambda (g_{ij} - \delta_{ij})$.
+   * This is an elastic restoring force. Without input, the manifold relaxes back to flat Euclidean space. This implements "forgetting" and prevents metric singularities (collapse to zero volume).
+3.2.2 Storage and Symmetry
+The metric tensor is a $9 \times 9$ matrix. However, by definition, it is symmetric ($g_{ij} = g_{ji}$). Storing 81 floats per node is wasteful. We store the Upper Triangular part only.
+Storage Size: $N_{metric} = \frac{9 \times (9+1)}{2} = 45$ floats per node.
+Indexing Algorithm (Triangular to Linear):
+For $row \leq col$:
+
+
+
+
+$$\text{index}(row, col) = 9 \cdot row - \frac{row \cdot (row + 1)}{2} + col$$
+3.3 The Laplacian Transformation (Curved Space)
+The Physics Engine solves the wave equation. In a curved manifold defined by $g_{ij}$, the standard Laplacian $\nabla^2$ is replaced by the Laplace-Beltrami Operator:
+
+
+$$\Delta \Psi = \frac{1}{\sqrt{|g|}} \partial_i \left( \sqrt{|g|} g^{ij} \partial_j \Psi \right)$$
+To implement this, we need the Inverse Metric Tensor $g^{ij}$ (where $g^{ij} g_{jk} = \delta^i_k$) and the determinant $|g|$.
+3.3.1 Lazy Cholesky Inversion
+Calculating the inverse of a $9 \times 9$ matrix at every voxel for every timestep ($10^7$ nodes $\times$ 1000 Hz) is computationally impossible ($O(N^3)$).
+We implement Lazy Recomputation:
+1. Each node stores a dirty_flag for its metric tensor.
+2. Plasticity updates (Hebbian) set the dirty_flag.
+3. The inverse $g^{ij}$ and determinant $\sqrt{|g|}$ are cached.
+4. If dirty_flag is set, we recompute the inverse using Cholesky Decomposition ($g = LL^T$), which is stable and faster for Symmetric Positive Definite (SPD) matrices.
+Cholesky Failure & Regularization:
+If the metric becomes non-positive-definite (due to aggressive learning updates), Cholesky fails. The fallback is Tikhonov Regularization:
+
+
+
+
+$$g'_{ij} = g_{ij} + \epsilon \delta_{ij}$$
+
+
+Add a small value $\epsilon$ to the diagonal to restore positive definiteness, effectively ensuring the geometry doesn't collapse into a singularity.
+________________
+4. Efficient Traversal Algorithms
+Traversing a sparse, high-dimensional space requires specialized algorithms. Linear scanning of a 9D array is impossible ($N^9$ is astronomical). We rely on Spatial Hashing and Space-Filling Curves.
+4.1 128-bit Morton Coding (Z-Order Curve)
+To store the sparse grid in a hash map (SHVO), we map the 9D integer coordinates to a single unique 128-bit integer key. This is the Morton Code.
+4.1.1 Bit Interleaving Specification
+The code is constructed by interleaving the bits of the 9 coordinates.
+Let $c_0, \dots, c_8$ be the 9 coordinates.
+Let $b$ be the bit index (0 to 13, for 14-bit resolution).
+The position of bit $b$ of coordinate $d$ in the final Morton key is:
+
+
+
+
+$$\text{pos} = 9 \cdot b + d$$
+Implementation Strategy (AVX-512 / BMI2):
+Standard bit-shifting loops are slow. We utilize the Parallel Bit Deposit (_pdep_u64) instruction. Since 9 dimensions $\times$ 14 bits = 126 bits (exceeds 64-bit register), we split the encoding into Low and High 64-bit words.
+* Low Word: Encodes bits 0-6 of all 9 dimensions (63 bits used).
+* High Word: Encodes bits 7-13 of all 9 dimensions (63 bits used).
+
+
+C++
+
+
+
+
+// 128-bit Morton Key Definition
+struct MortonKey128 {
+   uint64_t lo;
+   uint64_t hi;
+   
+   // Equality operator for Hash Map
+   bool operator==(const MortonKey128& other) const {
+       return lo == other.lo && hi == other.high;
+   }
+};
+
+// Encoding Algorithm
+MortonKey128 encode_morton_9d(const Coord9D& c) {
+   uint64_t lo = 0;
+   uint64_t hi = 0;
+   
+   // We iterate through the 9 dimensions
+   // coords is an array of the 9 coordinate values
+   for (int i = 0; i < 9; ++i) {
+       // Extract lower 7 bits and upper 7 bits
+       uint64_t val = c.coords[i];
+       uint64_t bits_lo = val & 0x7F;
+       uint64_t bits_hi = (val >> 7) & 0x7F;
+       
+       // Deposit bits into correct positions
+       // Mask: 1 bit set every 9th position, shifted by dimension index i
+       // Pre-computed masks for efficiency
+       lo |= _pdep_u64(bits_lo, MASKS_LO[i]);
+       hi |= _pdep_u64(bits_hi, MASKS_HI[i]);
+   }
+   return {lo, hi};
+}
+
+4.2 Causal-Foliated Hilbert Scanning
+The Problem: The Mamba-9D SSM requires a linear sequence of inputs. If we simply scan the Morton curve, we might visit a node at Time $t=10$ before a node at Time $t=1$. This violates temporal causality, confusing the state-space model which assumes ordered sequences.
+The Solution: We explicitly separate the Time dimension from the Spatial/Quantum dimensions for the traversal order. This is Causal Foliation.
+4.2.1 Algorithm Specification
+We define the traversal order $<_{scan}$ as:
+
+
+
+
+$$n_a <_{scan} n_b \iff (t_a < t_b) \lor (t_a = t_b \land H_8(\mathbf{s}_a) < H_8(\mathbf{s}_b))$$
+1. Primary Sort Key: Time coordinate $t$.
+2. Secondary Sort Key: 8-Dimensional Hilbert Index of the spatial/systemic/quantum vector $\mathbf{s} = (r, s, u, v, w, x, y, z)$.
+Complexity Analysis:
+* Let $N_{active}$ be the number of active nodes (non-vacuum).
+* Step 1 (Partition): Bucket nodes by Time $t$. Complexity: $O(N_{active})$.
+* Step 2 (Hilbert Encode): For each time-bucket, compute 8D Hilbert index. Complexity: $O(N_{active} \cdot \log(\text{resolution}))$.
+* Step 3 (Sort): Sort within buckets. Complexity: $O(N_{active} \log N_{active})$.
+* Total Complexity: Dominated by the sort: $O(N_{active} \log N_{active})$. This is feasible for real-time operation ($<10$ms for $10^6$ nodes) provided $N_{active}$ is sparse.
+4.2.2 The Hilbert Curve vs. Morton
+We use the Hilbert curve for the secondary spatial scan because it preserves locality better than Morton codes. In Morton order, transitioning from coordinate $x=3$ (binary 011) to $x=4$ (binary 100) causes a massive jump in the index (bit carry propagation), breaking spatial continuity. The Hilbert curve is continuous; adjacent indices are always adjacent in space. This continuity is vital for the Mamba model to learn spatial correlations.1
+________________
+5. Sparse Hyper-Voxel Octree (SHVO) Implementation
+The 9D Torus is too large to store densely. We implement a Sparse Hyper-Voxel Octree logic, though flattened into a Hash Map for GPU performance (pointer chasing in trees is slow on CUDA).
+5.1 Structure-of-Arrays (SoA) Layout
+To satisfy the Phase 0 Critical Requirement 1, we strictly avoid Array-of-Structures (AoS).
+Memory Layout:
+
+
+C++
+
+
+
+
+struct TorusGridSoA {
+   // Dense Arrays (indexed by a simple linear integer ID)
+   // Aligned to 64 bytes for AVX-512
+   std::vector<float> psi_real; 
+   std::vector<float> psi_imag;
+   
+   // Metric Tensor (Upper Triangle)
+   // 45 separate vectors, or one vector of arrays?
+   // Separate vectors preferred for vectorization of specific components
+   std::array<std::vector<float>, 45> metric;
+   
+   // Metadata
+   std::vector<uint128_t> morton_keys; // Map back to space
+   
+   // Sparse Map: 9D Coordinate -> Linear ID
+   // Used for O(1) lookups during neurogenesis
+   std::unordered_map<MortonKey128, uint32_t> sparse_map;
+};
+
+5.2 Neurogenesis Algorithm
+The SHVO expands dynamically. New nodes are created when the energy in a voxel exceeds a threshold.
+Algorithm:
+1. Saturation Check: In the physics loop, check if $|\Psi_i|^2 > \epsilon_{genesis}$.
+2. Neighbor Probe: Calculate the 128-bit Morton keys for the 18 von Neumann neighbors ( $\pm 1$ in each dimension).
+3. Existence Check: Query sparse_map. If the key is missing, trigger allocation.
+4. Allocation:
+   * Push new entries to psi_real, psi_imag (initialized to thermal noise).
+   * Metric Interpolation (GEO-01): We cannot initialize the metric to Identity, or it creates a discontinuity (infinite curvature). We use Log-Euclidean Interpolation of the parent node's metric to ensure geometric continuity.1
+      * $L = \log(g_{parent})$
+      * $g_{new} = \exp(L)$
+   * Update sparse_map with the new key and index.
+5. Topology Sync: Queue an update to the GPU Neighbor List (PHY-MEM-01) so the next physics step includes the new node.1
+________________
+6. Emitter Array Geometry and Frequencies
+The 9D manifold is energized by 8 emitters and 1 synchronizer. These are not arbitrary point sources but are geometrically positioned to drive ergodic mixing.
+6.1 Spatial Placement (Roots of Unity)
+To minimize destructive interference at the source, emitters are spaced maximally apart in the spatial phase dimensions.
+They are positioned at the 8th roots of unity in the $x-y$ plane torus cross-section.
+
+
+$$\theta_k = \frac{2\pi k}{8} \quad \text{for } k=1..8$$
+
+
+$$(x_k, y_k) = (R \cos \theta_k, R \sin \theta_k)$$
+
+
+Where $R$ is the torus major radius (scaled to grid coordinates).
+6.2 Golden Ratio Frequencies (Ergodicity)
+To prevent "Resonance Lock-in" (where the system gets stuck in a repeating standing wave pattern, analogous to a seizure or hallucination), the driving frequencies must be mutually irrational. We use the Golden Ratio $\phi \approx 1.618033...$ to generate the series.1
+
+
+$$f_k = \pi \cdot \phi^k \text{ Hz}$$
+Frequency Table:
+1. $f_1 = \pi \cdot \phi^1 \approx 5.083$ Hz
+2. $f_2 = \pi \cdot \phi^2 \approx 8.225$ Hz
+...
+3. $f_8 = \pi \cdot \phi^8 \approx 147.0$ Hz
+Synchronizer: The 9th emitter (central) operates at:
+
+
+
+
+$$f_{sync} = \pi \cdot \frac{1}{\phi} \cdot \sqrt{2} \cdot \frac{32}{27} \approx 3.2 \text{ Hz}$$
+
+
+This specific derivation ensures it acts as a "beat frequency" stabilizer, grounding the high-frequency harmonics of the outer ring.
+________________
+7. Conclusion
+This specification provides the mathematical completeness required to implement the Nikola v0.0.4 geometry. By formalizing the 9D anisotropic coordinates, defining the Projective Locality and Metric Tensor transformations, and specifying the Causal-Foliated Hilbert traversal, we resolve the ambiguities preventing implementation.
+The geometry described here is not passive storage; it is a Riemannian Computer. The computation is the physical evolution of waves on this specified manifold. The rigorous adherence to the topological constraints (wrapping, causality, positive-definite metrics) is mandatory for the emergence of stable cognitive dynamics.
+Next Steps:
+   1. Implement Coord9D and MortonKey128 structs with AVX-512 bit manipulation.
+   2. Build the TorusGridSoA container.
+   3. Implement the ProjectiveTopologyMapper with the seeded Gaussian matrix.
+   4. Develop the HilbertScanner for Mamba integration.
+Works cited
+   1. part_1_of_9.txt

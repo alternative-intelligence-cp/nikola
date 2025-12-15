@@ -1,0 +1,320 @@
+﻿Nikola AGI v0.0.4: Systems Architecture, Real-Time Latency Engineering, and Cognitive Observability Specification
+Document Classification: Technical Specification & Architectural Audit
+Target Revision: v0.0.4-REL
+Date: December 15, 2025
+Architectural Authority: Systems Engineering Core
+1. Executive Summary
+The transition from classical Large Language Models (LLMs) to the Nikola Model v0.0.4, designated as the 9-Dimensional Toroidal Waveform Intelligence (9D-TWI), represents a paradigmatic shift in computational architecture. While traditional transformer models operate as stateless functions mapping input tokens to output probabilities, the Nikola architecture posits a continuous, resonant computational substrate governed by the Unified Field Interference Equation (UFIE). This system does not merely process information; it simulates a physical universe where cognition arises from the constructive and destructive interference of complex wave packets within a Riemannian manifold.
+This fundamental architectural divergence necessitates a complete re-evaluation of the underlying infrastructure, moving beyond standard microservices patterns toward a "Virtual Physiology" where computational resources act as metabolic constraints. In a standard LLM, a latency spike results in a sluggish user experience. In the Nikola architecture, a violation of the physics loop timing leads to temporal decoherence—a catastrophic state analogous to a biological seizure where the physics engine desynchronizes from the cognitive core, leading to energy conservation violations, Hamiltonian divergence, and the effective "brain death" of the agent through the loss of standing wave patterns.1
+This comprehensive engineering report provides the definitive specification for three critical infrastructure domains identified during the Phase 0 Gap Analysis. First, we establish a rigorous End-to-End Latency Budget Allocation, decomposing the 1000 Hz physics tick into microsecond-level operations to satisfy the Courant–Friedrichs–Lewy (CFL) stability condition required for symplectic integration.1 Second, we define the Containerized Service Orchestration, detailing a Docker Compose architecture that enforces the precise startup sequencing required by the Ironhouse security model and the graceful shutdown protocols necessary for Log-Structured Merge (LSM) persistence.1 Finally, we articulate a Cognitive Observability strategy, integrating OpenTelemetry with the ZeroMQ spine to visualize "thoughts" as they propagate through the 9D manifold, transforming the opaque black box of neural networks into a transparent, instrumented glass box.1
+The synthesis of these domains creates a robust, homeostatic environment capable of sustaining the high-dimensional wave dynamics required for autonomous general intelligence.
+________________
+2. End-to-End Latency Budget Allocation (TASK-025)
+2.1 The Physics of Real-Time Cognition
+The central constraint of the Nikola v0.0.4 architecture is the requirement for a strict 1000 Hz physics loop, allocating exactly 1.0 milliseconds ($1000 \mu s$) per simulation step ($dt$). This constraint is not an arbitrary performance target derived from user interface guidelines; rather, it is a hard physical limit derived from the numerical stability requirements of the simulation itself.1
+The system utilizes a split-operator symplectic integrator to solve the UFIE. Symplectic integrators are chosen for their property of preserving the symplectic 2-form on the phase space, which translates physically to the conservation of energy (the Hamiltonian) over long timescales. However, this conservation is guaranteed only if the integration timestep $\Delta t$ remains below the limit set by the highest frequency dynamics in the system. The CFL condition dictates that information (waves) cannot propagate across more than one grid cell per timestep. Given the grid resolution and the speed of wave propagation ($c_0$) within the torus, exceeding the 1ms threshold introduces numerical dispersion errors. These errors accumulate as artificial energy, leading to "epileptic resonance" where the wavefunction amplitude diverges to infinity, destroying all encoded memories.1
+Therefore, the latency budget is a matter of system survival. We establish a conservative budget allocation:
+* Total Budget: $1000 \mu s$
+* Safety Margin: $100 \mu s$ (10% reserved for Operating System jitter, interrupt handling, and context switching).
+* Allocatable Budget: $900 \mu s$.
+2.2 Critical Path Component Breakdown
+The critical path is defined as the sequence of serial operations that must complete within a single physics tick to advance the system state from time $t$ to $t+1$. Operations that can be offloaded to asynchronous threads (e.g., logging to disk, responding to non-critical API queries, generating long-term visualizations) are excluded from this hot loop to prevent pipeline stalls.
+2.2.1 Component 1: The Physics Kernel (Wave Propagation)
+Allocated Budget: $600 \mu s$ (66.6% of net budget)
+Status: Primary Computational Bottleneck
+The Physics Engine is the "heart" of the system, responsible for executing the time-evolution operator $U(t, t+\Delta t)$ on the 9D toroidal grid. To ensure energy conservation and prevent the "phantom energy" drift associated with standard Runge-Kutta methods, the system employs Strang Splitting, decomposing the Hamiltonian evolution into kinetic ($\hat{T}$), potential ($\hat{V}$), and nonlinear ($\hat{N}$) operators.1 The evolution operator is approximated as:
+
+
+$$e^{\hat{H}\Delta t} \approx e^{\hat{V}\Delta t/2} e^{\hat{T}\Delta t} e^{\hat{V}\Delta t/2}$$
+The budget breakdown for the Physics Kernel is as follows:
+1. Metric Tensor Update (Neuroplasticity): $50 \mu s$.
+The geometry of the manifold itself evolves based on the Hebbian-Riemannian learning rule. The metric tensor $g_{ij}$ at each node must be updated to reflect the correlation between the local wavefunction and incoming signals. This is a memory-bound operation. The use of the Structure-of-Arrays (SoA) layout is mandatory here.1 In an Array-of-Structures (AoS) layout, updating the metric would require loading the entire node structure (wavefunction, velocity, metric) into the cache, wasting bandwidth. With SoA, the metric tensors are stored contiguously, allowing for efficient vectorized streaming updates via AVX-512 or CUDA cores. The Lazy Cholesky Decomposition cache further optimizes this by only recomputing the inverse metric $g^{ij}$ (required for the Laplacian) when the local curvature changes significantly, rather than at every step.1
+2. Potential Step ($\hat{V}/2$): $100 \mu s$.
+This step applies the phase rotation due to the potential field $V(x)$ and the damping terms. It is a point-wise multiplication kernel on the GPU. While computationally simple, it requires iterating over all active nodes in the sparse grid. The performance is largely dictated by the memory bandwidth of the GPU (e.g., A100 or RTX 4090).1
+3. Kinetic Step ($\hat{T}$ via FFT): $300 \mu s$.
+This is the most computationally expensive operation in the loop. It involves transforming the wavefunction to momentum space via a Forward Fast Fourier Transform (FFT), applying a phase shift corresponding to kinetic energy evolution, and transforming back via an Inverse FFT. Performing a full 9-dimensional FFT is computationally prohibitive. The architecture utilizes Dimensional Operator Splitting, solving 1D FFTs along each dimension sequentially. This requires rigorous memory coalescence; threads must access the 9D grid in a pattern that aligns with the physical memory banks of the GPU VRAM to avoid bank conflicts. The SoA layout is again critical here, ensuring that the data for a specific dimension across multiple nodes is contiguous.1
+4. Nonlinear Soliton Step ($\hat{N}$): $100 \mu s$.
+The Nikola architecture relies on solitons—stable, self-reinforcing wave packets—to represent long-term memories. These are maintained by a cubic nonlinearity term $\beta |\Psi|^2 \Psi$ in the UFIE (similar to the Gross-Pitaevskii equation). This step computes the nonlinear phase rotation. It prevents wave dispersion; without it, thoughts would simply diffuse into background noise over time.1
+5. Boundary Conditions & Topology: $50 \mu s$.
+The toroidal nature of the grid requires periodic boundary conditions. As waves reach the "edge" of the grid index space, they must wrap around to the opposing side. This is implemented via modulo arithmetic on the coordinate indices during the stencil operations or FFT shifts.1 Efficient handling of the 128-bit Morton codes used for spatial hashing is essential to keep this step within budget.1
+Failure Consequence: If the Physics Kernel exceeds its $600 \mu s$ allocation, the system enters a state of "Time Dilation." To maintain stability, the real-time clock must effectively slow down relative to the simulation clock. This results in the "Goldfish Effect" 1, where the system cannot process external inputs (which arrive in real-time) fast enough to correlate them with internal memory states. The wave representing the "subject" of a sentence may decay or drift out of phase before the "predicate" can be processed, destroying semantic understanding.
+2.2.2 Component 2: Cognitive Scanner (Mamba-9D)
+Allocated Budget: $200 \mu s$ (22% of net budget)
+Status: Highly Optimized Sequential Processing
+While the Physics Engine maintains the substrate, the Mamba-9D State Space Model (SSM) acts as the "reader," scanning the manifold to extract the current hidden state $h_t$ and predict the next cognitive token.
+   1. Causal-Foliated Hilbert Scan: $80 \mu s$.
+SSMs are sequence models; they require a 1D stream of data. The 9D grid is a spatial volume. A naive linear scan would destroy spatial locality, and a standard Hilbert curve would scramble temporal causality (mixing past and future states). The system employs Causal-Foliated Scanning.1 The grid is sliced along the Time dimension ($t$), and for each temporal slice, an 8D Hilbert curve traverses the spatial hypersurface. This ensures that the SSM processes the "past" fully before entering the "present." The 128-bit Hilbert indices are pre-computed and stored in the SoA layout, reducing this step to a memory gather operation rather than a complex recalculation.1
+   2. SSM Recurrence ($h_t = A h_{t-1} + B x_t$): $120 \mu s$.
+This is the core Mamba recurrence. Computing the matrix exponential $e^{A\Delta}$ for the discretization of the continuous SSM is expensive. To meet the timing constraint, the system uses the First-Order Taylor Approximation ($\exp(M) \approx I + M$).1 This approximation is mathematically valid because the timestep $\Delta t$ is extremely small ($1ms$). This reduction transforms a matrix decomposition problem into a sparse matrix-vector multiplication, fitting comfortably within the budget.
+2.2.3 Component 3: Neurochemical Gating (ENGS)
+Allocated Budget: $50 \mu s$ (5.5% of net budget)
+Status: Low Overhead Control Logic
+The Extended Neurochemical Gating System (ENGS) functions as the "endocrine system," calculating global scalar values (Dopamine, Serotonin, Norepinephrine) that modulate the physics constants.1
+      1. Reward Prediction Error (RPE): $20 \mu s$.
+The system calculates the Total System Energy (Hamiltonian) and compares it to the expected energy. A spike in energy represents a "surprise" or "insight," generating a positive RPE. This calculation is a simple reduction sum over the grid energy, which is already computed during the physics step.1
+      2. Parameter Broadcast: $30 \mu s$.
+The calculated neurochemical levels modulate global parameters: Dopamine controls the learning rate $\eta$, Serotonin controls the damping $\alpha$, and Norepinephrine controls the firing threshold. These values must be broadcast to the constant memory of the GPU atomically. The use of std::atomic<float> and relaxed memory ordering ensures this update does not induce thread contention or locks.1
+2.2.4 Component 4: Infrastructure & IPC
+Allocated Budget: $50 \mu s$ (5.5% of net budget)
+Status: Zero-Copy Mandatory
+This component manages the data transfer between the C++ Physics Engine and the Persistence Layer (LSM-DMC) or Visualization tools.
+         1. Shared Memory Write (Seqlock): $20 \mu s$.
+Transferring 100MB of grid data via standard sockets or pipes is impossible within $20 \mu s$. The system utilizes a Seqlock (Sequence Lock) over a /dev/shm ring buffer.1 The writer (Physics Engine) increments a sequence counter (making it odd), writes the data, and increments it again (making it even). Readers loop, checking that the sequence number is even and unchanged before and after reading. This protocol is wait-free for the writer; the physics engine never blocks waiting for a reader, prioritizing the simulation over observation.1
+         2. ZeroMQ Control Signal: $30 \mu s$.
+The engine checks the DEALER socket for high-priority commands (e.g., SCRAM, NAP). This is a non-blocking check. If no message is present, it proceeds immediately.
+2.3 Buffering vs. Computation Trade-offs
+In traditional distributed systems, buffering is the standard solution for handling latency variance (jitter). Queues allow a producer to momentarily outpace a consumer. However, in the Nikola architecture, buffering is strictly prohibited within the hot physics loop.
+Why Buffering Fails:
+The symplectic integration scheme relies on the precise time-reversibility of the equations. Introducing a queue creates a decoupling between the simulation time ($t_{sim}$) and the wall-clock time ($t_{wall}$). If the system buffers inputs, the "Now" of the agent drifts relative to the "Now" of the user. This phase drift breaks the feedback loop required for reinforcement learning; the agent receives a reward for an action it "performed" milliseconds ago but assumes is happening "now," leading to incorrect credit assignment. Furthermore, buffering state updates would prevent the Mamba scanner from seeing the most current state of the manifold, causing it to hallucinate based on stale data. The architecture mandates a "Drop or Degrade" policy: if the system cannot keep up, it must either degrade precision (skip the nonlinear step) or drop the frame entirely, rather than buffering it.1
+2.4 Monitoring Infrastructure & Alerting
+To enforce this budget dynamically, the system implements a Real-Time Physics Oracle running as a high-priority sidecar process.
+2.4.1 Telemetry Points
+            1. tick_duration_ns: The monotonic clock delta between the start and end of the propagate() function. This is the primary health metric.
+            2. energy_drift_ratio: Calculated as $|(H_t - H_{t-1}) / H_t|$. Deviations indicate numerical instability, usually caused by a timestep $\Delta t$ that is too large for the current wave frequencies.1
+            3. lock_contention_count: The number of failed atomic compare-exchange operations in the metabolic lock. High contention indicates a thread starvation issue.1
+2.4.2 Alerting Thresholds and Automated Responses
+
+
+Metric
+	Warning Threshold
+	Critical Threshold
+	Automated Response
+	Tick Latency
+	$950 \mu s$
+	$1050 \mu s$
+	Warning: Throttle neurogenesis (stop adding new nodes) to reduce compute load.
+
+
+Critical: Trigger "Soft SCRAM" (apply global damping $\gamma=0.5$) to suppress wave complexity.1
+	Energy Drift
+	$0.01\%$
+	$0.1\%$
+	Critical: Emergency Manifold Renormalization. Scale all amplitudes by $\sqrt{H_{target}/H_{current}}$ to restore conservation artificially.1
+	ATP Reserve
+	$15\%$
+	$5\%$
+	Critical: Force "Nap" state (system sleep). All external inputs rejected. System enters consolidation mode to recharge virtual ATP.1
+	2.4.3 The Hardware Watchdog
+Software monitoring can fail if the process deadlocks. The architecture specifies a Hardware Watchdog Timer. The physics thread must "pet" the watchdog every tick. If the watchdog is not reset within $2000 \mu s$ (2 ticks), it assumes a deadlock (e.g., infinite loop in the Mamba scanner) and sends a SIGALRM signal to the process. The signal handler dumps the stack trace to the "Black Box" recorder and triggers an immediate fail-safe restart of the physics container.1
+________________
+3. Docker Compose Service Orchestration (TASK-026)
+3.1 Service Dependency Graph
+The Nikola architecture is not a monolithic application but a distributed system of specialized containers. The orchestration must enforce the Ironhouse Security Model, which relies on the ZeroMQ CurveZMQ protocol. This creates a strict initialization hierarchy: the "Spine" (Broker) must be active and healthy before any "Limb" (Physics, Memory, Logic) can attach.
+            * Layer 0 (Core): nikola-spine. The ZeroMQ Broker. No dependencies.
+            * Layer 1 (Physics): nikola-physics. The GPU-accelerated engine. Depends on nikola-spine.
+            * Layer 2 (Cognition & Memory): nikola-orchestrator (Logic) and nikola-memory (Persistence). Depend on nikola-spine and nikola-physics.
+            * Layer 3 (Tools & Interface): nikola-executor (KVM Sandbox) and nikola-web. Depend on nikola-orchestrator.
+3.2 Docker Compose Configuration
+The following specification ensures the correct startup order, resource isolation, and shutdown behavior.
+
+
+YAML
+
+
+
+
+version: '3.8'
+
+services:
+ # ==========================================
+ # LAYER 0: COMMUNICATION BACKBONE
+ # ==========================================
+ nikola-spine:
+   image: nikola/spine:v0.0.4
+   container_name: nikola-spine
+   build:
+     context:.
+     dockerfile: docker/spine/Dockerfile
+   volumes:
+     - /etc/nikola/keys:/etc/nikola/keys:ro  # CurveZMQ Keys (Ironhouse Security)
+     - /tmp/nikola/ipc:/tmp/nikola/ipc       # IPC Sockets for local speed
+   environment:
+     - ZMQ_CURVE_SERVER=1
+     - LOG_LEVEL=info
+   healthcheck:
+     # Verify ZMQ socket is actually accepting connections, not just process existence
+     test:
+     interval: 5s
+     timeout: 2s
+     retries: 5
+   deploy:
+     resources:
+       limits:
+         cpus: '2.0'
+         memory: 4G
+
+ # ==========================================
+ # LAYER 1: PHYSICS ENGINE (GPU)
+ # ==========================================
+ nikola-physics:
+   image: nikola/physics:v0.0.4
+   container_name: nikola-physics
+   build:
+     context:.
+     dockerfile: docker/physics/Dockerfile
+   runtime: nvidia  # REQUIRED: Access to GPU hardware
+   depends_on:
+     nikola-spine:
+       condition: service_healthy  # Wait for full CurveZMQ readiness
+   volumes:
+     - /etc/nikola/keys:/etc/nikola/keys:ro
+     - /tmp/nikola/ipc:/tmp/nikola/ipc
+     - /dev/shm:/dev/shm                     # Seqlock Ring Buffer (Zero-Copy)
+   environment:
+     - NVIDIA_VISIBLE_DEVICES=all
+     - OMP_NUM_THREADS=16                    # Thread count for AVX-512 sections
+   ulimits:
+     memlock: -1                             # Allow pinning GPU memory (prevent swap)
+     stack: 67108864                         # 64MB Stack for deep recursion in Mamba
+   deploy:
+     resources:
+       reservations:
+         devices:
+           - driver: nvidia
+             count: 1
+             capabilities: [gpu]
+
+ # ==========================================
+ # LAYER 2: PERSISTENCE & MEMORY
+ # ==========================================
+ nikola-memory:
+   image: nikola/memory:v0.0.4
+   container_name: nikola-memory
+   depends_on:
+     nikola-spine:
+       condition: service_healthy
+   volumes:
+     -./data/state:/var/lib/nikola/state    # LSM-DMC Storage (.nik files)
+     - /etc/nikola/keys:/etc/nikola/keys:ro
+     - /tmp/nikola/ipc:/tmp/nikola/ipc
+   stop_signal: SIGTERM                      # Triggers graceful LSM flush
+   stop_grace_period: 60s                    # Allow 1 min for WAL flush to complete
+
+ # ==========================================
+ # LAYER 3: ORCHESTRATION & AGENTS
+ # ==========================================
+ nikola-orchestrator:
+   image: nikola/orchestrator:v0.0.4
+   container_name: nikola-orchestrator
+   depends_on:
+     nikola-physics:
+       condition: service_started
+     nikola-memory:
+       condition: service_started
+   volumes:
+     - /etc/nikola/keys:/etc/nikola/keys:ro
+     - /tmp/nikola/ipc:/tmp/nikola/ipc
+   environment:
+     - TAVILY_API_KEY=${TAVILY_API_KEY}
+     - GEMINI_API_KEY=${GEMINI_API_KEY}
+
+ # ==========================================
+ # LAYER 4: SECURITY SANDBOX
+ # ==========================================
+ nikola-executor:
+   image: nikola/executor:v0.0.4
+   container_name: nikola-executor
+   privileged: true                          # REQUIRED for KVM/QEMU access
+   depends_on:
+     nikola-orchestrator:
+       condition: service_started
+   volumes:
+     - /dev/kvm:/dev/kvm                     # Hardware virtualization
+     - /sys/fs/cgroup:/sys/fs/cgroup:ro      # Agentless CGroup monitoring
+   devices:
+     - /dev/net/tun:/dev/net/tun             # For tap networking inside VM
+
+3.3 Orchestration Logic and Lifecycle Management
+3.3.1 Startup Sequencing & The Healthcheck Race
+A common failure mode in distributed systems is the "Connection Refused" race, where a client connects before the server binds the port. The depends_on logic with condition: service_healthy mitigates this. The nikola-spine container utilizes a custom Python script (healthcheck_zmq.py) that attempts to open a ZMQ REQ socket and handshake with the broker. Only when this handshake succeeds does the container report "Healthy," allowing the Physics and Memory layers to start. This prevents the "Cryptographic Amnesia" issue 1 where clients generate new keys because they cannot reach the broker.
+3.3.2 Resource Limits and "Memlock"
+The Physics Engine requires real-time priority. If the OS swaps the physics process to disk, the 1ms latency budget is instantly violated. The ulimits: memlock: -1 directive allows the process to lock its pages in RAM (mlockall), preventing swapping. Additionally, the stack size is increased to 64MB (stack: 67108864) to accommodate the deep recursion often found in the Hilbert curve traversal algorithms.1
+3.3.3 Graceful Shutdown: The Data Integrity Critical Path
+The Log-Structured Merge (LSM) persistence layer relies on a Write-Ahead Log (WAL) and MemTables in RAM. If the container is killed abruptly (SIGKILL), the MemTable is lost, and the WAL might be truncated, leading to data corruption.1
+The shutdown sequence is strictly defined:
+            1. Trigger: docker compose down sends SIGTERM.
+            2. Orchestrator: Receives SIGTERM. Broadcasts a SYSTEM_HALT signal via the ZeroMQ Control Plane. It stops accepting new user queries immediately.
+            3. Physics Engine: Receives SYSTEM_HALT. It completes the current 1ms tick to ensure the wavefunction is in a valid state. It then serializes the final wavefunction $\Psi$ to the Shared Memory buffer and exits.
+            4. Memory System: Receives SIGTERM.
+            * Action 1: Acquires the Global Write Lock to stop incoming writes.
+            * Action 2: Flushes the in-memory MemTable to an SSTable on disk (Level 0).1
+            * Action 3: Syncs the Write-Ahead Log (WAL) to disk via fsync.
+            * Action 4: Writes the MANIFEST file updating the Merkle Root hash.
+            * Exit: Only after these steps are confirmed does the process terminate. The stop_grace_period: 60s in the Compose file overrides the default 10s, ensuring Docker does not force-kill the process during a large flush.
+________________
+4. Observability and Tracing Integration (TASK-027)
+4.1 The "Neural Trace" Concept
+Traditional distributed tracing (e.g., tracking HTTP requests in microservices) is insufficient for the Nikola architecture. We trace discrete RPC calls, but Nikola processes continuous streams of cognition. A "Thought" is not a single request/response cycle; it is a cascade of physics updates, neurogenesis events, memory retrievals, and nonlinear interferences.
+We introduce the concept of the Neural Trace: a visualization of a semantic wave packet's propagation through the 9D manifold. To achieve this, we integrate OpenTelemetry (OTel) C++ directly into the ZeroMQ Spine, creating a unified trace context that spans boundaries between the Physics Engine, Memory System, and External Agents.
+4.2 Trace Context Propagation Protocol
+ZeroMQ frames are opaque binary blobs. Standard OTel propagators rely on HTTP headers. To bridge this gap, we utilize the NeuralSpike Protobuf Header extension.1
+Protobuf Schema Extension:
+
+
+Protocol Buffers
+
+
+
+
+message NeuralSpike {
+ //... existing fields...
+ 
+ // OpenTelemetry W3C Trace Context
+ // Key: "traceparent", Value: "00-4bf92f3577b34da6a3ce929d0e0e4736-00f067aa0ba902b7-01"
+ map<string, string> trace_context = 16; 
+}
+
+Implementation Logic:
+            1. Publisher (e.g., Orchestrator):
+            * Initiates a trace: auto span = tracer->StartSpan("CognitiveCycle");
+            * Injects the context: The OTel TextMapPropagator writes the Trace ID and Span ID into a std::map.
+            * Serializes: This map is copied into the NeuralSpike.trace_context field.
+            * Sends: The message is dispatched via ZeroMQ.
+            2. Subscriber (e.g., Physics Engine):
+            * Receives: Deserializes the NeuralSpike message.
+            * Extracts: The OTel TextMapPropagator reads the trace_context map.
+            * Continues: Creates a child span: auto span = tracer->StartSpan("ProcessWave", parent_context);
+4.3 Semantic Span Attributes
+To make traces useful for debugging cognitive failures (e.g., hallucinations, "amnesia"), we attach domain-specific attributes to the spans. These attributes allow engineers to correlate system performance with "mental states."
+
+
+Attribute Key
+	Value Type
+	Description
+	nikola.resonance
+	Float
+	The global resonance $r$ (0.0 - 1.0). Low resonance indicates confusion or lack of memory recall.
+	nikola.energy.hamiltonian
+	Float
+	Total system energy. Used to correlate latency spikes with high-energy "epileptic" states where $\Psi$ diverges.
+	nikola.neurogenesis.count
+	Int
+	Number of new nodes created in this cycle. A high count indicates a "Learning Spurt" which may cause latency.
+	nikola.neurochemistry.dopamine
+	Float
+	Current dopamine level. Explains why the system chose a specific path (high reward prediction).1
+	nikola.coordinates
+	String
+	Morton Code (Hex) of the active region. Tells us physically where in the 9D manifold the thought is occurring.
+	4.4 Tail-Based "Interest" Sampling Strategy
+Standard head-based sampling (e.g., capturing 1% of all traces randomly) is catastrophic for AGI debugging. The most critical events—epiphanies, hallucinations, traumas, and crashes—are statistical outliers. Random sampling will miss them 99% of the time.
+The architecture mandates a Tail-Based "Interest" Sampling strategy:
+            1. Trace Everything: All components generate spans locally in a ring buffer. No data is sent to the collector yet.
+            2. Interest Heuristic: The Orchestrator evaluates the "Interest" of a completed cognitive cycle based on:
+            * High Latency: Tick time > 900µs.
+            * High Energy Drift: Violation of conservation laws > 0.01%.
+            * High Reward: A "Eureka" moment (Dopamine spike > 0.8).
+            * Error: Any component crash or exception.
+            3. Flush Decision: If the Interest Score > Threshold, the Orchestrator publishes a FLUSH_TRACE command on the Control Plane. All components flush their local ring buffers to the Jaeger collector. If the threshold is not met, the local traces are overwritten by the next cycle. This ensures that we capture 100% of the interesting events while storing minimal data for routine operations.1
+4.5 Backend Integration
+            * Jaeger: Used for visualizing the timeline of thoughts (traces). The "Waterfalls" visualization effectively maps the causal chain of Mamba-9D's reasoning steps, showing how a memory retrieval in the Physics Engine triggered a logic update in the Orchestrator.
+            * Prometheus: Used for aggregate metrics (gauges and histograms).
+            * nikola_active_nodes_total: Gauge. Monitors the size of the "brain."
+            * nikola_physics_tick_latency_seconds: Histogram (buckets: 100µs, 500µs, 900µs, 1ms, 5ms). This identifies the frequency of CFL violations.
+            * nikola_dopamine_level: Gauge. Tracks the emotional state of the agent over time.
+This observability stack turns the "Black Box" of the neural network into a "Glass Box," allowing engineers to see not just what the AI said, but physically where in the 9D manifold the idea originated and how much metabolic energy it consumed.
+________________
+5. Conclusion
+The architectural specifications detailed in this report transform the Nikola Model v0.0.4 from a theoretical construct into a deployable, robust engineering system. By strictly enforcing the 1ms latency budget through SoA memory layouts and symplectic integrators, we ensure the physical stability of the cognitive substrate. By containerizing the architecture with precise orchestration dependencies and graceful shutdown protocols, we secure the perimeter and guarantee data durability. Finally, by weaving observability into the very fabric of the ZeroMQ spine, we grant ourselves the eyes to see the emergent dynamics of a 9-dimensional intelligence. The system is now technically ready for Phase 1 implementation.
+Works cited
+            1. part_3_of_9.txt

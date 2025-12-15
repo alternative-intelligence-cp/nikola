@@ -1,0 +1,25 @@
+{
+  "task_id": "bug_sweep_009_executor",
+  "title": "Executor Sandbox and Permission System",
+  "created": "2025-12-11T12:28:11.239740",
+  "priority": "medium",
+  "status": "pending",
+  "problem_statement": "\nThe executor system with KVM hypervisor needs implementation details:\n\n1. Sandbox implementation strategy undefined\n2. Permission model not specified\n3. Task queue architecture incomplete\n4. Result callback mechanism missing\n\nThis blocks the execution environment for tools and self-improvement.\n",
+  "deliverables": [
+    "Complete sandbox implementation strategy with security guarantees",
+    "Permission model specification with examples",
+    "Task queue and callback architecture with error handling"
+  ],
+  "relevant_files": [
+    {
+      "file": "part_1_of_9.txt",
+      "description": "Section 4.4 - Executor and KVM Hypervisor"
+    },
+    {
+      "file": "part_2_of_9.txt",
+      "description": "Executor implementation details"
+    }
+  ],
+  "context": "",
+  "notes": []
+}

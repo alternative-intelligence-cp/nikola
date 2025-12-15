@@ -1,0 +1,13 @@
+create helper scripts in the utils folder to make the following tasks easier and reproducible with future plan updates without needing to modify anything
+
+create a compilation of the entire plan split into exactly 9 files in the compilation folder.
+We must ensure that all the section numbers and names are updated and correct within these files and the index that should be the start of the first of the 9 files. The specs.txt file also needs to be included right after the index somehow so work that in. 
+
+in the tasks folder we will create research plans. These should include no more than three deliverables from Gemini as quality degrades above that and 8 seems to be about max anyway. 
+They should include the exact problem that needs to be solved or info missing that needs researching
+They should specifiy where any component is located within the 9 plan files that is relevant for Gemini to complete the task. Otherwise she will waste an enormous amount of time doing highly ineffective 'targeted searches' and then never finding the stuff that way and making problematic assumtpions. Think of the task as a prompt on steroids. 
+
+when gemini completes a task i will place the results in the responses folder with the same name as the task that initiated it. 
+
+goal:
+read through the entire plan as if you were implementing it in real time. Make note of any missing code or information that would prevent you from completing any step. Compile a list of everything you find. then, split it up into tasks such as those mentioned above and i will get gemini to do deep research in the background while we work on other stuff

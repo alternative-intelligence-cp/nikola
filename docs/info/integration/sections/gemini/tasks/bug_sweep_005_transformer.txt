@@ -1,0 +1,62 @@
+# RESEARCH TASK: Neuroplastic Transformer Architecture Specification
+
+**Task ID:** bug_sweep_005_transformer
+**Priority:** HIGH
+**Status:** PENDING
+**Created:** 2025-12-11 12:28
+
+---
+
+## PROBLEM STATEMENT
+
+
+The neuroplastic transformer for nonary waveforms needs detailed specification:
+
+1. Attention mechanism for waveform data undefined
+2. Neuroplasticity update rules not specified
+3. Weight initialization strategy missing
+4. Training loop incomplete
+
+This blocks the reasoning engine implementation.
+
+
+---
+
+## DELIVERABLES
+
+1. Complete attention mechanism design for nonary encoded waveforms
+2. Neuroplasticity and neurogenesis algorithms with mathematical basis
+3. Training protocol with initialization, update rules, and convergence criteria
+
+---
+
+## RELEVANT PLAN SECTIONS
+
+- **part_1_of_9.txt**: Section 3.3 - Neuroplastic Transformer
+- **part_3_of_9.txt**: Transformer implementation details
+
+---
+
+## INSTRUCTIONS FOR GEMINI
+
+Please provide detailed research and analysis for each deliverable listed above. 
+Reference the relevant plan sections provided to ensure consistency with the 
+overall architecture. If you find gaps or inconsistencies in the plan sections, 
+please note them in your response.
+
+**IMPORTANT - HOW TO FIND SECTIONS:** 
+- Each compilation file has clear section markers like:
+  ================================================================================
+  SECTION X.Y: Component Name
+  ================================================================================
+- Use text search (Ctrl+F) for keywords instead of section numbers
+- The files have internal numbering that differs from the TOC - IGNORE internal numbers
+- Search for concepts like "Wave Interference", "Mamba", "ZeroMQ", etc.
+- All relevant content is in the files listed above
+
+**DELIVERABLES:**
+- Focus on providing concrete, implementable solutions
+- Include code snippets, formulas, or specifications where applicable
+- Flag any assumptions you need to make
+- If you can't find something, note what's missing rather than making assumptions
+

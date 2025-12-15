@@ -1,0 +1,25 @@
+{
+  "task_id": "bug_sweep_002_9d_geometry",
+  "title": "9D Toroidal Geometry Complete Mathematical Specification",
+  "created": "2025-12-11T12:28:11.237633",
+  "priority": "critical",
+  "status": "pending",
+  "problem_statement": "\nThe 9D toroidal geometry is mentioned throughout but lacks concrete implementation details:\n\n1. Dimension mapping algorithms undefined\n2. Toroidal coordinate transformations incomplete\n3. Spatial transformation matrices missing\n4. Dimension traversal logic not specified\n\nWithout these, the foundational geometry cannot be implemented.\n",
+  "deliverables": [
+    "Complete mathematical specification of 9D toroidal coordinate system",
+    "Transformation matrices and algorithms for all 9 dimensions",
+    "Efficient traversal algorithms for toroidal space with complexity analysis"
+  ],
+  "relevant_files": [
+    {
+      "file": "part_1_of_9.txt",
+      "description": "Section 2.1 - 9-Dimensional Toroidal Geometry"
+    },
+    {
+      "file": "part_2_of_9.txt",
+      "description": "Geometry implementation details"
+    }
+  ],
+  "context": "",
+  "notes": []
+}

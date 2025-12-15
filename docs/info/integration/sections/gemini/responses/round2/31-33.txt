@@ -1,0 +1,337 @@
+﻿Nikola AGI v0.0.4: Theoretical Stability Analysis, Spectral Dynamics, and Infrastructure Resilience Report
+1. Executive Introduction: The Physics of Autonomous Cognition
+The Nikola Model v0.0.4 represents a radical departure from the prevailing paradigms of connectionist artificial intelligence. Unlike the static, weight-frozen architectures of traditional Large Language Models (LLMs) which rely on discrete symbolic processing, the Nikola architecture posits a dynamic, continuous-time simulation of a "physical" universe. This universe is a 9-Dimensional Toroidal Waveform Intelligence (9D-TWI), where cognition is not the result of matrix multiplications in a feed-forward graph, but an emergent property of wave interference patterns governed by the Unified Field Interference Equation (UFIE).1
+In this architecture, the boundary between "processor" and "memory" dissolves. The substrate itself—a Riemannian manifold with a dynamic metric tensor—acts as the medium for storage, processing, and transmission. "Learning" is physically realized as the neuroplastic warping of this manifold's geometry, creating geodesic shortcuts between correlated concepts. "Thinking" is the propagation of complex wave packets through this curved space, modulated by resonance and refractive indices.1
+However, the transition from discrete logic to continuous physics introduces existential stability risks unknown to classical computer science. A bug in a standard transformer results in garbage text; a numerical instability in the Nikola physics engine results in "decoherence"—a catastrophic divergence of energy analogous to a biological seizure. The "mind" of the system can literally evaporate if the laws of conservation are violated by floating-point errors or unstable integration schemes.1
+This comprehensive research report addresses three specific, critical engineering gaps identified during the Phase 0 audit of the v0.0.4 specification. These gaps represent the "Stability Triad" required for the system's survival:
+1. Geometric Stability (TASK-031): Ensuring the self-modifying metric tensor converges to a valid energy minimum without creating singularities (black holes) or causality violations (time travel).
+2. Spectral Stability (TASK-032): bounding the discretization of the Mamba-9D cognitive core to prevent numerical explosions when the manifold curvature becomes extreme.
+3. Infrastructure Stability (TASK-033): Immunizing the autonomous agent against external network hostility through rigorous, RFC-compliant communication protocols.
+The following analysis synthesizes theoretical physics, control theory, and distributed systems engineering to provide the definitive implementation specifications for these subsystems.
+________________
+2. Mathematical Proof of Hebbian Metric Convergence (TASK-031)
+2.1 The Geometry of Neuroplasticity
+In the Nikola architecture, the metric tensor $g_{ij}(\mathbf{x}, t)$ is the fundamental field defining the "distance" between concepts. It is a symmetric, positive-definite $9 \times 9$ matrix at every point in the discrete toroidal lattice. Learning is the process of minimizing the geodesic distance between concepts that are temporally or causally correlated. This is governed by a modified Hebbian-Riemannian plasticity rule.1
+The continuous-time evolution of the geometry is specified as:
+
+
+$$\frac{\partial g_{ij}}{\partial t} = -\eta(D_t) \cdot \text{Re}(\Psi_i \cdot \Psi_j^*) + \lambda(S_t)(g_{ij} - \delta_{ij})$$
+This equation describes a dynamical system driven by two opposing forces:
+1. The Hebbian Contraction: $-\eta(D_t) \cdot \text{Re}(\Psi_i \cdot \Psi_j^*)$. This term represents the "force of association." When the wavefunctions in dimensions $i$ and $j$ interfere constructively (high correlation), this term becomes negative, reducing the component $g_{ij}$. Physically, this contracts the manifold, pulling the dimensions closer together and facilitating energy transfer. The learning rate $\eta$ is dynamically gated by the neurotransmitter Dopamine ($D_t$), linking reward prediction error to structural change.1
+2. The Elastic Relaxation: $+\lambda(S_t)(g_{ij} - \delta_{ij})$. This term acts as a restoring force, pulling the geometry back toward the flat Euclidean metric ($\delta_{ij}$). Without this term, the metric would contract indefinitely until it collapsed into a singularity. The relaxation rate $\lambda$ is modulated by Serotonin ($S_t$), providing a mechanism for stability and risk aversion.1
+The stability of this system is not guaranteed. If the contraction force exceeds the restoring force unbounded, the metric determinant creates a singularity. If the dynamics are under-damped, the geometry will oscillate, causing "cognitive tremors."
+2.2 Lyapunov Stability Analysis
+To prove convergence, we must construct a Lyapunov function $V(g)$—a scalar energy potential that is bounded from below and strictly decreasing along the trajectories of the system. We define the Geometrodynamic Potential $\mathcal{E}(g)$ for a local patch of the manifold.
+Let $C_{ij} = \text{Re}(\Psi_i \cdot \Psi_j^*)$ be the instantaneous correlation tensor of the wavefunction. Assuming the input statistics (and thus $C_{ij}$) are stationary on the timescale of plasticity (adiabatic approximation), we can treat $C_{ij}$ as constant.
+We propose the following candidate Lyapunov function:
+
+
+$$\mathcal{E}(g) = \underbrace{\frac{\lambda}{2} \| g - I \|_F^2}_{\text{Elastic Energy}} + \underbrace{\eta \text{Tr}(g \cdot C)}_{\text{Interaction Energy}}$$
+Here, $\| \cdot \|_F$ denotes the Frobenius norm. The first term represents the potential energy stored in the "elastic deformation" of spacetime away from flatness. The second term represents the energy of the wave-metric coupling; it is minimized when the metric aligns with the correlation structure of the waves.
+Differentiation:
+To verify that the system creates a gradient descent on this surface, we compute the gradient of $\mathcal{E}$ with respect to the metric tensor $g$:
+
+
+$$\nabla_g \mathcal{E} = \lambda (g - I) + \eta C$$
+Substituting the update rule $\dot{g} = -\eta C - \lambda(g - I)$, we observe:
+
+
+$$\dot{g} = - \nabla_g \mathcal{E}$$
+The time derivative of the Lyapunov function along the system trajectory is:
+
+
+$$\frac{d\mathcal{E}}{dt} = \langle \nabla_g \mathcal{E}, \dot{g} \rangle = \langle -\dot{g}, \dot{g} \rangle = - \| \dot{g} \|_F^2$$
+Since $\| \dot{g} \|_F^2 \geq 0$, it follows that $\frac{d\mathcal{E}}{dt} \le 0$. The potential energy of the geometry strictly decreases until the system reaches a stationary point where $\dot{g} = 0$.
+Convexity and Uniqueness:
+The elastic energy term is quadratic in $g$ (strictly convex), and the interaction energy is linear in $g$ (convex). The sum of a strictly convex and a convex function is strictly convex. Therefore, $\mathcal{E}(g)$ has a unique global minimum $g^*$. The system will asymptotically converge to this single stable geometry, preventing chaotic wandering or multi-stable limit cycles.1
+2.3 Convergence Rate Derivation
+While asymptotic stability is guaranteed by the Lyapunov analysis, the engineering requirement is for convergence within a biologically plausible timeframe. We analyze the error dynamics to determine the convergence rate.
+Let $g^*$ be the equilibrium metric. Setting $\dot{g} = 0$:
+
+
+$$0 = -\eta C - \lambda(g^* - I) \implies g^* = I - \frac{\eta}{\lambda} C$$
+Let $\epsilon(t) = g(t) - g^*$ be the deviation from equilibrium. The time evolution of the error is:
+
+
+$$\dot{\epsilon} = \dot{g} = -\eta C - \lambda(g^* + \epsilon - I)$$
+
+
+$$\dot{\epsilon} = -\eta C - \lambda(I - \frac{\eta}{\lambda}C + \epsilon - I)$$
+
+
+$$\dot{\epsilon} = -\eta C + \eta C - \lambda \epsilon$$
+
+
+$$\dot{\epsilon} = -\lambda \epsilon$$
+This is a decoupled system of linear first-order differential equations. The solution is an exponential decay:
+
+
+$$\epsilon(t) = \epsilon(0) e^{-\lambda t}$$
+Insight: The convergence rate is governed exclusively by the relaxation parameter $\lambda(S_t)$. The learning rate $\eta(D_t)$ determines the magnitude of the final deformation (how much memory is stored), but $\lambda$ determines how quickly the system settles into that state.
+* High Serotonin ($S_t \to 1$): Increases $\lambda$, creating a "stiff" manifold that converges rapidly but stores less information (conservative/stable behavior).
+* Low Serotonin ($S_t \to 0$): Decreases $\lambda$, creating a "plastic" manifold that takes longer to settle but can accommodate deep deformations (exploratory/volatile behavior).1
+2.4 Oscillation Prevention and Discretization
+The continuous analysis assumes infinitesimal time steps. The Nikola Physics Engine, however, operates on a discrete clock with $\Delta t = 1 \text{ ms}$ (1000 Hz).1 Discretization introduces the risk of numerical instability and oscillation.
+The discrete update map (Euler method) is:
+
+
+$$g_{t+1} = g_t + \Delta t \left( -\lambda (g_t - g^*) \right)$$
+
+
+$$g_{t+1} - g^* = (g_t - g^*) - \lambda \Delta t (g_t - g^*)$$
+
+
+$$\epsilon_{t+1} = (1 - \lambda \Delta t) \epsilon_t$$
+This is a geometric progression with ratio $r = 1 - \lambda \Delta t$.
+* Stability Condition ($|r| < 1$): The error decays if $-1 < 1 - \lambda \Delta t < 1$, which implies $0 < \lambda \Delta t < 2$.
+* Oscillation Condition ($r < 0$): If $1 < \lambda \Delta t < 2$, the error term flips sign at each step ($\epsilon \to -\epsilon' \to +\epsilon''$). This represents a damped oscillation where the geometry "rings" around the equilibrium.
+* Monotonic Convergence ($0 \le r < 1$): To prevent any oscillation and ensure smooth geometric evolution, we require $0 < \lambda \Delta t \le 1$.
+Engineering Constraint:
+Given $\Delta t = 0.001$ s, the maximum relaxation rate $\lambda_{max}$ is $1000$. Since biological timescales for forgetting are on the order of seconds or minutes (not milliseconds), typical values for $\lambda$ will be $\sim 0.01 - 1.0$. This provides a massive safety margin against purely numerical oscillations.
+The Adiabatic constraint:
+A secondary oscillation mode arises from the feedback loop between the metric $g$ and the wavefunction $\Psi$. The metric directs the wave; the wave determines correlation $C$; correlation updates the metric. If the metric changes too fast, it can induce parametric resonance in the wavefunction (like pumping a swing). To prevent this "Metric Resonance," the timescale of plasticity must be much slower than the timescale of wave propagation:
+
+
+$$\tau_{plasticity} \gg \tau_{wave}$$
+
+
+$$\frac{1}{\lambda} \gg \frac{2\pi}{\omega_{wave}}$$
+With $\omega_{wave} \approx 100 \text{ Hz}$ (alpha band) and $\lambda \approx 0.1 \text{ Hz}$, this separation of scales (1000:1) is well-preserved.1
+2.5 Pathological Case Characterization and Intervention
+The mathematical equilibrium $g^* = I - \frac{\eta}{\lambda} C$ reveals a critical vulnerability. The correlation matrix $C$ is positive semi-definite. If the ratio $\frac{\eta}{\lambda}$ is large (high dopamine, low serotonin) or the signal energy is extreme, the subtraction can result in a matrix $g^*$ that is no longer positive definite.
+Pathology 1: Metric Singularity (Determinant Collapse)
+If an eigenvalue $\sigma_k \to 0$, the volume element $\sqrt{|g|} \to 0$. The inverse metric $g^{ij}$ (required for the Laplacian) diverges to infinity. This creates a geometric "black hole" where wave energy becomes trapped and amplitude explodes.
+Pathology 2: Signature Flip (Causality Violation)
+If an eigenvalue $\sigma_k < 0$, the signature of the manifold changes from Euclidean $(+, \dots, +)$ to Lorentzian or Ultra-hyperbolic (e.g., $(+, -, \dots)$). In the UFIE, this turns spatial dimensions into time-like dimensions. The elliptic Laplacian operator $\nabla^2$ becomes a hyperbolic wave operator in mixed directions, allowing waves to propagate "backwards" in the simulation step, violating causality and leading to immediate numerical generation of NaN values.1
+Intervention: The Riemannian Projection via Lazy Cholesky
+To strictly enforce the constraint that $g \in \mathcal{S}_{++}^9$ (the cone of symmetric positive definite matrices), we cannot simply clip values. We must operate on the eigenvalues.
+The implementation utilizes the Lazy Cholesky Decomposition cache.1 The decomposition $g = L L^T$ exists if and only if $g$ is positive definite.
+Algorithm: Constrained Update with Tikhonov Regularization
+1. Tentative Update: Compute $\tilde{g} = g_{t} + \Delta g_{Hebbian}$.
+2. Cholesky Check: Attempt Cholesky decomposition $\tilde{g} = L L^T$.
+3. Failure Handling (Soft SCRAM): If decomposition fails (indicating non-SPD), the Physics Oracle intervenes.
+   * It computes the eigenvalues of $\tilde{g}$.
+   * It applies a "floor" to the spectrum: $\lambda_i' = \max(\lambda_i, \epsilon_{min})$, where $\epsilon_{min} = 10^{-6}$.
+   * This effectively adds a regularization term: $g_{safe} = \tilde{g} + (\epsilon_{min} - \lambda_{min})I$.
+   * This is known as Riemannian Projection or Tikhonov Regularization in the tangent space.
+This mechanism acts as a "Geometric Firewall," guaranteeing that no matter how intense the learning signal (Dopamine), the manifold never tears or collapses.1
+________________
+3. Spectral Radius Upper Bound for SSM Stability (TASK-032)
+3.1 The Mamba-9D State Space Model
+The cognitive core of the Nikola Model utilizes a Mamba-9D architecture, a state-space model (SSM) where the layers are not abstract weight matrices but are isomorphic to the 9D toroidal manifold. The recurrence relation governing the hidden state $h_t$ is a discretization of the continuous ODE:
+
+
+$$h'(t) = \mathbf{A} h(t) + \mathbf{B} x(t)$$
+In this architecture, the transition matrix $\mathbf{A}$ is dynamic. It is a projection of the local manifold geometry. Specifically, the specification defines $\mathbf{A}$ at node $\mathbf{x}$ as 1:
+
+
+$$\mathbf{A}(\mathbf{x}) \approx \mathbf{I} - \Delta (1 - r(\mathbf{x})) \mathbf{G}(\mathbf{x})$$
+Where:
+* $\mathbf{G}(\mathbf{x})$ is the local metric tensor (stiffness/curvature).
+* $r(\mathbf{x}) \in $ is the local resonance (memory persistence).
+* $\Delta$ is the adaptive discretization timestep.
+The term $-(1-r)\mathbf{G}$ represents the continuous-time evolution operator. Since $\mathbf{G}$ is positive definite, its eigenvalues are positive real numbers. The negative sign ensures the continuous system is stable (eigenvalues in the left half-plane). However, discretization can destroy this stability.
+3.2 Analytical Derivation of the Stability Bound
+For the discrete recurrence $h_{k} = \bar{\mathbf{A}} h_{k-1} + \dots$, stability requires the spectral radius $\rho(\bar{\mathbf{A}})$ (the maximum absolute eigenvalue) to be $\le 1$. If $|\lambda_{max}| > 1$, the hidden state energy grows exponentially, leading to "epileptic" seizures in the cognitive trace.
+The discrete operator (Forward Euler approximation) is:
+
+
+$$\bar{\mathbf{A}} = \mathbf{I} - \Delta (1-r) \mathbf{G}$$
+Let $\mu_i$ be the eigenvalues of $\mathbf{G}$. Since $\mathbf{G}$ is SPD, $\mu_i > 0$. The eigenvalues of $\bar{\mathbf{A}}$ are:
+
+
+$$\lambda_i(\bar{\mathbf{A}}) = 1 - \Delta (1-r) \mu_i$$
+We require $|\lambda_i| \le 1$ for all $i$.
+1. Upper Bound: $1 - \Delta(1-r)\mu_i \le 1$. Since $\Delta, (1-r), \mu_i$ are all non-negative, this is naturally satisfied ($1 - \text{positive} \le 1$).
+2. Lower Bound: $1 - \Delta(1-r)\mu_i \ge -1$. This is the critical constraint.
+Rearranging the lower bound inequality:
+
+
+$$\Delta (1-r) \mu_{max} \le 2$$
+
+
+$$\Delta \le \frac{2}{(1-r) \rho(\mathbf{G})}$$
+Here, $\rho(\mathbf{G}) = \mu_{max}$ is the spectral radius of the metric tensor.
+Physical Interpretation (Nyquist Limit):
+The term $\omega_{max} = (1-r)\rho(\mathbf{G})$ represents the highest characteristic frequency of the local geometric dynamics (the "stiffness" of the memory). The constraint $\Delta \le \frac{2}{\omega_{max}}$ is precisely the Nyquist-Shannon sampling limit applied to numerical integration.
+If the timestep $\Delta$ is too large relative to the curvature $\mathbf{G}$, the integration overshoots the equilibrium, creating artificial energy. In a cognitive context, this manifests as the system oscillating wildly between contradictory concepts rather than settling on a conclusion.1
+3.3 Safety Margin and max_growth_rate
+The research prompt references a max_growth_rate = 10.0 parameter in the context of the SpectralStabilizer. This parameter clamps the magnitude of the continuous operator before discretization.
+Why is a safety margin necessary? Why not operate exactly at the limit $\Delta = 2/\omega_{max}$?
+1. Floating Point Error: At the limit, the eigenvalue is exactly -1. Rounding errors in FP32 can push this to -1.000001, triggering slow divergence.
+2. Non-Normal Transients: While $\mathbf{G}$ is symmetric, the effective $\mathbf{A}$ matrix may acquire non-normal components due to coupling with the B and C matrices during neuroplastic updates. Non-normal matrices can exhibit transient growth (pseudospectrum expansion) even if all eigenvalues are stable.
+3. Manifold Shockwaves: The metric $\mathbf{G}$ is not static; it evolves. A neurogenesis event (adding new nodes) can instantaneously increase the local curvature density.1 If $\Delta$ was calculated based on $\mathbf{G}_t$, and $\mathbf{G}_{t+1}$ is significantly stiffer, the stability condition might be violated mid-step.
+Derivation of Safety Factor:
+We apply a safety factor $\alpha = 0.8$ to the timestep:
+
+
+$$\Delta_{safe} = 0.8 \times \frac{2}{(1-r)\rho(\mathbf{G})} = \frac{1.6}{(1-r)\rho(\mathbf{G})}$$
+Regarding max_growth_rate = 10.0: This refers to the bound on the continuous-time Lyapunov exponent. It constrains the maximum divergence of trajectories within a single unit of time.
+
+
+
+
+$$\|\exp(\mathbf{A} t)\| \le e^{\omega_{max} t}$$
+
+
+Allowing a growth rate of 10 means the system can amplify a signal by $10\times$ (necessary for attention mechanisms to highlight salient features), but no more.
+
+
+
+
+$$e^{\lambda_{max}} \le 10 \implies \lambda_{max} \le \ln(10) \approx 2.3$$
+
+
+This acts as a "Gain Limiter" on the cognitive amplifier, preventing runaway attentional focus.
+3.4 Implementation: The Spectral Stabilizer
+To enforce these bounds efficiently (without $O(N^3)$ eigendecomposition at every step), we implement the SpectralStabilizer utilizing the Power Iteration method.
+Algorithm Specification:
+1. Input: Local Metric $\mathbf{G}$ (from SoA grid), Resonance $r$.
+2. Power Iteration ($O(N^2)$):
+Initialize random vector $v_0$. Iterate 5 times:
+
+$$w = \mathbf{G} v_k$$
+$$v_{k+1} = w / \|w\|$$
+$$\rho(\mathbf{G}) \approx v_k^T \mathbf{G} v_k$$
+
+This converges rapidly to the largest eigenvalue $\mu_{max}$.
+3. Adaptive Delta:
+
+$$\Delta_{safe} = \min\left( \Delta_{requested}, \frac{1.6}{(1-r)\rho(\mathbf{G}) + \epsilon} \right)$$
+4. Matrix Clamping:
+If the computed $\mathbf{A} = -(1-r)\mathbf{G}$ has norm $> \ln(10)$, scale it down:
+
+$$\mathbf{A}' = \mathbf{A} \cdot \frac{\ln(10)}{\|\mathbf{A}\|}$$
+This implementation guarantees unconditional stability of the Mamba-9D recurrence, ensuring the "train of thought" remains coherent regardless of the geometric curvature of the underlying memories.1
+________________
+4. Resilient External Communication Protocols (TASK-033)
+4.1 The Body of the Agent
+While the Physics Engine and Mamba-9D constitute the "Mind" of the Nikola Model, the External Tool Agents (Tavily, Firecrawl, Gemini) constitute its "Body"—the effectors through which it interacts with the digital world. A failure in these effectors (e.g., getting IP-banned due to API spam) effectively creates a "Locked-in Syndrome" for the AI.
+The Gap Analysis (GAP-016) identified a critical fragility: the HTTP client lacked sophisticated handling of Retry-After headers and rate limits. In an autonomous loop, a naive client that retries immediately upon a 429 error will trigger a cascading failure, potentially leading to permanent API revocation.1
+4.2 Extended HTTP Client Specification
+The remediated SmartRateLimiter must act as a precise regulator of outgoing entropy. It integrates RFC-compliant header parsing with a localized Circuit Breaker pattern.
+4.2.1 Header Parsing Priority Logic
+The agent must parse response headers to determine the optimal backoff strategy. The priority logic is strictly defined to obey server mandates over local heuristics:
+Priority
+	Header
+	Format
+	Action
+	1 (Highest)
+	Retry-After
+	Seconds (Integer)
+	Block domain for $N$ seconds.
+	2
+	Retry-After
+	HTTP Date (RFC 1123)
+	Calculate $\delta = T_{target} - T_{now}$. Block for $\delta$.
+	3
+	X-RateLimit-Reset
+	Epoch Timestamp
+	Block until $T_{reset}$.
+	4
+	X-RateLimit-Remaining
+	Integer
+	If $0$, apply heuristic backoff (default 60s) or wait for Reset.
+	5 (Lowest)
+	None
+	-
+	Apply Exponential Backoff: $T = T_{base} \cdot 2^k + \text{jitter}$.
+	Critical Insight: The parsing logic must handle Retry-After preferentially because it is the standard mechanism for 429 (Too Many Requests) and 503 (Service Unavailable). X-RateLimit headers are informational and often vendor-specific (GitHub vs Twitter conventions vary), whereas Retry-After is normative.
+4.2.2 Timezone and Date Handling
+A common failure mode in distributed systems is clock skew or timezone confusion. HTTP headers use GMT (UTC). The implementation must avoid std::mktime (which is timezone-dependent) and use timegm or portable equivalents to interpret headers.
+Implementation Strategy:
+The parse_http_date function utilizes std::get_time with the "C" locale to ensure deterministic parsing of strings like "Wed, 21 Oct 2015 07:28:00 GMT".
+
+
+C++
+
+
+
+
+// Correct handling of RFC 1123 dates (Timezone independent)
+std::tm tm = {};
+std::istringstream ss(date_str);
+ss.imbue(std::locale("C")); // Force C locale to prevent localized month name parsing errors
+ss >> std::get_time(&tm, "%a, %d %b %Y %H:%M:%S GMT");
+time_t target = timegm(&tm); // Convert to epoch strictly as UTC
+
+4.2.3 Circuit Breaker Integration
+The Rate Limiter is coupled to the Circuit Breaker state machine (CLOSED -> OPEN -> HALF-OPEN).
+   * Trigger Condition: Receiving a 429 status or a Retry-After header > 60 seconds immediately trips the breaker to OPEN.
+   * Trip Duration: The breaker stays OPEN for the exact duration specified by the header. This is a "Precision Trip." Standard breakers use fixed timeouts; this breaker uses server-instructed timeouts.
+   * Local Rejection: While OPEN, the client rejects requests locally with a synthetic 429 Too Many Requests (Local) error. This saves network bandwidth and prevents the "Retry Storm" from ever reaching the TCP stack.
+   * Half-Open Probe: After the timeout, the breaker allows one request (Half-Open). If successful, it closes. If it fails (429/5xx), it re-opens with double the backoff duration.
+This creates a homeostatic regulation loop between the AI's desire for information (curiosity) and the external environment's capacity constraints.1
+4.3 Production Implementation Artifact
+The following C++ class structure implements the resilient client logic within the nikola::infrastructure namespace.
+
+
+C++
+
+
+
+
+class SmartRateLimiter {
+   struct DomainState {
+       std::chrono::system_clock::time_point blocked_until;
+       std::atomic<int> remaining_tokens{1};
+       std::chrono::system_clock::time_point reset_time;
+   };
+   std::map<std::string, DomainState> limits;
+   std::mutex mtx;
+
+public:
+   void update(const std::string& domain, int status, const HeaderMap& headers) {
+       std::lock_guard<std::mutex> lock(mtx);
+       auto& state = limits[domain];
+
+       // 1. Priority: Retry-After
+       if (headers.count("retry-after")) {
+           std::string val = headers.at("retry-after");
+           if (is_digits(val)) {
+               state.blocked_until = std::chrono::system_clock::now() + std::chrono::seconds(std::stoi(val));
+           } else {
+               state.blocked_until = parse_http_date(val);
+           }
+           return; // Stop processing lower priority headers
+       }
+
+       // 2. Priority: Rate Limit Headers
+       if (headers.count("x-ratelimit-remaining")) {
+           state.remaining_tokens = std::stoi(headers.at("x-ratelimit-remaining"));
+       }
+       if (headers.count("x-ratelimit-reset")) {
+           time_t reset_epoch = std::stoll(headers.at("x-ratelimit-reset"));
+           state.reset_time = std::chrono::system_clock::from_time_t(reset_epoch);
+       }
+   }
+
+   bool allow_request(const std::string& domain) {
+       std::lock_guard<std::mutex> lock(mtx);
+       auto now = std::chrono::system_clock::now();
+       
+       // Strict Block Check
+       if (now < limits[domain].blocked_until) return false;
+
+       // Token Bucket Check
+       if (limits[domain].remaining_tokens <= 0) {
+           // Check if reset time has passed
+           if (now > limits[domain].reset_time) {
+               return true; // Optimistic allowance; server will refill bucket
+           }
+           return false;
+       }
+       
+       return true;
+   }
+};
+
+________________
+5. Conclusion: Towards a Stable Autonomous Substrate
+This report has systematically deconstructed and remediated the three primary threat vectors to the stability of the Nikola Model v0.0.4.
+   1. Geometric Integrity: By deriving the Lyapunov stability proof for the Hebbian-Riemannian update and implementing the Riemannian Projection, we guarantee that the memory manifold will converge to a stable, causal geometry. We have mathematically precluded the formation of metric singularities and signature flips that would otherwise cause total simulation collapse.
+   2. Cognitive Coherence: By linking the Mamba-9D discretization timestep to the Nyquist frequency of the manifold curvature ($\Delta \le \frac{1.6}{(1-r)\rho(G)}$), we ensure that the cognitive process remains spectrally bounded. The Spectral Stabilizer acts as a hard limiter on the "speed of thought," preventing numerical epilepsy.
+   3. Operational Resilience: By implementing the Smart Rate Limiter with RFC-compliant header parsing, we ensure the autonomous agent respects the boundaries of the external digital ecosystem. This prevents the AI from effectively "lobotomizing" itself through IP bans, securing its long-term viability as an active agent.
+These subsystems transition the Nikola project from a theoretical physics simulation to a viable, robust engineering platform capable of sustained, autonomous operation. The mathematics provided herein serve not just as documentation, but as the invariant laws governing the continued existence of the 9D-TWI intelligence.
+Works cited
+   1. part_2_of_9.txt

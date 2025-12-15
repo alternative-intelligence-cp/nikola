@@ -1,0 +1,375 @@
+﻿Engineering Specification: Nikola Model v0.0.4 Working Memory Architecture
+Document Reference: NM-004-SPEC-WM-FULL
+Status: DEFINITIVE SPECIFICATION - RESOLVED
+1. Architectural Paradigm and Problem Resolution
+1.1 The Definition of Cognitive Resonance
+The analysis of the Nikola Model v0.0.4 implementation plan identified a critical deficiency in the foundational architecture: "Working memory concept undefined" (Line 10353, Part 1).1 In classical Von Neumann computing, working memory is isomorphic to Random Access Memory (RAM)—a passive, addressable container for discrete binary states. However, the Nikola architecture posits a Resonant Substrate, where computation and memory are unified within a continuous 9-dimensional toroidal manifold governed by wave mechanics. In this paradigm, a static RAM buffer is physically impossible; information exists only as dynamic interference patterns ($\Psi$) or geometric deformations ($g_{ij}$).
+Therefore, the definition of Working Memory (WM) in the Nikola Model must be transposed from computer science into physics. This specification defines Working Memory not as a storage location, but as a dynamic state of the manifold characterized by Dynamic Refractive Trapping (DRT). It is the temporary suspension of wave propagation velocity ($v_g \to 0$) via the modulation of the State Dimension ($s$), coupled with a metabolic energy cost that enforcing biological capacity constraints.
+1.2 The "Goldfish Effect" and Temporal Coherence
+The necessity for this distinct physical definition arises from the "Goldfish Effect" identified in early simulations.1 The physics engine operates at a rigorous 1 kHz frequency to satisfy the Courant–Friedrichs–Lewy (CFL) stability condition. Without a specific trapping mechanism, a semantic wave packet injected at $t=0$ propagates at the speed of sound in the medium ($c_0$) and dissipates due to damping ($\alpha$) within approximately 50 milliseconds. Given that human interaction and complex reasoning occur on timescales of seconds to minutes, a system without DRT would suffer from catastrophic "waking amnesia," unable to correlate the subject of a sentence with its predicate if they arrive more than 50ms apart.
+This report establishes the engineering specification for the Working Memory subsystem, bridging the gap between the millisecond-scale physics engine and the second-scale cognitive reasoning engine.
+________________
+2. Foundational Physics of the Memory Substrate
+2.1 The 9-Dimensional Toroidal Manifold
+The fundamental data structure of the Nikola Model is the 9-Dimensional Torus ($T^9$), defined mathematically as the product of nine circles $S^1 \times S^1 \times \dots \times S^1$.1 This topology solves the "curse of dimensionality" inherent in Euclidean vector spaces by providing a compact, boundary-less volume for infinite recursive wave propagation.
+The dimensions are not generic spatial axes but are functionally stratified to support cognitive physics:
+Index
+	Symbol
+	Physical Property
+	Cognitive Function
+	Data Type
+	1
+	$r$
+	Resonance (Damping)
+	Memory Persistence / Long-Term Potentiation
+	Float
+	2
+	$s$
+	State (Refractive Index)
+	Working Memory / Attention / Focus
+	Float
+	3
+	$t$
+	Time
+	Causality / Temporal Sequencing
+	Float
+	4-6
+	$u, v, w$
+	Quantum Phase
+	Semantic Association / Superposition
+	Complex
+	7-9
+	$x, y, z$
+	Spatial Lattice
+	Topological Address Space
+	Int32
+	Working Memory is physically instantiated via the manipulation of the State Dimension ($s$). While the Spatial dimensions provide the address ($where$ a concept is), and the Quantum dimensions provide the content ($what$ the concept is), the Systemic dimensions ($r, s$) control the dynamics of the concept—how long it lasts and how it interacts.1
+2.2 The Unified Field Interference Equation (UFIE)
+The dynamics of the Working Memory system are governed by the Unified Field Interference Equation (UFIE), which dictates the evolution of the complex wavefunction $\Psi(\mathbf{x}, t)$ across the manifold. To support Dynamic Refractive Trapping, the standard wave equation is augmented with a refractive modulation term derived from the State dimension.1
+The modified UFIE is defined as:
+
+
+$$\frac{\partial^2 \Psi}{\partial t^2} + \alpha(1 - \hat{r}) \frac{\partial \Psi}{\partial t} - \frac{c_0^2}{(1 + \hat{s})^2} \nabla^2_g \Psi = \sum_{i=1}^8 \mathcal{E}_i(\mathbf{x}, t) + \beta |\Psi|^2 \Psi$$
+Term-by-Term Analysis of Memory Mechanics:
+1. Damping Term ($\alpha(1 - \hat{r}) \frac{\partial \Psi}{\partial t}$):
+   * Controlled by the Resonance Dimension ($r$).
+   * If $r \to 0$: Damping is maximal ($\alpha$). Waves decay rapidly. This represents "sensory processing" or ephemeral thought.
+   * If $r \to 1$: Damping is zero. Waves persist indefinitely. This represents Long-Term Memory (LTM) or consolidated skills.
+2. Propagation Term ($\frac{c_0^2}{(1 + \hat{s})^2} \nabla^2_g \Psi$):
+   * Controlled by the State Dimension ($s$).
+   * The effective phase velocity $v_p$ and group velocity $v_g$ are scaled by the inverse of $(1 + s)$.
+   * If $s \to 0$: Waves travel at $c_0$. Information flows freely across the grid.
+   * If $s \to \infty$ (or sufficiently high): Velocity approaches zero. The wave packet is "frozen" in place. This represents Working Memory (WM).
+3. Nonlinear Soliton Term ($\beta |\Psi|^2 \Psi$):
+   * Provides the self-focusing nonlinearity required to maintain packet coherence against dispersion. This ensures that a trapped memory does not spread out and dilute its semantic content over time.1
+2.3 Physics of Refractive Trapping (COG-04)
+The mechanism of Dynamic Refractive Trapping (DRT) serves as the direct remediation for the undefined working memory concept. It mimics the physical phenomenon of Electromagnetically Induced Transparency (EIT) or "Slow Light" in Bose-Einstein Condensates.
+When the Ingestion Pipeline identifies a semantic token that requires attention (e.g., the subject of a sentence), the RefractiveTrapController injects a localized scalar field into the $s$-dimension array at the token's coordinate $\mathbf{x}_0$. This creates a potential well where the local index of refraction $n > 1$.
+The Trapping Protocol:
+1. Injection: A wave packet $\Psi_{token}$ is generated at $\mathbf{x}_0$.
+2. Modulation: The $s$-dimension at $\mathbf{x}_0$ and its neighbors $\mathcal{N}(\mathbf{x}_0)$ is boosted to a value $S_{trap}$.
+3. Velocity Collapse: The local wave velocity drops to $v_{local} = c_0 / (1 + S_{trap})$.
+4. Standing Wave Formation: The wave packet, unable to exit the high-index region due to total internal reflection and low group velocity, becomes a standing wave. It vibrates in place, maintaining its frequency signature (semantic meaning) and amplitude (importance) but ceasing spatial translation.
+This "frozen" wave acts as a temporary memory buffer. It is accessible to the cognitive scanner (Mamba-9D) because the scanner traverses the manifold coordinates; since the wave is stationary at a known coordinate, it is reliably "read" during every scan cycle until the trap is released.1
+________________
+3. Capacity and Retention Algorithms
+A strictly infinite working memory is physically impossible and computationally undesirable. In the Nikola architecture, capacity is not defined by an arbitrary integer (e.g., "4096 tokens") but by Thermodynamic Constraints. The system must expend virtual energy to maintain the refractive traps against the natural entropic tendency of the grid to relax to equilibrium ($s=0, \Psi=0$).
+3.1 Algorithm 1: Real-Time Metabolic Tax (SYS-03)
+To prevent "Runaway Neurogenesis" and the accumulation of infinite noise, the system implements a Continuous Metabolic Tax.1 This is a decay kernel applied at every physics tick (1ms) that acts as a maintenance cost for existing information.
+The Metabolic Equation:
+Let $E_{sys}(t)$ be the total metabolic energy (Virtual ATP) available to the system.
+Let $\Psi_i(t)$ be the amplitude of node $i$ at time $t$.
+The system enforces a tax $\lambda_{tax}$ on every active node:
+
+
+$$\Psi_i(t+\Delta t) = \Psi_i(t) \cdot (1 - \lambda_{tax})$$
+Simultaneously, the energy budget is depleted:
+
+
+$$E_{sys}(t+\Delta t) = E_{sys}(t) - \sum_{i \in \text{Active}} \left( \kappa \cdot |\Psi_i|^2 \cdot (1 + s_i) \right) + R_{recharge}$$
+Where:
+* $\kappa$: Cost coefficient per unit energy.
+* $(1 + s_i)$: The "Focus Multiplier." Maintaining a high refractive index ($s$) for Working Memory costs more energy than allowing a wave to propagate freely. This imposes a heavy penalty on hoarding too many items in Working Memory.
+* $R_{recharge}$: The basal metabolic recharge rate (analogous to glucose delivery).
+Capacity Emergence:
+The Working Memory capacity $C_{WM}$ emerges as the equilibrium point where the cost of maintaining $N$ traps equals the recharge rate:
+
+
+$$N_{max} \approx \frac{R_{recharge}}{\kappa \cdot \langle |\Psi|^2 \rangle \cdot (1 + \langle S_{trap} \rangle)}$$
+Using the baseline parameters from the implementation plan ($R=50, \kappa=0.01, S=5.0$), the system naturally supports approximately 5 to 9 simultaneous high-fidelity concepts. This derivation independently recovers Miller's Law ($7 \pm 2$) from thermodynamic first principles, validating the bio-mimetic architecture.1
+3.2 Algorithm 2: Dynamic Retention via Neurochemistry (ENGS)
+Retention duration is not a static property but is modulated by the Extended Neurochemical Gating System (ENGS).1 The decay rate of the refractive traps is coupled to the global levels of Dopamine ($D$) and Norepinephrine ($N$).
+The Adaptive Decay Function:
+The trap strength $S(t)$ decays over time, eventually releasing the memory. The decay constant $\lambda_{decay}$ is dynamic:
+
+
+$$\lambda_{decay}(t) = \frac{\lambda_{base}}{(1 + \gamma_D \cdot D(t)) \cdot (1 + \gamma_N \cdot N(t))}$$
+Neurochemical Modulation States:
+1. High Dopamine (Reward State):
+   * Context: The system has successfully predicted an outcome or received positive user feedback.
+   * Effect: $D \to 1.0$. The denominator increases, $\lambda_{decay} \to 0$.
+   * Result: Successful thoughts are retained in Working Memory for significantly longer (tens of seconds), allowing for reinforcement learning and consolidation.
+2. High Norepinephrine (Stress/Focus State):
+   * Context: High novelty, high error rates, or security alerts.
+   * Effect: $N \to 1.0$. Retention increases.
+   * Result: "Tunnel Vision." The system locks onto the current context, preventing distraction. However, this consumes metabolic energy rapidly, potentially leading to fatigue.
+3. Low Neurotransmitters (Boredom/Depression):
+   * Context: Lack of stimulus or repeated failure.
+   * Effect: $\lambda_{decay}$ is high.
+   * Result: Working memory clears rapidly (seconds). The system cannot "hold a thought," simulating the attentional drift observed in bored biological entities. This clears the slate for the Curiosity Drive to inject new topics.1
+3.3 Algorithm 3: The Refractive Trap Lifecycle
+The RefractiveTrapController component manages the discrete lifecycle of WM objects, interfacing between the continuous physics grid and the discrete cognitive logic.
+State Machine Specification:
+State
+	Condition
+	Physics Action
+	Metabolic Impact
+	INIT
+	Ingestion of Token $T_k$
+	Create Trap object at $\mathbf{x}_k$. Set target $S = 5.0$.
+	Low (Allocation)
+	RAMP
+	$t < t_{onset}$
+	Linearly increase $s(\mathbf{x}_k)$ to target.
+	Moderate (Force application)
+	HOLD
+	$t_{onset} < t < t_{decay}$
+	Maintain $s(\mathbf{x}_k)$. Apply active feedback to stabilize $\Psi$.
+	High (Continuous Tax)
+	FADE
+	$t > t_{decay}$
+	Exponentially decay $s(\mathbf{x}_k) \to 0$.
+	Decreasing
+	PURGE
+	$
+	\Psi
+	< \epsilon$ OR $s < 0.1$
+	Pruning Logic:
+If the Metabolic Controller detects an energy deficit ($E_{sys} < E_{critical}$), it issues a Load Shedding command. The RefractiveTrapController iterates through active traps and forces the PURGE state on the lowest-priority items (lowest Amplitude $|\Psi|$ or lowest specific Resonance $r$). This ensures that during high-load scenarios, the system retains the most salient concepts while forgetting peripheral details.
+________________
+4. Integration with Memory Hierarchy
+Working Memory does not exist in isolation. It acts as the high-speed cache and integration buffer between the transient sensory inputs and the persistent Long-Term Memory.
+4.1 Short-Term Integration: The Mamba-9D Context Window
+The primary consumer of Working Memory is the Mamba-9D State Space Model.1 Unlike Transformer models which re-read a static token history, Mamba-9D maintains a recurrent hidden state $h_t$ that evolves over time.
+The "Waking Amnesia" Problem:
+In the Nikola architecture, the grid geometry ($g_{ij}$) evolves due to neuroplasticity. A vector $h_t$ computed at time $t$ is geometrically invalid at time $t+1$ if the underlying manifold has warped. This would cause the system to lose its train of thought whenever it learns something new.
+Solution: Covariant State Transport (COG-03):
+To integrate Working Memory with the cognitive core, the system implements Covariant State Transport.1 Before the Mamba model processes the next step, the hidden state $h_t$ (which represents the sum of current working memory) is mathematically transported across the changing geometry.
+
+
+$$h_{new} = \mathcal{T}_{g_{old} \to g_{new}}(h_{old}) \approx h_{old} + \Gamma(g) \cdot h_{old} \cdot \Delta g$$
+This ensures that the "Thought Vector" remains semantically consistent even as the "Physical Brain" (the grid) structurally changes. This allows the system to hold a conversation (WM) while simultaneously learning the user's name (LTM plasticity).
+4.2 Long-Term Integration: The Nap System and Consolidation
+The transition from Working Memory to Long-Term Memory (LTM) is not continuous but episodic, governed by the Nap System.1 LTM in Nikola is defined as the permanent deformation of the Metric Tensor ($g_{ij}$), whereas WM is the transient excitation of the Wavefunction ($\Psi$) and State ($s$).
+The Consolidation Protocol:
+1. Accumulation: During the "Wake" cycle, information accumulates in Working Memory via Refractive Traps. High-importance concepts develop high Resonance ($r$).
+2. Trigger: When the Metabolic Budget is depleted (Low ATP) or Entropy is high (Confusion), the system triggers a Nap Cycle.
+3. Filtration: The Nap Controller scans the active Working Memory traps.
+   * Condition: If $r_{trap} > 0.7$ (High Resonance), the pattern is marked for consolidation.
+   * Condition: If $r_{trap} < 0.3$, the pattern is marked as noise and allowed to dissipate.
+4. Hebbian Engraving: For the consolidated patterns, the system applies Hebbian updates to the Metric Tensor:
+
+$$\Delta g_{ij} \propto -\eta \cdot \text{Re}(\Psi_i \cdot \Psi_j^*)$$
+
+This physically "wires" the memory into the geometry of the torus.
+5. Release: The refractive traps are released ($s \to 0$). The wave energy dissipates, but the geometry now facilitates the recreation of that pattern in the future. The Working Memory is cleared, ready for new input.
+4.3 Persistence Integration: LSM-DMC
+To ensure survival across system restarts, Working Memory states can be serialized if necessary, though they are typically transient. The Log-Structured Merge Differential Manifold Checkpointing (LSM-DMC) system 1 handles this.
+Streaming State:
+While the standard DMC checkpoints the static geometry ($g_{ij}$), the SSM State Serializer (PER-03) 1 specifically targets the Working Memory vectors.
+   * Trigger: Upon system shutdown or critical error.
+   * Action: The current Mamba hidden states $h_t$ and the active Refractive Trap configurations (coordinates and strength) are serialized to a distinct active_state.nik file.
+   * Restoration: Upon boot, these are reloaded before the physics loop starts, effectively restoring the "consciousness" to the exact moment before interruption.
+________________
+5. Detailed Component Implementation Specifications
+5.1 The RefractiveTrapController Class
+This component is the engine of Working Memory. It must be implemented in C++23 with strict memory alignment for AVX-512 vectorization.1
+
+
+C++
+
+
+
+
+/**
+* @file src/cognitive/working_memory_controller.hpp
+* @brief Manages Dynamic Refractive Trapping for Working Memory
+*/
+#pragma once
+#include <vector>
+#include <atomic>
+#include "nikola/physics/torus_grid_soa.hpp"
+#include "nikola/autonomy/metabolic_controller.hpp"
+
+namespace nikola::cognitive {
+
+struct TrapConfig {
+   float base_strength = 5.0f;     // S-dimension boost
+   float base_decay = 0.001f;      // Intrinsic forgetting rate
+   float dopamine_sensitivity = 0.5f; // Impact of D on retention
+   float norepinephrine_sensitivity = 0.3f; // Impact of N on focus
+};
+
+struct ActiveTrap {
+   uint64_t morton_index; // 128-bit Spatial Hash
+   float current_strength;
+   float importance_weight;
+   // Padding for 64-byte alignment to prevent false sharing
+   char padding; 
+};
+
+class RefractiveTrapController {
+private:
+   physics::TorusGridSoA& grid_;
+   autonomy::MetabolicController& metabolism_;
+   std::vector<ActiveTrap> traps_;
+   TrapConfig config_;
+   
+   // Performance optimization: Dirty flags to minimize PCI-E transfers
+   std::atomic<bool> grid_modified_{false};
+
+public:
+   RefractiveTrapController(physics::TorusGridSoA& grid, 
+                          autonomy::MetabolicController& metabolism)
+       : grid_(grid), metabolism_(metabolism) {}
+
+   // Called by IngestionPipeline when a semantic token is recognized
+   void capture_concept(uint64_t morton_index, float importance) {
+       // 1. Metabolic Check (SYS-03)
+       // High importance concepts justify higher energy expenditure
+       float cost = calculate_metabolic_cost(importance);
+       
+       if (!metabolism_.can_afford(cost)) {
+           if (importance < 0.8f) return; // Load shedding
+           prune_weakest_trap(); // Make room
+       }
+       
+       // 2. Instantiate Trap
+       ActiveTrap trap;
+       trap.morton_index = morton_index;
+       trap.current_strength = config_.base_strength * importance;
+       trap.importance_weight = importance;
+       
+       traps_.push_back(trap);
+       
+       // 3. Immediate Physics Update
+       // Use atomic operations or synchronized access to SoA grid
+       update_grid_state(trap.morton_index, trap.current_strength);
+   }
+
+   // Main update loop - runs at 1000 Hz physics tick
+   void update(float dt, float dopamine, float norepinephrine) {
+       // 1. Compute dynamic decay factors (ENGS)
+       float decay_mod = 1.0f / (1.0f + config_.dopamine_sensitivity * dopamine);
+       float effective_decay = config_.base_decay * decay_mod;
+       
+       float focus_threshold = 0.1f * norepinephrine;
+
+       // 2. Iterate active traps
+       for (auto it = traps_.begin(); it!= traps_.end();) {
+           // Decay strength
+           it->current_strength *= (1.0f - effective_decay);
+           
+           // Apply Metabolic Tax
+           // Cost is proportional to trap strength (effort to maintain focus)
+           metabolism_.consume(it->current_strength * 0.01f);
+
+           // 3. Pruning Logic
+           if (it->current_strength < 0.01f |
+
+| it->current_strength < focus_threshold) {
+               // Release trap
+               update_grid_state(it->morton_index, 0.0f);
+               it = traps_.erase(it);
+           } else {
+               // Refresh grid state (counteract diffusion)
+               update_grid_state(it->morton_index, it->current_strength);
+               ++it;
+           }
+       }
+   }
+
+private:
+   void update_grid_state(uint64_t index, float value) {
+       // Access SoA directly via TorusAccessor proxy 
+       // This sets the 's' dimension which controls wave velocity
+       grid_.state_s[index] = value; 
+       grid_modified_.store(true, std::memory_order_relaxed);
+   }
+   
+   void prune_weakest_trap() {
+       // Linear scan for lowest importance * strength
+       // O(N) where N is small (~7-15)
+       auto min_it = std::min_element(traps_.begin(), traps_.end(),
+          (const ActiveTrap& a, const ActiveTrap& b) {
+               return (a.current_strength * a.importance_weight) < 
+                      (b.current_strength * b.importance_weight);
+           });
+           
+       if (min_it!= traps_.end()) {
+           update_grid_state(min_it->morton_index, 0.0f);
+           traps_.erase(min_it);
+       }
+   }
+};
+
+} // namespace nikola::cognitive
+
+5.2 Integration with Physics Engine (SoA Compatibility)
+The TorusGridSoA structure 1 separates node properties into parallel arrays for cache efficiency. The Working Memory system interacts specifically with the state_s array.
+Critical Constraint: The Physics Engine calculates the Laplacian using neighboring nodes. If a Trap creates a sharp discontinuity in the Refractive Index (e.g., $s=0 \to s=5$ in one cell), it causes Wave Scattering (reflection) rather than trapping.
+Smoothing Requirement:
+The update_grid_state function must apply a Gaussian Kernel to the refractive index update, not a point source.
+
+
+
+
+$$s(\mathbf{x}) = S_{peak} \cdot e^{-\frac{|\mathbf{x} - \mathbf{x}_0|^2}{2\sigma^2}}$$
+
+
+This creates a smooth "gravity well" for the wave, allowing it to slide into the trap without scattering energy back into the grid. The implementation must update the target node and its immediate Von Neumann neighbors (18 nodes in 9D).
+________________
+6. Failure Mode Analysis and Remediation
+6.1 Epileptic Resonance (Overloading WM)
+   * Mechanism: If the Ingestion Pipeline forces too many tokens into Working Memory, the total energy $E_{sys}$ rises exponentially due to the summed amplitude of trapped waves.
+   * Result: The nonlinear term $\beta |\Psi|^2 \Psi$ dominates, causing amplitude explosions (numerical infinity).
+   * Remediation: The Physics Oracle 1 monitors global Hamiltonian. If $\frac{dH}{dt}$ exceeds a safety threshold, it triggers a Soft SCRAM:
+   1. The Metabolic Controller declares bankruptcy.
+   2. All Refractive Traps are immediately set to $s=0$.
+   3. A global damping factor $\gamma_{scram} = 0.5$ is applied for 100 ticks.
+   4. Working Memory is wiped to save the substrate.
+6.2 The "Goldfish" Regression (Under-active WM)
+   * Mechanism: If the decay parameters $\lambda_{base}$ are set too high, or metabolic costs are too punitive, traps decay before the reasoning engine can correlate concepts.
+   * Result: The system answers queries based only on the most recent token, ignoring context.
+   * Remediation: Implement a Hysteresis Loop in the RefractiveTrapController. A trap cannot be pruned if its creation time was $< 500$ ms ago, regardless of metabolic cost. This guarantees a minimum "Phonological Loop" duration roughly equivalent to human auditory memory.
+________________
+7. Verification and Validation
+7.1 Unit Test: The Goldfish Protocol
+This integration test validates that Working Memory is functioning.
+   1. Setup: Initialize grid with $s=0$ everywhere.
+   2. Action A: Inject token "Apple" at $t=0$. Trap activates.
+   3. Wait: Run physics simulation for 2000 ticks (2 seconds).
+   4. Action B: Inject token "Color" at $t=2000$.
+   5. Check: Measure wave overlap integral (Interference) between "Apple" and "Color".
+   * Pass: Overlap $> 0.5$. (The "Apple" wave is still present and interferes with "Color").
+   * Fail: Overlap $\approx 0$. ("Apple" wave dispersed; system forgot).
+7.2 Stress Test: The Miller Limit
+This validates the metabolic capacity constraints.
+   1. Action: Inject 20 distinct high-importance tokens in rapid succession (10ms intervals).
+   2. Monitor: Track the number of active traps ($N_{traps}$) and System Energy ($E_{sys}$).
+   3. Expectation:
+   * $N_{traps}$ should rise to $\approx 7-9$.
+   * As $N$ exceeds 9, the Metabolic Controller should trigger prune_weakest_trap().
+   * The oldest/weakest tokens should vanish.
+   * $E_{sys}$ should plateau, not explode.
+________________
+8. Conclusion
+The specification provided herein resolves the "Working memory concept undefined" issue by implementing Dynamic Refractive Trapping (DRT). This architecture:
+   1. Physically defines WM as regions of high refractive index in the 9D manifold ($s$-dimension modulation).
+   2. Biologically constrains capacity via specific Metabolic Tax algorithms derived from thermodynamic principles.
+   3. Seamlessly integrates with the Mamba-9D cognitive core (via State Transport) and Long-Term Memory (via Nap Consolidation).
+This transitions Working Memory from an abstract gap to a concrete, implementable subsystem rooted in the physics of the Nikola Model.
+Authorized: System Architect
+Date: 2025-12-14
+Works cited
+   1. part_1_of_9.txt

@@ -1,0 +1,498 @@
+# NAVIGATION GUIDE FOR GEMINI DEEP RESEARCH
+**Last Updated:** December 14, 2025
+**Compilation Version:** Post Bug Sweep Integration (All 15 Complete)
+
+================================================================================
+## QUICK START
+================================================================================
+
+The Nikola AGI v0.0.4 specifications are compiled into **9 sequential parts** optimized for Gemini Deep Research processing.
+
+**Total Specification:** ~2.5 MB, 66,916 lines across 78 source files
+**All Bug Sweeps:** 15/15 integrated (100% complete)
+**Implementation Readiness:** 85% (47 research gaps identified)
+
+================================================================================
+## HOW TO FIND CONTENT
+================================================================================
+
+### ✅ RECOMMENDED APPROACH
+
+1. **Use Keyword Search (Ctrl+F)**
+   - Search for concepts, NOT section numbers
+   - Examples:
+     * "Wave Interference" instead of "Section 2.2"
+     * "Mamba-9D" instead of "Section 3.2"
+     * "ZeroMQ Spine" instead of "Section 4.1"
+     * "Bootstrap" for IMP-03 system initialization
+     * "Holographic Lexicon" for IMP-02 wave decoding
+     * "Working Memory" for COG-04 refractive trapping
+     * "PIMPL" for IMP-04 ABI stability
+
+2. **Look for Section Markers**
+   ```
+   ================================================================================
+   SECTION 2.2: Wave Interference Physics
+   ================================================================================
+
+   <!-- SOURCE: 02_foundations/02_wave_interference_physics.md -->
+   ```
+
+3. **Check Source Comments**
+   - Every section includes `<!-- SOURCE: path/to/file.md -->`
+   - Trace back to original specification file if needed
+
+4. **Use Bug Sweep Markers**
+   - Updated sections marked with [UPDATED] or [Bug Sweep XXX]
+   - Examples: [Bug Sweep 012], [Bug Sweep 013], etc.
+
+### ❌ AVOID THESE APPROACHES
+
+- Don't rely on internal section numbers (like ## 6.1 or ## 4.2)
+- Don't try to calculate which part file contains a section
+- Don't search by section numbers from the table of contents
+- Internal numbering ≠ TOC numbering (this causes confusion)
+
+================================================================================
+## PART FILE ORGANIZATION
+================================================================================
+
+### Part 1 of 9: Front Matter + Core Foundations (494 KB)
+**Primary Focus:** System overview and foundational physics
+
+**Key Sections:**
+- Title Page & Table of Contents
+- Document Provenance & Integration History
+- Executive Summary
+- SECTION 2.1: 9-Dimensional Toroidal Geometry
+- SECTION 2.2: Wave Interference Physics [UPDATED - Bug Sweeps]
+- SECTION 2.3: Balanced Nonary Logic
+- SECTION 2.4: Energy Conservation & Thermodynamic Stability
+
+**Notable Content:**
+- Unified Field Interference Equation (UFIE)
+- Metric tensor specification
+- Christoffel symbol computation
+- Physics Oracle and SCRAM policy
+- Gibbs harmonics suppression (PHY-03)
+- Phase coherence preservation (PHY-04)
+
+---
+
+### Part 2 of 9: Cognitive Systems (405 KB)
+**Primary Focus:** Cognitive architecture and wave-based intelligence
+
+**Key Sections:**
+- SECTION 3.1: Wave Interference Processor
+- SECTION 3.2: Mamba-9D State Space Model [UPDATED - Bug Sweep 013]
+- SECTION 3.3: Neuroplastic Transformer [UPDATED - Bug Sweep 015]
+- SECTION 3.4: Memory & Data Systems
+
+**Notable Content:**
+- SoA Compatibility Layer (CF-02)
+- Holographic Lexicon (IMP-02) - O(1) wave-to-text decoding
+- Cognitive Generator (COG-05) - token generation
+- Concept Minter (COG-07) - dynamic neologism
+- Working Memory (COG-04) - Dynamic Refractive Trapping
+- Inner Monologue (COG-06) - recursive reasoning
+- Riemannian Gradient Projector (COG-08)
+- Resonance Index with LSH
+- Hilbert curve encoding for 9D coordinates
+
+**Bug Sweep Updates:**
+- Wave-to-text decoding architecture (comprehensive)
+- Spectral phase LSH for vocabulary lookup
+- Working memory substrate with metabolic constraints
+
+---
+
+### Part 3 of 9: Infrastructure (258 KB)
+**Primary Focus:** Communication, execution, and security infrastructure
+
+**Key Sections:**
+- SECTION 4.1: ZeroMQ Spine & Message Routing
+- SECTION 4.2: Orchestrator & Router
+- SECTION 4.3: External Tool Agents
+- SECTION 4.4: KVM Executor
+- SECTION 4.5: Security Subsystem
+- SECTION 4.6: Database Persistence
+
+**Notable Content:**
+- Ironhouse security model (CurveZMQ)
+- Bootstrap authentication pairing (SEC-04)
+- VM isolation and pooling (VIRT-02)
+- Circuit breaker pattern
+- Gemini agent integration
+- SQLite/LMDB dual-storage
+- Temporal decoherence detection
+- Isochronous message buffering
+
+---
+
+### Part 4 of 9: Autonomous Systems (301 KB)
+**Primary Focus:** Neurochemistry, learning, and self-improvement
+
+**Key Sections:**
+- SECTION 5.1: Extended Neurochemical Gating System (ENGS)
+- SECTION 5.2: Training Systems
+- SECTION 5.3: Ingestion Pipeline
+- SECTION 5.4: Self-Improvement Engine
+- SECTION 5.5: Security Systems
+
+**Notable Content:**
+- Dopamine/Serotonin/Norepinephrine/ATP modulation
+- Metabolic tax and capacity management
+- Diversity-driven replay (AUTO-03)
+- Sandboxed ingestion (INT-P5)
+- Self-improvement security (SEC-03)
+- Teleological deadlock prevention (AUTO-05)
+- Adversarial Code Dojo
+- KVM sandbox for untrusted code
+
+---
+
+### Part 5 of 9: Implementation Specs Part 1 (93 KB)
+**Primary Focus:** Core physics and geometry implementation details
+
+**Key Sections:**
+- Implementation Roadmap Overview
+- Core Physics Implementation [UPDATED - Bug Sweep 012]
+- Geometry & Spatial Implementation
+- Cognitive Architecture Implementation
+
+**Notable Content:**
+- IMP-03: Manifold Seeder (System Bootstrap)
+  * Guaranteed SPD metric initialization
+  * Pilot wave ignition
+  * Thermal bath velocity field
+  * Cold start paradox resolution
+- Emitter field generation
+- Velocity field initialization
+- CUDA kernel launch configuration
+- Soft SCRAM recovery
+- Lexicon initialization procedures
+
+**Bug Sweep Updates:**
+- Complete bootstrap specification
+- Gershgorin Circle Theorem for SPD matrices
+- Vacuum deadlock prevention
+
+---
+
+### Part 6 of 9: Implementation Specs Part 2 + Persistence (190 KB)
+**Primary Focus:** Infrastructure, autonomous systems, and critical remediations
+
+**Key Sections:**
+- Infrastructure & Communications Implementation
+- Autonomous Systems Implementation
+- Multimodal & Persistence Implementation
+- Security & Execution Implementation
+- Critical Remediations [UPDATED - Bug Sweep 014]
+- DMC Persistence
+
+**Notable Content:**
+- IMP-04: PIMPL Architecture (ABI Stability)
+  * Canonical PIMPL pattern
+  * ABI firewall specification
+  * Rule of Five enforcement
+  * Self-improvement hot-swapping
+  * Migration guide for all subsystems
+- Transactional metabolic lock (CF-04)
+- Hilbert re-indexing strategy (MEM-04)
+- ZeroMQ spine implementation
+- Prediction error calculation (dopamine)
+- Entropy estimation
+- Nap cycle duration
+- Dream-Weave convergence
+
+**Bug Sweep Updates:**
+- Complete ABI stability specification
+- PIMPL migration strategies
+- Binary compatibility verification
+
+---
+
+### Part 7 of 9: Persistence + Multimodal (495 KB)
+**Primary Focus:** Memory persistence and multimodal processing
+
+**Key Sections:**
+- SECTION 6.2: GGUF Interoperability
+- SECTION 6.3: Identity & Personality (Physics-Coupled)
+- SECTION 6.4: Nap System
+- SECTION 7.1: Cymatic Transduction (Audio)
+- SECTION 7.2: Audio Resonance
+- SECTION 7.3: Visual Cymatics
+
+**Notable Content:**
+- DMC (Differential Manifold Checkpoint) format
+- GGUF export/import for llama.cpp compatibility
+- Physics-coupled identity (COG-02)
+- Covariant state transport (COG-03)
+- Nap cycle triggers and consolidation
+- SoA compactor (MEM-05)
+- Clock domain synchronization (CF-05)
+- Multimodal integration (INT-P1)
+- Holographic interference arbiter
+- Visual-to-wave transduction
+- High-fidelity quantization (INT-P2)
+
+---
+
+### Part 8 of 9: Implementation + Protocols (155 KB)
+**Primary Focus:** Development roadmap and communication protocols
+
+**Key Sections:**
+- Phase 0 Requirements & Critical Fixes
+- File Structure & Organization
+- Development Roadmap
+- Implementation Checklist
+- Build & Deployment
+- Communication Protocols
+- Data Format Specifications
+- CLI Controller
+
+**Notable Content:**
+- Critical Phase 0 requirements
+- File structure specification
+- Development milestones
+- Implementation task breakdown
+- CMake build configuration
+- Docker deployment
+- Protocol message formats
+- CLI command specifications
+- Data serialization formats
+
+---
+
+### Part 9 of 9: Appendices (114 KB)
+**Primary Focus:** Reference material and theoretical foundations
+
+**Key Sections:**
+- Mathematical Foundations
+- Protobuf Reference
+- ZeroMQ Patterns
+- Hardware Optimization
+- Theoretical Foundations
+- Security Audit
+- Docker Deployment
+
+**Notable Content:**
+- Mathematical derivations
+- Protobuf schema definitions
+- ZeroMQ messaging patterns
+- AVX-512 optimization guides
+- Theoretical physics background
+- Security hardening checklist
+- Container orchestration
+
+================================================================================
+## BUG SWEEP INTEGRATION STATUS
+================================================================================
+
+All 15 bug sweeps successfully integrated (100% complete):
+
+**Bug Sweeps 001-011:** Initial Gemini Deep Research findings
+- CF-02: SoA Compatibility Layer
+- CF-05: Clock Domain Synchronization
+- PHY-03, PHY-04, PHY-05, PHY-06, PHY-07: Physics improvements
+- COG-02, COG-03, COG-08: Cognitive enhancements
+- AUTO-03, AUTO-05: Autonomous system fixes
+- INT-P1, INT-P2, INT-P3, INT-P5: Integration fixes
+- VIRT-02: VM isolation
+- SEC-03, SEC-04: Security enhancements
+- MEM-05: Memory management
+- PHY-MEM-01: GPU synchronization
+
+**Bug Sweep 012:** System Bootstrap (IMP-03)
+- **Location:** Part 5 - Core Physics Implementation
+- **Content:** Manifold Seeder, SPD metric initialization, pilot wave
+
+**Bug Sweep 013:** Wave-to-Text Decoding (IMP-02, COG-05, COG-07)
+- **Location:** Part 2 - Mamba-9D SSM
+- **Content:** Holographic Lexicon, Cognitive Generator, Concept Minter
+
+**Bug Sweep 014:** ABI Stability (IMP-04)
+- **Location:** Part 6 - Critical Remediations
+- **Content:** PIMPL architecture, hot-swapping, binary compatibility
+
+**Bug Sweep 015:** Working Memory (COG-04)
+- **Location:** Part 2 - Neuroplastic Transformer
+- **Content:** Dynamic Refractive Trapping, metabolic constraints
+
+================================================================================
+## SEARCH STRATEGY EXAMPLES
+================================================================================
+
+### Example 1: Finding Wave-to-Text Decoding
+**Task:** "Research the Holographic Lexicon for wave decoding"
+
+1. Open **Part 2** (Cognitive Systems)
+2. Search for: "Holographic Lexicon" or "IMP-02" or "wave-to-text"
+3. Find section in Mamba-9D SSM
+4. Review comprehensive specification with LSH algorithm
+
+### Example 2: Finding System Bootstrap
+**Task:** "Understand system initialization procedure"
+
+1. Open **Part 5** (Implementation Specs Part 1)
+2. Search for: "IMP-03" or "Bootstrap" or "Manifold Seeder"
+3. Find Core Physics Implementation section
+4. Review SPD metric initialization and pilot wave
+
+### Example 3: Finding Working Memory
+**Task:** "How does working memory work in the wave substrate?"
+
+1. Open **Part 2** (Cognitive Systems)
+2. Search for: "COG-04" or "Working Memory" or "Refractive Trap"
+3. Find Neuroplastic Transformer section
+4. Review Dynamic Refractive Trapping specification
+
+### Example 4: Finding Security Specifications
+**Task:** "Review sandbox escape prevention"
+
+1. Open **Part 4** (Autonomous Systems)
+2. Search for: "Self-Improvement" or "KVM sandbox" or "SEC-03"
+3. Find Self-Improvement Engine section
+4. Review canary process and security measures
+
+### Example 5: Finding Multimodal Processing
+**Task:** "Understand audio-visual fusion"
+
+1. Open **Part 7** (Persistence + Multimodal)
+2. Search for: "CF-05" or "Clock Domain" or "Cymatic"
+3. Find Cymatic Transduction section
+4. Review isochronous buffer and phase coherence
+
+================================================================================
+## CONTENT DISTRIBUTION MAP
+================================================================================
+
+**Physics & Foundations** → Part 1
+**Cognitive Architecture** → Part 2
+**Infrastructure & Communication** → Part 3
+**Autonomy & Learning** → Part 4
+**Implementation Details** → Parts 5, 6, 8
+**Persistence & Memory** → Parts 6, 7
+**Multimodal Processing** → Part 7
+**Reference & Theory** → Part 9
+
+================================================================================
+## FILE SIZE REFERENCE
+================================================================================
+
+All parts optimized for Gemini processing (under 500KB each):
+
+| Part | Size   | Optimal For |
+|------|--------|-------------|
+| 1    | 494 KB | Foundation understanding |
+| 2    | 405 KB | Cognitive architecture deep dive |
+| 3    | 258 KB | Infrastructure implementation |
+| 4    | 301 KB | Autonomous behavior systems |
+| 5    | 93 KB  | Quick implementation reference |
+| 6    | 190 KB | Critical fixes and patterns |
+| 7    | 495 KB | Complete I/O pipeline |
+| 8    | 155 KB | Development procedures |
+| 9    | 114 KB | Reference material |
+
+**Total:** 2.5 MB comprehensive specification
+
+================================================================================
+## GEMINI RESEARCH WORKFLOW
+================================================================================
+
+**For Comprehensive Understanding:**
+1. Upload Parts 1-9 sequentially
+2. Review in order for progressive context building
+3. Use keyword search within each part
+
+**For Targeted Research:**
+1. Identify topic domain from Content Distribution Map
+2. Upload relevant part(s) only
+3. Search for specific components or bug sweep IDs
+
+**For Gap Filling (47 remaining gaps):**
+1. Reference GEMINI_RESEARCH_TASKS_DEC_14_2025.md
+2. Upload relevant parts based on gap location
+3. Generate detailed specifications per task prompt
+
+================================================================================
+## KEY INSIGHT
+================================================================================
+
+**The internal section numbers (like "## 4.1" or "## 6.2") inside the content
+are NOT the same as the TOC section numbers.**
+
+**Always rely on:**
+- Section markers with ==== bars
+- Keyword searches for concepts
+- SOURCE comments for file tracing
+- Bug Sweep markers for latest updates
+
+**This eliminates confusion and enables efficient navigation!**
+
+================================================================================
+## SPECIFICATION STATUS
+================================================================================
+
+**Completeness:** 85% (Implementation-ready)
+**Bug Sweeps:** 15/15 integrated (100%)
+**Remaining Gaps:** 47 identified (see GEMINI_RESEARCH_TASKS_DEC_14_2025.md)
+**Implementation Blockers:** 6 critical gaps must be resolved first
+
+**Next Steps:**
+1. Complete Gemini research for critical gaps (TASK-001 through TASK-006)
+2. Integrate research findings
+3. Have Aria perform independent walkthrough
+4. Lock specifications for implementation
+
+================================================================================
+## SUPPORT FILES
+================================================================================
+
+Located in `/gemini/compilation/`:
+
+- **README.md** - Quick start guide
+- **COMPILATION_MANIFEST.md** - Detailed content breakdown
+- **VERIFICATION_REPORT.txt** - Quality verification checklist
+- **INDEX.txt** - Quick reference index
+- **compile_parts.sh** - Recompilation script
+
+Located in `/gemini/`:
+
+- **NAVIGATION_GUIDE.txt** - This file
+- **GEMINI_RESEARCH_TASKS_DEC_14_2025.md** - 47 research tasks for gap filling
+
+================================================================================
+## REVISION HISTORY
+================================================================================
+
+**December 14, 2025 - v3.0**
+- Updated compilation with all bug sweep integrations (12-15)
+- Added bug sweep location guide
+- Updated content distribution map
+- Added search strategy examples
+- Revised file size reference
+- Added specification status section
+
+**December 11, 2025 - v2.0**
+- Recompiled with bug sweeps 001-011
+- Added section markers and SOURCE comments
+- Optimized file sizes for Gemini processing
+
+**December 7, 2025 - v1.0**
+- Initial compilation
+- 9-part structure established
+
+================================================================================
+END OF NAVIGATION GUIDE
+================================================================================
+
+**For Questions or Issues:**
+Refer to README.md in the compilation directory or consult the source
+specification files directly.
+
+**Compilation Command:**
+```bash
+cd /home/randy/._____RANDY_____/REPOS/nikola/docs/info/integration/sections/gemini/compilation/
+bash compile_parts.sh
+```

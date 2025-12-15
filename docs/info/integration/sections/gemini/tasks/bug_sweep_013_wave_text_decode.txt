@@ -1,0 +1,59 @@
+# RESEARCH TASK: Wave to Text Decoding Algorithm
+
+**Task ID:** bug_sweep_013_wave_text_decode
+**Priority:** HIGH
+**Status:** PENDING
+**Created:** 2025-12-11 12:28
+
+---
+
+## PROBLEM STATEMENT
+
+
+Line 3586 in part_2 identifies missing functionality:
+
+Text → Wave: O(1) via hash lookup (exists)
+Wave → Text: O(V) via linear scan (MISSING!)
+
+The reverse decoding from wave to text is completely missing.
+
+
+---
+
+## DELIVERABLES
+
+1. Complete wave-to-text decoding algorithm
+2. Optimization to reduce from O(V) complexity
+3. Error handling for ambiguous or invalid waveforms
+
+---
+
+## RELEVANT PLAN SECTIONS
+
+- **part_2_of_9.txt**: Lines around 3586 - Wave/Text conversion
+
+---
+
+## INSTRUCTIONS FOR GEMINI
+
+Please provide detailed research and analysis for each deliverable listed above. 
+Reference the relevant plan sections provided to ensure consistency with the 
+overall architecture. If you find gaps or inconsistencies in the plan sections, 
+please note them in your response.
+
+**IMPORTANT - HOW TO FIND SECTIONS:** 
+- Each compilation file has clear section markers like:
+  ================================================================================
+  SECTION X.Y: Component Name
+  ================================================================================
+- Use text search (Ctrl+F) for keywords instead of section numbers
+- The files have internal numbering that differs from the TOC - IGNORE internal numbers
+- Search for concepts like "Wave Interference", "Mamba", "ZeroMQ", etc.
+- All relevant content is in the files listed above
+
+**DELIVERABLES:**
+- Focus on providing concrete, implementable solutions
+- Include code snippets, formulas, or specifications where applicable
+- Flag any assumptions you need to make
+- If you can't find something, note what's missing rather than making assumptions
+

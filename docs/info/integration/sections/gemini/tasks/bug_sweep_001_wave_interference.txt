@@ -1,0 +1,63 @@
+# RESEARCH TASK: Wave Interference Processor Complete Implementation
+
+**Task ID:** bug_sweep_001_wave_interference
+**Priority:** CRITICAL
+**Status:** PENDING
+**Created:** 2025-12-11 12:28
+
+---
+
+## PROBLEM STATEMENT
+
+
+The Wave Interference Processor is a core component but has several implementation gaps:
+
+1. Missing wave equation formulas for 9D toroidal space
+2. Incomplete interference calculation algorithms
+3. Undefined phase synchronization mechanisms
+4. Placeholder finite difference stencils for grid neighbors (line 2598-2599 in part_1)
+5. Missing mixed derivative calculations (line 4398 in part_1)
+
+These gaps prevent actual implementation of the wave physics engine.
+
+
+---
+
+## DELIVERABLES
+
+1. Complete mathematical formulas for wave propagation in 9D toroidal geometry
+2. Production-ready C++ algorithms for interference calculations with error bounds
+3. Phase synchronization protocol with timing guarantees
+
+---
+
+## RELEVANT PLAN SECTIONS
+
+- **part_1_of_9.txt**: Section 2.2 - Wave Interference Physics (UFIE), Section 3.1 - Wave Interference Processor
+- **part_2_of_9.txt**: Related implementation details
+
+---
+
+## INSTRUCTIONS FOR GEMINI
+
+Please provide detailed research and analysis for each deliverable listed above. 
+Reference the relevant plan sections provided to ensure consistency with the 
+overall architecture. If you find gaps or inconsistencies in the plan sections, 
+please note them in your response.
+
+**IMPORTANT - HOW TO FIND SECTIONS:** 
+- Each compilation file has clear section markers like:
+  ================================================================================
+  SECTION X.Y: Component Name
+  ================================================================================
+- Use text search (Ctrl+F) for keywords instead of section numbers
+- The files have internal numbering that differs from the TOC - IGNORE internal numbers
+- Search for concepts like "Wave Interference", "Mamba", "ZeroMQ", etc.
+- All relevant content is in the files listed above
+
+**DELIVERABLES:**
+- Focus on providing concrete, implementable solutions
+- Include code snippets, formulas, or specifications where applicable
+- Flag any assumptions you need to make
+- If you can't find something, note what's missing rather than making assumptions
+

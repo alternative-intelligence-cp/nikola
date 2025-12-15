@@ -1,0 +1,60 @@
+# RESEARCH TASK: ABI Stability Implementation Guidelines
+
+**Task ID:** bug_sweep_014_abi_stability
+**Priority:** MEDIUM
+**Status:** PENDING
+**Created:** 2025-12-11 12:28
+
+---
+
+## PROBLEM STATEMENT
+
+
+Lines 1197-1238 in part_2 identify ABI stability issues:
+
+1. Incomplete type issues with unique_ptr<Impl>
+2. Mixed PIMPL/non-PIMPL causing partial instability
+3. Missing forward declarations
+
+This affects long-term maintainability and compatibility.
+
+
+---
+
+## DELIVERABLES
+
+1. Complete PIMPL implementation pattern for all classes
+2. ABI stability verification checklist and tools
+3. Migration guide for existing code
+
+---
+
+## RELEVANT PLAN SECTIONS
+
+- **part_2_of_9.txt**: Lines around 1197-1238 - ABI stability
+
+---
+
+## INSTRUCTIONS FOR GEMINI
+
+Please provide detailed research and analysis for each deliverable listed above. 
+Reference the relevant plan sections provided to ensure consistency with the 
+overall architecture. If you find gaps or inconsistencies in the plan sections, 
+please note them in your response.
+
+**IMPORTANT - HOW TO FIND SECTIONS:** 
+- Each compilation file has clear section markers like:
+  ================================================================================
+  SECTION X.Y: Component Name
+  ================================================================================
+- Use text search (Ctrl+F) for keywords instead of section numbers
+- The files have internal numbering that differs from the TOC - IGNORE internal numbers
+- Search for concepts like "Wave Interference", "Mamba", "ZeroMQ", etc.
+- All relevant content is in the files listed above
+
+**DELIVERABLES:**
+- Focus on providing concrete, implementable solutions
+- Include code snippets, formulas, or specifications where applicable
+- Flag any assumptions you need to make
+- If you can't find something, note what's missing rather than making assumptions
+

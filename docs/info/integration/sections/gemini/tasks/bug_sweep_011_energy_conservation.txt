@@ -1,0 +1,60 @@
+# RESEARCH TASK: Physics Oracle Energy Conservation Implementation
+
+**Task ID:** bug_sweep_011_energy_conservation
+**Priority:** CRITICAL
+**Status:** PENDING
+**Created:** 2025-12-11 12:28
+
+---
+
+## PROBLEM STATEMENT
+
+
+Line 5038 in part_1 identifies a critical bug with false-positive SCRAM resets:
+
+The naive Physics Oracle detects missing energy as a violation of conservation 
+laws (energy destruction) and triggers false-positive SCRAM resets, interrupting 
+the AI's thought process.
+
+This needs a proper energy accounting system.
+
+
+---
+
+## DELIVERABLES
+
+1. Complete energy conservation tracking algorithm
+2. False-positive detection and filtering mechanism
+3. SCRAM reset policy with appropriate thresholds
+
+---
+
+## RELEVANT PLAN SECTIONS
+
+- **part_1_of_9.txt**: Lines around 5038 - Physics Oracle issues
+
+---
+
+## INSTRUCTIONS FOR GEMINI
+
+Please provide detailed research and analysis for each deliverable listed above. 
+Reference the relevant plan sections provided to ensure consistency with the 
+overall architecture. If you find gaps or inconsistencies in the plan sections, 
+please note them in your response.
+
+**IMPORTANT - HOW TO FIND SECTIONS:** 
+- Each compilation file has clear section markers like:
+  ================================================================================
+  SECTION X.Y: Component Name
+  ================================================================================
+- Use text search (Ctrl+F) for keywords instead of section numbers
+- The files have internal numbering that differs from the TOC - IGNORE internal numbers
+- Search for concepts like "Wave Interference", "Mamba", "ZeroMQ", etc.
+- All relevant content is in the files listed above
+
+**DELIVERABLES:**
+- Focus on providing concrete, implementable solutions
+- Include code snippets, formulas, or specifications where applicable
+- Flag any assumptions you need to make
+- If you can't find something, note what's missing rather than making assumptions
+

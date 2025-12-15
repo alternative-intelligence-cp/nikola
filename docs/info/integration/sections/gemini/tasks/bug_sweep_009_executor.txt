@@ -1,0 +1,62 @@
+# RESEARCH TASK: Executor Sandbox and Permission System
+
+**Task ID:** bug_sweep_009_executor
+**Priority:** MEDIUM
+**Status:** PENDING
+**Created:** 2025-12-11 12:28
+
+---
+
+## PROBLEM STATEMENT
+
+
+The executor system with KVM hypervisor needs implementation details:
+
+1. Sandbox implementation strategy undefined
+2. Permission model not specified
+3. Task queue architecture incomplete
+4. Result callback mechanism missing
+
+This blocks the execution environment for tools and self-improvement.
+
+
+---
+
+## DELIVERABLES
+
+1. Complete sandbox implementation strategy with security guarantees
+2. Permission model specification with examples
+3. Task queue and callback architecture with error handling
+
+---
+
+## RELEVANT PLAN SECTIONS
+
+- **part_1_of_9.txt**: Section 4.4 - Executor and KVM Hypervisor
+- **part_2_of_9.txt**: Executor implementation details
+
+---
+
+## INSTRUCTIONS FOR GEMINI
+
+Please provide detailed research and analysis for each deliverable listed above. 
+Reference the relevant plan sections provided to ensure consistency with the 
+overall architecture. If you find gaps or inconsistencies in the plan sections, 
+please note them in your response.
+
+**IMPORTANT - HOW TO FIND SECTIONS:** 
+- Each compilation file has clear section markers like:
+  ================================================================================
+  SECTION X.Y: Component Name
+  ================================================================================
+- Use text search (Ctrl+F) for keywords instead of section numbers
+- The files have internal numbering that differs from the TOC - IGNORE internal numbers
+- Search for concepts like "Wave Interference", "Mamba", "ZeroMQ", etc.
+- All relevant content is in the files listed above
+
+**DELIVERABLES:**
+- Focus on providing concrete, implementable solutions
+- Include code snippets, formulas, or specifications where applicable
+- Flag any assumptions you need to make
+- If you can't find something, note what's missing rather than making assumptions
+

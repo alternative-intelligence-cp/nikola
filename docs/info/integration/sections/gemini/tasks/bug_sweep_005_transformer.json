@@ -1,0 +1,25 @@
+{
+  "task_id": "bug_sweep_005_transformer",
+  "title": "Neuroplastic Transformer Architecture Specification",
+  "created": "2025-12-11T12:28:11.238659",
+  "priority": "high",
+  "status": "pending",
+  "problem_statement": "\nThe neuroplastic transformer for nonary waveforms needs detailed specification:\n\n1. Attention mechanism for waveform data undefined\n2. Neuroplasticity update rules not specified\n3. Weight initialization strategy missing\n4. Training loop incomplete\n\nThis blocks the reasoning engine implementation.\n",
+  "deliverables": [
+    "Complete attention mechanism design for nonary encoded waveforms",
+    "Neuroplasticity and neurogenesis algorithms with mathematical basis",
+    "Training protocol with initialization, update rules, and convergence criteria"
+  ],
+  "relevant_files": [
+    {
+      "file": "part_1_of_9.txt",
+      "description": "Section 3.3 - Neuroplastic Transformer"
+    },
+    {
+      "file": "part_3_of_9.txt",
+      "description": "Transformer implementation details"
+    }
+  ],
+  "context": "",
+  "notes": []
+}
