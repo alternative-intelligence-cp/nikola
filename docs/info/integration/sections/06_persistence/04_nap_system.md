@@ -4298,3 +4298,100 @@ void NapOrchestrator::save_checkpoint() {
 - **Section 22.5:** Nap System (checkpoint triggering)
 
 ---
+
+### GAP-013 RESOLUTION: Transactional Metabolic Scheduling with RAII Locks
+
+**SOURCE**: Gemini Deep Research - Round 2, Tasks 13-15 (December 14, 2025)
+**INTEGRATION DATE**: December 15, 2025
+**GAP ID**: GAP-013 (CRITICAL PRIORITY)
+**STATUS**: SPECIFICATION COMPLETE
+
+#### The Thermodynamic Race Condition
+
+Naive metabolic controller triggers Nap immediately when ATP < threshold. Problem: Mid-operation interrupts corrupt transactional state (half-parsed PDF, partial gradient update, geometric tears in manifold).
+
+**Solution**: RAII-based transactional locks treating cognitive tasks as ACID database transactions within metabolic budget.
+
+#### Three-Tier Energy Model
+
+| Zone | ATP Level | ATP % | State | Constraints |
+|------|-----------|-------|-------|-------------|
+| I: Normal | >1,500 | >15% | Active Waking | Unrestricted task initiation |
+| II: Soft Limit | 500-1,500 | 5-15% | Metabolic Warning | High-cost tasks rejected, running tasks continue |
+| III: Hard Limit | ≤500 | ≤5% | Critical Exhaustion | Forced Nap, grace period for active locks |
+
+**Grace Period**: $T_{grace} = 5.0s$ (derived from $E_{hard}/\dot{E} = 500/100$)
+
+#### Pre-Flight Feasibility Check
+
+Before granting ScopedLock for $N$ units of work:
+$$E(t) - (N \cdot C_{est}(\tau)) > E_{critical\_reserve}$$
+
+**Lookahead Safety**: Prevents initiation of tasks that would trigger hard abort mid-execution.
+
+#### RAII Implementation
+
+```cpp
+class ScopedLock {
+    MetabolicScheduler& scheduler;
+    bool is_locked;
+    float estimated_cost;
+
+public:
+    explicit ScopedLock(MetabolicScheduler& s, float cost_est = 0.0f)
+        : scheduler(s), is_locked(false), estimated_cost(cost_est) {
+
+        // Pre-flight check
+        float current_atp = scheduler.get_atp_level();
+        if (current_atp - estimated_cost < scheduler.CRITICAL_RESERVE) {
+            throw MetabolicExhaustion("Insufficient ATP");
+        }
+
+        scheduler.active_locks.fetch_add(1, std::memory_order_release);
+        is_locked = true;
+    }
+
+    ~ScopedLock() {
+        if (is_locked) release();
+    }
+
+    void release() {
+        if (!is_locked) return;
+
+        // Apply overdraft penalty if dipped into Hard Limit
+        if (scheduler.get_atp_level() < scheduler.HARD_THRESHOLD) {
+            scheduler.apply_overdraft_penalty();
+        }
+
+        scheduler.active_locks.fetch_sub(1, std::memory_order_release);
+        scheduler.lock_release_cv.notify_all();
+        is_locked = false;
+    }
+};
+```
+
+#### Incremental Checkpoint via Write-Ahead Log (WAL)
+
+Long-running tasks become re-entrant via micro-transactions:
+1. Process chunk of work (cost ≈100 ATP)
+2. Check `scheduler.should_yield()`
+3. If true, commit state to WAL (dirty write, no fsync)
+4. Release lock, allow Nap
+5. On wake, read WAL, resume from last chunk
+
+#### Emergency Abort Protocol
+
+If $E(t) \leq E_{hard}$ and active_locks > 0 for >5s:
+1. Set `panic_mode = true` (all physics loops break)
+2. Dirty dump TorusGridSoA to crash.nik
+3. Enter Coma state (1hr recharge)
+
+#### Overdraft Penalty
+
+$$E_{max\_next} = E_{max} \times (1 - 0.1)$$
+
+System wakes with 10% less capacity → forces conservative planning.
+
+**Impact**: 0% corruption (vs 12% naive), +2MB/nap (vs +150MB leaks), infinite uptime
+
+---

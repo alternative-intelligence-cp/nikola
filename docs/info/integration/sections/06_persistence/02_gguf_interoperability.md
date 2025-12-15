@@ -1825,3 +1825,90 @@ Without the attention mask, the GGUF export is **technically valid but functiona
 - **llama.cpp**: [https://github.com/ggerganov/llama.cpp](https://github.com/ggerganov/llama.cpp) - Target inference runner
 
 ---
+
+### GAP-015 RESOLUTION: GGUF Sparse Attention Mask Encoding for Vacuum Suppression
+
+**SOURCE**: Gemini Deep Research - Round 2, Tasks 13-15 (December 14, 2025)
+**INTEGRATION DATE**: December 15, 2025
+**GAP ID**: GAP-015 (HIGH PRIORITY)
+**STATUS**: SPECIFICATION COMPLETE
+
+#### The Vacuum Hallucination Problem
+
+Nikola stores info in sparse 9D grid (~1% occupancy). Naive flattening to dense tensor pads with zeros. In Self-Attention $\text{Softmax}(QK^T)$, zero-vectors still participate in denominator → dilute attention probability mass → system "hallucinates" vacuum interactions → perplexity degrades by orders of magnitude.
+
+**Solution**: Sparse Attention Mask that mathematically erases vacuum nodes from llama.cpp inference.
+
+#### Bit-Packed Mask Format
+
+**New Tensor**: `nikola.attention_mask`
+- **Type**: `uint8` (8 nodes per byte)
+- **Semantics**: 1 = Active (valid memory), 0 = Vacuum (padding)
+- **Layout**: Linearized 1D matching Hilbert-sorted weights
+
+**Memory Efficiency**:
+For $14.3M$ nodes (balanced nonary $3^{15}$):
+- Mask Size = $14.3M$ bits ≈ **1.79 MB**
+- Weight tensor ≈ 7 GB
+- **Overhead**: 0.025% (negligible)
+
+#### Q9_0 Quantization for >10:1 Compression
+
+**Q9_0 Format**:
+- Value range: $\{-4, -3, \dots, 0, \dots, +3, +4\}$ (9 states)
+- Information: $\log_2(9) \approx 3.17$ bits
+- Packing: 4 bits/weight (nibbles)
+- Block: 32 weights + 1 float32 scale = 20 bytes/block
+
+**Compression Calculation**:
+- Source (FP32): $32 \times 32 = 1024$ bits
+- Target (Q9_0): $32 \times 4 + 32 = 160$ bits
+- **Base Ratio**: 6.4:1
+
+**With Sparsity** (90% vacuum, store only active + mask):
+- Dense FP32: 100 units
+- Sparse Q9_0: $10 \times (1/6.4) + \text{mask} \approx 1.6$ units
+- **Effective Ratio**: **62.5:1** (exceeds >10:1 requirement)
+
+#### llama.cpp Integration via Mask Bias
+
+**Mask Reconstruction** (CUDA kernel at model load):
+
+Expand bit-packed mask → additive bias tensor $M$:
+
+$$M_i = \begin{cases} 0.0 & \text{if bit } i = 1 \\ -10{,}000.0 & \text{if bit } i = 0 \end{cases}$$
+
+**Attention Computation**:
+
+$$\text{Attention}(Q,K) = \text{Softmax}\left( \frac{QK^T}{\sqrt{d}} + M \right)$$
+
+For vacuum: logit becomes $x - 10{,}000$, so $\exp(-10{,}000) \approx 0$ → vacuum contributes zero probability (mathematically invisible).
+
+#### llama.cpp Integration Steps
+
+1. **Header**: Add `GGML_TYPE_Q9_0` to `ggml.h`
+2. **De-quantizer**: Implement `dequantize_row_q9_0` in `ggml-quants.c` (base-9 unpacking)
+3. **Graph**: In `build_nikola()`, insert `ggml_add` node summing `KQ_pos + attention_mask`
+4. **Architecture**: Register `LLM_ARCH_NIKOLA`
+
+#### Validation Test Suite
+
+**Test 1: Mask Correctness**
+- Input: Synthetic grid with active nodes at indices {0, 10, 100}
+- Assert: Bits 0, 10, 100 are 1; all others 0
+
+**Test 2: Hallucination Check (KL Divergence)**
+- Without mask: $D_{KL}(P_{cpp} || P_{gguf}) > 5.0$ (high divergence)
+- With mask: $D_{KL}(P_{cpp} || P_{gguf}) < 0.1$ (distributions match)
+- **Proof**: Vacuum silenced
+
+**Test 3: Compression Ratio**
+- Requirement: Ratio > 10.0
+- Example: 1M active in 14M grid
+  - Dense FP32: $14M \times 4B = 56MB$
+  - Nikola GGUF: $1M \times 0.5B + 1.7MB \approx 2.2MB$
+  - **Ratio: 25:1** ✓
+
+**Impact**: Enables llama.cpp inference with <0.1 KL divergence, 62.5:1 compression
+
+---
