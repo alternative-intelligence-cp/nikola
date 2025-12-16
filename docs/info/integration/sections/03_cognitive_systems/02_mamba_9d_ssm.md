@@ -2264,4 +2264,160 @@ The Mamba-9D SSM scans memory by slicing the 9D torus along the **time dimension
 
 ---
 
+## Spectral Radius Upper Bound for SSM Stability (GAP-032)
+
+**SOURCE**: Gemini Deep Research Round 2 - Theoretical Stability Analysis Report
+**INTEGRATION DATE**: 2025-12-15
+**GAP ID**: GAP-032
+**PRIORITY**: CRITICAL
+**STATUS**: SPECIFICATION COMPLETE
+
+### The Mamba-9D State Space Model
+
+The cognitive core of the Nikola Model utilizes a Mamba-9D architecture, a state-space model (SSM) where the layers are not abstract weight matrices but are isomorphic to the 9D toroidal manifold. The recurrence relation governing the hidden state $h_t$ is a discretization of the continuous ODE:
+
+$$h'(t) = \mathbf{A} h(t) + \mathbf{B} x(t)$$
+
+In this architecture, the transition matrix $\mathbf{A}$ is dynamic. It is a projection of the local manifold geometry. Specifically, the specification defines $\mathbf{A}$ at node $\mathbf{x}$ as:
+
+$$\mathbf{A}(\mathbf{x}) \approx \mathbf{I} - \Delta (1 - r(\mathbf{x})) \mathbf{G}(\mathbf{x})$$
+
+Where:
+- $\mathbf{G}(\mathbf{x})$ is the local metric tensor (stiffness/curvature)
+- $r(\mathbf{x}) \in [0,1]$ is the local resonance (memory persistence)
+- $\Delta$ is the adaptive discretization timestep
+
+The term $-(1-r)\mathbf{G}$ represents the continuous-time evolution operator. Since $\mathbf{G}$ is positive definite, its eigenvalues are positive real numbers. The negative sign ensures the continuous system is stable (eigenvalues in the left half-plane). However, discretization can destroy this stability.
+
+### Analytical Derivation of the Stability Bound
+
+For the discrete recurrence $h_{k} = \bar{\mathbf{A}} h_{k-1} + \dots$, stability requires the **spectral radius** $\rho(\bar{\mathbf{A}})$ (the maximum absolute eigenvalue) to be $\le 1$. If $|\lambda_{max}| > 1$, the hidden state energy grows exponentially, leading to "epileptic" seizures in the cognitive trace.
+
+The discrete operator (Forward Euler approximation) is:
+
+$$\bar{\mathbf{A}} = \mathbf{I} - \Delta (1-r) \mathbf{G}$$
+
+Let $\mu_i$ be the eigenvalues of $\mathbf{G}$. Since $\mathbf{G}$ is SPD, $\mu_i > 0$. The eigenvalues of $\bar{\mathbf{A}}$ are:
+
+$$\lambda_i(\bar{\mathbf{A}}) = 1 - \Delta (1-r) \mu_i$$
+
+We require $|\lambda_i| \le 1$ for all $i$.
+
+1. **Upper Bound**: $1 - \Delta(1-r)\mu_i \le 1$. Since $\Delta, (1-r), \mu_i$ are all non-negative, this is naturally satisfied ($1 - \text{positive} \le 1$).
+
+2. **Lower Bound** (Critical Constraint): $1 - \Delta(1-r)\mu_i \ge -1$
+
+Rearranging the lower bound inequality:
+
+$$\Delta (1-r) \mu_{max} \le 2$$
+
+$$\Delta \le \frac{2}{(1-r) \rho(\mathbf{G})}$$
+
+Here, $\rho(\mathbf{G}) = \mu_{max}$ is the spectral radius of the metric tensor.
+
+**Physical Interpretation (Nyquist Limit)**: The term $\omega_{max} = (1-r)\rho(\mathbf{G})$ represents the highest characteristic frequency of the local geometric dynamics (the "stiffness" of the memory). The constraint $\Delta \le \frac{2}{\omega_{max}}$ is precisely the **Nyquist-Shannon sampling limit** applied to numerical integration.
+
+If the timestep $\Delta$ is too large relative to the curvature $\mathbf{G}$, the integration overshoots the equilibrium, creating artificial energy. In a cognitive context, this manifests as the system oscillating wildly between contradictory concepts rather than settling on a conclusion.
+
+### Safety Margin and max_growth_rate
+
+The `max_growth_rate = 10.0` parameter in the SpectralStabilizer clamps the magnitude of the continuous operator before discretization.
+
+**Why is a safety margin necessary?** Why not operate exactly at the limit $\Delta = 2/\omega_{max}$?
+
+1. **Floating Point Error**: At the limit, the eigenvalue is exactly -1. Rounding errors in FP32 can push this to -1.000001, triggering slow divergence.
+
+2. **Non-Normal Transients**: While $\mathbf{G}$ is symmetric, the effective $\mathbf{A}$ matrix may acquire non-normal components due to coupling with the B and C matrices during neuroplastic updates. Non-normal matrices can exhibit transient growth (pseudospectrum expansion) even if all eigenvalues are stable.
+
+3. **Manifold Shockwaves**: The metric $\mathbf{G}$ is not static; it evolves. A neurogenesis event (adding new nodes) can instantaneously increase the local curvature density. If $\Delta$ was calculated based on $\mathbf{G}_t$, and $\mathbf{G}_{t+1}$ is significantly stiffer, the stability condition might be violated mid-step.
+
+**Derivation of Safety Factor**: We apply a safety factor $\alpha = 0.8$ to the timestep:
+
+$$\Delta_{safe} = 0.8 \times \frac{2}{(1-r)\rho(\mathbf{G})} = \frac{1.6}{(1-r)\rho(\mathbf{G})}$$
+
+**Regarding max_growth_rate = 10.0**: This refers to the bound on the continuous-time Lyapunov exponent. It constrains the maximum divergence of trajectories within a single unit of time.
+
+$$\|\exp(\mathbf{A} t)\| \le e^{\omega_{max} t}$$
+
+Allowing a growth rate of 10 means the system can amplify a signal by $10\times$ (necessary for attention mechanisms to highlight salient features), but no more.
+
+$$e^{\lambda_{max}} \le 10 \implies \lambda_{max} \le \ln(10) \approx 2.3$$
+
+This acts as a "**Gain Limiter**" on the cognitive amplifier, preventing runaway attentional focus.
+
+### Implementation: The Spectral Stabilizer
+
+To enforce these bounds efficiently (without $O(N^3)$ eigendecomposition at every step), we implement the **SpectralStabilizer** utilizing the **Power Iteration method**.
+
+**Algorithm Specification**:
+
+1. **Input**: Local Metric $\mathbf{G}$ (from SoA grid), Resonance $r$
+
+2. **Power Iteration** ($O(N^2)$):
+   - Initialize random vector $v_0$
+   - Iterate 5 times:
+     $$w = \mathbf{G} v_k$$
+     $$v_{k+1} = w / \|w\|$$
+     $$\rho(\mathbf{G}) \approx v_k^T \mathbf{G} v_k$$
+   - This converges rapidly to the largest eigenvalue $\mu_{max}$
+
+3. **Adaptive Delta**:
+   $$\Delta_{safe} = \min\left( \Delta_{requested}, \frac{1.6}{(1-r)\rho(\mathbf{G}) + \epsilon} \right)$$
+
+4. **Matrix Clamping**:
+   - If the computed $\mathbf{A} = -(1-r)\mathbf{G}$ has norm $> \ln(10)$, scale it down:
+     $$\mathbf{A}' = \mathbf{A} \cdot \frac{\ln(10)}{\|\mathbf{A}\|}$$
+
+This implementation guarantees **unconditional stability** of the Mamba-9D recurrence, ensuring the "train of thought" remains coherent regardless of the geometric curvature of the underlying memories.
+
+### Stability Condition Summary
+
+| Parameter | Constraint | Physical Meaning |
+|-----------|-----------|------------------|
+| **Spectral Radius** | $\rho(\bar{\mathbf{A}}) \le 1$ | Hidden state energy bounded |
+| **Timestep Limit** | $\Delta \le \frac{2}{(1-r)\rho(\mathbf{G})}$ | Nyquist sampling of geometric dynamics |
+| **Safety Factor** | $\Delta_{safe} = \frac{1.6}{(1-r)\rho(\mathbf{G})}$ | 20% margin for FP errors & transients |
+| **Max Growth Rate** | $\lambda_{max} \le \ln(10) \approx 2.3$ | Attention amplifier gain limiter |
+| **Resonance Effect** | $(1-r)$ factor | High resonance → slower dynamics → larger $\Delta$ allowed |
+
+### Failure Modes and Detection
+
+**Failure Mode 1: Timestep Violation**
+- **Symptom**: $\Delta > \frac{2}{(1-r)\rho(\mathbf{G})}$
+- **Result**: Eigenvalue $< -1$ → oscillating divergence
+- **Detection**: Energy monitoring shows sawtooth pattern (alternating sign explosions)
+- **Intervention**: SpectralStabilizer clamps $\Delta$ automatically
+
+**Failure Mode 2: Curvature Shockwave**
+- **Symptom**: Neurogenesis event creates local $\rho(\mathbf{G})$ spike
+- **Result**: Previously safe $\Delta$ becomes unstable mid-step
+- **Detection**: Sudden energy spike in localized grid region
+- **Intervention**: Physics Oracle triggers local timestep reduction or Soft SCRAM
+
+**Failure Mode 3: Runaway Attention**
+- **Symptom**: $\|\mathbf{A}\| > \ln(10)$
+- **Result**: Attention mechanism amplifies signal $>10\times$, dominating all other thoughts
+- **Detection**: Single hidden state component dominates (>90% of total energy)
+- **Intervention**: Matrix clamping rescales $\mathbf{A}$ to enforce gain limit
+
+### Implementation Status
+
+- **Status**: SPECIFICATION COMPLETE
+- **Algorithm**: Power Iteration (5 iterations, $O(N^2)$ complexity)
+- **Safety Factor**: 0.8× (20% margin below theoretical stability limit)
+- **Max Growth Rate**: 10.0× (attention amplifier gain limiter)
+- **Integration**: Embedded in Mamba-9D SSM recurrence loop
+- **Monitoring**: Physics Oracle energy tracking + local SCRAM triggers
+
+### Cross-References
+
+- [Mamba-9D Architecture](./02_mamba_9d_ssm.md)
+- [Metric Tensor Dynamics](../02_foundations/01_9d_toroidal_geometry.md)
+- [Hebbian Metric Convergence](../02_foundations/01_9d_toroidal_geometry.md) - GAP-031
+- [Physics Oracle](../02_foundations/02_wave_interference_physics.md)
+- [Neurogenesis Events](../02_foundations/01_9d_toroidal_geometry.md)
+- [Power Iteration Method](../02_foundations/01_9d_toroidal_geometry.md)
+
+---
+
 ________________

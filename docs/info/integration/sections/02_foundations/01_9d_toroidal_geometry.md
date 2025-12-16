@@ -3804,3 +3804,168 @@ All platform implementations must pass the following benchmarks before deploymen
 
 ---
 
+## Mathematical Proof of Hebbian Metric Convergence (GAP-031)
+
+**SOURCE**: Gemini Deep Research Round 2 - Theoretical Stability Analysis Report
+**INTEGRATION DATE**: 2025-12-15
+**GAP ID**: GAP-031
+**PRIORITY**: CRITICAL
+**STATUS**: SPECIFICATION COMPLETE
+
+### The Geometry of Neuroplasticity
+
+In the Nikola architecture, the metric tensor $g_{ij}(\mathbf{x}, t)$ is the fundamental field defining the "distance" between concepts. It is a symmetric, positive-definite $9 \times 9$ matrix at every point in the discrete toroidal lattice. Learning is the process of minimizing the geodesic distance between concepts that are temporally or causally correlated. This is governed by a modified **Hebbian-Riemannian plasticity rule**.
+
+The continuous-time evolution of the geometry is specified as:
+
+$$\frac{\partial g_{ij}}{\partial t} = -\eta(D_t) \cdot \text{Re}(\Psi_i \cdot \Psi_j^*) + \lambda(S_t)(g_{ij} - \delta_{ij})$$
+
+This equation describes a dynamical system driven by two opposing forces:
+
+1. **The Hebbian Contraction**: $-\eta(D_t) \cdot \text{Re}(\Psi_i \cdot \Psi_j^*)$
+   - Represents the "force of association"
+   - When wavefunctions in dimensions $i$ and $j$ interfere constructively (high correlation), this term becomes negative, reducing $g_{ij}$
+   - Physically contracts the manifold, pulling dimensions closer together and facilitating energy transfer
+   - Learning rate $\eta$ is dynamically gated by neurotransmitter **Dopamine** ($D_t$), linking reward prediction error to structural change
+
+2. **The Elastic Relaxation**: $+\lambda(S_t)(g_{ij} - \delta_{ij})$
+   - Acts as a restoring force, pulling geometry back toward the flat Euclidean metric ($\delta_{ij}$)
+   - Without this term, metric would contract indefinitely until collapse into singularity
+   - Relaxation rate $\lambda$ is modulated by **Serotonin** ($S_t$), providing mechanism for stability and risk aversion
+
+The stability of this system is not guaranteed. If the contraction force exceeds the restoring force unbounded, the metric determinant creates a singularity. If the dynamics are under-damped, the geometry will oscillate, causing "cognitive tremors."
+
+### Lyapunov Stability Analysis
+
+To prove convergence, we construct a Lyapunov function $V(g)$—a scalar energy potential that is bounded from below and strictly decreasing along the trajectories of the system. We define the **Geometrodynamic Potential** $\mathcal{E}(g)$ for a local patch of the manifold.
+
+Let $C_{ij} = \text{Re}(\Psi_i \cdot \Psi_j^*)$ be the instantaneous correlation tensor of the wavefunction. Assuming the input statistics (and thus $C_{ij}$) are stationary on the timescale of plasticity (adiabatic approximation), we treat $C_{ij}$ as constant.
+
+We propose the following candidate Lyapunov function:
+
+$$\mathcal{E}(g) = \underbrace{\frac{\lambda}{2} \| g - I \|_F^2}_{\text{Elastic Energy}} + \underbrace{\eta \text{Tr}(g \cdot C)}_{\text{Interaction Energy}}$$
+
+Here, $\| \cdot \|_F$ denotes the Frobenius norm. The first term represents the potential energy stored in the "elastic deformation" of spacetime away from flatness. The second term represents the energy of the wave-metric coupling; it is minimized when the metric aligns with the correlation structure of the waves.
+
+**Differentiation**: To verify that the system creates a gradient descent on this surface, we compute the gradient of $\mathcal{E}$ with respect to the metric tensor $g$:
+
+$$\nabla_g \mathcal{E} = \lambda (g - I) + \eta C$$
+
+Substituting the update rule $\dot{g} = -\eta C - \lambda(g - I)$, we observe:
+
+$$\dot{g} = - \nabla_g \mathcal{E}$$
+
+The time derivative of the Lyapunov function along the system trajectory is:
+
+$$\frac{d\mathcal{E}}{dt} = \langle \nabla_g \mathcal{E}, \dot{g} \rangle = \langle -\dot{g}, \dot{g} \rangle = - \| \dot{g} \|_F^2$$
+
+Since $\| \dot{g} \|_F^2 \geq 0$, it follows that $\frac{d\mathcal{E}}{dt} \le 0$. The potential energy of the geometry **strictly decreases** until the system reaches a stationary point where $\dot{g} = 0$.
+
+**Convexity and Uniqueness**: The elastic energy term is quadratic in $g$ (strictly convex), and the interaction energy is linear in $g$ (convex). The sum of a strictly convex and a convex function is strictly convex. Therefore, $\mathcal{E}(g)$ has a **unique global minimum** $g^*$. The system will asymptotically converge to this single stable geometry, preventing chaotic wandering or multi-stable limit cycles.
+
+### Convergence Rate Derivation
+
+While asymptotic stability is guaranteed by the Lyapunov analysis, the engineering requirement is for convergence within a biologically plausible timeframe. We analyze the error dynamics to determine the convergence rate.
+
+Let $g^*$ be the equilibrium metric. Setting $\dot{g} = 0$:
+
+$$0 = -\eta C - \lambda(g^* - I) \implies g^* = I - \frac{\eta}{\lambda} C$$
+
+Let $\epsilon(t) = g(t) - g^*$ be the deviation from equilibrium. The time evolution of the error is:
+
+$$\dot{\epsilon} = \dot{g} = -\eta C - \lambda(g^* + \epsilon - I)$$
+
+$$\dot{\epsilon} = -\eta C - \lambda(I - \frac{\eta}{\lambda}C + \epsilon - I)$$
+
+$$\dot{\epsilon} = -\eta C + \eta C - \lambda \epsilon$$
+
+$$\dot{\epsilon} = -\lambda \epsilon$$
+
+This is a decoupled system of linear first-order differential equations. The solution is an **exponential decay**:
+
+$$\epsilon(t) = \epsilon(0) e^{-\lambda t}$$
+
+**Insight**: The convergence rate is governed exclusively by the relaxation parameter $\lambda(S_t)$. The learning rate $\eta(D_t)$ determines the magnitude of the final deformation (how much memory is stored), but $\lambda$ determines how quickly the system settles into that state.
+
+- **High Serotonin** ($S_t \to 1$): Increases $\lambda$, creating a "stiff" manifold that converges rapidly but stores less information (conservative/stable behavior)
+- **Low Serotonin** ($S_t \to 0$): Decreases $\lambda$, creating a "plastic" manifold that takes longer to settle but can accommodate deep deformations (exploratory/volatile behavior)
+
+### Oscillation Prevention and Discretization
+
+The continuous analysis assumes infinitesimal time steps. The Nikola Physics Engine operates on a discrete clock with $\Delta t = 1 \text{ ms}$ (1000 Hz). Discretization introduces the risk of numerical instability and oscillation.
+
+The discrete update map (Euler method) is:
+
+$$g_{t+1} = g_t + \Delta t \left( -\lambda (g_t - g^*) \right)$$
+
+$$g_{t+1} - g^* = (g_t - g^*) - \lambda \Delta t (g_t - g^*)$$
+
+$$\epsilon_{t+1} = (1 - \lambda \Delta t) \epsilon_t$$
+
+This is a geometric progression with ratio $r = 1 - \lambda \Delta t$.
+
+**Stability Conditions**:
+- **Stability** ($|r| < 1$): Error decays if $-1 < 1 - \lambda \Delta t < 1$, which implies $0 < \lambda \Delta t < 2$
+- **Oscillation** ($r < 0$): If $1 < \lambda \Delta t < 2$, the error term flips sign at each step ($\epsilon \to -\epsilon' \to +\epsilon''$). This represents a damped oscillation where the geometry "rings" around the equilibrium
+- **Monotonic Convergence** ($0 \le r < 1$): To prevent any oscillation and ensure smooth geometric evolution, we require $0 < \lambda \Delta t \le 1$
+
+**Engineering Constraint**: Given $\Delta t = 0.001$ s, the maximum relaxation rate $\lambda_{max}$ is $1000$. Since biological timescales for forgetting are on the order of seconds or minutes (not milliseconds), typical values for $\lambda$ will be $\sim 0.01 - 1.0$. This provides a massive safety margin against purely numerical oscillations.
+
+**The Adiabatic Constraint**: A secondary oscillation mode arises from the feedback loop between the metric $g$ and the wavefunction $\Psi$. The metric directs the wave; the wave determines correlation $C$; correlation updates the metric. If the metric changes too fast, it can induce parametric resonance in the wavefunction (like pumping a swing). To prevent this "Metric Resonance," the timescale of plasticity must be much slower than the timescale of wave propagation:
+
+$$\tau_{plasticity} \gg \tau_{wave}$$
+
+$$\frac{1}{\lambda} \gg \frac{2\pi}{\omega_{wave}}$$
+
+With $\omega_{wave} \approx 100 \text{ Hz}$ (alpha band) and $\lambda \approx 0.1 \text{ Hz}$, this separation of scales (1000:1) is well-preserved.
+
+### Pathological Case Characterization and Intervention
+
+The mathematical equilibrium $g^* = I - \frac{\eta}{\lambda} C$ reveals a critical vulnerability. The correlation matrix $C$ is positive semi-definite. If the ratio $\frac{\eta}{\lambda}$ is large (high dopamine, low serotonin) or the signal energy is extreme, the subtraction can result in a matrix $g^*$ that is no longer positive definite.
+
+**Pathology 1: Metric Singularity (Determinant Collapse)**
+
+If an eigenvalue $\sigma_k \to 0$, the volume element $\sqrt{|g|} \to 0$. The inverse metric $g^{ij}$ (required for the Laplacian) diverges to infinity. This creates a geometric "black hole" where wave energy becomes trapped and amplitude explodes.
+
+**Pathology 2: Signature Flip (Causality Violation)**
+
+If an eigenvalue $\sigma_k < 0$, the signature of the manifold changes from Euclidean $(+, \dots, +)$ to Lorentzian or Ultra-hyperbolic (e.g., $(+, -, \dots)$). In the UFIE, this turns spatial dimensions into time-like dimensions. The elliptic Laplacian operator $\nabla^2$ becomes a hyperbolic wave operator in mixed directions, allowing waves to propagate "backwards" in the simulation step, violating causality and leading to immediate numerical generation of NaN values.
+
+**Intervention: The Riemannian Projection via Lazy Cholesky**
+
+To strictly enforce the constraint that $g \in \mathcal{S}_{++}^9$ (the cone of symmetric positive definite matrices), we cannot simply clip values. We must operate on the eigenvalues.
+
+The implementation utilizes the **Lazy Cholesky Decomposition** cache. The decomposition $g = L L^T$ exists if and only if $g$ is positive definite.
+
+**Algorithm: Constrained Update with Tikhonov Regularization**
+
+1. **Tentative Update**: Compute $\tilde{g} = g_{t} + \Delta g_{Hebbian}$
+2. **Cholesky Check**: Attempt Cholesky decomposition $\tilde{g} = L L^T$
+3. **Failure Handling (Soft SCRAM)**: If decomposition fails (indicating non-SPD), the Physics Oracle intervenes:
+   - Compute the eigenvalues of $\tilde{g}$
+   - Apply a "floor" to the spectrum: $\lambda_i' = \max(\lambda_i, \epsilon_{min})$, where $\epsilon_{min} = 10^{-6}$
+   - This effectively adds a regularization term: $g_{safe} = \tilde{g} + (\epsilon_{min} - \lambda_{min})I$
+   - This is known as **Riemannian Projection** or **Tikhonov Regularization** in the tangent space
+
+This mechanism acts as a "**Geometric Firewall**," guaranteeing that no matter how intense the learning signal (Dopamine), the manifold never tears or collapses.
+
+### Implementation Status
+
+- **Status**: SPECIFICATION COMPLETE
+- **Mathematical Proof**: Lyapunov stability with unique global minimum
+- **Convergence Rate**: Exponential decay with rate $\lambda(S_t)$
+- **Safety Mechanisms**: Riemannian projection, Cholesky validation, Tikhonov regularization
+- **Neurochemical Modulation**: Dopamine ($\eta$) controls plasticity, Serotonin ($\lambda$) controls stability
+- **Pathology Prevention**: Geometric Firewall prevents singularities and causality violations
+
+### Cross-References
+
+- [Metric Tensor Evolution](./01_9d_toroidal_geometry.md)
+- [Hebbian Learning Rules](../03_cognitive_systems/01_neuroplastic_transformer.md)
+- [Lazy Cholesky Decomposition](./01_9d_toroidal_geometry.md)
+- [Physics Oracle SCRAM](../02_foundations/02_wave_interference_physics.md)
+- [ENGS Neurochemistry](../05_autonomous_systems/01_computational_neurochemistry.md)
+- [Wave-Metric Coupling](../02_foundations/02_wave_interference_physics.md)
+
+---
+
