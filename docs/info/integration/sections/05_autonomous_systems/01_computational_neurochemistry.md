@@ -1041,6 +1041,107 @@ public:
 
 ---
 
+## GAP-029: Neurochemistry Cross-Validation Metrics
+
+**SOURCE**: Gemini Deep Research Round 2, Batch 37-40
+**INTEGRATION DATE**: December 16, 2025
+**GAP ID**: GAP-029 (TASK-029)
+**PRIORITY**: CRITICAL
+**STATUS**: FABRICATION-READY SPECIFICATION
+
+### Bridging the Biological-Computational Gap
+
+The **Extended Neurochemical Gating System (ENGS)** posits that computational scalars like "Dopamine" and "Serotonin" can functionally replicate regulatory roles of their biological counterparts. To validate this hypothesis, we cannot rely solely on qualitative observations. We must establish **rigorous metrics** that cross-reference Nikola Model's internal telemetry with established neuroscientific data. Gap 029 requires validation framework proving ENGS is not just collection of variables, but **coherent homeostatic control system** capable of driving autonomous, goal-directed behavior.
+
+### Biological Data Comparison Methodology
+
+We utilize **Isomorphic Mapping** to correlate internal system states with biological benchmarks. Validation process involves subjecting Nikola Model to standard reinforcement learning tasks and correlating internal chemical traces with biological recording data.
+
+| Biological Biomarker | Nikola Computational Analog | Validation Correlation Target |
+|----------------------|----------------------------|-------------------------------|
+| **Dopamine (DA)** | Reward Prediction Error (RPE) integration $D(t)$ | **Phasic**: DA spikes on unexpected reward ($R > E$).<br>**Tonic**: Baseline DA correlates with average reward rate. |
+| **Serotonin (5-HT)** | Metric Elasticity $\lambda$ (Resistance to plasticity) | **Inverse Correlation**: High 5-HT → Low Plasticity (Stability).<br>Low 5-HT → Impulsivity/Volatility. |
+| **Norepinephrine (NE)** | Global Gain / Wave Velocity $c_{eff}$ | **U-Curve**: Performance optimal at moderate NE (Yerkes-Dodson Law). |
+| **Firing Rate** | Node Energy $\|\Psi\|^2$ | Direct correlation with biological spike rates. |
+
+**Methodology**:
+
+1. **Stimulus**: Subject Nikola Model to standard reinforcement learning task (e.g., Multi-Armed Bandit or Iowa Gambling Task).
+2. **Recording**: Log $D(t)$, $S(t)$, and learning rate $\eta(t)$ at 100 Hz.
+3. **Comparison**: Compute Pearson Correlation Coefficient ($r$) between model's $D(t)$ trace and recorded DA release patterns from primate studies (e.g., Schultz et al.) under similar uncertainty conditions.
+4. **Success Criterion**: $r > 0.7$ for RPE dynamics.
+
+### Behavioral Validation Tests
+
+We define specific behavioral assays to verify functional utility of neurochemistry.
+
+#### The Exploration/Exploitation Balance Test (Dopamine/Boredom)
+
+* **Setup**: Semantic search environment with clusters of high-reward information and vast empty spaces.
+* **Hypothesis**: "Boredom" drive (entropy maximization) should trigger exploration when local rewards deplete.
+* **Metric**: **Switching Rate**. How often does agent abandon depleting resource to seek new one?
+* **Validation**: Plot Switching Rate vs. Reward Density. Curve should match **Marginal Value Theorem** predictions observed in foraging animals.
+
+#### The Risk Aversion Test (Serotonin)
+
+* **Setup**: Offer two choices:
+  - Option A (small, certain reward)
+  - Option B (large, risky reward)
+* **Manipulation**: Artificially clamp Serotonin levels.
+* **Hypothesis**: High Serotonin ($S \to 1.0$) should increase preference for Option A (Stability). Low Serotonin should increase preference for Option B (Risk/Impulsivity).
+* **Validation**: Statistically significant shift in choice probability ($p < 0.05$) correlated with $S$ levels.
+
+### Ablation Study Protocols
+
+To prove each modulator contributes uniquely, we perform **"Virtual Lesioning"** to simulate pathological states.
+
+**Protocol**:
+
+1. **Control**: Run standard benchmark (e.g., text summarization with feedback). Measure Convergence Time and Final Accuracy.
+
+2. **Lesion D (Dopamine)**: Clamp $D(t) = 0$. (Simulates Parkinsonian state).
+   * **Expected Result**: Learning rate $\eta \to 0$. System fails to adapt to feedback. **"Anhedonia."**
+
+3. **Lesion S (Serotonin)**: Clamp $S(t) = 0$. (Simulates severe Serotonin depletion).
+   * **Expected Result**: Metric Elasticity $\lambda \to 0$. **Catastrophic Forgetting**. New memories instantly overwrite old ones. **"Manic Instability"**.
+
+4. **Lesion N (Norepinephrine)**: Clamp $N(t) = 1.0$. (Simulates Panic).
+   * **Expected Result**: Relevance gating threshold drops to 0. System hallucinates connections between unrelated concepts. **"Paranoid/Schizophrenic" behavior**.
+
+### Statistical Validation Framework
+
+Data from these tests is fed into automated analysis pipeline:
+
+* **Granger Causality Test**: Does spike in $D(t)$ cause change in metric tensor $g_{ij}$? This verifies Hebbian-Riemannian coupling.
+* **Entropy Analysis**: Compute Shannon Entropy of grid energy distribution.
+  - **Healthy**: High entropy (rich, complex representation).
+  - **Pathological (Lesioned)**: Low entropy (collapsed state or white noise).
+
+**Deliverable**:
+
+The output of this validation is **"Neuro-Psychometric Profile"** for Nikola Model. If ablation of chemical does not produce predicted pathology, ENGS implementation is mathematically flawed and must be recalibrated. This ensures autonomy system is grounded in functional dynamics, not just heuristic mimicry.
+
+### Implementation Status
+
+- **Status**: SPECIFICATION COMPLETE
+- **Biological Correlation**: Dopamine (RPE), Serotonin (metric elasticity), Norepinephrine (global gain)
+- **Behavioral Tests**: Exploration/Exploitation balance, Risk aversion (Serotonin clamping)
+- **Ablation Studies**: Virtual lesioning for D, S, N with predicted pathologies
+- **Statistical Validation**: Granger causality, entropy analysis, Pearson correlation ($r > 0.7$)
+- **Success Criteria**: Behavioral assays match biological predictions with $p < 0.05$
+
+### Cross-References
+
+- [Extended Neurochemical Gating System (ENGS)](./01_computational_neurochemistry.md)
+- [Reward Prediction Error (RPE)](./01_computational_neurochemistry.md)
+- [Metric Tensor Evolution](../02_foundations/01_9d_toroidal_geometry.md)
+- [Hebbian-Riemannian Plasticity](../02_foundations/01_9d_toroidal_geometry.md)
+- [Mamba-9D Attention](../03_cognitive_systems/02_mamba9d_architecture.md)
+- [Physics Oracle](../02_foundations/02_wave_interference_physics.md)
+- [Boredom Drive (GAP-036)](./01_computational_neurochemistry.md)
+
+---
+
 	The implementation of these structures within the src/autonomy/ directory is now the primary objective for the Engineering Team in Phase 3.
 Status: APPROVED FOR IMMEDIATE IMPLEMENTATION.
 Works cited

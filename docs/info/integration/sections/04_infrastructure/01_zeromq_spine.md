@@ -226,6 +226,172 @@ message CommandResponse {
 }
 
 1
+
+---
+
+## GAP-023: Protocol Buffer Schema Evolution Strategy
+
+**SOURCE**: Gemini Deep Research Round 2, Batch 37-40
+**INTEGRATION DATE**: December 16, 2025
+**GAP ID**: GAP-023 (TASK-023)
+**PRIORITY**: CRITICAL
+**STATUS**: FABRICATION-READY SPECIFICATION
+
+### 2.6 Schema Evolution and Lifecycle Management
+
+The operational integrity of the Nikola Model v0.0.4 is fundamentally predicated on coherent interchange of high-dimensional geometric data across a distributed ZeroMQ spine. Unlike monolithic architectures, the Nikola system functions as a constellation of autonomous agents communicating asynchronously via the NeuralSpike message envelope. The necessity for a rigorous **Schema Evolution Strategy** arises from the system's inherent capability for self-improvement and dynamic code generation. A rigid serialization protocol would induce "systemic ossification," freezing the cognitive architecture and preventing emergence of higher-order capabilities.
+
+The critical engineering challenge is managing "breaking changes" within a persistent, self-modifying system. Without a formalized evolution strategy, transitions risk **"temporal decoherence"**—a failure mode where components operating on divergent schema versions misinterpret topological data, leading to corruption of the manifold's geometry and collapse of the wavefunction.
+
+#### 2.6.1 Versioning and Identification Scheme
+
+To manage complexity of a self-evolving system, we implement a tiered versioning scheme that strictly decouples wire-format compatibility from semantic logic through package namespacing and semantic versioning.
+
+**Semantic Versioning for Schemas**
+
+All `.proto` definition files must adhere to strict Semantic Versioning (SemVer: MAJOR.MINOR.PATCH). This version number is embedded as metadata within the file to allow automated tooling to enforce compatibility rules:
+
+* **MAJOR (vX)**: Breaking changes requiring synchronous migration or translation layer. Examples: renumbering field IDs, changing primitive types (e.g., `int32` to `bytes` for Morton keys as in INT-06), removing required fields.
+* **MINOR (.Y)**: Backward-compatible additions such as new optional fields (e.g., `dopamine_level`, `citations`).
+* **PATCH (.Z)**: Non-functional changes (documentation updates, comment clarifications).
+
+**Package Namespacing and Isolation**
+
+To facilitate "Ship of Theseus" upgrade pattern—hot-swapping components without system downtime—multiple protocol versions must coexist on the same ZeroMQ bus. This is achieved by including the Major version in the protobuf package namespace:
+
+```protobuf
+// neural_spike_v1.proto
+syntax = "proto3";
+package nikola.spine.v1;
+
+// neural_spike_v2.proto
+syntax = "proto3";
+package nikola.spine.v2;
+```
+
+This namespacing ensures C++ compiler generates distinct classes (`nikola::spine::v1::NeuralSpike` and `nikola::spine::v2::NeuralSpike`), preventing symbol collisions in the Orchestrator or Router that may need to link against multiple versions simultaneously during rolling upgrades.
+
+#### 2.6.2 Field Lifecycle Management
+
+The lifecycle of a field within the Nikola schema is governed by strict **immutability rules** to guarantee safe interoperability between high-frequency Physics Engine (1 kHz) and slower Cognitive Control layer.
+
+**The Immutability of Field IDs**
+
+In Protocol Buffer specification, the field ID (unique integer tag) is the primary identifier on the wire. Once a field ID is assigned, it must **never be reused or re-purposed**, even if deleted. Reusing an ID for a different data type or semantic meaning causes legacy components to interpret new data as old field, leading to silent data corruption—critical failure mode in physics simulation where numerical precision is paramount.
+
+**Mandatory Rule**: Do not change the type of an existing field. If type change required (e.g., upgrading coordinate precision), create new field with new ID and deprecate old one.
+
+**Deprecation Policy and "Tombstoning"**
+
+Fields no longer used must be formally deprecated rather than deleted through **"Tombstone" protocol**:
+
+1. **Deprecation Marker**: Mark field as `deprecated = true` in `.proto` definition.
+2. **Reservation**: Add field ID to `reserved` list. Prevents compiler from allowing any future developer (or AI during self-improvement) to accidentally reuse ID.
+3. **Renaming**: Rename field to `OBSOLETE_<name>` to discourage usage in new code while maintaining binary compatibility for legacy deserializers.
+
+**Case Study: Migrating Coordinates from Int32 to Bytes (INT-06)**
+
+The critical remediation for INT-06 required shifting from split 32-bit integers to contiguous 128-bit bytes for spatial hashing. The schema evolution:
+
+```protobuf
+message NeurogenesisEvent {
+   // ---------------------------------------------------------
+   // DEPRECATED FIELDS (Do not remove, do not reuse IDs)
+   // ---------------------------------------------------------
+   // Old split coordinate format. Vulnerable to endianness issues.
+   repeated int32 OBSOLETE_coordinates = 1 [deprecated = true];
+
+   // ---------------------------------------------------------
+   // ACTIVE FIELDS
+   // ---------------------------------------------------------
+   // New 128-bit Morton Keys. Network Byte Order (Big Endian).
+   // Each entry must be exactly 16 bytes.
+   repeated bytes morton_indices = 5;
+
+   // Tombstone reserved IDs to prevent reuse
+   reserved 2, 3, 4;
+}
+```
+
+#### 2.6.3 Required vs. Optional Field Guidelines
+
+In proto3, all fields are optional by default (zero value if not present). This aligns with Nikola architecture's requirement for resilience—message should not crash receiver simply because non-critical telemetry field is missing. However, strictly distinguishing "missing" from "default" is vital for physical constants:
+
+* **Guideline 1**: Use `optional` keyword explicitly for primitive fields where "0" is valid value (e.g., `coordinate = 0` or `energy = 0.0`) to distinguish "missing data" from "system at zero energy."
+* **Guideline 2**: Implement application-level validation logic. Receiving component (e.g., Physics Engine) must verify critical fields (like wavefunction amplitude) are present and valid before processing.
+* **Guideline 3**: For NeuralSpike envelope, `request_id` and `timestamp` are logically required. While schema cannot enforce this, SecureChannel wrapper must reject any packet lacking these headers before it reaches deserializer.
+
+#### 2.6.4 Automated Compatibility Testing Infrastructure
+
+To prevent regressions (particularly those introduced by self-modifying code), build pipeline includes **Automated Compatibility Matrix Test**. This system verifies all active components can serialize and deserialize messages from all supported schema versions.
+
+**The Compatibility Matrix**
+
+We define testing matrix $M_{i,j}$ where $i$ is producer version and $j$ is consumer version:
+
+| Producer (vX) | Consumer (vY) | Expectation |
+|---------------|---------------|-------------|
+| Current (v2) | Current (v2) | **Success**: Full fidelity. All fields accessible. |
+| Legacy (v1) | Current (v2) | **Success**: Forward compatibility. Default values used for new v2 fields. Logic handles missing `morton_indices` by falling back to `OBSOLETE_coordinates`. |
+| Current (v2) | Legacy (v1) | **Success**: Backward compatibility. New fields (e.g., `morton_indices`) ignored/dropped safely. Legacy logic consumes `OBSOLETE_coordinates` (if populated by dual-write shim). |
+| Future (v3) | Current (v2) | **Success**: Future compatibility. Unknown fields preserved in `unknown_fields` buffer for pass-through routing. |
+
+**Migration Scripts for Breaking Changes**
+
+When breaking change is unavoidable (e.g., v1 → v2), Orchestrator employs **translation layer shim**. This shim intercepts messages and upgrades payload before passing to core logic:
+
+```cpp
+// src/spine/translator.cpp
+
+namespace nikola::spine {
+
+// Translates legacy v1 spikes to v2 format
+std::optional<v2::NeuralSpike> translate_v1_to_v2(const v1::NeuralSpike& legacy) {
+   v2::NeuralSpike modern;
+
+   // Copy common fields
+   modern.set_request_id(legacy.request_id());
+   modern.set_timestamp(legacy.timestamp());
+
+   // Handle breaking change: Coordinate Migration
+   if (legacy.has_neurogenesis()) {
+       const auto& old_gen = legacy.neurogenesis();
+       auto* new_gen = modern.mutable_neurogenesis();
+
+       // Convert repeated int32 array to bytes
+       for (int32_t coord : old_gen.obsolete_coordinates()) {
+           // Reconstruct 128-bit key from legacy split-int format
+           // This logic requires knowledge of old interleaving implementation
+           std::array<uint8_t, 16> raw_bytes = reconstruct_morton(coord);
+           new_gen->add_morton_indices(raw_bytes.data(), 16);
+       }
+   }
+
+   return modern;
+}
+
+} // namespace nikola::spine
+```
+
+#### 2.6.5 Documentation and Artifact Requirements
+
+Every schema change must be accompanied by:
+
+1. **Changelog Entry**: Precise description of what changed and why.
+2. **Migration Guide**: Instructions for updating dependent components (e.g., "Physics Engine must update to v2.1 to read new Morton codes").
+3. **Artifact Publication**: Compiled C++ headers and Python bindings for new version must be pushed to internal artifact repository (e.g., `libnikola-proto-v2.1.so`).
+
+This strategy ensures the Nikola system can evolve its internal language without succumbing to "Tower of Babel" scenario, maintaining coherence of 9D-TWI substrate across generations of code.
+
+### Cross-References
+
+- [128-bit Morton Addressing (INT-06)](./01_zeromq_spine.md#addressing-the-topology-128-bit-morton-keys-int-06)
+- [NeuralSpike Schema](./01_zeromq_spine.md#the-unified-neuralspike-schema)
+- [Ironhouse Security Model](./01_zeromq_spine.md#the-ironhouse-security-model)
+- [Self-Improvement Shadow Spine](./01_zeromq_spine.md#shadow-spine-protocol-self-improvement)
+
+---
+
 ________________
 3. Connection Management and Transport Layer
 The Transport Layer is the bedrock of the distributed system. It is responsible for the lifecycle of connections, the enforcement of security boundaries, and the detection of component failures. The implementation is built upon libzmq (C++) and libsodium, providing a performant and cryptographically secure foundation.
