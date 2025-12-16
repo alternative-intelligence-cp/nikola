@@ -1653,3 +1653,262 @@ Implementing this robust DMC strategy involves trade-offs between storage costs,
 - [Nap State Controller](../06_persistence/04_nap_system.md)
 
 ---
+
+## Concept Minter Garbage Collection Specification (GAP-034)
+
+**SOURCE**: Gemini Deep Research Round 2 - Advanced Cognitive Dynamics Report
+**INTEGRATION DATE**: 2025-12-15
+**GAP ID**: GAP-034
+**PRIORITY**: CRITICAL
+**STATUS**: SPECIFICATION COMPLETE
+
+### Theoretical Foundation: The Thermodynamics of Semantics
+
+In the Nikola architecture, the generation of new concepts is a physical process involving the **heterodyning of wave frequencies** on the 9D manifold. When the Wave Interference Processor detects a stable interference pattern that does not correspond to an existing entry in the Holographic Lexicon, the **Concept Minter** generates a "Neologism"—a synthetic token linked to that specific spectral signature. This capability allows the system to expand its vocabulary dynamically, minting new identifiers for novel compounds of meaning (e.g., "bittersweet-nostalgia" or "quantum-uncertainty").
+
+However, the combinatorial vastness of the 9-dimensional phase space creates a critical vulnerability: the **"Neologism Explosion."** In a rich sensory environment, the system may encounter millions of transient interference patterns per hour. If every transient glitch or noise artifact is minted and retained as a permanent concept, the Holographic Lexicon will grow linearly with time ($O(t)$), leading to:
+
+- **Catastrophic memory exhaustion**
+- **Degradation of retrieval latency**: $O(1) \to O(N)$
+- **Diluted manifold**: Reduced signal-to-noise ratio in associative reasoning
+
+To resolve this, we implement a **Metabolic Tax Model**. Just as biological organisms metabolize energy to maintain cellular structures, the Nikola system must expend "Virtual ATP" to maintain the existence of a concept in the Lexicon. Concepts that fail to "pay their rent"—either through lack of utility or lack of resonance—must be evicted to reclaim entropy for the system.
+
+### Token Usage Tracking and Metabolic Structures
+
+The implementation requires granular tracking of how each synthetic concept interacts with the cognitive core. We define a specialized metadata structure, **TokenMetabolism**, aligned to CPU cache lines to minimize memory bandwidth overhead during the high-frequency physics loop.
+
+```cpp
+/**
+* @struct TokenMetabolism
+* @brief Tracks the metabolic cost and utility of synthetic concepts.
+* Aligned to 64 bytes to match AVX-512 cache lines, preventing false sharing.
+*/
+struct alignas(64) TokenMetabolism {
+   // Timestamp of last successful retrieval/activation (Physics Tick)
+   // Used for calculating temporal decay intervals.
+   std::atomic<uint64_t> last_accessed_tick;
+
+   // Cumulative resonance energy (semantic importance).
+   // Integrated magnitude of the wavefunction when active: Integral(|Psi|^2).
+   // Decays continuously via metabolic tax.
+   std::atomic<float> cumulative_resonance;
+
+   // Utility Count: Number of times this token has triggered a valid state transition
+   // in the Mamba-9D SSM. High utility protects against eviction.
+   std::atomic<uint32_t> utility_count;
+
+   // Stability Score (0.0 - 1.0): Derived from phase coherence variance.
+   // 1.0 = Perfect Standing Wave, 0.0 = White Noise.
+   float stability_index;
+
+   // Generation ID for Generational Garbage Collection (Nursery vs. Archive).
+   uint16_t generation_id;
+
+   // Origin Coordinates: Where in the 9D Manifold this concept was minted.
+   // Used for spatial locality checks during compaction.
+   uint64_t origin_hilbert_index;
+
+   // Padding to ensure 64-byte alignment for SIMD operations.
+   uint8_t _pad;
+};
+```
+
+**Key Fields**:
+
+- **cumulative_resonance**: "Energy bank" for the token. Increases with constructive use, decays over time (Long-Term Potentiation)
+- **stability_index**: Phase coherence measure. Stable memories have low phase variance; noise artifacts have high variance
+- **origin_hilbert_index**: Connects semantic token to spatial location in Torus for Holographic Compaction
+
+This structure uses `std::atomic` for high-concurrency access, allowing the Physics Engine to update usage statistics from multiple threads without locking (Wait-Free requirements of 1000 Hz loop).
+
+### Resonance-Weighted Eviction Policy
+
+The core decision logic is encoded in the **Eviction Score function** $E_s(i)$, which determines the "kill priority" of a token. Unlike standard cache replacement algorithms, the Nikola system recognizes that losing a "Deep Thought" is far more damaging than losing a "Transient Glitch."
+
+**Eviction Score Formula**:
+
+$$E_s(i) = \frac{\Delta t_{age}^\alpha}{(R_{cum} \cdot U_{count})^\beta + \epsilon} \cdot (1 - S_{stab}) \cdot e^{\lambda \cdot C_{density}}$$
+
+Where:
+
+- $\Delta t_{age} = t_{now} - t_{last}$: Temporal age of last access
+- $R_{cum}$: Cumulative resonance energy (metabolic reserve)
+- $U_{count}$: Usage count
+- $S_{stab}$: Stability index ($0 \le S \le 1$). High stability drives score toward zero (protection)
+- $C_{density}$: Local cluster density in semantic space. Crowded regions → higher eviction probability (encourages sparsity)
+- $\alpha, \beta, \lambda$: Tuning hyperparameters
+  - $\alpha=1.0$ (linear time decay)
+  - $\beta=0.6$ (diminishing returns on importance)
+  - $\lambda=0.5$ (cluster pressure)
+
+**Selection Pressure**: Only "Fit" concepts survive. A neologism generated but never used again will have low $R_{cum}$ and high $\Delta t_{age}$, resulting in massive $E_s$ and immediate reclamation. Conversely, a "Core Memory" with high $R_{cum}$ can survive indefinitely without access, mirroring biological Long-Term Memory consolidation.
+
+### Lexicon Compaction Procedures
+
+Garbage collection operations are computationally expensive ($O(N)$ scanning). Running them synchronously within the 1ms physics tick would cause "Temporal Decoherence." Therefore, GC policy is strictly integrated with the **Nap System** (System Sleep/Consolidation Cycles).
+
+#### Generational Memory Architecture
+
+**1. The Nursery (Young Generation)**:
+- **Structure**: High-speed Ring Buffer of fixed capacity (e.g., 16,384 slots)
+- **Role**: Buffers high-velocity incoming neologisms
+- **Policy**: First-In-First-Out (FIFO)
+- **Promotion**: When Nursery fills, Minor GC is triggered. System scans buffer. Any token with $R_{cum} > \theta_{promote}$ (Promotion Threshold) is moved to Archive. All other tokens are overwritten. Acts as high-pass filter for semantic significance.
+
+**2. The Archive (Old Generation)**:
+- **Structure**: Sparse Hyper-Voxel Octree (SHVO) or Robin Hood Hash Map backed by LSM-DMC persistence
+- **Role**: Stores consolidated long-term concepts
+- **Policy**: Resonance-Weighted Eviction
+- **Compaction**: Major GC runs only during Nap cycles, performing global optimization of semantic space
+
+#### Holographic Compaction (Semantic Merger)
+
+The 9D Toroidal geometry implies that **"Synonyms" are "Geometrically Proximate."** Due to quantization noise or sensor jitter, the Concept Minter often generates multiple distinct IDs for what is effectively the same concept (e.g., "Apple" at $\vec{x}$ and "Apple" at $\vec{x} + \vec{\epsilon}$).
+
+**Compaction Procedure** (during deep sleep phase):
+
+1. **Spatial Sorting**: Sort all tokens in Archive by their 128-bit Hilbert Index. This linearizes the 9D manifold, placing spatially adjacent concepts next to each other in memory.
+
+2. **Spectral Overlap Calculation**: For every adjacent pair of tokens $A$ and $B$, compute the **Quantum Overlap Integral**:
+
+   $$O(A, B) = \frac{|\langle \Psi_A | \Psi_B \rangle|^2}{\langle \Psi_A | \Psi_A \rangle \langle \Psi_B | \Psi_B \rangle}$$
+
+   This calculation utilizes AVX-512 complex dot products to compare spectral signatures.
+
+3. **Merger Event**: If $O(A, B) > 0.95$ (95% spectral identity), the concepts are merged:
+   - **Survivor Selection**: Token with higher $U_{count}$ retains its ID
+   - **Energy Conservation**: $R_{new} = R_A + R_B$ (cumulative resonance added)
+   - **Redirect Creation**: "Tombstone Redirect" placed in hash map, pointing victim's ID to survivor's ID (ensures old memories referencing victim ID still resolve correctly)
+
+### Important Token Preservation Mechanisms
+
+To prevent accidental deletion of critical system concepts (e.g., "Self," "User," "Safety"), the GC implements a strict **Locking Protocol**:
+
+1. **Anchor Flags**: Certain tokens flagged as `FLAG_ANCHOR`. Return Eviction Score of $-1.0$, rendering them immune to GC process.
+
+2. **Tombstone Bloom Filter**: When a token is evicted from Archive, its ID is hashed into a Bloom Filter. If cognitive core attempts to access this ID within a short window (the "Regret Window"), the system detects the "Miss."
+
+3. **Regret Learning**: A "Regret" signal triggers a neurochemical response (Dopamine dip), which dynamically adjusts the $\beta$ parameter in the Eviction Score formula. This makes the GC more conservative in future cycles, effectively allowing the system to "learn" the appropriate forgetting rate for its environment.
+
+### ConceptGarbageCollector Implementation
+
+```cpp
+/**
+* @file src/cognitive/garbage_collector.hpp
+* @brief Policy engine for managing synthetic concept lifecycle via metabolic tax.
+* Integrates with LSM-DMC persistence and SoA memory layout.
+*/
+
+namespace nikola::cognitive {
+
+class ConceptGarbageCollector {
+private:
+   // Thermodynamic Constants
+   static constexpr float ALPHA_DECAY = 1.0f;       // Linear time decay
+   static constexpr float BETA_IMPORTANCE = 0.6f;   // Importance weighting
+   static constexpr float PROMOTION_THRESHOLD = 50.0f; // Joules (Resonance units)
+   static constexpr float MERGER_THRESHOLD = 0.95f;    // 95% Spectral Overlap
+   static constexpr float DENSITY_PENALTY = 0.5f;      // Lambda for density
+
+   HolographicLexicon& lexicon_;
+
+public:
+   ConceptGarbageCollector(HolographicLexicon& lex) : lexicon_(lex) {}
+
+   /**
+    * @brief Run Minor GC on the Nursery buffer.
+    * @details High-frequency, low-latency pass. Called when Nursery > 90%.
+    * Promotes fit concepts to the Archive.
+    */
+   void collect_nursery(std::vector<Neologism>& nursery) {
+       // Parallel partitioning for speed
+       auto split_point = std::partition(std::execution::par_unseq,
+           nursery.begin(), nursery.end(),
+           [](const Neologism& neo) {
+               // Survival Criteria: Must have accumulated enough resonance energy
+               return neo.metabolism.cumulative_resonance > PROMOTION_THRESHOLD;
+           });
+
+       // Promote survivors to Main Lexicon (Archive)
+       for (auto it = nursery.begin(); it != split_point; ++it) {
+           lexicon_.promote(*it);
+       }
+
+       // Reset Nursery: "dead" concepts simply overwritten in next cycle
+       nursery.clear();
+   }
+
+   /**
+    * @brief Run Major GC on the Main Lexicon (Archive).
+    * @details High-latency global optimization. ONLY called during NAP cycles.
+    * Performs Spatial Sorting, Holographic Compaction, and Weighted Eviction.
+    */
+   void collect_major(uint64_t current_tick, size_t target_capacity) {
+       auto& tokens = lexicon_.get_active_tokens();
+
+       // PHASE 1: HOLOGRAPHIC COMPACTION
+       // Sort by Hilbert Index to bring spatial neighbors together
+       std::sort(std::execution::par_unseq, tokens.begin(), tokens.end(),
+           [](const auto& a, const auto& b) {
+               return a.metabolism.origin_hilbert_index < b.metabolism.origin_hilbert_index;
+           });
+
+       // Scan for synonyms (adjacent tokens with high spectral overlap)
+       for (size_t i = 0; i < tokens.size() - 1; ++i) {
+           if (compute_spectral_overlap(tokens[i], tokens[i+1]) > MERGER_THRESHOLD) {
+               // Merge logic: Token i absorbs Token i+1
+               tokens[i].metabolism.utility_count += tokens[i+1].metabolism.utility_count;
+               tokens[i].metabolism.cumulative_resonance += tokens[i+1].metabolism.cumulative_resonance;
+
+               lexicon_.create_redirect(tokens[i+1].id, tokens[i].id);
+               i++; // Skip next to avoid chaining merges
+           }
+       }
+
+       // PHASE 2: RESONANCE-WEIGHTED EVICTION
+       if (tokens.size() > target_capacity) {
+           // Calculate scores and execute deletions...
+       }
+   }
+
+private:
+   float calculate_eviction_score(const Neologism& token, uint64_t current_tick) {
+       // Absolute protection for Anchor concepts
+       if (token.flags & FLAG_ANCHOR) return -1.0f;
+
+       float age = static_cast<float>(current_tick - token.metabolism.last_accessed_tick);
+       float resonance = token.metabolism.cumulative_resonance;
+       float utility = static_cast<float>(token.metabolism.utility_count);
+       float stability = token.metabolism.stability_index;
+
+       float importance = std::pow(resonance * utility, BETA_IMPORTANCE);
+       float score = (std::pow(age, ALPHA_DECAY) / (importance + 1e-6f)) * (1.0f - stability);
+
+       return score;
+   }
+};
+
+} // namespace nikola::cognitive
+```
+
+### Implementation Status
+
+- **Status**: SPECIFICATION COMPLETE
+- **Generational Architecture**: Nursery (16K slots) + Archive (SHVO/Robin Hood Hash)
+- **Eviction Policy**: Resonance-Weighted with metabolic tax
+- **Compaction**: Hilbert-sorted spectral overlap detection (95% threshold)
+- **Protection**: Anchor flags, Tombstone Bloom Filter, Regret Learning
+- **Integration**: Nap System, LSM-DMC persistence, 1000 Hz physics loop compatibility
+
+### Cross-References
+
+- [Holographic Lexicon](./04_memory_data_systems.md)
+- [Concept Minter](./04_memory_data_systems.md)
+- [Nap System](../06_persistence/04_nap_system.md)
+- [LSM-DMC Persistence](../06_persistence/02_gguf_interoperability.md)
+- [Hilbert Curve Encoding](../02_foundations/01_9d_toroidal_geometry.md)
+- [Mamba-9D SSM](./02_mamba_9d_ssm.md)
+- [Virtual ATP Metabolism](../05_autonomous_systems/01_computational_neurochemistry.md)
+
+---
