@@ -1966,6 +1966,348 @@ Self-Improvement Engine (Section 17)
 
 Prevents priority inversion where shutdown waits behind 10k thought loops.
 
-**Status**: IMPLEMENTATION SPECIFICATION COMPLETE  
+**Status**: IMPLEMENTATION SPECIFICATION COMPLETE
 **Cross-References**: ZeroMQ Spine (Section 9), Physics Loop (Section 2)
+
+---
+
+## GAP-026: Docker Compose Service Orchestration
+
+**SOURCE**: Gemini Deep Research Round 2, Batch 25-27
+**INTEGRATION DATE**: December 15, 2025
+**GAP ID**: GAP-026 (TASK-026)
+**PRIORITY**: CRITICAL
+**STATUS**: FABRICATION-READY SPECIFICATION
+
+### Problem Statement: Distributed System Initialization
+
+Nikola is not a monolithic application - it's a **distributed system of specialized containers**. Orchestration must enforce **Ironhouse Security Model** (ZeroMQ CurveZMQ protocol), creating strict initialization hierarchy.
+
+**Critical Requirement**: "Spine" (Broker) must be active and healthy before any "Limb" (Physics, Memory, Logic) can attach.
+
+### Service Dependency Graph
+
+**4-Layer Hierarchy**:
+
+- **Layer 0 (Core)**: `nikola-spine` - ZeroMQ Broker (no dependencies)
+- **Layer 1 (Physics)**: `nikola-physics` - GPU-accelerated engine (depends on `nikola-spine`)
+- **Layer 2 (Cognition & Memory)**: `nikola-orchestrator` (Logic) + `nikola-memory` (Persistence) - depend on `nikola-spine` and `nikola-physics`
+- **Layer 3 (Tools & Interface)**: `nikola-executor` (KVM Sandbox) + `nikola-web` - depend on `nikola-orchestrator`
+
+### Docker Compose Configuration
+
+```yaml
+version: '3.8'
+
+services:
+  # ==========================================
+  # LAYER 0: COMMUNICATION BACKBONE
+  # ==========================================
+  nikola-spine:
+    image: nikola/spine:v0.0.4
+    container_name: nikola-spine
+    build:
+      context: .
+      dockerfile: docker/spine/Dockerfile
+    volumes:
+      - /etc/nikola/keys:/etc/nikola/keys:ro  # CurveZMQ Keys (Ironhouse Security)
+      - /tmp/nikola/ipc:/tmp/nikola/ipc       # IPC Sockets for local speed
+    environment:
+      - ZMQ_CURVE_SERVER=1
+      - LOG_LEVEL=info
+    healthcheck:
+      # Verify ZMQ socket actually accepting connections (not just process existence)
+      test: ["CMD", "python3", "/healthcheck_zmq.py"]
+      interval: 5s
+      timeout: 2s
+      retries: 5
+    deploy:
+      resources:
+        limits:
+          cpus: '2.0'
+          memory: 4G
+
+  # ==========================================
+  # LAYER 1: PHYSICS ENGINE (GPU)
+  # ==========================================
+  nikola-physics:
+    image: nikola/physics:v0.0.4
+    container_name: nikola-physics
+    build:
+      context: .
+      dockerfile: docker/physics/Dockerfile
+    runtime: nvidia  # REQUIRED: Access to GPU hardware
+    depends_on:
+      nikola-spine:
+        condition: service_healthy  # Wait for full CurveZMQ readiness
+    volumes:
+      - /etc/nikola/keys:/etc/nikola/keys:ro
+      - /tmp/nikola/ipc:/tmp/nikola/ipc
+      - /dev/shm:/dev/shm                     # Seqlock Ring Buffer (Zero-Copy)
+    environment:
+      - NVIDIA_VISIBLE_DEVICES=all
+      - OMP_NUM_THREADS=16                    # Thread count for AVX-512 sections
+    ulimits:
+      memlock: -1                             # Allow pinning GPU memory (prevent swap)
+      stack: 67108864                         # 64MB Stack for deep recursion in Mamba
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
+
+  # ==========================================
+  # LAYER 2: PERSISTENCE & MEMORY
+  # ==========================================
+  nikola-memory:
+    image: nikola/memory:v0.0.4
+    container_name: nikola-memory
+    depends_on:
+      nikola-spine:
+        condition: service_healthy
+    volumes:
+      - ./data/state:/var/lib/nikola/state    # LSM-DMC Storage (.nik files)
+      - /etc/nikola/keys:/etc/nikola/keys:ro
+      - /tmp/nikola/ipc:/tmp/nikola/ipc
+    stop_signal: SIGTERM                      # Triggers graceful LSM flush
+    stop_grace_period: 60s                    # Allow 1 min for WAL flush to complete
+
+  # ==========================================
+  # LAYER 3: ORCHESTRATION & AGENTS
+  # ==========================================
+  nikola-orchestrator:
+    image: nikola/orchestrator:v0.0.4
+    container_name: nikola-orchestrator
+    depends_on:
+      nikola-physics:
+        condition: service_started
+      nikola-memory:
+        condition: service_started
+    volumes:
+      - /etc/nikola/keys:/etc/nikola/keys:ro
+      - /tmp/nikola/ipc:/tmp/nikola/ipc
+    environment:
+      - TAVILY_API_KEY=${TAVILY_API_KEY}
+      - GEMINI_API_KEY=${GEMINI_API_KEY}
+
+  # ==========================================
+  # LAYER 4: SECURITY SANDBOX
+  # ==========================================
+  nikola-executor:
+    image: nikola/executor:v0.0.4
+    container_name: nikola-executor
+    privileged: true                          # REQUIRED for KVM/QEMU access
+    depends_on:
+      nikola-orchestrator:
+        condition: service_started
+    volumes:
+      - /dev/kvm:/dev/kvm                     # Hardware virtualization
+      - /sys/fs/cgroup:/sys/fs/cgroup:ro      # Agentless CGroup monitoring
+    devices:
+      - /dev/net/tun:/dev/net/tun             # For tap networking inside VM
+```
+
+### Orchestration Logic and Lifecycle Management
+
+#### Startup Sequencing & Healthcheck Race
+
+**Common Failure Mode**: "Connection Refused" race - client connects before server binds port.
+
+**Mitigation**: `depends_on` with `condition: service_healthy`
+
+**nikola-spine healthcheck**: Custom Python script (`healthcheck_zmq.py`) attempts to open ZMQ REQ socket and handshake with broker. Only when handshake succeeds does container report "Healthy" → allows Physics and Memory layers to start.
+
+**Prevents**: "Cryptographic Amnesia" issue where clients generate new keys because they cannot reach broker.
+
+#### Resource Limits and "Memlock"
+
+Physics Engine requires **real-time priority**. If OS swaps physics process to disk → 1ms latency budget instantly violated.
+
+**ulimits: memlock: -1**: Allows process to lock pages in RAM (`mlockall`), preventing swapping.
+
+**stack: 67108864**: 64MB stack size to accommodate deep recursion in Hilbert curve traversal algorithms.
+
+#### Graceful Shutdown: Data Integrity Critical Path
+
+LSM persistence relies on Write-Ahead Log (WAL) and MemTables in RAM. Abrupt kill (`SIGKILL`) → MemTable lost, WAL truncated → **data corruption**.
+
+**Shutdown Sequence**:
+
+1. **Trigger**: `docker compose down` sends `SIGTERM`
+2. **Orchestrator**: Receives SIGTERM → broadcasts `SYSTEM_HALT` via ZeroMQ Control Plane → stops accepting new user queries immediately
+3. **Physics Engine**: Receives SYSTEM_HALT → completes current 1ms tick (ensures wavefunction in valid state) → serializes final $\Psi$ to Shared Memory buffer → exits
+4. **Memory System**: Receives SIGTERM:
+   - **Action 1**: Acquires Global Write Lock (stop incoming writes)
+   - **Action 2**: Flushes in-memory MemTable to SSTable on disk (Level 0)
+   - **Action 3**: Syncs WAL to disk via `fsync`
+   - **Action 4**: Writes MANIFEST file updating Merkle Root hash
+   - **Exit**: Only after these steps confirmed does process terminate
+
+**stop_grace_period: 60s**: Overrides default 10s, ensures Docker doesn't force-kill during large flush.
+
+### Performance Characteristics
+
+**Startup Timing**:
+- **nikola-spine**: 1-2 seconds (ZeroMQ bind)
+- **Healthcheck**: 5s intervals, 5 retries max (25s timeout)
+- **nikola-physics**: 3-5 seconds (GPU init + ZeroMQ connect)
+- **Full Cluster**: <30 seconds from `docker compose up` to ready
+
+**Shutdown Timing**:
+- **Graceful**: 10-60 seconds (depends on MemTable size)
+- **Force-kill**: <10 seconds (data loss risk)
+
+**Resource Guarantees**:
+- **GPU**: 1× NVIDIA device reserved for physics
+- **Memory Lock**: Unlimited (prevents swap)
+- **Stack**: 64MB (deep recursion support)
+
+### Integration Points
+
+1. **ZeroMQ Spine**: Ironhouse security, CurveZMQ keypairs in `/etc/nikola/keys`
+2. **Physics Engine**: GPU runtime, /dev/shm for Seqlock IPC
+3. **LSM-DMC**: Graceful flush on SIGTERM, 60s grace period
+4. **KVM Executor**: Privileged mode, /dev/kvm access
+5. **Healthcheck**: Custom ZeroMQ handshake verification
+
+### Cross-References
+
+- [ZeroMQ Spine Architecture](./01_zeromq_spine.md)
+- [Ironhouse Security Model](./01_zeromq_spine.md) - GAP-010
+- [LSM-DMC Persistence](../06_persistence/01_dmc_persistence.md)
+- [Physics Engine Loop](../02_foundations/02_wave_interference_physics.md) - GAP-025
+- [KVM Executor Sandbox](./04_executor_kvm.md)
+
+---
+
+## GAP-027: Observability and Tracing Integration
+
+**SOURCE**: Gemini Deep Research Round 2, Batch 25-27
+**INTEGRATION DATE**: December 15, 2025
+**GAP ID**: GAP-027 (TASK-027)
+**PRIORITY**: CRITICAL
+**STATUS**: FABRICATION-READY SPECIFICATION
+
+### Problem Statement: The "Neural Trace" Concept
+
+**Traditional distributed tracing** (tracking HTTP requests in microservices) **insufficient** for Nikola. We trace discrete RPC calls, but Nikola processes **continuous streams of cognition**.
+
+**"Thought" ≠ single request/response cycle** - it's cascade of physics updates, neurogenesis events, memory retrievals, nonlinear interferences.
+
+**Neural Trace**: Visualization of semantic wave packet's propagation through 9D manifold. Integrate **OpenTelemetry (OTel) C++** directly into ZeroMQ Spine → unified trace context spanning Physics Engine, Memory System, External Agents.
+
+### Trace Context Propagation Protocol
+
+**Problem**: ZeroMQ frames = opaque binary blobs. Standard OTel propagators rely on HTTP headers.
+
+**Solution**: NeuralSpike Protobuf Header extension.
+
+#### Protobuf Schema Extension
+
+```protobuf
+message NeuralSpike {
+    //... existing fields...
+
+    // OpenTelemetry W3C Trace Context
+    // Key: "traceparent", Value: "00-4bf92f3577b34da6a3ce929d0e0e4736-00f067aa0ba902b7-01"
+    map<string, string> trace_context = 16;
+}
+```
+
+#### Implementation Logic
+
+**1. Publisher** (e.g., Orchestrator):
+- Initiate trace: `auto span = tracer->StartSpan("CognitiveCycle");`
+- Inject context: OTel TextMapPropagator writes Trace ID and Span ID into `std::map`
+- Serialize: Map copied into `NeuralSpike.trace_context` field
+- Send: Message dispatched via ZeroMQ
+
+**2. Subscriber** (e.g., Physics Engine):
+- Receive: Deserialize NeuralSpike message
+- Extract: OTel TextMapPropagator reads `trace_context` map
+- Continue: Create child span: `auto span = tracer->StartSpan("ProcessWave", parent_context);`
+
+### Semantic Span Attributes
+
+Domain-specific attributes allow engineers to correlate system performance with "mental states."
+
+| Attribute Key | Value Type | Description |
+|---------------|------------|-------------|
+| `nikola.resonance` | Float | Global resonance $r$ (0.0-1.0) - low = confusion/lack of memory recall |
+| `nikola.energy.hamiltonian` | Float | Total system energy - correlate latency spikes with high-energy "epileptic" states ($\Psi$ diverges) |
+| `nikola.neurogenesis.count` | Int | New nodes created this cycle - high count = "Learning Spurt" causing latency |
+| `nikola.neurochemistry.dopamine` | Float | Current dopamine level - explains why system chose specific path (high reward prediction) |
+| `nikola.coordinates` | String | Morton Code (Hex) of active region - physically where in 9D manifold thought occurs |
+
+### Tail-Based "Interest" Sampling Strategy
+
+**Standard head-based sampling** (capturing 1% of all traces randomly) **catastrophic for AGI debugging**. Most critical events—epiphanies, hallucinations, traumas, crashes—are statistical outliers. Random sampling misses them 99% of the time.
+
+#### Tail-Based "Interest" Sampling
+
+1. **Trace Everything**: All components generate spans locally in ring buffer. No data sent to collector yet.
+
+2. **Interest Heuristic**: Orchestrator evaluates "Interest" of completed cognitive cycle based on:
+   - **High Latency**: Tick time > 900μs
+   - **High Energy Drift**: Violation of conservation laws > 0.01%
+   - **High Reward**: "Eureka" moment (Dopamine spike > 0.8)
+   - **Error**: Any component crash or exception
+
+3. **Flush Decision**: If Interest Score > Threshold → Orchestrator publishes `FLUSH_TRACE` command on Control Plane → all components flush local ring buffers to Jaeger collector. If threshold not met, local traces overwritten by next cycle.
+
+**Result**: Capture **100% of interesting events** while storing minimal data for routine operations.
+
+### Backend Integration
+
+#### Jaeger
+
+**Usage**: Visualizing timeline of thoughts (traces). "Waterfalls" visualization maps causal chain of Mamba-9D's reasoning steps - shows how memory retrieval in Physics Engine triggered logic update in Orchestrator.
+
+#### Prometheus
+
+**Usage**: Aggregate metrics (gauges and histograms).
+
+**Key Metrics**:
+- `nikola_active_nodes_total` (Gauge): Monitors size of "brain"
+- `nikola_physics_tick_latency_seconds` (Histogram): Buckets: 100μs, 500μs, 900μs, 1ms, 5ms - identifies frequency of CFL violations
+- `nikola_dopamine_level` (Gauge): Tracks emotional state of agent over time
+
+**Impact**: Turns "Black Box" neural network into "Glass Box" - engineers see not just what AI said, but physically where in 9D manifold idea originated and how much metabolic energy it consumed.
+
+### Performance Characteristics
+
+**Tracing Overhead**:
+- **Local Span Generation**: <1 μs per span (ring buffer write)
+- **Trace Flush**: <10 ms (triggered only for interesting events)
+- **Interest Evaluation**: <100 μs (simple heuristics)
+
+**Storage Efficiency**:
+- **Routine Operations**: 0 bytes (traces overwritten)
+- **Interesting Events**: Full trace preserved (~1-10 KB per cognitive cycle)
+- **Capture Rate**: 100% of anomalies, <1% of routine ops
+
+**Observability Stack**:
+- **Jaeger**: Trace timeline visualization (causal reasoning chains)
+- **Prometheus**: Time-series metrics (latency histograms, neurochemical gauges)
+- **Ring Buffer**: Local per-component (bounded memory, zero network cost during normal ops)
+
+### Integration Points
+
+1. **ZeroMQ Spine**: NeuralSpike Protobuf extension with `trace_context` map
+2. **OpenTelemetry C++**: TextMapPropagator for W3C Trace Context
+3. **Physics Engine**: Span generation for each tick, semantic attributes
+4. **Orchestrator**: Interest heuristic evaluation, FLUSH_TRACE command
+5. **Jaeger Collector**: Receives flushed traces for visualization
+6. **Prometheus**: Metrics endpoint for aggregate statistics
+
+### Cross-References
+
+- [ZeroMQ Spine Architecture](./01_zeromq_spine.md)
+- [NeuralSpike Protobuf Schema](./01_zeromq_spine.md)
+- [Physics Oracle Monitoring](../02_foundations/02_wave_interference_physics.md) - GAP-025
+- [Neurochemical Gating](../05_autonomous_systems/01_computational_neurochemistry.md)
+
+---
 

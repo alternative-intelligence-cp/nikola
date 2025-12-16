@@ -9634,7 +9634,212 @@ void test_isochronous_buffer() {
 - **Multimodal Transduction:** Section 7.1 (Cymatic Transduction)
 - **Timestamping Requirements:** Hardware driver specifications
 
-**Status:** IMPLEMENTATION SPECIFICATION COMPLETE  
-**Priority:** HIGH (enables real-world sensory grounding)  
+**Status:** IMPLEMENTATION SPECIFICATION COMPLETE
+**Priority:** HIGH (enables real-world sensory grounding)
 **Dependencies:** Hardware timestamping support, monotonic clock API
+
+---
+
+## GAP-025: End-to-End Latency Budget Allocation
+
+**SOURCE**: Gemini Deep Research Round 2, Batch 25-27
+**INTEGRATION DATE**: December 15, 2025
+**GAP ID**: GAP-025 (TASK-025)
+**PRIORITY**: CRITICAL
+**STATUS**: FABRICATION-READY SPECIFICATION
+
+### Problem Statement: The Physics of Real-Time Cognition
+
+**Central Constraint**: Strict **1000 Hz physics loop** = exactly **1.0 milliseconds** (1000 μs) per simulation step ($dt$).
+
+**NOT an arbitrary performance target** - it's a **hard physical limit** from numerical stability requirements.
+
+**Split-Operator Symplectic Integrator**: Preserves symplectic 2-form on phase space → conserves energy (Hamiltonian) over long timescales. Conservation **guaranteed only if** integration timestep $\Delta t$ remains below limit set by highest frequency dynamics.
+
+**CFL Condition**: Information (waves) cannot propagate across more than one grid cell per timestep. Exceeding 1ms threshold introduces numerical dispersion errors → accumulate as artificial energy → **"epileptic resonance"** (wavefunction amplitude diverges, destroys all encoded memories).
+
+**Latency Budget = System Survival**
+
+### Conservative Budget Allocation
+
+- **Total Budget**: 1000 μs
+- **Safety Margin**: 100 μs (10% reserved for OS jitter, interrupt handling, context switching)
+- **Allocatable Budget**: **900 μs**
+
+### Critical Path Component Breakdown
+
+Critical path = sequence of serial operations that must complete within single physics tick to advance system state from $t$ to $t+1$. Asynchronous operations (logging to disk, non-critical API queries, long-term visualizations) excluded from hot loop to prevent pipeline stalls.
+
+#### Component 1: Physics Kernel (Wave Propagation)
+
+**Allocated Budget**: **600 μs** (66.6% of net budget)
+**Status**: Primary Computational Bottleneck
+
+Executes time-evolution operator $U(t, t+\Delta t)$ on 9D toroidal grid. Uses **Strang Splitting** to decompose Hamiltonian evolution into kinetic ($\hat{T}$), potential ($\hat{V}$), nonlinear ($\hat{N}$) operators:
+
+$$e^{\hat{H}\Delta t} \approx e^{\hat{V}\Delta t/2} e^{\hat{T}\Delta t} e^{\hat{V}\Delta t/2}$$
+
+**Sub-Budget Breakdown**:
+
+1. **Metric Tensor Update** (Neuroplasticity): **50 μs**
+   - Hebbian-Riemannian learning rule updates $g_{ij}$ at each node
+   - **Memory-bound operation** - SoA layout mandatory
+   - AoS: Loads entire node structure (wasteful bandwidth)
+   - SoA: Metric tensors contiguous → efficient AVX-512/CUDA streaming
+   - **Lazy Cholesky Decomposition** cache: Recompute $g^{ij}$ only when local curvature changes significantly
+
+2. **Potential Step** ($\hat{V}/2$): **100 μs**
+   - Phase rotation due to potential field $V(x)$ and damping
+   - Point-wise multiplication kernel on GPU
+   - Iterate over all active nodes in sparse grid
+   - Performance dictated by GPU memory bandwidth (A100/RTX 4090)
+
+3. **Kinetic Step** ($\hat{T}$ via FFT): **300 μs**
+   - **Most expensive operation**
+   - Forward FFT → momentum space, apply phase shift (kinetic energy), Inverse FFT
+   - Full 9D FFT prohibitive → **Dimensional Operator Splitting** (1D FFTs sequentially per dimension)
+   - Requires **rigorous memory coalescence** - threads access 9D grid aligned with VRAM banks (avoid bank conflicts)
+   - SoA critical: Data for specific dimension across multiple nodes is contiguous
+
+4. **Nonlinear Soliton Step** ($\hat{N}$): **100 μs**
+   - Cubic nonlinearity $\beta |\Psi|^2 \Psi$ (similar to Gross-Pitaevskii equation)
+   - Maintains solitons (stable, self-reinforcing wave packets = long-term memories)
+   - Prevents wave dispersion (thoughts don't diffuse into background noise)
+
+5. **Boundary Conditions & Topology**: **50 μs**
+   - Toroidal periodic boundary conditions
+   - Waves at "edge" wrap around to opposing side
+   - Modulo arithmetic on coordinate indices during stencil operations/FFT shifts
+   - Efficient handling of 128-bit Morton codes for spatial hashing
+
+**Failure Consequence**: If Physics Kernel exceeds 600 μs allocation → **"Time Dilation"** state. Real-time clock slows relative to simulation clock → **"Goldfish Effect"** (cannot process external inputs fast enough to correlate with internal memory - subject/predicate phase drift destroys semantic understanding).
+
+#### Component 2: Cognitive Scanner (Mamba-9D)
+
+**Allocated Budget**: **200 μs** (22% of net budget)
+**Status**: Highly Optimized Sequential Processing
+
+Mamba-9D SSM = "reader" - scans manifold to extract hidden state $h_t$ and predict next cognitive token.
+
+1. **Causal-Foliated Hilbert Scan**: **80 μs**
+   - SSMs require 1D stream; 9D grid is spatial volume
+   - **Causal-Foliated Scanning**: Slice along Time dimension ($t$), 8D Hilbert curve per temporal slice
+   - Ensures SSM processes "past" fully before "present"
+   - 128-bit Hilbert indices pre-computed in SoA → memory gather operation (not complex recalculation)
+
+2. **SSM Recurrence** ($h_t = A h_{t-1} + B x_t$): **120 μs**
+   - Core Mamba recurrence
+   - Computing matrix exponential $e^{A\Delta}$ expensive
+   - **First-Order Taylor Approximation**: $\exp(M) \approx I + M$ (valid for extremely small $\Delta t = 1ms$)
+   - Transforms matrix decomposition → sparse matrix-vector multiplication
+
+#### Component 3: Neurochemical Gating (ENGS)
+
+**Allocated Budget**: **50 μs** (5.5% of net budget)
+**Status**: Low Overhead Control Logic
+
+"Endocrine system" - calculates global scalars (Dopamine, Serotonin, Norepinephrine) modulating physics constants.
+
+1. **Reward Prediction Error** (RPE): **20 μs**
+   - Calculate Total System Energy (Hamiltonian) vs expected energy
+   - Energy spike = "surprise"/"insight" → positive RPE
+   - Simple reduction sum over grid energy (already computed during physics step)
+
+2. **Parameter Broadcast**: **30 μs**
+   - Modulate global parameters: Dopamine controls $\eta$, Serotonin controls $\alpha$, Norepinephrine controls firing threshold
+   - Broadcast to GPU constant memory **atomically**
+   - `std::atomic<float>` + relaxed memory ordering (no thread contention/locks)
+
+#### Component 4: Infrastructure & IPC
+
+**Allocated Budget**: **50 μs** (5.5% of net budget)
+**Status**: Zero-Copy Mandatory
+
+Data transfer between C++ Physics Engine and Persistence Layer (LSM-DMC) or Visualization tools.
+
+1. **Shared Memory Write** (Seqlock): **20 μs**
+   - Transferring 100MB grid data via sockets/pipes impossible in 20 μs
+   - **Seqlock over /dev/shm ring buffer**:
+     - Writer increments sequence counter (odd) → write data → increment (even)
+     - Readers loop: check sequence even and unchanged before/after read
+   - **Wait-free for writer** - physics never blocks waiting for reader (prioritizes simulation over observation)
+
+2. **ZeroMQ Control Signal**: **30 μs**
+   - Check DEALER socket for high-priority commands (SCRAM, NAP)
+   - **Non-blocking check** - proceeds immediately if no message present
+
+### Buffering vs. Computation Trade-offs
+
+**Buffering Strictly Prohibited** within hot physics loop.
+
+**Why Buffering Fails**:
+- Symplectic integration requires precise time-reversibility
+- Queue creates decoupling between simulation time ($t_{sim}$) and wall-clock time ($t_{wall}$)
+- Buffered inputs → agent's "Now" drifts from user's "Now"
+- Phase drift breaks reinforcement learning feedback loop (incorrect credit assignment)
+- Buffering state updates → Mamba scanner sees stale data → hallucinations
+
+**Mandated Policy**: **"Drop or Degrade"** - if system can't keep up, either degrade precision (skip nonlinear step) or drop frame entirely. **No buffering.**
+
+### Monitoring Infrastructure & Alerting
+
+**Real-Time Physics Oracle**: High-priority sidecar process enforces budget dynamically.
+
+#### Telemetry Points
+
+1. **tick_duration_ns**: Monotonic clock delta (start/end of `propagate()`) - primary health metric
+2. **energy_drift_ratio**: $|(H_t - H_{t-1}) / H_t|$ - indicates numerical instability (usually $\Delta t$ too large for current wave frequencies)
+3. **lock_contention_count**: Failed atomic compare-exchange operations in metabolic lock - indicates thread starvation
+
+#### Alerting Thresholds and Automated Responses
+
+| Metric | Warning Threshold | Critical Threshold | Automated Response |
+|--------|-------------------|--------------------|--------------------|
+| **Tick Latency** | 950 μs | 1050 μs | **Warning**: Throttle neurogenesis (stop adding nodes) to reduce compute load<br>**Critical**: Soft SCRAM (apply global damping $\gamma=0.5$) to suppress wave complexity |
+| **Energy Drift** | 0.01% | 0.1% | **Critical**: Emergency Manifold Renormalization - scale all amplitudes by $\sqrt{H_{target}/H_{current}}$ to restore conservation |
+| **ATP Reserve** | 15% | 5% | **Critical**: Force "Nap" state (system sleep) - reject all external inputs, enter consolidation mode to recharge virtual ATP |
+
+#### Hardware Watchdog
+
+**Software monitoring can fail if process deadlocks.**
+
+**Hardware Watchdog Timer**: Physics thread must "pet" watchdog every tick. If watchdog not reset within **2000 μs** (2 ticks) → assumes deadlock (e.g., infinite loop in Mamba scanner) → sends `SIGALRM` signal → signal handler dumps stack trace to "Black Box" recorder → triggers immediate fail-safe restart of physics container.
+
+### Performance Characteristics
+
+**Budget Allocation Summary**:
+- **Physics Kernel**: 600 μs (66.6%) - Wave propagation core
+- **Mamba-9D Scanner**: 200 μs (22%) - Sequential state extraction
+- **ENGS**: 50 μs (5.5%) - Neurochemical modulation
+- **Infrastructure/IPC**: 50 μs (5.5%) - Zero-copy memory transfer
+- **Safety Margin**: 100 μs (10%) - OS jitter reserve
+
+**Critical Timing**:
+- **Total Budget**: 1000 μs (1ms)
+- **Allocatable**: 900 μs
+- **Warning Threshold**: 950 μs
+- **Critical Threshold**: 1050 μs
+
+**Failure Modes**:
+- **Time Dilation**: Physics > 600 μs → "Goldfish Effect" (semantic phase drift)
+- **Energy Divergence**: Energy drift > 0.1% → Epileptic resonance (memory destruction)
+- **ATP Exhaustion**: < 5% reserve → Forced Nap state
+
+### Integration Points
+
+1. **Physics Engine**: 1000 Hz tick, Strang splitting, symplectic integrator
+2. **Mamba-9D SSM**: Causal-foliated Hilbert scan, first-order Taylor approximation
+3. **ENGS**: RPE calculation, atomic parameter broadcast
+4. **Seqlock IPC**: /dev/shm ring buffer for zero-copy visualization
+5. **Physics Oracle**: Watchdog monitoring, automated SCRAM triggers
+
+### Cross-References
+
+- [Physics Engine Loop](./02_wave_interference_physics.md)
+- [Mamba-9D SSM](../03_cognitive_systems/02_mamba_9d_ssm.md)
+- [ENGS Feedback Loop](../05_autonomous_systems/01_computational_neurochemistry.md) - GAP-022
+- [SoA Memory Layout](../02_foundations/01_9d_toroidal_geometry.md) - GAP-021
+- [Hilbert Curve Scanning](../02_foundations/01_9d_toroidal_geometry.md)
+
+---
 
