@@ -3656,3 +3656,151 @@ Alignment requirement extends to GGUF Export process.
 
 ---
 
+## AVX-512 Fallback Performance Guarantees (GAP-029)
+
+**SOURCE**: Gemini Deep Research Round 2 - Comprehensive Engineering Remediation Report
+**INTEGRATION DATE**: 2025-12-15
+**GAP ID**: GAP-029
+**PRIORITY**: CRITICAL
+**STATUS**: SPECIFICATION COMPLETE
+
+### The Computational Crisis: Dependency on AVX-512
+
+The core of the Nikola physics engine—specifically the **Balanced Nonary Logic arithmetic** and the **Wave Propagation kernels**—is architecturally dependent on the massive parallelism provided by AVX-512 instructions. The use of 512-bit registers allows for the simultaneous processing of 64 Nit (8-bit) values or 16 float (32-bit) values per clock cycle. This parallelism is the enabling factor that allows the system to meet the **1 ms timestep budget** required for real-time cognition on grids exceeding $10^7$ nodes.
+
+However, strict reliance on AVX-512 severely restricts deployment flexibility, limiting the system to high-end Intel CPUs (Skylake-X and newer) and the latest AMD Zen 4 architectures. It precludes operation on older server hardware, consumer-grade laptops, and crucially, **ARM64-based edge devices** (like the NVIDIA Jetson or Apple Silicon Macs). To ensure the Nikola Model can operate ubiquitously without suffering "cognitive retardation" (extreme time dilation), a rigorous fallback architecture is required.
+
+### Dynamic Dispatch Architecture
+
+To support multiple instruction sets within a single binary without the performance penalty of virtual functions or the operational complexity of separate builds, the system utilizes a **Dynamic Dispatch mechanism**.
+
+#### CPU Feature Detection
+
+Upon system startup, the `HardwareCapability` module performs a runtime probe of the host processor. On x86 systems, it queries the `CPUID` instruction to check for specific feature flags (AVX512F, AVX512BW, AVX2). On ARM systems, it parses `/proc/cpuinfo` or uses `getauxval` to detect NEON support.
+
+```cpp
+// Runtime Feature Detection Synthesis
+enum class SIMDLevel { SCALAR, SSE42, AVX2, AVX512, NEON };
+
+SIMDLevel detect_cpu_capabilities() {
+   // Check for AVX-512 Foundation and Byte/Word instructions
+   if (has_avx512f() && has_avx512bw()) return SIMDLevel::AVX512;
+   // Fallback to AVX2
+   if (has_avx2()) return SIMDLevel::AVX2;
+   // Check for ARM NEON
+   if (has_neon()) return SIMDLevel::NEON;
+   // Universal Fallback
+   return SIMDLevel::SCALAR;
+}
+```
+
+#### The Dispatcher Pattern
+
+Critical hot-path functions—specifically `propagate_wave` (the physics kernel), `nonary_add` (arithmetic), and `calculate_metric` (geometry)—are implemented as function pointers. During the bootstrap phase, the initialization routine populates these pointers with the optimal version for the host CPU. This avoids the overhead of conditional branching inside the tight physics loop.
+
+```cpp
+// Dispatch Implementation Pattern
+using PropagateFn = void(*)(TorusGridSoA&, double);
+PropagateFn propagate_wave = nullptr;
+
+void init_physics_engine() {
+   switch (detect_cpu_capabilities()) {
+       case SIMDLevel::AVX512: propagate_wave = &propagate_wave_avx512; break;
+       case SIMDLevel::AVX2:   propagate_wave = &propagate_wave_avx2; break;
+       case SIMDLevel::NEON:   propagate_wave = &propagate_wave_neon; break;
+       default:                propagate_wave = &propagate_wave_scalar; break;
+   }
+}
+```
+
+### Implementation Specifications per Platform
+
+#### AVX-512 (The Reference Standard)
+
+This is the baseline against which all other implementations are measured.
+
+- **Throughput**: 64 Nits/cycle (int8) or 16 Floats/cycle
+- **Key Intrinsics**: `_mm512_add_epi8` for nonary addition, `_mm512_fmadd_ps` for wave fusion, and `_mm512_ternarylogic_epi64` for complex bitwise logic used in state transitions
+- **Latency Target**: 1.0× baseline
+
+#### AVX2 Fallback (The "Silver" Tier)
+
+AVX2 registers are 256 bits wide, offering exactly half the theoretical throughput of AVX-512 per instruction. Furthermore, AVX2 lacks the specialized mask registers (k registers) and ternary logic instructions found in AVX-512, necessitating emulation.
+
+**Implementation Strategy**:
+
+- **Double-Pumping**: Processing a logical 512-bit block requires issuing two 256-bit AVX2 instructions (`_mm256_...`). This doubles the instruction count.
+- **Mask Emulation**: AVX-512 masking is emulated using bitwise AND/OR operations with constant vectors (`_mm256_and_ps`, `_mm256_blendv_ps`). This adds computational overhead.
+- **Nonary Math**: int8 arithmetic is supported, but complex operations like the "cons" operator (which uses VPTERNLOG in AVX-512) must be broken down into 3-4 separate boolean logic instructions.
+
+**Performance Guarantee**: The AVX2 implementation must achieve **> 45% of the AVX-512 performance**. The deviation from the theoretical 50% is the allowable overhead for mask emulation and increased register pressure.
+
+#### ARM NEON Fallback (The "Edge" Tier)
+
+ARM NEON (Advanced SIMD) uses 128-bit registers, which is 1/4 the width of AVX-512. This architecture is critical for running the Nikola client on edge devices.
+
+**Implementation Strategy**:
+
+- **Quad-Pumping**: Processing a block requires four NEON instructions (`vaddq_f32`, etc.)
+- **FMA Utilization**: Heavy reliance on Fused Multiply-Add (`vfmaq_f32`) is mandated to maintain acceptable wave propagation speeds, as it combines addition and multiplication into a single cycle
+- **Ternary Logic Absence**: NEON lacks ternary logic. Complex nonary gates must be synthesized from elementary AND, OR, XOR, NOT operations, significantly increasing the instruction footprint
+
+**Performance Guarantee**: The NEON implementation must achieve **> 20% of the AVX-512 performance**. While this represents a 5× slowdown, it is sufficient to run "Low Power Mode" instances (e.g., grid sizes < $64^3$) on devices like the Apple M2 or NVIDIA Jetson Orin.
+
+### Performance Guarantees and Adaptive Scaling
+
+The Nikola system cannot simply run slower; the physics engine loop must maintain numerical stability. If the hardware cannot compute the next timestep within the allotted wall-clock time, the simulation desynchronizes from real-time inputs, violating the Sensory Isochrony requirement.
+
+To manage this, we define rigid **Performance Tiers** based on the detected hardware capability:
+
+| Tier | Required Throughput (Nits/sec) | Max Grid Size | Operational Mode |
+|------|--------------------------------|---------------|------------------|
+| **Elite (AVX-512)** | > 70 Billion | 256³ (~16M Nodes) | Full AGI: Real-time learning, dreaming, full neuroplasticity enabled. |
+| **Standard (AVX2)** | > 30 Billion | 128³ (~2M Nodes) | Inference: Real-time query response, limited concurrent learning. |
+| **Edge (NEON)** | > 14 Billion | 64³ (~260K Nodes) | Embedded: Pre-trained model execution, static topology (no neurogenesis). |
+| **Fallback (Scalar)** | < 1 Billion | 27³ (~20K Nodes) | Debug: Unit testing and verification only. Not for production use. |
+
+**Adaptive Mechanism**: During the bootstrap phase, the system benchmarks the `propagate_wave` function. If the throughput falls below the requirement for the configured grid size, the system automatically triggers **Dimensional Downscaling**: it maps the high-resolution logical grid to a coarser physical grid (e.g., 2:1 voxel mapping), effectively reducing the computational load by factor of $2^9$ (in 9D space) or $2^3$ (in 3D projection) to maintain the 1 ms timestep constraint.
+
+### Platform Compatibility Matrix
+
+| Platform | SIMD Level | Throughput % | Grid Size | Neurogenesis | Dreaming | Use Case |
+|----------|------------|--------------|-----------|--------------|----------|----------|
+| Intel Xeon Scalable (Skylake-X+) | AVX-512 | 100% | 256³ | ✅ Full | ✅ Full | Production AGI Server |
+| AMD EPYC (Zen 4+) | AVX-512 | 100% | 256³ | ✅ Full | ✅ Full | Production AGI Server |
+| Intel Core i7/i9 (Pre-Skylake-X) | AVX2 | 45-50% | 128³ | 🟡 Limited | ✅ Full | Development Workstation |
+| AMD Ryzen (Zen 3) | AVX2 | 45-50% | 128³ | 🟡 Limited | ✅ Full | Development Workstation |
+| Apple M1/M2/M3 (ARM64) | NEON | 20-25% | 64³ | ❌ Disabled | 🟡 Light | Edge Inference Client |
+| NVIDIA Jetson Orin | NEON | 20-25% | 64³ | ❌ Disabled | 🟡 Light | Edge Inference Client |
+| Raspberry Pi 4 (ARM Cortex-A72) | NEON | 15-18% | 27³ | ❌ Disabled | ❌ Disabled | Unit Testing Only |
+| Generic x86-64 (No SIMD) | Scalar | <5% | 27³ | ❌ Disabled | ❌ Disabled | CI/CD Validation |
+
+### Implementation Status
+
+- **Status**: SPECIFICATION COMPLETE
+- **Ready for**: Engineering Deployment
+- **Dependencies**: Hardware Capability Detection, Function Pointer Dispatch, Platform-Specific Kernels
+- **Verification**: Automated benchmark suite (CI/CD integration)
+- **Fallback Chain**: AVX-512 → AVX2 → NEON → Scalar (automatic at runtime)
+
+### Performance Verification Requirements
+
+All platform implementations must pass the following benchmarks before deployment:
+
+1. **Throughput Test**: Process 1M nodes for 1000 timesteps, measure wall-clock time
+2. **Energy Conservation**: Hamiltonian drift < 0.001% (same as AVX-512 reference)
+3. **Numerical Accuracy**: L2 norm distance from AVX-512 reference < 10⁻⁶
+4. **Stability Test**: Run for 100,000 timesteps without overflow/underflow
+5. **Adaptive Scaling**: Verify automatic grid downscaling triggers when throughput < threshold
+
+### Cross-References
+
+- [Balanced Nonary Logic](../02_foundations/03_balanced_nonary_logic.md)
+- [Wave Propagation Physics](../02_foundations/02_wave_interference_physics.md)
+- [TorusGridSoA Memory Layout](./01_9d_toroidal_geometry.md)
+- [Physics Oracle Calibration](../02_foundations/02_wave_interference_physics.md)
+- [Bootstrap Initialization](../04_infrastructure/02_orchestrator_router.md)
+- [Sensory Isochrony Requirements](../07_multimodal/01_cymatic_transduction.md)
+
+---
+

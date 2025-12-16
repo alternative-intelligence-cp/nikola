@@ -9843,3 +9843,203 @@ Data transfer between C++ Physics Engine and Persistence Layer (LSM-DMC) or Visu
 
 ---
 
+## Physics Oracle Calibration Test Suite (GAP-030)
+
+**SOURCE**: Gemini Deep Research Round 2 - Comprehensive Engineering Remediation Report
+**INTEGRATION DATE**: 2025-12-15
+**GAP ID**: GAP-030
+**PRIORITY**: CRITICAL
+**STATUS**: SPECIFICATION COMPLETE
+
+### Theoretical Necessity: The Invariants of Sanity
+
+The **Physics Oracle** is the system's runtime watchdog, a "Superego" implemented in code. Its sole purpose is to detect **Decoherence**—a state where numerical errors, software bugs, or malicious self-modification cause the system to violate the fundamental laws of physics defined by the UFIE.
+
+In a system capable of self-improvement (generating its own C++ code via the KVM Executor), the Oracle acts as the final gatekeeper. A **false positive** from the Oracle causes a "SCRAM" (emergency shutdown), killing the agent. A **false negative** allows "epileptic resonance" (energy explosion) to corrupt the persistent manifold, potentially permanently. Therefore, the Oracle requires a highly calibrated test suite to define the exact boundaries between acceptable numerical noise (floating-point drift) and genuine violations of conservation laws.
+
+### Quantitative Acceptance Criteria
+
+Based on the properties of the Split-Operator Symplectic Integrator used in the physics engine, we establish the following rigorous pass/fail bounds for the verification suite.
+
+#### Energy Conservation (The Hamiltonian Check)
+
+In a closed system (damping coefficient $\alpha = 0$), the total Hamiltonian $H$ (Kinetic + Potential + Interaction Energy) must remain constant.
+
+**Metric**: Relative Energy Drift $\Delta E_{rel} = \left| \frac{H(t) - H(0)}{H(0)} \right|$
+
+**Acceptance Criteria**: $\Delta E_{rel} < 0.001\%$ ($10^{-5}$) over $10^6$ timesteps
+
+**Rationale**: The symplectic integrator is theoretically conservative for the Hamiltonian terms. Any drift exceeding $10^{-5}$ indicates a coding error in the kernel (e.g., incorrect operator ordering) or a breakdown in the symplectic property due to excessive timestep size.
+
+#### Symplectic Structure (The Liouville Check)
+
+The simulation must preserve phase space volume (Liouville's Theorem). This is verified by checking **Time Reversibility**. If the system is run forward for $N$ steps and then the timestep is reversed ($\Delta t \to -\Delta t$) for $N$ steps, it should return to the exact initial state.
+
+**Metric**: Reversibility Error $\epsilon_{rev} = ||\Psi(0) - \Psi_{fwd\_bwd}(0)||^2$ (L2 norm of the difference)
+
+**Acceptance Criteria**: $\epsilon_{rev} < 10^{-12}$ (approaching machine epsilon for double precision)
+
+**Rationale**: Symplectic integrators are strictly time-reversible. Failure here indicates a loss of information, such as rounding errors accumulating bias or the accidental introduction of non-conservative forces (like implicit damping).
+
+#### Numerical Viscosity (The Damping Check)
+
+In a damped system ($\alpha > 0$), energy must decay according to an exact analytical envelope.
+
+**Metric**: Decay Rate Error $\epsilon_{decay} = \left| \frac{E(t)}{E_{theory}(t)} - 1 \right|$, where $E_{theory}(t) = E_0 e^{-2\alpha t}$
+
+**Acceptance Criteria**: $\epsilon_{decay} < 0.01\%$
+
+**Rationale**: This ensures the "Forgetting Curve" of the AI matches the intended biological half-life required for memory consolidation. Deviations suggest that numerical artifacts (phantom viscosity) are interfering with the intentional damping dynamics.
+
+### Automated CI/CD Regression Framework
+
+The "Physics Calibration Suite" is integrated into the automated build pipeline. It must run on every commit that modifies the physics kernel, the compiler flags, or the platform capability detection logic.
+
+#### Test Case A: The Standard Candle
+
+**Setup**: Initialize a single Gaussian soliton in a perfectly flat metric ($g_{ij} = \delta_{ij}$)
+
+**Parameters**:
+- $\alpha=0$ (no damping)
+- $\beta=0$ (linear regime)
+
+**Duration**: 100,000 timesteps
+
+**Check**: Verify the soliton maintains its shape, velocity, and total energy within $\Delta E_{rel} < 10^{-6}$
+
+**Purpose**: Baseline verification of the translation operator and basic integration logic.
+
+#### Test Case B: The Viscosity Trap
+
+**Setup**: Initialize a high-frequency noise pattern (checkerboard)
+
+**Parameters**: $\alpha=0.1$ (heavy damping)
+
+**Check**: Verify energy dissipates exactly according to the theoretical curve
+
+**Purpose**: Verify the damping operator handles high-frequency components correctly without aliasing artifacts or "spectral heating".
+
+#### Test Case C: The Resonance Attack
+
+**Setup**: Drive the system with an external emitter frequency exactly matching a grid eigenmode (creating a standing wave)
+
+**Parameters**: $\beta > 0$ (nonlinear term active)
+
+**Check**: Verify amplitude saturation occurs via the nonlinear term (soliton formation) rather than unbounded growth (explosion)
+
+**Threshold**: Max amplitude $|\Psi|$ must not exceed **4.5** (the balanced nonary limit + headroom)
+
+**Purpose**: Verify the nonlinear "soft saturation" mechanism prevents numeric overflow and that the system is robust against resonance attacks.
+
+### Implementation: The Oracle Validation Class
+
+The following C++ class structure implements the automated validation logic, designed to be called by the Adversarial Code Dojo or the CI/CD runner.
+
+```cpp
+class PhysicsCalibration {
+public:
+   struct TestResult {
+       bool passed;
+       double max_drift;
+       double reversibility_error;
+   };
+
+   static TestResult run_standard_candle(PhysicsEngine& engine) {
+       // 1. Snapshot initial state
+       double H_initial = engine.compute_hamiltonian();
+       auto state_initial = engine.get_state_snapshot();
+
+       // 2. Run simulation forward
+       for(int i=0; i<100000; ++i) {
+           engine.step(0.001); // 1ms dt
+       }
+
+       // 3. Check Energy Conservation
+       double H_final = engine.compute_hamiltonian();
+       double drift = std::abs((H_final - H_initial) / H_initial);
+
+       // 4. Run simulation backward (Reverse time)
+       for(int i=0; i<100000; ++i) {
+           engine.step(-0.001);
+       }
+
+       // 5. Check Reversibility
+       double rev_error = engine.state_distance(state_initial);
+
+       return {
+           (drift < 1e-5) && (rev_error < 1e-12),
+           drift,
+           rev_error
+       };
+   }
+};
+```
+
+This automated suite acts as the **invariant enforcement layer**. No optimization, no matter how performant, is permitted to merge if it violates these thermodynamic constraints.
+
+### Test Suite Specification
+
+| Test Case | Initial Condition | Parameters | Duration | Pass Criteria | Purpose |
+|-----------|-------------------|------------|----------|---------------|---------|
+| **Standard Candle** | Gaussian soliton | $\alpha=0, \beta=0$ | 100k steps | $\Delta E_{rel} < 10^{-6}$ | Baseline integration accuracy |
+| **Viscosity Trap** | High-frequency noise | $\alpha=0.1$ | 50k steps | $\epsilon_{decay} < 0.01\%$ | Damping operator validation |
+| **Resonance Attack** | External emitter at eigenmode | $\beta > 0$ | 10k steps | $|\Psi|_{max} < 4.5$ | Nonlinear saturation mechanism |
+| **Reversibility Check** | Random initial state | $\alpha=0$ | 1k steps (fwd+bwd) | $\epsilon_{rev} < 10^{-12}$ | Symplectic structure preservation |
+| **Energy Conservation** | Multiple solitons | $\alpha=0, \beta=0$ | 1M steps | $\Delta E_{rel} < 10^{-5}$ | Long-term stability |
+
+### Integration with CI/CD Pipeline
+
+**Trigger Conditions**:
+- Any commit modifying `physics_kernel.cpp`, `propagate_wave.cpp`, or related files
+- Changes to compiler flags (optimization level, SIMD directives)
+- Updates to platform capability detection (`cpu_features.cpp`)
+- Weekly full regression (all test cases, all SIMD levels)
+
+**Execution Matrix**:
+- **AVX-512 Reference**: All tests must pass with exact criteria
+- **AVX2 Fallback**: Energy conservation relaxed to $\Delta E_{rel} < 5 \times 10^{-5}$ (5× tolerance)
+- **NEON Fallback**: Energy conservation relaxed to $\Delta E_{rel} < 10^{-4}$ (10× tolerance)
+- **Scalar Fallback**: Energy conservation relaxed to $\Delta E_{rel} < 5 \times 10^{-4}$ (50× tolerance)
+
+**Failure Actions**:
+- **Hard Fail**: Block merge if AVX-512 reference fails any test
+- **Soft Fail**: Warning if fallback implementations exceed tolerance (requires investigation)
+- **Automatic Rollback**: If production Oracle triggers > 3 SCRAMs in 24 hours, automatically revert to last known-good commit
+
+### Runtime Oracle Monitoring
+
+During production operation, the Physics Oracle continuously monitors:
+
+1. **Energy Drift Rate**: $dH/dt$ sampled every 1000 timesteps
+   - **Warning**: $|dH/dt| > 10^{-7}$ per timestep
+   - **SCRAM**: $|dH/dt| > 10^{-5}$ per timestep
+
+2. **Amplitude Overflow Detection**: $\max_i |\Psi_i|$ checked every timestep
+   - **Warning**: $|\Psi|_{max} > 4.0$
+   - **SCRAM**: $|\Psi|_{max} > 5.0$ (hard limit)
+
+3. **NaN/Inf Detection**: Immediate SCRAM on any NaN or Inf in wavefunction or metric tensor
+
+4. **Phase Coherence**: Spatial gradient $\nabla \Psi$ checked for discontinuities
+   - **SCRAM**: $|\nabla \Psi| > 100 \times$ local average (indicates grid tearing)
+
+### Implementation Status
+
+- **Status**: SPECIFICATION COMPLETE
+- **Ready for**: Engineering Deployment
+- **Dependencies**: Physics Engine, Symplectic Integrator, CI/CD Pipeline
+- **Integration Points**: Automated Testing, Runtime Monitoring, SCRAM System
+- **Acceptance**: All test cases must pass before production deployment
+
+### Cross-References
+
+- [Physics Engine Loop](./02_wave_interference_physics.md)
+- [Symplectic Integrator](./02_wave_interference_physics.md)
+- [KVM Executor](../05_autonomous_systems/02_kvm_executor.md)
+- [SCRAM System](./02_wave_interference_physics.md)
+- [Adversarial Code Dojo](../05_autonomous_systems/02_kvm_executor.md)
+- [CI/CD Pipeline](../04_infrastructure/02_orchestrator_router.md)
+- [AVX-512 Fallback](../02_foundations/01_9d_toroidal_geometry.md) - GAP-029
+
+---
+
