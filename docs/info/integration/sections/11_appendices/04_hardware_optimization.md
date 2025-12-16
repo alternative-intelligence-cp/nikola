@@ -541,3 +541,128 @@ watch -n 1 nvidia-smi
   - Intel Intrinsics Guide: https://www.intel.com/content/www/us/en/docs/intrinsics-guide/
   - CUDA Programming Guide: https://docs.nvidia.com/cuda/
 
+---
+
+## GAP-043: Performance Tuning Cookbook
+
+**SOURCE**: Gemini Deep Research Round 2, Batch 41-44
+**INTEGRATION DATE**: December 16, 2025
+**GAP ID**: GAP-043 (TASK-043)
+**PRIORITY**: CRITICAL
+**STATUS**: FABRICATION-READY SPECIFICATION
+
+### Optimization Philosophy: The "Phase 0" Mandate
+
+Performance tuning of Nikola v0.0.4 is governed by "Phase 0" mandates. Unlike typical AI optimization focusing on Matrix Multiplication (MatMul) FLOPS, Nikola architecture is **Memory-Bound**. Bottleneck is moving 9D grid state between VRAM and Compute Units. Therefore, all tuning focuses on **Data Locality**, **Cache Efficiency**, and **Bandwidth Saturation**.
+
+### Knob-Tuning Guide
+
+Operators control system's cognitive dynamics via specific parameters:
+
+| Knob | Parameter Name | Default | Range | Impact | Tuning Advice |
+|------|----------------|---------|-------|--------|---------------|
+| **Learning Rate** | `hebbian_rate` ($\eta$) | 0.01 | 0.001 - 0.1 | Controls speed of metric tensor warping | Reduce if system exhibits "Manic" switching (instability). Increase if "Boredom" is high or learning is stagnant |
+| **ATP Cost** | `metabolic_cost_plasticity` | 1.5 | 1.0 - 5.0 | Cost to write to long-term memory | Increase to force system to prioritize only high-resonance memories (better filtering). Decrease to allow rapid, broad learning |
+| **Consolidation** | `nap_interval_trigger` | 15% | 5% - 30% | ATP threshold to trigger Nap | Higher % = more frequent, shorter naps (better for stability). Lower % = longer wake periods (better for complex tasks) |
+| **Time Step** | `physics_dt` | 1ms | 0.1ms - 5ms | Physics integration resolution | **WARNING**: Must satisfy $\Delta t < 1/(\beta \cdot \|Psi\|_{max})$ for stability. Reduce if energy diverges |
+| **Grid Size** | `block_size` | 19683 | $3^9$ powers | Number of nodes per block | Fixed at compile time. Changing requires recompilation. Must align with $3^9$ for efficient Torus mapping |
+| **Dither Noise** | `dither_amplitude` | 1e-4 | 1e-5 - 1e-3 | Amplitude of injected noise | Increase to prevent "Resonance Lock-in" (obsessive thoughts). Decrease if Signal-to-Noise ratio drops below 20dB |
+
+### Diagnostic Flowcharts
+
+#### Scenario A: System Latency is High (> 100ms response)
+
+1. **Check Physics Loop**: Is `tick_time` > 1ms?
+   * **Yes**: Memory Bottleneck. Run `perf stat`. Check L1/L2 Cache Miss Rate.
+     - If Miss Rate > 10%: Verify Structure-of-Arrays (SoA) alignment (`alignas(64)`). Verify Hilbert Curve indexing effectively clusters nodes.
+     - If Miss Rate < 10%: Check AVX-512 usage. Are intrinsics being generated? Recompile with `-march=native`.
+   * **No**: Proceed to 2.
+
+2. **Check Message Queue**: Is ZMQ High-Water Mark (HWM) reached?
+   * **Yes**: Backpressure. Cognitive layer (Mamba-9D) too slow for physics engine. Increase `control_plane_timeout` or throttle physics via sleep.
+   * **No**: Proceed to 3.
+
+3. **Check Garbage Collection**: Is `shm_unlink` lagging?
+   * **Yes**: OS Overhead. Reduce shared memory segment size or frequency of frame exports.
+
+#### Scenario B: Energy Divergence (Hallucinations/Crashes)
+
+1. **Check Hamiltonians**: Is Energy Drift > 0.01%?
+   * **Yes**: Integration Failure.
+     - **Immediate Action**: Reduce `physics_dt` by 50%.
+     - **Root Cause Check**: Verify Symplectic Integrator uses Split-Operator method, not Verlet. Verify Kahan Summation active for Laplacian accumulation.
+   * **No**: Proceed to 2.
+
+2. **Check Neurochemistry**: Is Dopamine pinned at 1.0 or 0.0?
+   * **Yes**: Gating Failure. Check `AtomicDopamine` implementation for race conditions. Verify beta sensitivity parameter.
+
+### Benchmark Suite and Baseline Expectations
+
+Run `twi-ctl benchmark` to validate system health against these baselines.
+
+**Baseline Expectations** (Hardware: Single NVIDIA RTX 4090 / Intel Xeon w/ AVX-512):
+
+| Metric | Benchmark Test | Baseline Target | Failure Threshold |
+|--------|----------------|-----------------|-------------------|
+| **Physics Latency** | `BM_WavePropagation_81^3` | 7.8 ms / step | > 12 ms |
+| **Small Grid Latency** | `BM_WavePropagation_27^3` | 0.48 ms / step | > 1 ms (Critical P0 requirement) |
+| **Memory Bandwidth** | SoA Efficiency Test | 100% utilization | < 80% (Indicates AoS regression) |
+| **Cache Hit Rate** | L1/L2 Cache Profiling | ~95% | < 85% |
+| **Precision** | Laplacian Accuracy (Kahan) | Error $\sim 10^{-7}$ | $> 10^{-5}$ (Indicates Kahan failure) |
+| **Energy Drift** | 24-hour Stability Test | < 0.01% | > 0.05% |
+
+### Hardware-Specific Profiles
+
+#### Profile 1: CPU-Only (Dev/Debug)
+
+* **Target**: Intel Core i9 / Xeon / AMD Ryzen 9 (AVX-512 Support MANDATORY)
+* **Rationale**: Uses vector units to simulate parallel wave propagation
+* **Settings**:
+  - `ENABLE_CUDA = OFF`
+  - `OMP_NUM_THREADS = <physical_cores>`
+  - `physics_dt = 5ms` (Slower simulation time, physics runs at 200Hz instead of 1kHz)
+* **Optimization**: Relies entirely on AVX-512 vectorization of SoA layout. Requires `alignas(64)` strict enforcement
+
+#### Profile 2: Single GPU (Consumer High-End - RTX 4090)
+
+* **Target**: NVIDIA RTX 4090 (24GB VRAM)
+* **Rationale**: Excellent FP32 performance, decent memory bandwidth
+* **Settings**:
+  - `ENABLE_CUDA = ON`
+  - `CUDA_BLOCK_SIZE = 256`
+  - `precision = FP32` (FP64 too slow on consumer cards; use Kahan Summation for precision)
+* **Optimization**: Uses "Coalesced Memory Access" patterns in CUDA kernels. Grid size limited to ~14M active nodes due to 24GB VRAM limit
+
+#### Profile 3: Multi-GPU Cluster (Datacenter - A100/H100)
+
+* **Target**: 4x or 8x NVIDIA A100 (80GB) with NVLink
+* **Rationale**: Massive VRAM allows for "Neurogenesis" without OOM crashes
+* **Settings**:
+  - `ENABLE_CUDA = ON`
+  - `precision = FP64` (Optional, for higher fidelity/research)
+  - `distributed_sharding = ENABLED` (Morton-code based partitioning)
+* **Optimization**: Requires MPI/NCCL integration for halo exchange. Uses NVLink for high-bandwidth transfer of boundary regions. Can scale to >100M active nodes
+
+### Implementation Status
+
+- **Status**: SPECIFICATION COMPLETE
+- **Optimization Focus**: Memory-bound (not compute-bound), data locality, cache efficiency, bandwidth saturation
+- **Tuning Parameters**: Learning rate, ATP cost, consolidation trigger, physics timestep, dither noise
+- **Diagnostic Flowcharts**: Latency diagnosis (cache miss, ZMQ backpressure), energy divergence (timestep, Kahan summation)
+- **Benchmark Baselines**: Physics latency (0.48ms - 7.8ms), cache hit (95%), energy drift (<0.01%)
+- **Hardware Profiles**: CPU-only (AVX-512, 200Hz), Single GPU (RTX 4090, 14M nodes), Multi-GPU (A100, >100M nodes)
+
+### Cross-References
+
+- [Structure-of-Arrays (SoA) Layout](../04_infrastructure/06_database_persistence.md)
+- [AVX-512 Vectorization](../02_foundations/03_balanced_nonary_logic.md)
+- [Hilbert Curve Indexing](../04_infrastructure/06_database_persistence.md)
+- [Symplectic Integrator](../02_foundations/02_wave_interference_physics.md)
+- [Kahan Summation](../02_foundations/02_wave_interference_physics.md)
+- [Metabolic Controller (ATP)](../05_autonomous_systems/01_computational_neurochemistry.md)
+- [Nap System](../06_persistence/04_nap_system.md)
+- [ZeroMQ Backpressure](../04_infrastructure/01_zeromq_spine.md)
+- [Metric Tensor Warping](../02_foundations/01_9d_toroidal_geometry.md)
+
+---
+

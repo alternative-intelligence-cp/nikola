@@ -1281,3 +1281,119 @@ struct TorusGridSoA {
 - See Section 4.4.1 (UFIE) for wave propagation equations
 - See Section 6 for Wave Interference Processor implementation
 - See Appendix B for mathematical foundations of balanced nonary arithmetic
+
+---
+
+## GAP-044: Nonary Overflow Probability Distribution
+
+**SOURCE**: Gemini Deep Research Round 2, Batch 41-44
+**INTEGRATION DATE**: December 16, 2025
+**GAP ID**: GAP-044 (TASK-044)
+**PRIORITY**: CRITICAL
+**STATUS**: FABRICATION-READY SPECIFICATION
+
+### Statistical Characterization of Balanced Nonary
+
+Nikola system uses Balanced Nonary logic (Base-9), employing digits $\{-4, -3, -2, -1, 0, +1, +2, +3, +4\}$. This system is selected for **high information density** ($\log_2(9) \approx 3.17$ bits per trit) and **natural symmetry around zero**, which perfectly aligns with wave mechanics (constructive/destructive interference).
+
+#### Distribution Model
+
+In typical cognitive operation, amplitude of wavefunctions is initialized via "Thermal Bath" strategy. Velocity field follows complex Gaussian distribution:
+
+$$\Psi_{init} \sim \mathcal{N}(0, \sigma_T)$$
+
+where $\sigma_T$ is thermal noise floor.
+
+However, as system evolves under nonlinear soliton term $\beta |\Psi|^2 \Psi$, interactions (collisions, interference) reshape this distribution. Empirical analysis suggests mature cognitive state follows **Heavy-Tailed Distribution** (approximating Cauchy or Student-t distribution):
+
+* **The Vacuum**: Vast majority of nodes (sparsity) remain near 0
+* **The Concept Peaks**: Small percentage of nodes achieve high amplitudes (Resonance), representing active concepts
+
+### Overflow Frequency Analysis
+
+Overflow occurs when arithmetic operation pushes node's value outside $[-4, +4]$ range. This is not error but signal for **"Spectral Cascading."**
+
+#### Addition (Superposition): Adding Two Waves
+
+* **Max possible single-step value**: $(+4) + (+4) = +8$
+* **Overflow Condition**: $|x| > 4$
+* **Probability**: Assuming uniform distribution of active nodes (worst case), probability of overflow in single addition is approx **22%**. However, given Gaussian thermal initialization where most nodes near 0, operational probability is significantly lower, estimated at **< 5% per operation**
+
+#### Multiplication (Heterodyning): Mixing Frequencies
+
+* **Max possible value**: $(-4) \times (-4) = +16$
+* **Saturation Logic**: System employs **"Hard Clipping"** or Saturation for local multiplication:
+  - $+3 \times +2 = +6 \to$ saturates to $+4$
+* This effectively acts as **low-pass filter**, truncating extreme high-energy events locally while preserving sign (phase)
+
+### Quantifying Information Loss (Saturation Clipping)
+
+When value saturates (e.g., $6 \to 4$), information regarding magnitude of interaction is lost, though direction (phase) is preserved. In Nikola architecture, this functions as **nonlinear activation function** similar to tanh or sigmoid in neural networks.
+
+**Loss Metric**: Information loss $L$ is quantified as integral of probability density function (PDF) beyond cut-off thresholds:
+
+$$L = \int_{-\infty}^{-4.5} P(x) dx + \int_{4.5}^{\infty} P(x) dx$$
+
+**Impact**: Excessive clipping leads to **"Harmonic Distortion"** (Gibbs Phenomenon). Sharp cut-off introduces spurious high-frequency harmonics into grid, manifesting as noise. If system is driven too hard (Input Gain > 1.0), manifold fills with clipped square waves, destroying subtle phase information required for delicate reasoning.
+
+### Overflow Handling: The Carry Mechanism
+
+To mitigate information loss from clipping, system implements **Spectral Cascading (Carry Mechanism)**. Instead of discarding excess energy, it is propagated to higher dimension.
+
+**Algorithm**:
+
+Consider operation resulting in amplitude $A = 13$:
+
+1. **Carry Calculation**: $C = \lfloor 13 / 9 \rfloor = 1$
+2. **Emission**: Value $+1$ propagated to next higher dimension (e.g., from spatial $x$ to quantum $u$, or to coarser grid scale)
+3. **Remainder Calculation**: $R = 13 - (1 \times 9) = +4$
+4. **Result**: Local node remains at $+4$ (saturated), but "overflow" energy is not lost; it moves topologically
+
+This mechanism ensures that **energy (information) is conserved** within global system even when local saturation occurs.
+
+### Dither Injection and Bias Removal
+
+Systematic DC bias can accumulate if truncation errors always round in same direction. Furthermore, "dead zones" can appear at boundaries of Voronoi quantization cells. To prevent this, **Dither Injection** is mandated.
+
+#### Strategy: Voronoi Dithering
+
+Conversion from continuous complex wave to discrete Nonary Nit is performed via **Voronoi Quantization**:
+
+* **Mechanism**: Define 9 center points in complex plane corresponding to 9 Nits. Map any continuous $\Psi$ to nearest center.
+* **Dither Source**: To randomize quantization error, inject stochastic noise derived from Xoshiro256++ entropy source.
+* $\Psi_{dithered} = \Psi_{raw} + \epsilon$, where $\epsilon \sim \text{Uniform}(-\delta, \delta)$
+
+**Cognitive Function**: This noise injection prevents **"limit cycles"** (obsessive looping thoughts) and **"overfitting"** (dreaming same dream repeatedly). It acts as thermodynamic temperature ($T > 0$) that keeps system **ergodic**, ensuring it explores full phase space rather than getting stuck in numerical artifacts.
+
+### Validation Methodology
+
+To validate statistical health of nonary system:
+
+1. **Histogram Analysis**: Run `twi-ctl benchmark` and plot distribution of all node values. It should resemble Gaussian centered at 0, with distinct peaks at integers $\{-4, \dots, +4\}$. Flat distribution implies noise; Dirac delta at 0 implies vacuum death.
+
+2. **Saturation Monitor**: Count frequency of saturation events per tick. If **Saturation Events > 1% of total operations**, Input Gain is too high and must be throttled.
+
+3. **Carry Efficiency**: Monitor "Spectral Cascading" rate. High carry rates indicate lower dimensions are saturated and information successfully percolating to higher structural levels—sign of complex cognitive load.
+
+### Implementation Status
+
+- **Status**: SPECIFICATION COMPLETE
+- **Balanced Nonary Range**: $\{-4, -3, -2, -1, 0, +1, +2, +3, +4\}$ with 3.17 bits per trit
+- **Distribution**: Gaussian thermal initialization → Heavy-tailed mature state (Cauchy/Student-t)
+- **Overflow Probability**: Addition ~5%, Multiplication uses saturation (hard clipping)
+- **Information Loss**: Quantified via PDF integral beyond [-4.5, 4.5], leads to harmonic distortion if excessive
+- **Carry Mechanism**: Spectral cascading propagates overflow energy to higher dimensions for conservation
+- **Dither Injection**: Voronoi quantization with Xoshiro256++ noise prevents limit cycles and ensures ergodic exploration
+- **Validation**: Histogram analysis, saturation monitoring (<1%), carry efficiency tracking
+
+### Cross-References
+
+- [Balanced Nonary Logic](./03_balanced_nonary_logic.md)
+- [Wave Interference](../02_foundations/02_wave_interference_physics.md)
+- [Soliton Nonlinearity](../02_foundations/02_wave_interference_physics.md)
+- [Voronoi Quantization](./03_balanced_nonary_logic.md)
+- [Xoshiro256++ Entropy Source](../04_infrastructure/05_security_subsystem.md)
+- [Spectral Cascading](./03_balanced_nonary_logic.md)
+- [Harmonic Distortion](../02_foundations/02_wave_interference_physics.md)
+
+---

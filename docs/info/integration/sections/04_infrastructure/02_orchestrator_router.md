@@ -2529,3 +2529,124 @@ public:
 
 ---
 
+## GAP-042: Error Code Taxonomy and Handling Guide
+
+**SOURCE**: Gemini Deep Research Round 2, Batch 41-44
+**INTEGRATION DATE**: December 16, 2025
+**GAP ID**: GAP-042 (TASK-042)
+**PRIORITY**: CRITICAL
+**STATUS**: FABRICATION-READY SPECIFICATION
+
+### Philosophy of Resilience: The "Soft SCRAM"
+
+The Nikola system operates as continuous, energetic physics simulation. This fundamentally alters nature of "errors." In discrete software, error is exception—logic gate flipping incorrectly. In Nikola architecture, bug manifests as **thermodynamic violation**. Energy might appear out of nowhere (violating conservation laws), or system's internal clock might desynchronize from reality.
+
+Therefore, error handling philosophy is not based on "Catch and Log," but on **Homeostatic Regulation**. System behaves like biological organism: when it detects pathology (e.g., overheating/high energy), it triggers autonomic reflexes (e.g., sweating/damping) to restore equilibrium before conscious intervention required. This is formalized in concept of **Soft SCRAM (Safety Control Rod Axe Man)**—partial shutdown mechanism that dissipates excess energy without killing cognitive state.
+
+### Error Taxonomy and Hierarchy
+
+Error codes are hierarchical, structured by architectural layer: **Infrastructure (INF)**, **Physics (PHY)**, **Cognitive (COG)**, and **Autonomous (AUTO)**.
+
+#### Category 1: Infrastructure & Communications (INF)
+
+Issues with digital substrate, networking, memory, and ZeroMQ spine.
+
+| Error Code | Severity | Name | Description | Detection Mechanism | Recovery Strategy |
+|------------|----------|------|-------------|---------------------|-------------------|
+| **INF-001** | CRITICAL | Temporal Decoherence | Control plane (intent) and Data plane (reality) desynchronized > 50ms | Timestamp check in NeuralSpike vs local clock | **Hard Reset**: Orchestrator sends SIGKILL to Physics Engine, cleans /dev/shm, restarts process |
+| **INF-002** | HIGH | Cryptographic Amnesia | Component lost identity keys or handshake failure (Finding INF-03) | ZAP Handler rejection or signature verification fail | **Re-Pairing**: Force re-load keys from permission-locked volumes. If fail, enter "Safe Mode" pending admin token |
+| **INF-003** | HIGH | Bandwidth Saturation | Data plane throughput exceeds PCIe/Network limits (Finding NET-02) | ZMQ socket monitor detects EAGAIN or queue full | **Throttling**: Increase significance threshold $\theta$ for sparse waveform serialization to reduce packet size |
+| **INF-004** | MEDIUM | Heartbeat Failure | Component failed to emit heartbeat for 500ms | Orchestrator LastSeen map watchdog | **Restart**: Watchdog initiates component restart sequence via systemd or internal process manager |
+| **INF-005** | LOW | Shared Memory Leak | Stale SHM segments detected in /dev/shm | Boot-time or periodic filesystem scan | **Garbage Collection**: Orchestrator unlinks stale segments based on PID liveness and boot timestamp |
+
+#### Category 2: Physics Engine (PHY)
+
+Issues with wave simulation, numerical stability, and energy conservation.
+
+| Error Code | Severity | Name | Description | Detection Mechanism | Recovery Strategy |
+|------------|----------|------|-------------|---------------------|-------------------|
+| **PHY-001** | CRITICAL | Epileptic Resonance | Wavefunction amplitude diverges ($\to \infty$) due to integration drift | `chk_finite()` on grid state or amplitude > threshold | **Soft SCRAM (Quantum Zeno Freeze)**: Apply global damping $\gamma = 0.5$, clamp amplitudes, renormalize Hamiltonian |
+| **PHY-002** | CRITICAL | Energy Non-Conservation | Hamiltonian drift $> 0.01\%$ over 100 steps | Energy Watchdog integral check | **Step Reduction**: Halve integration timestep $\Delta t$. If persistent, trigger Soft SCRAM |
+| **PHY-003** | HIGH | Metric Singularity | Metric tensor determinant $\to 0$ or negative eigenvalues | Gerschgorin Circle Theorem check on metric update | **Regularization**: Apply Tikhonov regularization (add $\epsilon I$) to diagonal elements to restore positive definiteness |
+| **PHY-004** | MEDIUM | Vacuum Collapse | Total system energy drops below thermal floor (System "died") | Energy integral < $E_{min}$ | **Re-Ignition**: Trigger "Manifold Seeder" to inject thermal noise and pilot wave |
+
+#### Category 3: Cognitive & Autonomous (COG/AUTO)
+
+Issues with reasoning, goals, neurochemistry, and self-modification.
+
+| Error Code | Severity | Name | Description | Detection Mechanism | Recovery Strategy |
+|------------|----------|------|-------------|---------------------|-------------------|
+| **COG-001** | CRITICAL | Runaway Cognitive Loop | Self-reinforcing thought pattern consuming 100% resources | Goal completion rate $\to 0$ while CPU $\to 100\%$ | **Administrative Override**: ZeroMQ Spine prioritizes "STOP" command; force "Nap" cycle to reset working memory |
+| **COG-002** | HIGH | Boredom Singularity | Entropy maximization failure; system stuck in local minima | Entropy gradient $\approx 0$ for extended duration | **Stimulus Injection**: Inject "Curiosity" goal; boost Norepinephrine to lower gating thresholds and encourage exploration |
+| **COG-003** | MEDIUM | ATP Exhaustion | Metabolic budget depleted (< 5%) | Metabolic Controller monitor | **Forced Nap**: Suspend high-level tasks; enter "Dream-Weave" consolidation mode to recharge ATP |
+| **COG-004** | HIGH | Teleological Deadlock | Circular dependency in Goal DAG (A needs B, B needs A) | Graph cycle detection algorithm | **Goal Purge**: Prune least prioritized goal in cycle; spike Dopamine to simulate "giving up" relief |
+| **COG-005** | LOW | Hallucination | GGUF inference attention mask failure (vacuum noise) | Perplexity spike on vacuum tokens | **Masking**: Re-generate attention mask tensor ensuring vacuum nodes are zeroed out |
+
+### Structured Logging Specification (JSON)
+
+To enable "Self-Improvement" loop, errors must be machine-readable. "Adversarial Code Dojo" uses these logs to generate regression tests.
+
+**Schema Definition**:
+
+```json
+{
+ "$schema": "http://nikola-agi.com/schemas/v0.0.4/log-entry.json",
+ "timestamp": "2025-12-15T08:30:00.123Z",
+ "level": "ERROR",
+ "component_id": "PHYSICS_ENGINE",
+ "error_code": "PHY-002",
+ "message": "Hamiltonian drift detected exceeding 0.01% threshold.",
+ "context": {
+   "simulation_step": 140023,
+   "delta_t": 0.001,
+   "total_energy_prev": 1.00000,
+   "total_energy_curr": 1.00015,
+   "drift_percentage": 0.015,
+   "max_amplitude": 4.0,
+   "active_nodes": 14500
+ },
+ "recovery_action": {
+   "strategy": "ADAPTIVE_TIMESTEP",
+   "action_taken": "Reduced delta_t by 50%",
+   "new_delta_t": 0.0005,
+   "success": true
+ },
+ "trace_id": "550e8400-e29b-41d4-a716-446655440000"
+}
+```
+
+### Documentation Templates
+
+**Incident Report Template**:
+* **Incident ID**: `<Timestamp>-[Error Code]`
+* **Trigger**: What event preceded failure? (e.g., "Neurogenesis burst during file ingestion")
+* **Impact**: (e.g., "Physics loop stalled for 200ms")
+* **Automated Response**: Did recovery strategy work?
+* **Manual Intervention**: Was operator action required?
+* **Root Cause Analysis**: Link to specific mathematical violation (e.g., "Symplectic integrator divergence due to high-frequency noise")
+
+### Implementation Status
+
+- **Status**: SPECIFICATION COMPLETE
+- **Error Categories**: Infrastructure (INF), Physics (PHY), Cognitive (COG), Autonomous (AUTO)
+- **Homeostatic Philosophy**: Soft SCRAM for thermodynamic violations, automatic reflexes before manual intervention
+- **Severity Levels**: CRITICAL (system instability), HIGH (degraded performance), MEDIUM (recoverable), LOW (informational)
+- **Recovery Strategies**: Hard Reset, Re-Pairing, Throttling, Soft SCRAM, Step Reduction, Forced Nap, Goal Purge
+- **Machine-Readable Logging**: JSON schema with context, recovery actions, trace IDs for Self-Improvement loop
+
+### Cross-References
+
+- [Soft SCRAM Protocol](../02_foundations/02_wave_interference_physics.md)
+- [Quantum Zeno Freeze](../02_foundations/02_wave_interference_physics.md)
+- [ZeroMQ Spine](./01_zeromq_spine.md)
+- [Temporal Decoherence Detection](./01_zeromq_spine.md)
+- [Cryptographic Amnesia (INF-03)](./01_zeromq_spine.md)
+- [Bandwidth Saturation (NET-02)](./01_zeromq_spine.md)
+- [Metric Tensor Singularities](../02_foundations/01_9d_toroidal_geometry.md)
+- [Hamiltonian Monitoring](../02_foundations/02_wave_interference_physics.md)
+- [Metabolic Controller (ATP)](../05_autonomous_systems/01_computational_neurochemistry.md)
+- [Nap System](../06_persistence/04_nap_system.md)
+- [Adversarial Code Dojo](./04_executor_kvm.md)
+
+---
+
