@@ -1912,3 +1912,215 @@ For vacuum: logit becomes $x - 10{,}000$, so $\exp(-10{,}000) \approx 0$ → vac
 **Impact**: Enables llama.cpp inference with <0.1 KL divergence, 62.5:1 compression
 
 ---
+
+## GAP-023: DMC ↔ GGUF Bidirectional Conversion Validation
+
+**SOURCE**: Gemini Deep Research Round 2, Batch 22-24
+**INTEGRATION DATE**: December 15, 2025
+**GAP ID**: GAP-023 (TASK-023)
+**PRIORITY**: CRITICAL
+**STATUS**: FABRICATION-READY SPECIFICATION
+
+### Problem Statement: The Projection Problem
+
+**DMC Format** (.nik): Lossless native representation - direct serialization of sparse 9D geometry:
+- Metric tensor $g_{ij}$
+- Complex wavefunction $\Psi$
+- Topological metadata (active nodes, connectivity)
+
+**GGUF Format**: Dense tensors for llama.cpp/Ollama interoperability - designed for static neural network weights.
+
+**Conversion is NOT simple reformatting** - it's **Topological Projection**: Mapping sparse, high-dimensional Riemannian manifold onto linearized, dense vector space.
+
+### Three Sources of Potential Corruption
+
+1. **Topological Decoherence**: Loss of neighbor relationships during 9D → 1D linearization
+2. **Spectral Distortion**: Amplitude/phase errors from float → Q9_0 quantization
+3. **Vacuum Noise**: Artifacts from zero-padding sparse regions in dense tensor
+
+### Conversion Mechanics and Error Sources
+
+#### Linearization via Hilbert Curves
+
+**Hilbert Curve** (Space-Filling): Maps 9D coordinate $(x_1, \dots, x_9)$ to unique 1D index $H$.
+
+**Why Hilbert over Morton (Z-order)**: Better preserves locality - points close in 1D highly likely close in 9D.
+
+**Source of Error**: Discontinuities mathematically inevitable. Two 9D-adjacent nodes might be distant in 1D. If inference runner relies on 1D proximity for attention, topological information lost.
+
+**Validation Requirement**: Verify reconstruction from 1D GGUF correctly restores original neighborhood graph (adjacency matrix).
+
+#### Q9_0 Quantization (Balanced Nonary)
+
+Packs balanced nonary weights $\{-4, \dots, +4\}$ into binary GGUF.
+
+**Mechanics**:
+1. Normalize float amplitude $A$ to nonary limits range
+2. Quantize to nearest integer in $\{-4, \dots, +4\}$
+3. Pack two values into uint8_t (high/low nibble)
+
+**Source of Error**: Scale factor normalizing diverse amplitudes introduces quantization noise:
+- High-amplitude soliton peaks → clipped
+- Low-amplitude background → rounded to zero
+
+**Validation Requirement**: Measure Energy Drift: $\Delta E = |E_{original} - E_{reconstructed}|$
+
+#### Vacuum Padding and Attention Masking
+
+GGUF requires dense tensors (fixed dimensions). Nikola grid sparse (1-5% occupancy). Fill gaps with vacuum nodes (zero amplitude).
+
+**Source of Error**: Unmasked vacuum dilutes softmax attention - even zero amplitude occupies position, contributes to denominator, steals probability mass from valid thoughts.
+
+**Validation Requirement**: Verify attention_mask tensor - every vacuum → 0, every active → 1.
+
+### Round-Trip Fidelity Standard
+
+Cycle **DMC → GGUF → DMC** must satisfy bounds. Failure = "lobotomized" or "hallucinating" model.
+
+#### Information Loss Limits
+
+**1. Energy Conservation**
+
+Total Hamiltonian $H$ (sum of squared amplitudes) preserved within 0.1%:
+
+$$\frac{|H_{original} - H_{roundtrip}|}{H_{original}} < 0.001$$
+
+**Rationale**: Energy = memory strength. Significant drift = memory corruption (amnesia or epilepsy).
+
+**2. Spectral Fidelity (Pearson Correlation)**
+
+Correlation between amplitude vectors exceeds 0.999:
+
+$$\rho(\vec{A}_{orig}, \vec{A}_{recon}) > 0.999$$
+
+**Rationale**: Preserves relative importance of concepts. Even if absolute energy drifts slightly, "shape" of mind remains identical.
+
+**3. Topological Isomorphism**
+
+Active node sets and neighbor lists identical:
+
+$$G_{orig} \cong G_{recon}$$
+
+**Metric**: Jaccard Index of active node sets exactly 1.0 (after filtering vacuum noise).
+
+**Rationale**: Lost node or active vacuum alters manifold topology, potentially breaking geodesic paths.
+
+**4. Phase Coherence**
+
+Phase angles $\theta$ preserved within $\pi/100$ radians:
+
+$$\max |\theta_{orig} - \theta_{recon}| < 0.03 \text{ rad}$$
+
+**Rationale**: Phase encodes semantic relationships and timing. Drift destroys interference patterns constituting reasoning.
+
+### Automated Validation Test Suite
+
+Integrated into CI/CD pipeline - runs automatically on new checkpoint exports.
+
+```cpp
+// include/nikola/validation/conversion_validator.hpp
+
+class ConversionValidator {
+public:
+    struct Report {
+        double energy_drift;
+        double spectral_correlation;
+        double max_phase_error;
+        bool topology_match;
+        bool passed;
+    };
+
+    Report validate_round_trip(const std::string& dmc_path) {
+        // 1. Load Original State
+        TorusManifold original = load_dmc(dmc_path);
+
+        // 2. Export to GGUF (Operation Under Test)
+        std::string gguf_path = "temp_validation.gguf";
+        GGUFExporter exporter;
+        exporter.export_manifold(original, gguf_path, Quantization::Q9_0);
+
+        // 3. Import back from GGUF
+        GGUFImporter importer;
+        TorusManifold reconstructed = importer.import_manifold(gguf_path);
+
+        // 4. Compare Metrics
+        Report report;
+
+        // Energy Check
+        double E_orig = original.total_energy();
+        double E_recon = reconstructed.total_energy();
+        report.energy_drift = std::abs(E_orig - E_recon) / E_orig;
+
+        // Spectral Correlation
+        report.spectral_correlation = calculate_pearson(
+            original.amplitudes(), reconstructed.amplitudes()
+        );
+
+        // Phase Error
+        report.max_phase_error = calculate_max_phase_diff(original, reconstructed);
+
+        // Topology Check (Jaccard Index)
+        std::set<uint64_t> nodes_orig = original.active_node_indices();
+        std::set<uint64_t> nodes_recon = reconstructed.active_node_indices();
+        report.topology_match = (nodes_orig == nodes_recon);
+
+        // 5. Final Verdict
+        report.passed = (report.energy_drift < 0.001) &&
+                        (report.spectral_correlation > 0.999) &&
+                        (report.max_phase_error < 0.03) &&
+                        report.topology_match;
+
+        return report;
+    }
+};
+```
+
+### Compatibility Matrix and Versioning
+
+| DMC Version | GGUF Version | Q9_0 Support | Attention Mask | Status | Action |
+|-------------|--------------|--------------|----------------|--------|--------|
+| v0.0.3 | v1 (Legacy) | No (FP16 only) | No | Deprecated | Trigger Migration |
+| v0.0.4 | v2 (Current) | Yes | Required | Active | Standard Ops |
+| v0.0.5+ | v3 (Future) | Yes | Required | Planned | Forward Comp. |
+
+#### Version Migration Procedure
+
+1. **Detection**: GGUFImporter reads `general.architecture` from file header. If detects "nikola_v1" → trigger legacy migration
+2. **Migration**: Legacy path recalculates attention_mask based on sparse/dense distribution (v1 files lack mask). Assumes FP16 weights.
+3. **Upgrading**: Next "Nap" cycle or save event → auto-resave in v0.0.4 DMC format, ensuring subsequent exports utilize Q9_0 and masking
+
+### Performance Characteristics
+
+**Validation Metrics**:
+- **Energy Drift**: <0.1% (0.001 threshold)
+- **Spectral Correlation**: >99.9% (0.999 threshold)
+- **Phase Error**: <0.03 radians (<π/100)
+- **Topology Match**: 100% (Jaccard Index = 1.0)
+
+**Quantization Impact**:
+- **Q9_0 Precision**: 4 bits/weight (9 states: -4 to +4)
+- **Block Size**: 32 weights + 1 FP32 scale = 20 bytes/block
+- **Compression**: 6.4:1 base, 62.5:1 with 90% sparsity
+
+**CI/CD Integration**:
+- Auto-runs on checkpoint export
+- Validates round-trip before deployment
+- Prevents "lobotomized" or hallucinating exports
+
+### Integration Points
+
+1. **DMC Persistence**: Load/save .nik format (sparse 9D geometry)
+2. **GGUF Exporter**: Hilbert linearization, Q9_0 quantization, attention mask
+3. **GGUF Importer**: Reconstruct 9D manifold from 1D tensor
+4. **CI/CD Pipeline**: ConversionValidator automated testing
+5. **Version Migration**: Legacy v1 → v2 upgrade path
+
+### Cross-References
+
+- [DMC Persistence Format](./01_dmc_persistence.md)
+- [GGUF Export Specification](./02_gguf_interoperability.md)
+- [Q9_0 Quantization](../02_foundations/03_balanced_nonary_logic.md)
+- [Hilbert Curve Encoding](../02_foundations/01_9d_toroidal_geometry.md)
+- [Attention Mask Generation](./02_gguf_interoperability.md) - GAP-015
+
+---

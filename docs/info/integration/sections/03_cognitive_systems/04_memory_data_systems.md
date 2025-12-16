@@ -1310,3 +1310,214 @@ namespace nikola::indexing {
 ```
 
 **Performance**: O(1) average lookup, 94% precision at R>0.8 threshold, <6% bucket collision rate
+
+---
+
+## GAP-024: Ingestion Pipeline → Resonance Index Synchronization
+
+**SOURCE**: Gemini Deep Research Round 2, Batch 22-24
+**INTEGRATION DATE**: December 15, 2025
+**GAP ID**: GAP-024 (TASK-024)
+**PRIORITY**: CRITICAL
+**STATUS**: FABRICATION-READY SPECIFICATION
+
+### Problem Statement: The "Seizure" Problem
+
+**Resonance Index**: Specialized search structure mapping high-dimensional semantic embeddings → toroidal coordinates for memory retrieval.
+
+**Phase 0 Pathology**: **Neurogenesis Seizures** (Finding MEM-04)
+
+**Naive Implementation Problem**:
+- Ingestion Pipeline at high throughput (thousands of new concepts/second from PDF/video)
+- Each new concept triggers Neurogenesis (allocate new 9D grid node)
+- Resonance Index updated **synchronously** → Physics engine pauses to re-balance search tree/re-hash index for every new node
+
+**Result**: Stuttering destroys temporal continuity of UFIE simulation. Physics engine perceives gaps as "energy shocks" → chaotic divergence in wave patterns = **Cognitive Seizure** (system unresponsive, internal state destabilizes).
+
+### Architectural Solution: Asynchronous LSM Synchronization
+
+Decouple write path (Ingestion) from read path (Query/Physics). Adapt **Log-Structured Merge (LSM)** architecture from database theory for in-memory physics simulations.
+
+#### Component Architecture
+
+Three distinct layers:
+
+1. **MemTable (Hot/Write)**: Lock-free skip-list buffer for incoming updates from ingestion pipeline
+   - Resides in CPU RAM
+   - Optimized for write throughput
+
+2. **Immutable Indexes (Warm/Read)**: Series of read-only, sorted structures (SSTables) representing older, consolidated data
+   - Static, safe for concurrent reading
+
+3. **Active Index (Hot/Read)**: Read-optimized view (flat hash map or B-tree) used by Physics Engine for fast lookups (O(1) or O(log N))
+
+### Synchronization Protocol
+
+Guarantees **Read Availability** for physics engine at expense of slight **Write Visibility Latency** (Eventual Consistency).
+
+#### Phase 1: Ingestion (Write Path)
+
+- Ingestion Worker generates new node (Token, Embedding, Coordinate)
+- Write entry to MemTable using atomic Compare-And-Swap (CAS)
+- **Atomicity**: Per-node. Each node fully constructed before linked into list.
+- **Physics Impact**: Zero. Physics Engine doesn't see node yet → no interference or lag.
+
+#### Phase 2: Propagation (Visibility Path)
+
+- Physics Engine continues on Active Index
+- Every $N$ ticks (e.g., 100ms), background "Merger Thread" checks MemTable size
+- If `MemTable.size > Threshold` → initiate **Shadow Merge**:
+  1. Create clone of current Active Index (copy-on-write or shadow paging)
+  2. Merge MemTable contents into Shadow Index
+  3. Optimize Shadow Index (re-balance trees, update Hilbert ordering for locality)
+
+#### Phase 3: Atomic Swap (Consistency Point)
+
+- Once Shadow Index fully prepared and optimized, Merger requests Safe Point from Physics Engine
+- At exact boundary of timestep (microsecond window between ticks), Physics Engine performs atomic pointer swap:
+
+```cpp
+Active_Index_Ptr.exchange(Shadow_Index_Ptr)
+```
+
+**Result**: New nodes instantly visible to physics simulation as batch.
+
+**Latency**: Swap takes nanoseconds. "Seizure" pathology eliminated - physics never waits for merge completion.
+
+### Consistency Specifications
+
+#### Atomicity Guarantees
+
+- **Ingestion**: Atomic per-node. Node either fully ingested or not present. Partial updates impossible (struct alignment + atomic insertion).
+- **Index Update**: Atomic per-batch. Physics engine sees complete old state or complete new state with all recent ingestion items. Never partial batch or dirty read.
+
+#### Eventual Consistency Window
+
+**Visibility Lag** ($T_{lag}$): Time between node ingestion and becoming active in physics simulation.
+
+$$T_{lag} = T_{batch} + T_{merge} + T_{swap}$$
+
+**Specification**: Maximum acceptable lag = **500 milliseconds**.
+
+**Rationale**: Mimics human short-term memory encoding latency. Acceptable for document being "understood" (available for recall) 0.5s later. NOT acceptable for "brain" (physics engine) to stop working while reading.
+
+### Query Behavior During Updates
+
+- **Snapshot Isolation**: Queries during merge continue using old Active Index. Memory preserved until query completes (`std::shared_ptr` counting or hazard pointers).
+- **No Blocking**: Queries never block waiting for updates. See slightly stale view until atomic swap.
+
+### Index Rebuild Triggers
+
+Full rebuilds expensive ($O(N \log N)$) - avoid during active waking hours.
+
+**1. Incremental Merge (Minor)**:
+- **Trigger**: MemTable > 10,000 nodes OR 1 second elapsed since last merge
+- **Action**: Merge MemTable into Level-0 SSTable (fast, lightweight)
+
+**2. Full Rebuild (Major)**:
+- **Trigger**: System enters "Nap" State (ATP < 15%) OR Fragmentation Index > 20% (poor spatial locality)
+- **Action**: Consolidate all SSTables, re-sort entire index by Hilbert Curve (restore spatial locality), optimize memory layout
+- **Context**: Performed when physics engine in "Low Power" mode (minimizes cognitive impact)
+
+### Implementation: ResonanceIndex Protocol
+
+```cpp
+// include/nikola/memory/resonance_index.hpp
+
+class ResonanceIndex {
+    struct IndexSnapshot {
+        std::vector<uint64_t> hilbert_keys;
+        std::vector<NodeData> nodes;
+        // Search structure optimized for reading
+        // e.g., Robin Hood Hash Map or B-Tree
+    };
+
+    // Active view used by readers (Physics Engine)
+    // std::shared_ptr ensures snapshot isolation for readers
+    std::atomic<std::shared_ptr<IndexSnapshot>> active_snapshot;
+
+    // Write buffer for writers (Ingestion)
+    ConcurrentSkipList<uint64_t, NodeData> memtable;
+
+    // Background thread for merging updates
+    void merger_loop() {
+        while (running) {
+            std::this_thread::sleep_for(std::chrono::milliseconds(100));
+
+            // Trigger: Batch size threshold or Time threshold
+            if (memtable.size() > THRESHOLD || time_since_last_merge() > 1000) {
+                // 1. Create new snapshot from current active (Shadow Copy)
+                auto old_snap = active_snapshot.load();
+                auto new_snap = std::make_shared<IndexSnapshot>(*old_snap);
+
+                // 2. Drain MemTable into new snapshot (Batch Merge)
+                // Background operation - consumes CPU but doesn't stall Physics
+                memtable.drain_to(*new_snap);
+
+                // 3. Re-sort and Optimize (Maintain Hilbert Locality)
+                std::sort(new_snap->hilbert_keys.begin(), new_snap->hilbert_keys.end());
+
+                // 4. Atomic Swap (The Commit Point)
+                // Physics engine sees new state on next read
+                active_snapshot.store(new_snap);
+            }
+        }
+    }
+
+public:
+    // O(1) Writer - Non-blocking
+    void ingest(const NodeData& node) {
+        memtable.insert(node.hilbert_key, node);
+    }
+
+    // Lock-free Reader - Wait-free
+    std::optional<NodeData> query(uint64_t key) {
+        // Acquire reference to current snapshot
+        // shared_ptr ref count prevents deletion while in use
+        auto snap = active_snapshot.load();
+
+        // Perform search in snapshot
+        return snap->find(key);
+    }
+};
+```
+
+### Performance Characteristics
+
+**Write Path**:
+- **Ingestion Latency**: O(1) atomic insert to MemTable
+- **Physics Impact**: Zero (non-blocking)
+- **Batch Threshold**: 10,000 nodes or 1 second
+
+**Read Path**:
+- **Query Latency**: O(1) hash map or O(log N) B-tree
+- **Snapshot Isolation**: No blocking on concurrent writes
+- **Visibility Lag**: Max 500 ms (acceptable for memory encoding)
+
+**Merge Operation**:
+- **Minor Merge**: <10 ms (MemTable → Level-0 SSTable)
+- **Major Rebuild**: During Nap State only (physics in low-power mode)
+- **Fragmentation Trigger**: >20% (triggers full consolidation)
+
+**Memory Overhead**:
+- **Active Snapshot**: Current index (shared_ptr)
+- **Shadow Snapshot**: Temporary during merge (copy-on-write)
+- **MemTable**: Bounded by 10,000 node threshold
+
+### Integration Points
+
+1. **Ingestion Pipeline**: Writes new nodes to MemTable (non-blocking)
+2. **Physics Engine**: Reads from Active Snapshot (lock-free queries)
+3. **Merger Thread**: Background consolidation (100ms polling)
+4. **Nap Controller**: Triggers major rebuild when ATP < 15%
+5. **Hilbert Encoding**: Spatial locality preservation during sort
+
+### Cross-References
+
+- [Resonance Index Architecture](./04_memory_data_systems.md)
+- [Ingestion Pipeline](../05_autonomous_systems/03_ingestion_pipeline.md)
+- [Neurogenesis](../02_foundations/01_9d_toroidal_geometry.md)
+- [Hilbert Curve Encoding](../02_foundations/01_9d_toroidal_geometry.md)
+- [Nap State Controller](../06_persistence/04_nap_system.md)
+
+---

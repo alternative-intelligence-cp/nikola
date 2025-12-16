@@ -620,6 +620,219 @@ public:
 
 ---
 
+## GAP-022: ENGS → Physics Engine Feedback Loop Latency
+
+**SOURCE**: Gemini Deep Research Round 2, Batch 22-24
+**INTEGRATION DATE**: December 15, 2025
+**GAP ID**: GAP-022 (TASK-022)
+**PRIORITY**: CRITICAL
+**STATUS**: FABRICATION-READY SPECIFICATION
+
+### Problem Statement: Chronobiology of AGI
+
+ENGS bridges system "physiology" (drives, energy, emotion) with "physics" (wave propagation). Physics engine operates at strict **1kHz** (1ms timestep) for symplectic integrator stability.
+
+**Temporal Decoherence Risk**: Excessive latency/jitter between ENGS and Physics Engine causes **Credit Assignment Error** - system reinforces wrong thoughts (analogous to delayed pain signal after touching hot stove).
+
+**Fundamental Constraint**: **Soliton Coherence Time** ($T_{coh}$) - duration stable wave packet maintains integrity before interacting or dissipating. Typical interaction window: **10-20 timesteps (10-20ms)**.
+
+### Maximum Acceptable Staleness
+
+**Staleness** ($\tau$): Temporal delta between ENGS calculation and physics application.
+
+$$\tau = t_{applied} - t_{calc}$$
+
+**Specification**: $\tau$ must be less than Soliton Coherence Time with 2× Nyquist safety margin:
+
+$$\tau_{max} \le \frac{T_{coh}}{2} \approx 10 \text{ ms}$$
+
+**10ms budget** = neurochemical updates must propagate from Orchestrator to GPU within 10 physics ticks.
+
+#### Channel-Specific Requirements
+
+| Neurochemical | Function | Staleness Impact | Hard Limit |
+|---------------|----------|------------------|------------|
+| **Dopamine** ($D_t$) | Hebbian learning rate $\eta$ | Late arrival (>10ms) → reinforces noise instead of resonant event → **Anhedonia Trap** | 10 ms |
+| **Norepinephrine** ($N_t$) | Refractive index $s$, Relevance Gating | Stale signal → irrelevant stimuli breach attention filter OR hyper-vigilance persists | 10 ms |
+| **Serotonin** ($S_t$) | Metric tensor elasticity $\lambda$ | Structural changes operate on consolidation timescale | 50 ms (soft) |
+
+### Update Propagation Delay Budget
+
+| Stage | Budget | Mechanism & Justification |
+|-------|--------|---------------------------|
+| **Computation** ($T_{cpu}$) | 2.0 ms | Optimized C++ calculation (AtomicDopamine class), no blocking I/O |
+| **Transmission** ($T_{bus}$) | 0.5 ms | Zero-copy pinned memory (host-mapped) bypasses cudaMemcpy overhead |
+| **Synchronization** ($T_{sync}$) | 0.0 ms | Lock-free atomic operations eliminate thread sleeping/mutex |
+| **Application** ($T_{kernel}$) | 1.0 ms | Updates queued for exact start of next 1ms timestep |
+| **Total Latency** | **3.5 ms** | **Well within 10ms $\tau_{max}$ requirement** ✓ |
+
+**Violation Trigger**: Physics Oracle monitors latency. If exceeds:
+- **10ms** (Dopamine/Norepinephrine): SYNC_VIOLATION warning
+- **50ms**: Cognitive Pause (soft nap) - agent in lag-induced dissociative state
+
+### Phase-Coherent Atomic Consistency Model
+
+Standard consistency models (Eventual, Strong) ill-suited - focus on data replicability, not temporal causality within simulation.
+
+#### Torn Read Problem
+
+Physics engine reads global parameters ($\eta$) millions of times per second. **Non-atomic write** creates vulnerability:
+- ENGS writes 4 bytes of float in two 2-byte cycles
+- Physics engine reads between cycles → corrupted value (e.g., $\eta = 10^{38}$)
+- **Result**: Instant energy divergence, system crash
+
+**Intra-Step Inconsistency**: Update applied mid-timestep → first half of grid uses $\eta_{old}$, second half uses $\eta_{new}$ → destroys symplectic integrator, violates Hamiltonian properties.
+
+#### Double-Buffered Atomic Swap Implementation
+
+```cpp
+struct NeurochemicalState {
+    alignas(64) float dopamine;       // Learning rate modulator
+    alignas(64) float serotonin;      // Elasticity modulator
+    alignas(64) float norepinephrine; // Refractive index modulator
+    alignas(64) float cortisol;       // Stress/Entropy limit
+    uint64_t timestamp_seq;           // Sequence number for ordering
+    float padding;                    // Cache line alignment (64 bytes)
+};
+
+class NeurochemicalGateway {
+    // Two buffers: One active (GPU read), One shadow (CPU write)
+    NeurochemicalState* device_current_state;
+    NeurochemicalState* host_next_state;
+
+    // Atomic flag to signal update availability
+    std::atomic<bool> update_pending{false};
+
+    // Pinned memory for zero-copy access
+    NeurochemicalState* pinned_buffer;
+};
+```
+
+**Protocol Execution**:
+1. **Write Phase** (ENGS Thread): Compute new values, write to `host_next_state` (asynchronous, non-blocking)
+2. **Commit Phase**: Set `update_pending = true` with `std::memory_order_release` (memory barrier ensures all writes visible before flag)
+3. **Read Phase** (Physics Kernel):
+   - At exact beginning of timestep (before iterating nodes), check `update_pending`
+   - If true: `cudaMemcpyAsync` or read from pinned memory → update `__constant__` cache
+   - Update happens **between** timesteps $t$ and $t+1$
+   - Proceed with all nodes using cached values
+
+**Guarantees**:
+1. **Atomicity**: No torn reads - kernel sees complete old or complete new state
+2. **Phase Coherence**: Physics parameters constant during single timestep (preserves Hamiltonian)
+3. **Freshness**: Kernel consumes latest available coherent state ready at tick start
+
+### Priority Inheritance and Metabolic Interrupts
+
+#### Priority Levels
+
+| Priority | Triggers | Behavior | Latency Target |
+|----------|----------|----------|----------------|
+| **CRITICAL** (Interrupt) | SCRAM, ATP Exhaustion (<5%), Panic (N>0.95) | Immediate preemption, abort current timestep, apply emergency damping ($\gamma=1.0$), enter Safe Mode/Nap | <1 ms (next tick) - bypasses double-buffering |
+| **HIGH** (Control) | Dopamine updates, Attention shifts, Goal changes | Applied at next timestep start via atomic swap | <10 ms |
+| **BACKGROUND** (Maintenance) | Serotonin drift, Homeostatic regulation, Logging, GGUF Export | Opportunistic or batched (every 100 steps) | <100 ms |
+
+#### Transactional Metabolic Lock (TML)
+
+**Request**: Before task starts (e.g., "Ingest PDF"), send `MetabolicTransaction` request to ENGS
+
+**Evaluation**: ENGS checks ATP reserve vs estimated cost:
+- `ATP > Cost` → Grant Lock (ATP escrowed)
+- `ATP < Cost` → Deny, issue METABOLIC_WARNING (prevents task start)
+
+**Preemption**: PRIORITY_CRITICAL event → ENGS can revoke active locks
+- Physics Engine checks lock validity at every computation Block boundary
+- If revoked: Graceful rollback (discard current thought), force Nap state to recharge
+
+### Performance vs. Consistency Trade-offs
+
+| Dimension | Decision | Rationale |
+|-----------|----------|-----------|
+| **Locking vs. Stalls** | Lock-Free | `std::atomic` prevents ENGS stalling 1kHz physics loop - traditional mutex causes "cognitive stuttering" |
+| **Freshness vs. Coherence** | Coherence | Deliberately delay update until next tick start (max 1ms) - entire grid using same parameters > sub-ms freshness |
+| **Throughput vs. Safety** | Safety (Critical) | Low-ATP: Aggressively throttle via TML. High-energy: Unconstrained throughput |
+
+### Implementation: EngsPhysicsInterface
+
+```cpp
+// include/nikola/interface/feedback_loop.hpp
+
+namespace nikola::feedback {
+    enum class SignalPriority : uint8_t {
+        BACKGROUND = 0,
+        HIGH = 1,
+        CRITICAL = 2
+    };
+
+    struct ControlSignal {
+        float value;
+        SignalPriority priority;
+        uint64_t timestamp_us;
+    };
+
+    class EngsPhysicsInterface {
+    public:
+        // Called by ENGS to update neurochemistry
+        // Thread-safe, lock-free, wait-free
+        void push_update(const NeurochemicalState& state, SignalPriority prio) {
+            if (prio == SignalPriority::CRITICAL) {
+                // Bypass buffering, set emergency flag immediately
+                emergency_override.store(state, std::memory_order_release);
+                interrupt_flag.test_and_set();
+            } else {
+                // Standard atomic swap for next tick
+                next_state.store(state, std::memory_order_release);
+            }
+        }
+
+        // Called by Physics Engine at start of each tick
+        NeurochemicalState get_current_state() {
+            // Check for emergency override first
+            if (unlikely(interrupt_flag.test())) {
+                return emergency_override.load(std::memory_order_acquire);
+            }
+            // Load buffered state
+            return next_state.load(std::memory_order_acquire);
+        }
+
+    private:
+        // Double-buffered states for atomic transitions
+        std::atomic<NeurochemicalState> next_state;
+        std::atomic<NeurochemicalState> emergency_override;
+
+        // Flag for critical interrupts (SCRAM, Panic)
+        std::atomic_flag interrupt_flag = ATOMIC_FLAG_INIT;
+    };
+}
+```
+
+### Performance Characteristics
+
+- **Staleness Limit**: 10 ms (Dopamine, Norepinephrine), 50 ms (Serotonin)
+- **Total Latency**: 3.5 ms (2.0ms CPU + 0.5ms bus + 0.0ms sync + 1.0ms kernel)
+- **Atomicity**: Double-buffered with `std::memory_order_release/acquire`
+- **Phase Coherence**: Updates only between timesteps (preserves Hamiltonian)
+- **Priority Interrupt**: <1 ms for CRITICAL (bypasses buffering)
+- **Lock-Free**: Zero mutex contention, zero thread stalls
+
+### Integration Points
+
+1. **ENGS**: Computes neurochemical values from metabolic/cognitive inputs
+2. **Physics Engine**: 1kHz tick, reads neurochemical state at timestep boundary
+3. **Physics Oracle**: Monitors latency, triggers SYNC_VIOLATION/Cognitive Pause
+4. **Metabolic Controller**: Transactional Lock (TML) for ATP-gated task execution
+5. **Pinned Memory**: Zero-copy host-mapped for sub-ms transmission
+
+### Cross-References
+
+- [Extended Neurochemical Gating System](./01_computational_neurochemistry.md)
+- [Physics Engine Timing](../02_foundations/02_wave_interference_physics.md)
+- [Metabolic Budget System](./01_computational_neurochemistry.md)
+- [Physics Oracle](../02_foundations/02_wave_interference_physics.md)
+- [Nap State Controller](../06_persistence/04_nap_system.md)
+
+---
+
 	The implementation of these structures within the src/autonomy/ directory is now the primary objective for the Engineering Team in Phase 3.
 Status: APPROVED FOR IMMEDIATE IMPLEMENTATION.
 Works cited
