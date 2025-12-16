@@ -666,3 +666,201 @@ Run `twi-ctl benchmark` to validate system health against these baselines.
 
 ---
 
+## GAP-046: High-Frequency CUDA Kernel Optimization Strategies
+
+**SOURCE**: Gemini Deep Research Round 2, Batch 45-47
+**INTEGRATION DATE**: December 16, 2025
+**GAP ID**: GAP-046 (TASK-046)
+**PRIORITY**: CRITICAL
+**STATUS**: FABRICATION-READY SPECIFICATION
+
+### The Launch Overhead Bottleneck
+
+Nikola Physics Engine is governed by Unified Field Interference Equation (UFIE), requiring symplectic integration step every 1ms (1000 Hz) to maintain energy conservation ($|dH/dt| < 0.01\%$). This requirement imposes **hard real-time constraint** on GPU compute pipeline fundamentally at odds with batch-oriented design of modern CUDA drivers.
+
+In standard CUDA execution model, host (CPU) enqueues kernel launch command to device (GPU) driver. This involves traversing PCIe bus, driver validation, and insertion into GPU's hardware work queue.
+
+**Overhead Breakdown**:
+- **Driver Overhead**: Typically 5-20 μs per launch
+- **PCIe Latency**: 2-5 μs for command transmission
+- **Kernel Execution**: For sparse grid update, potentially 50-100 μs
+
+Symplectic Split-Operator method requires decomposing Hamiltonian evolution into sequential operators: Kinetic → Potential → Nonlinear → Damping. This results in 5-6 separate kernel launches per timestep.
+
+$$\text{Total Overhead} \approx 6 \text{ kernels} \times 15 \mu s = 90 \mu s$$
+
+This consumes nearly **10% of 1000 μs budget** purely on metadata management. When combined with memory transfers for audio/visual pipeline and synchronization barriers, "Temporal Decoherence" threshold (500 μs) is easily breached, leading to numerical instability and "cognitive seizures."
+
+### Strategy A: CUDA Graphs for Deterministic Execution
+
+To eliminate CPU-side launch overhead, we implement **CUDA Graphs**. This feature allows definition of dependency graph of kernels and memory operations once, and then execution of entire graph with single CPU launch call.
+
+#### Graph Capture and Replay Architecture
+
+Instead of `cudaLaunchKernel_A → cudaLaunchKernel_B → cudaLaunchKernel_C`, we capture this sequence into `cudaGraphExec_t`. GPU driver uploads entire work definition to Command Processor (CP) on GPU.
+
+**Implementation Specification**:
+
+```cpp
+// include/nikola/physics/cuda_graph_manager.hpp
+
+class PhysicsGraph {
+   cudaGraph_t graph;
+   cudaGraphExec_t instance;
+   cudaStream_t stream;
+   bool captured = false;
+
+public:
+   void capture_sequence(std::function<void()> kernel_sequence) {
+       cudaStreamCreate(&stream);
+       // Begin capture in Global mode to catch all stream activities
+       cudaStreamBeginCapture(stream, cudaStreamCaptureModeGlobal);
+
+       // Execute the lambda containing the 5 symplectic substeps
+       kernel_sequence();
+
+       cudaStreamEndCapture(stream, &graph);
+       // Instantiate the executable graph (upload to GPU)
+       cudaGraphInstantiate(&instance, graph, NULL, NULL, 0);
+       captured = true;
+   }
+
+   void launch() {
+       if (!captured) throw std::runtime_error("Graph not captured");
+       // Single launch call triggers the entire 5-kernel sequence
+       cudaGraphLaunch(instance, stream);
+   }
+};
+```
+
+**Application to UFIE**:
+
+Symplectic integrator is encapsulated in `kernel_sequence` lambda. Graph captures dependencies between Kinetic (`wave_kinetic_kernel`) and Potential (`wave_potential_kernel`) steps.
+
+- **Result**: Launch overhead reduces from $6 \times 15 \mu s$ to $1 \times 5 \mu s$
+- **Benefit**: Deterministic execution time. GPU scheduler handles transitions between kernels without CPU intervention, minimizing jitter caused by OS interrupts on host
+
+**Dynamic Topology Challenge**:
+
+Nikola grid supports Neurogenesis (dynamic addition of nodes). CUDA Graphs are static; grid dimensions and memory pointers are baked into instantiated graph.
+
+- **Update Protocol**: When `active_node_count` changes, DifferentialTopologyManager must trigger `graph_update_required` flag
+- **Re-instantiation**: Graph must be re-captured or updated using `cudaGraphExecUpdate`. This is expensive operation (~200 μs). Therefore, Neurogenesis events are batched and processed only during specific "Plasticity Windows" to avoid stalling physics loop
+
+### Strategy B: Persistent Kernels (The Mega-Kernel)
+
+For ultra-low latency scenarios where even 5 μs is too costly (e.g., high-frequency audio resonance at 44.1 kHz), we utilize **Persistent Kernel** pattern. This eliminates launch overhead entirely by keeping kernel running indefinitely on GPU.
+
+#### Producer-Consumer Mechanism via Zero-Copy Memory
+
+This approach turns GPU into autonomous agent that polls for work:
+
+1. **Launch**: Kernel launched at system boot with infinite loop: `while(system_running) {...}`
+2. **Communication**: CPU writes input data (e.g., new audio samples) to Zero-Copy Memory (pinned host memory mapped to device address space via `cudaHostAllocMapped`)
+3. **Signaling**: CPU sets atomic flag `doorbell` in mapped memory
+4. **Reaction**: GPU threads, spinning on doorbell address, detect change, execute physics step, and write completion flag
+
+**Implementation Specification**:
+
+```cpp
+// src/physics/kernels/persistent_loop.cu
+
+struct ControlBlock {
+   volatile uint32_t host_seq;   // CPU increments to trigger tick
+   volatile uint32_t device_seq; // GPU increments when done
+   volatile bool running;
+};
+
+__global__ void persistent_physics_loop(
+   TorusGridSoA grid,
+   ControlBlock* ctrl,
+   float dt
+) {
+   // Shared memory cache to reduce traffic to system memory (PCIe)
+   __shared__ uint32_t cached_seq;
+
+   // Only thread 0 in the block monitors the doorbell
+   if (threadIdx.x == 0) {
+       cached_seq = ctrl->device_seq;
+   }
+   __syncthreads();
+
+   while (ctrl->running) {
+       // Spin-wait loop
+       if (threadIdx.x == 0) {
+           // Wait for host_seq to advance beyond what we last processed
+           while (ctrl->host_seq == cached_seq && ctrl->running) {
+               // Optimization: nanosleep to reduce power/heat on empty spins
+               // Requires Compute Capability 7.0+
+               __nanosleep(100);
+           }
+           cached_seq = ctrl->host_seq;
+       }
+       __syncthreads(); // All threads wake up to process the new tick
+
+       if (!ctrl->running) break;
+
+       // --- EXECUTE PHYSICS STEP ---
+       // Critical: All threads in the grid must participate.
+       // We use Cooperative Groups for global synchronization if needed.
+       process_symplectic_step_device(grid, dt);
+       // ----------------------------
+
+       // Signal completion
+       __syncthreads();
+       if (threadIdx.x == 0) {
+           ctrl->device_seq = cached_seq;
+           __threadfence_system(); // Ensure write is visible to CPU across PCIe
+       }
+   }
+}
+```
+
+#### Cooperative Groups and Occupancy
+
+Standard kernel cannot synchronize across different Thread Blocks. If physics simulation requires global data dependencies (e.g., global FFT for spectral analysis), persistent kernel will deadlock if one block waits for another that hasn't been scheduled.
+
+- **Solution**: Mandate use of Cooperative Groups (`cooperative_groups::this_grid().sync()`)
+- **Launch Requirement**: Kernel must be launched via `cudaLaunchCooperativeKernel`
+- **Occupancy Constraint**: Total number of blocks must fit on GPU's Streaming Multiprocessors (SMs) simultaneously. For NVIDIA H100 with 132 SMs, if kernel uses 256 threads/block, we can launch roughly $132 \times 8 = 1056$ blocks resident. This sets hard limit on grid size supported by this mode. If grid exceeds residency, must fall back to CUDA Graphs
+
+### Integration of Visual and Audio Pipelines
+
+1000 Hz physics loop must interface with 60 Hz video and 44.1 kHz audio. This creates multi-rate signal processing problem.
+
+#### Audio-Visual Ring Buffers
+
+To bridge 44.1 kHz audio stream (22 μs period) with 1000 Hz physics tick (1000 μs period), we utilize WaveformSHM zero-copy shared memory architecture.
+
+**Mechanism**:
+
+1. **Audio Ingestion**: Dedicated thread captures PCM audio and writes it to ring buffer in shared memory
+2. **Spectral Injection**: Audio thread performs FFT on incoming window. Resulting frequency bins are mapped directly to Resonance ($r$) dimension of 9D grid. Physics Engine reads this spectral map once per millisecond. This preserves harmonic content without requiring physics engine to run at 44.1 kHz
+
+**Visual Pipeline**:
+
+Visual data (60 Hz) is static for ~16 physics ticks. To prevent "step function" artifacts which cause high-frequency ripple in UFIE, inputs are temporally interpolated (faded) between frames over 16ms window. This smoothing is applied via simple linear interpolation kernel fused into Persistent Kernel's input reading stage.
+
+### Implementation Status
+
+- **Status**: SPECIFICATION COMPLETE
+- **CUDA Graphs**: 80% launch overhead reduction ($6 \times 15\mu s \to 1 \times 5\mu s$), deterministic execution
+- **Graph Capture**: PhysicsGraph class with capture_sequence() and launch() methods
+- **Dynamic Topology**: Neurogenesis batching during Plasticity Windows to avoid 200μs re-instantiation stalls
+- **Persistent Kernels**: Zero-copy memory doorbell pattern, __nanosleep() for power efficiency
+- **Cooperative Groups**: cudaLaunchCooperativeKernel for global synchronization, occupancy limit ~1056 blocks (H100)
+- **Audio Integration**: Spectral injection via FFT to Resonance dimension, preserves harmonics at 1kHz physics rate
+- **Visual Integration**: 16ms temporal interpolation to prevent step-function ripple
+
+### Cross-References
+
+- [Symplectic Integration](../02_foundations/02_wave_interference_physics.md)
+- [Unified Field Interference Equation (UFIE)](../02_foundations/02_wave_interference_physics.md)
+- [Temporal Decoherence](../04_infrastructure/02_orchestrator_router.md)
+- [Neurogenesis](../02_foundations/01_9d_toroidal_geometry.md)
+- [DifferentialTopologyManager](../02_foundations/01_9d_toroidal_geometry.md)
+- [WaveformSHM](../04_infrastructure/06_database_persistence.md)
+- [9D Resonance Dimension](../02_foundations/01_9d_toroidal_geometry.md)
+
+---
+

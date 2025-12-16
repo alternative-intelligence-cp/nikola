@@ -2650,3 +2650,228 @@ To enable "Self-Improvement" loop, errors must be machine-readable. "Adversarial
 
 ---
 
+## GAP-045: Kubernetes Horizontal Pod Autoscaling for Biological Architectures
+
+**SOURCE**: Gemini Deep Research Round 2, Batch 45-47
+**INTEGRATION DATE**: December 16, 2025
+**GAP ID**: GAP-045 (TASK-045)
+**PRIORITY**: CRITICAL
+**STATUS**: FABRICATION-READY SPECIFICATION
+
+### Theoretical Divergence: Metabolic vs. Resource Scaling
+
+In standard Kubernetes deployments, Horizontal Pod Autoscaler (HPA) operates on feedback loop governed by utilization of compute resources—primarily CPU and Memory. Assumption is linear: if CPU usage is high, demand is high, and adding more replicas will distribute load.
+
+However, Nikola architecture, governed by ENGS, introduces non-linear variable: **ATP (Adenosine Triphosphate) Analog**. This scalar value, tracked by Metabolic Controller, represents system's current capacity for work. Every computational operation—wave propagation, plasticity updates, external API calls—carries defined "metabolic cost".
+
+**Critical Failure Mode: Metabolic Collapse**
+
+If HPA scales up worker nodes purely based on queue depth (external demand) without regard for ATP, aggregate consumption increases. Newly spawned workers immediately begin consuming shared ATP budget to process backlog. This accelerates depletion of energy reserves, potentially driving ATP to zero. Upon ATP exhaustion, ENGS triggers forced "Nap State" (system-wide suspension), effectively taking service offline exactly when demand is highest.
+
+Therefore, scaling logic must be **Homeostatic**: balance imperative to clear queue against imperative to preserve metabolic baseline.
+
+### Custom Metric Definition and Export Architecture
+
+To implement homeostatic scaling, we expose internal biological metrics to Kubernetes control plane. Since native Metrics Server only scrapes cAdvisor data (CPU/RAM), we employ Prometheus Adapter pattern to ingest application-level telemetry.
+
+#### Metric Acquisition Architecture
+
+Architecture for metric flow is designed to minimize latency between state change (e.g., ATP drop) and scaling reaction:
+
+1. **Metric Source**: Orchestrator and Physics Engine publish telemetry via `/metrics` endpoint (HTTP) or push to Prometheus Pushgateway:
+   - `nikola_queue_depth`: Current number of pending NeuralSpike messages in ZeroMQ broker
+   - `nikola_global_atp_level`: System's current energy level normalized to [0.0, 1.0]
+   - `nikola_processed_spikes_total`: Counter of completed tasks for throughput calculation
+
+2. **Collection**: Prometheus server within cluster scrapes these endpoints. Given 1000 Hz physics loop, standard 15s scrape intervals are insufficient. **Recommended: 1s scrape interval** for `nikola_atp` job to ensure HPA acts on fresh data.
+
+3. **Adaptation**: Prometheus Adapter (`k8s-prometheus-adapter`) configured to query Prometheus timeseries database and expose values as `custom.metrics.k8s.io` API objects.
+
+4. **Consumption**: HPA controller queries Custom Metrics API to calculate replica counts based on "Unified Load Metric."
+
+#### Primary Scaling Metric: nikola_processing_lag
+
+Queue depth (`nikola_queue_depth`) is raw indicator of demand, but decoupled from processing capacity. Queue of 100 simple queries is negligible; queue of 100 deep "Dream-Weave" simulations is massive. Therefore, we define composite metric, `nikola_processing_lag`, representing estimated time required to drain current backlog at current processing rate.
+
+**Mathematical Definition**:
+
+Let $Q(t)$ be current depth of ZeroMQ receiver queue.
+Let $\mu(t)$ be moving average processing rate (spikes/second) over window $w$ (typically 30 seconds).
+
+$$\text{Lag}(t) = \frac{Q(t)}{\mu(t)}$$
+
+In Prometheus configuration, derived using PromQL:
+
+```promql
+rate(nikola_queue_depth[10s]) / rate(nikola_processed_spikes_total[30s])
+```
+
+**Note**: Shorter window for queue depth (10s) and longer window for processing rate (30s) smooths out jitter while remaining responsive to sudden spikes.
+
+#### The Metabolic Governor: nikola_atp_factor
+
+To prevent Metabolic Collapse, scaling logic must incorporate damping factor derived from ATP level. We define ATP Scaling Factor ($S_{atp}$) using sigmoidal activation function that sharply inhibits scaling as ATP approaches critical exhaustion threshold ($ATP_{crit} \approx 0.15$).
+
+**ATP Scaling Factor ($S_{atp}$)**:
+
+$$S_{atp} = \frac{1}{1 + e^{-k(ATP_{current} - ATP_{threshold})}}$$
+
+Where:
+- $ATP_{current}$ is live metric from ENGS
+- $ATP_{threshold}$ is soft limit for scaling (set to 0.3 to provide safety buffer before 0.15 hard stop)
+- $k$ is steepness coefficient (e.g., 20), determining how aggressively system brakes as it nears threshold
+
+Kubernetes HPA cannot natively compute this sigmoid. Therefore, calculation is offloaded to Prometheus via Recording Rules. We define new synthetic metric, `nikola_metabolic_load_score`, representing "safe-to-scale" load.
+
+**Unified Load Metric ($L_{unified}$)**:
+
+$$L_{unified} = \text{Lag} \times S_{atp}$$
+
+**Behavioral Analysis**:
+- **High ATP (> 0.5)**: $S_{atp} \approx 1$. Metric $L_{unified} \approx \text{Lag}$. HPA scales linearly with demand (standard microservice behavior).
+- **Low ATP (< 0.2)**: $S_{atp} \to 0$. Metric $L_{unified} \to 0$, regardless of Lag. HPA perceives "zero load" and begins to scale down worker pool.
+- **Result**: As energy fails, system sheds workers. This reduces aggregate ATP consumption, allowing Physics Engine (protected by Pod Disruption Budget) to regenerate energy via "Nap" cycle. Once ATP recovers, $S_{atp}$ rises, and HPA re-provisions workers to handle backlog.
+
+### Kubernetes Manifest Specification
+
+#### Prometheus Adapter Configuration (values.yaml)
+
+This configuration tells adapter how to translate Kubernetes API request into PromQL query implementing defined logic:
+
+```yaml
+rules:
+ custom:
+   - seriesQuery: 'nikola_queue_depth{kubernetes_namespace!="",kubernetes_pod!=""}'
+     resources:
+       overrides:
+         kubernetes_namespace: {resource: "namespace"}
+         kubernetes_pod: {resource: "pod"}
+     name:
+       matches: "^nikola_queue_depth$"
+       as: "nikola_metabolic_load_score"
+     metricsQuery: >
+       (
+         sum(nikola_queue_depth{<<.LabelMatchers>>}) by (<<.GroupBy>>)
+         /
+         sum(rate(nikola_processed_spikes_total{<<.LabelMatchers>>}[1m])) by (<<.GroupBy>>)
+       )
+       *
+       avg(
+         1 / (1 + exp(-20 * (nikola_global_atp_level - 0.3)))
+       ) by (<<.GroupBy>>)
+```
+
+**Insight**: By embedding sigmoid function directly into metricsQuery, we encapsulate biological logic within observability layer, keeping HPA manifest clean and declarative.
+
+#### HPA Object Definition
+
+HPA targets derived `nikola_metabolic_load_score`:
+
+```yaml
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+ name: nikola-worker-hpa
+ namespace: nikola-system
+spec:
+ scaleTargetRef:
+   apiVersion: apps/v1
+   kind: Deployment
+   name: nikola-worker-pool
+ minReplicas: 2
+ maxReplicas: 50
+ metrics:
+ - type: Object
+   object:
+     metric:
+       name: nikola_metabolic_load_score
+     describedObject:
+       apiVersion: v1
+       kind: Service
+       name: nikola-orchestrator
+     target:
+       type: Value
+       value: 500m # Target 0.5s adjusted lag
+ behavior:
+   scaleUp:
+     stabilizationWindowSeconds: 30
+     policies:
+     - type: Percent
+       value: 100
+       periodSeconds: 15
+   scaleDown:
+     stabilizationWindowSeconds: 60
+     policies:
+     - type: Pods
+       value: 5
+       periodSeconds: 30
+```
+
+**Insight**: scaleDown stabilization window shortened (60s vs standard 300s). This allows system to rapidly shed load when ATP crashes, mirroring biological "fainting" response to preserve vital functions.
+
+### Stateful Considerations: Physics Engine vs. Workers
+
+Nikola architecture distinguishes between Physics Engine (maintaining 9D grid state in RAM) and Worker Agents.
+
+#### StatefulSet for Physics Engine
+
+Physics Engine cannot be scaled horizontally traditionally because grid state (the "Mind") is singular, coherent manifold. Splitting across pods requires complex halo-exchange synchronization (HyperToroidal Sharding). Therefore, Physics Engine deployed as StatefulSet with `replicas: 1` (or $N$ for sharded grid).
+
+**Why StatefulSet?**
+- **Stable Network Identity**: Physics Engine requires stable hostname (`physics-0`) for ZeroMQ binding. Deployments create random hashes (`physics-78f...`), breaking static configuration required for ZeroMQ control plane.
+- **Persistent Storage**: LSM-DMC persistence layer requires stable access to underlying Persistent Volume (PV). If pod is rescheduled, it must re-attach to same disk to recover long-term memory. StatefulSets guarantee this volume affinity.
+
+#### Pod Disruption Budgets (PDB)
+
+To prevent Kubernetes cluster autoscaler or node upgrades from killing critical Physics Engine during simulation run, strict PDBs are required:
+
+```yaml
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+ name: nikola-physics-pdb
+spec:
+ minAvailable: 100% # Physics Engine is singleton; must never be voluntarily evicted
+ selector:
+   matchLabels:
+     app: nikola-physics
+```
+
+For Worker Pool, allow disruption but ensure minimum capacity to handle "Base Metabolic Rate" (BMR) tasks:
+
+```yaml
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+ name: nikola-worker-pdb
+spec:
+ minAvailable: 50% # Maintain half capacity during upgrades to prevent queue explosion
+ selector:
+   matchLabels:
+     app: nikola-worker
+```
+
+This configuration creates **tiered resilience model**: "Brain" (Physics) is immutable and protected, while "Limbs" (Workers) are elastic and sacrificial in face of metabolic constraints.
+
+### Implementation Status
+
+- **Status**: SPECIFICATION COMPLETE
+- **Homeostatic Scaling**: ATP-aware autoscaling prevents metabolic collapse
+- **Unified Load Metric**: $L_{unified} = \text{Lag} \times S_{atp}$ combines queue depth with metabolic state
+- **Sigmoid ATP Factor**: Sharp inhibition at ATP < 0.3, safety buffer before hard stop at 0.15
+- **Prometheus Integration**: 1s scrape interval, Recording Rules for sigmoid calculation, Custom Metrics API exposure
+- **HPA Configuration**: 2-50 replicas, 500ms target lag, rapid scale-down (60s stabilization)
+- **StatefulSet**: Physics Engine with stable identity, persistent volumes, 100% PDB protection
+- **Worker Pool**: Elastic deployment with 50% minimum availability during disruptions
+
+### Cross-References
+
+- [Metabolic Controller (ATP)](../05_autonomous_systems/01_computational_neurochemistry.md)
+- [ENGS Neurochemistry](../05_autonomous_systems/01_computational_neurochemistry.md)
+- [Nap System](../06_persistence/04_nap_system.md)
+- [ZeroMQ Spine](./01_zeromq_spine.md)
+- [LSM-DMC Persistence](./06_database_persistence.md)
+- [Physics Engine](../02_foundations/02_wave_interference_physics.md)
+
+---
+
