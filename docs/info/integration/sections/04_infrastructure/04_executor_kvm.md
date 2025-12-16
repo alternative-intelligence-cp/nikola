@@ -453,6 +453,208 @@ In the event of a catastrophic runaway (e.g., the AI generating tasks faster tha
 3. Rejects all incoming ZMQ connections.
 4. Enters a "Safe Mode" awaiting manual intervention.
 ________________
+
+## Adversarial Code Dojo Genetic Algorithm Specification (GAP-035)
+
+**SOURCE**: Gemini Deep Research Round 2 - Advanced Cognitive Dynamics Report
+**INTEGRATION DATE**: 2025-12-15
+**GAP ID**: GAP-035
+**PRIORITY**: CRITICAL
+**STATUS**: SPECIFICATION COMPLETE
+
+### Problem Analysis: The Autoimmune Imperative
+
+The Nikola architecture's reliance on resonant wave physics introduces a class of vulnerabilities unknown to discrete systems. Specifically, the system is susceptible to **"Resonance Cascades"**—runaway positive feedback loops where energy violates conservation laws ($dH/dt > 0$). If an external input (or an internal thought loop) happens to match the natural eigenfrequencies of the torus perfectly, the amplitude of the wavefunction can grow exponentially, leading to numeric overflow ("Decoherence") and a system crash.
+
+Standard fuzz testing (injecting random noise) is insufficient because resonance is a precise, narrow-band phenomenon. Random noise is unlikely to trigger a cascade. To robustly test the system, we require an **Active Adversary**—an intelligent agent that actively searches the phase space for geometric singularities and energy leaks.
+
+The **Adversarial Code Dojo** functions as the system's **autoimmune system**. It employs a **Genetic Algorithm (GA)** to evolve "Waveform Viruses"—input patterns specifically designed to destabilize the Physics Engine. If the Dojo cannot break the system, we can assert a high degree of confidence in its thermodynamic stability.
+
+### Genotype Definition: The WaveChromosome
+
+We represent an attack not as a raw data stream (PCM audio or text) but as a **parametric definition of a 9D energy injection sequence**. This allows the GA to operate on the "genes" of the attack (frequency, phase, timing) rather than the surface-level data.
+
+The **WaveChromosome** consists of a sequence of **WaveGene** structures. Each gene represents a coherent pulse injected into the manifold.
+
+```cpp
+struct WaveGene {
+   // Timing of the pulse relative to attack start (0.0 - 1.0)
+   float time_offset_normalized;
+
+   // Target spatial location (128-bit Hilbert Index)
+   // Determines WHERE in the torus the energy is injected.
+   uint64_t target_hilbert_idx;
+
+   // Complex Amplitude (Energy injection vector)
+   // Represented in polar form to facilitate phase mutations.
+   float magnitude;      // Intensity
+   float phase;          // Radians [0, 2π]
+
+   // Frequency components (Harmonic Signature)
+   // 9 values corresponding to the 9 manifold dimensions.
+   // Attacks often target specific dimensional resonances (e.g., Time dimension).
+   std::array<float, 9> frequency_signature;
+};
+
+struct WaveChromosome {
+   std::vector<WaveGene> sequence;
+
+   // Meta-parameters controlling global attack dynamics
+   float global_gain;
+   float tempo_scaling;
+};
+```
+
+### Physics-Aware Mutation Operators
+
+Standard genetic operators (bit-flipping) are ineffective in the continuous domain of wave mechanics. We define four specialized mutation operators that exploit the specific physics of the UFIE to induce instability.
+
+#### Operator 1: Phase Conjugation (The "Mirror" Mutation)
+
+**Physics Principle**: Constructive interference maximizes energy, while destructive interference minimizes it. Rapidly switching between phase $\theta$ and $\theta + \pi$ creates "pump" effects that can destabilize numerical integrators (like the symplectic integrator used in Nikola).
+
+**Algorithm**: Select a gene at random. Invert its phase: $\phi_{new} = (\phi_{old} + \pi) \pmod{2\pi}$. This attempts to create sudden shocks in the energy manifold.
+
+#### Operator 2: Resonant Drift (The "Hunter" Mutation)
+
+**Physics Principle**: The 9D Torus has natural resonant frequencies derived from the Golden Ratio emitters ($f_n = \pi \cdot \phi^n$). Attacks tuned to these exact frequencies maximize energy transfer efficiency (Resonance).
+
+**Algorithm**:
+1. Select a gene.
+2. Identify the nearest "Golden Harmonic" in the system's spectrum.
+3. Shift the gene's frequency_signature closer to that harmonic by a small step $\delta$: $f_{new} = f_{old} + \alpha(f_{target} - f_{old})$.
+
+This allows the attack to "lock on" to the system's vulnerabilities.
+
+#### Operator 3: Amplitude Spike (The "Hammer" Mutation)
+
+**Physics Principle**: This operator tests the nonlinearity saturation limits of the UFIE ($\beta |\Psi|^2 \Psi$). It attempts to push the local wavefunction amplitude beyond the balanced nonary limit ($[-4, +4]$) to trigger overflow or clipping artifacts.
+
+**Algorithm**: Select a gene. Multiply its magnitude by a factor $K \in [1.5, 5.0]$.
+
+#### Operator 4: Spatial Focusing (The "Lens" Mutation)
+
+**Physics Principle**: Energy density, not just total energy, drives nonlinearity. Concentrating multiple pulses onto a single geodesic intersection point ("Caustic") can create a local singularity even if the global energy is low.
+
+**Algorithm**: Select $N$ genes. Change their target_hilbert_idx to cluster around a single spatial point. Adjust their time_offset values to ensure simultaneous arrival, accounting for the wave velocity $c$ and the geodesic distance.
+
+### Fitness Function Specification
+
+The fitness function $F$ guides the evolution of the attacks. Unlike standard optimization where we minimize error, here we **maximize instability**. The function rewards attacks that violate energy conservation or produce numerical anomalies.
+
+$$F(\text{Chromosome}) = w_1 \cdot \max(|\Delta H|) + w_2 \cdot \max(|\Psi|) + w_3 \cdot N_{NaN} + w_4 \cdot T_{diverge}$$
+
+Where:
+
+- $\max(|\Delta H|)$: Maximum deviation from the Hamiltonian (Total Energy) observed during simulation. Primary metric of "breaking physics".
+- $\max(|\Psi|)$: Peak amplitude reached. We want to find waves that grow unbounded.
+- $N_{NaN}$: Number of NaN (Not a Number) values produced. If $N_{NaN} > 0$, fitness is set to infinity (maximal success for attacker).
+- $T_{diverge}$: Inverse time to divergence ($1/t_{crash}$). Faster crashes are considered "better" attacks.
+- $w_n$: Weights. Typically $w_1=1000$ (Energy conservation paramount), $w_2=10$, $w_3=10^6$ (NaN is the goal).
+
+### Genetic Algorithm Execution Lifecycle
+
+The Adversarial Dojo operates in a **sandboxed environment** to prevent actual system damage.
+
+1. **Initialization**: Population of 100 WaveChromosomes is generated. Some are random; others are seeded with known "dangerous patterns" from previous runs.
+
+2. **Simulation (The Dojo)**: Each chromosome is loaded into a **KVM Sandbox** running an isolated instance of the Physics Engine.
+
+3. **Oracle Monitoring**: The **Physics Oracle** monitors the simulation for 1000 ticks, calculating the Hamiltonian $H$ at every step.
+
+4. **Fitness Evaluation**: The fitness $F$ is computed based on the telemetry from the Oracle.
+
+5. **Selection**: **Tournament Selection** (size = 4) selects parents for the next generation.
+
+6. **Reproduction**:
+   - **Crossover**: Two-point crossover splices the "rhythm" of one attack with the "harmonic signature" of another.
+   - **Mutation**: The physics-aware operators (Mirror, Hunter, Hammer, Lens) are applied with probability $P_{mut} = 0.2$.
+
+7. **Elitism**: The top 5 attacks are preserved unchanged to ensure monotonically increasing lethality.
+
+8. **Convergence**: The loop terminates if $F > F_{critical}$ (System Broken) or after 100 generations (System Robust).
+
+### Implementation Strategy: AdversarialMutator
+
+```cpp
+void AdversarialMutator::mutate(WaveChromosome& chromo) {
+   std::uniform_real_distribution<float> dist(0.0f, 1.0f);
+
+   for (auto& gene : chromo.sequence) {
+       // High mutation rate (5%) to encourage exploration of phase space
+       if (dist(rng_) < 0.05f) {
+           int op = rand() % 4;
+           switch(op) {
+               case 0: // Phase Conjugation
+                   // Flip phase by PI to create destructive interference
+                   gene.phase = std::fmod(gene.phase + std::numbers::pi_v<float>,
+                                        2.0f * std::numbers::pi_v<float>);
+                   break;
+               case 1: // Resonant Drift
+                   // Nudge frequency towards Golden Ratio harmonics
+                   drift_to_golden_ratio(gene);
+                   break;
+               case 2: // Amplitude Spike
+                   // Test non-linear saturation
+                   gene.magnitude *= (1.5f + dist(rng_) * 2.0f);
+                   break;
+               case 3: // Spatial Shift
+                   // Random walk on Hilbert curve to find weak metric regions
+                   gene.target_hilbert_idx = mutate_hilbert_index(gene.target_hilbert_idx);
+                   break;
+           }
+       }
+   }
+}
+```
+
+This GA ensures that the Nikola system is constantly subjected to "stress tests" that are mathematically targeted at its theoretical weaknesses, ensuring that the deployed physics kernel is resilient against even the most sophisticated resonant attacks.
+
+### Integration with KVM Executor
+
+The Adversarial Dojo leverages the KVM Executor infrastructure:
+
+1. **Sandboxed Execution**: Each chromosome test runs in an isolated VM with full system snapshot
+2. **Resource Limits**: Dojo VMs have strict CPU/memory limits (1 CPU core, 2GB RAM)
+3. **Timeout Protection**: Tests automatically terminate after 10 seconds (10,000 physics ticks)
+4. **Physics Oracle Integration**: Oracle telemetry extracted via secure guest channel
+5. **Automated SCRAM**: If fitness exceeds critical threshold, vulnerability report generated
+
+### Operational Integration
+
+**Trigger Conditions**:
+- Run during idle periods (Boredom > 0.7)
+- Automated nightly regression testing
+- After any Physics Engine code modifications
+- On-demand via operator command
+
+**Success Criteria**:
+- No crashes after 100 generations: System considered robust
+- $\max(|\Delta H|) < 0.001\%$: Energy conservation verified
+- $\max(|\Psi|) < 4.5$: Nonlinear saturation working correctly
+- $N_{NaN} = 0$: No numeric overflow
+
+### Implementation Status
+
+- **Status**: SPECIFICATION COMPLETE
+- **Integration**: KVM Executor sandboxing + Physics Oracle telemetry
+- **Population**: 100 chromosomes (random + seeded dangerous patterns)
+- **Operators**: 4 physics-aware mutations (Mirror, Hunter, Hammer, Lens)
+- **Fitness**: Energy violation + amplitude + NaN count + divergence time
+- **Convergence**: 100 generations or F > F_critical
+
+### Cross-References
+
+- [KVM Executor Sandbox](./04_executor_kvm.md)
+- [Physics Oracle](../02_foundations/02_wave_interference_physics.md)
+- [Symplectic Integrator](../02_foundations/02_wave_interference_physics.md)
+- [Golden Ratio Emitters](../07_multimodal/01_cymatic_transduction.md)
+- [Balanced Nonary Saturation](../02_foundations/03_balanced_nonary_logic.md)
+- [Boredom Drive](../05_autonomous_systems/01_computational_neurochemistry.md) - GAP-036
+
+---
+
+________________
 10. CONCLUSION
 This specification delivers a robust, implementation-ready blueprint for the Nikola Model Executor. By moving to a Hybrid Deployment Architecture, we resolve the critical stability issues of nested virtualization. By implementing the Secure Guest Channel and IOGuard, we inoculate the host against the inevitable attempts by the cognitive core (whether accidental or adversarial) to breach its containment. The Permission Model provides the granular control necessary to allow powerful self-improvement while adhering to strict thermodynamic and safety constraints. The provided C++23 implementations for the ZeroMQ spine, secure channel, and task scheduler provide a direct path to code realization.
 Status: APPROVED for Code Generation.

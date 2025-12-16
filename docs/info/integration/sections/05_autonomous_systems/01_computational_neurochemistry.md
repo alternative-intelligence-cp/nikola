@@ -833,6 +833,214 @@ namespace nikola::feedback {
 
 ---
 
+## Boredom Singularity k Parameter Calibration (GAP-036)
+
+**SOURCE**: Gemini Deep Research Round 2 - Advanced Cognitive Dynamics Report
+**INTEGRATION DATE**: 2025-12-15
+**GAP ID**: GAP-036
+**PRIORITY**: CRITICAL
+**STATUS**: SPECIFICATION COMPLETE
+
+### Problem Analysis: The Thermodynamics of Curiosity
+
+The Nikola Model implements autonomous agency through a set of intrinsic drives, the most critical of which is **"Boredom"** ($B(t)$). Boredom acts as a **homeostatic regulator for entropy**. When the system's internal state complexity (Entropy) remains static for too long, Boredom accumulates. When $B(t)$ exceeds a threshold, it triggers a "Curiosity Interruption"—the system forcibly context-switches to explore new regions of the manifold or query external tools.
+
+The accumulation of Boredom is governed by a **sigmoidal function**. The parameter $k$ determines the slope (sensitivity) of this accumulation.
+
+**Risks**:
+
+- **Risk of High $k$**: If accumulation is too fast, the system becomes "fidgety" (ADHD-like behavior), interrupting tasks before they can be completed.
+- **Risk of Low $k$**: If accumulation is too slow, the system falls into "Catatonia," stagnating in local minima and repeating loops without seeking new inputs. This mirrors the "Computational PTSD" failure mode.
+
+**Objective**: Calibrate $k$ such that the system triggers exploration roughly every **10 minutes (600 seconds)** during idle periods, assuming a starting boredom of 0.1 and a trigger threshold of 0.85.
+
+### Mathematical Derivation
+
+The Boredom accumulation model is defined as:
+
+$$B(t) = \frac{1}{1 + e^{-k(t - t_0 - T_{half})}}$$
+
+Where:
+
+- $t$: Current time (seconds)
+- $t_0$: Time of last novelty event
+- $T_{half}$: The time offset where $B=0.5$ (inflection point)
+- $k$: The sensitivity parameter
+
+We establish two boundary conditions to solve for the two unknowns ($k, T_{half}$):
+
+1. **Initial Condition**: At $\Delta t = 0$ (immediately after novelty), $B(0) \approx 0.1$
+2. **Trigger Condition**: At $\Delta t = 600$ (10 minutes), $B(600) \approx 0.85$
+
+#### Step 1: Solve for $k \cdot T_{half}$ at $t=0$
+
+$$0.1 = \frac{1}{1 + e^{-k(0 - T_{half})}} \implies 1 + e^{k T_{half}} = 10 \implies e^{k T_{half}} = 9$$
+
+$$k T_{half} = \ln(9) \approx 2.197$$
+
+#### Step 2: Solve for $k$ at $t=600$
+
+$$0.85 = \frac{1}{1 + e^{-k(600 - T_{half})}} \implies 1 + e^{-k(600 - T_{half})} = \frac{1}{0.85} \approx 1.176$$
+
+$$e^{-k(600 - T_{half})} \approx 0.176$$
+
+$$-k(600 - T_{half}) = \ln(0.176) \approx -1.737$$
+
+$$k(600 - T_{half}) = 1.737$$
+
+$$600k - k T_{half} = 1.737$$
+
+Substitute $k T_{half} = 2.197$ from Step 1:
+
+$$600k - 2.197 = 1.737$$
+
+$$600k = 3.934$$
+
+$$k \approx \frac{3.934}{600} \approx 0.00656$$
+
+#### Step 3: Solve for $T_{half}$
+
+$$T_{half} = \frac{2.197}{0.00656} \approx 335 \text{ seconds}$$
+
+### Result: Calibrated Parameters
+
+The calibrated parameters for a 10-minute exploration cycle are:
+
+- **$k = 0.00656$**
+- **$T_{half} = 335.0$ seconds**
+
+### Sensitivity Analysis and Simulation
+
+We must analyze how sensitive this behavior is to parameter perturbations. Small changes in $k$ can lead to drastic changes in behavior due to the exponential nature of the sigmoid.
+
+| Scenario | k Value | T_half (derived) | Trigger Time (B=0.85) | Behavioral Outcome |
+|----------|---------|------------------|------------------------|-------------------|
+| **Calibrated** | 0.0065 | 335s | 600s (10 min) | Optimal Pacing |
+| **High Sensitivity** | 0.0200 | 110s | ~200s (3.3 min) | Thrashing: System interrupts training cycles prematurely |
+| **Low Sensitivity** | 0.0010 | 2200s | ~4000s (66 min) | Stagnation: System risks "Mode Collapse" and repetitive loops |
+| **Noise (+10%)** | 0.0072 | 305s | ~545s (9.1 min) | Stable: Within acceptable variance |
+
+**Conclusion**: The parameter range **$k \in [0.005, 0.008]$** provides a stable "Goldilocks Zone." Outside this range, the system exhibits pathological behavior. The calibrated value sits comfortably in the center of this stability region.
+
+### Hardware-Dependent Tuning
+
+The derivation above assumes $t$ is wall-clock time in seconds. However, the Nikola Model runs on a discrete physics tick (1 ms). The accumulation logic is embedded in the physics kernel.
+
+If the simulation runs faster or slower than real-time (dependent on GPU throughput), using wall-clock time could desynchronize the boredom drive from the cognitive subjective experience. A system running on an A100 (fast) experiences more "thoughts" per second than one on an RTX 3090. If boredom is tied to wall clock, the A100 system will "think" millions of times more before getting bored, leading to repetitive loops.
+
+**Correction**: Boredom must accumulate based on **Subjective Time (Ticks)**.
+
+$$k_{tick} = \frac{k_{sec}}{\text{TickRate}_{Hz}} = \frac{0.00656}{1000} = 6.56 \times 10^{-6}$$
+
+#### GPU-Specific Calibration Table
+
+| Hardware | Physics Loop Rate | k_tick Value | Rationale |
+|----------|-------------------|--------------|-----------|
+| **Standard (RTX 4090)** | 1000 Hz | $6.56 \times 10^{-6}$ | Baseline real-time operation |
+| **Datacenter (A100)** | ~2500 Hz | $2.62 \times 10^{-6}$ | Scaled down to prevent premature boredom relative to thought volume |
+| **Debug Mode (CPU)** | ~100 Hz | $6.56 \times 10^{-5}$ | Scaled up so developers don't wait hours for events |
+
+### BoredomEngine Implementation
+
+```cpp
+/**
+* @file src/autonomy/boredom.cpp
+* @brief Calibrated Boredom Accumulator.
+* Implements sigmoidal drive based on subjective physics ticks.
+*/
+
+class BoredomEngine {
+private:
+   // Calibrated for 10-minute curiosity interval at 1000Hz
+   static constexpr double K_PARAM = 6.56e-6;
+   static constexpr double T_HALF = 335000.0; // Ticks (335 seconds * 1000)
+
+   // Tick count of the last significant entropy spike
+   uint64_t last_novelty_tick = 0;
+
+public:
+   /**
+    * @brief Calculates current boredom level [0.0 - 1.0]
+    * @param current_tick The current physics tick from the Orchestrator
+    */
+   double calculate_boredom(uint64_t current_tick) {
+       // Delta T in subjective time
+       double delta_t = static_cast<double>(current_tick - last_novelty_tick);
+
+       // Sigmoid function: 1 / (1 + e^-k(t - T_half))
+       double exponent = -K_PARAM * (delta_t - T_HALF);
+
+       // Optimization: Use fast_exp if available for performance
+       double boredom = 1.0 / (1.0 + std::exp(exponent));
+
+       return boredom;
+   }
+
+   /**
+    * @brief Resets or reduces boredom based on novel input.
+    * @param entropy_magnitude The Shannon entropy of the new input (0.0 - 1.0).
+    */
+   void register_novelty(double entropy_magnitude, uint64_t tick) {
+       // If novelty is high (e.g., new discovery), full reset.
+       if (entropy_magnitude > 0.5) {
+           last_novelty_tick = tick;
+       } else {
+           // Partial reset for minor novelty (prevents binary behavior).
+           // Moves 'last_novelty_tick' forward, effectively "buying time".
+           // Boost: 10,000 ticks (10s) per entropy unit.
+           double boost = entropy_magnitude * 10000.0;
+           last_novelty_tick += static_cast<uint64_t>(boost);
+
+           // Clamp to current time
+           if (last_novelty_tick > tick) last_novelty_tick = tick;
+       }
+   }
+};
+```
+
+### Operational Integration
+
+**Trigger Conditions**:
+- Boredom > 0.85 → Trigger curiosity interruption
+- Interruption actions:
+  - Query external tools (Tavily, Firecrawl, Gemini)
+  - Explore new manifold regions (random walk)
+  - Invoke Adversarial Dojo (stress testing during idle)
+
+**Novelty Detection**:
+- Shannon entropy of sensory input
+- Surprise (prediction error from Mamba-9D)
+- New concept minting events
+- Resonance index spikes
+
+**Feedback Loop**:
+- High novelty → Full boredom reset (last_novelty_tick = current_tick)
+- Moderate novelty → Partial reset (time boost)
+- Low novelty → Boredom continues to accumulate
+- This creates homeostatic regulation between exploration and exploitation
+
+### Implementation Status
+
+- **Status**: SPECIFICATION COMPLETE
+- **Calibrated Values**: k=0.00656 (wall-clock), k_tick=6.56×10⁻⁶ (subjective time)
+- **Stability Range**: k ∈ [0.005, 0.008] (Goldilocks Zone)
+- **Trigger Threshold**: B(t) > 0.85
+- **Exploration Interval**: 10 minutes (600 seconds) during idle
+- **Hardware Adaptation**: GPU-specific k_tick scaling for subjective time consistency
+- **Novelty Response**: Full reset (high entropy) or partial boost (moderate entropy)
+
+### Cross-References
+
+- [Boredom Drive](./01_computational_neurochemistry.md)
+- [Metabolic Controller](./01_computational_neurochemistry.md)
+- [Curiosity Mechanisms](./01_computational_neurochemistry.md)
+- [Adversarial Code Dojo](../04_infrastructure/04_executor_kvm.md) - GAP-035
+- [External Tool Agents](./03_ingestion_pipeline.md)
+- [Mamba-9D Prediction Error](../03_cognitive_systems/02_mamba_9d_ssm.md)
+- [Shannon Entropy](../03_cognitive_systems/04_memory_data_systems.md)
+
+---
+
 	The implementation of these structures within the src/autonomy/ directory is now the primary objective for the Engineering Team in Phase 3.
 Status: APPROVED FOR IMMEDIATE IMPLEMENTATION.
 Works cited
