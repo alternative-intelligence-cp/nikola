@@ -2430,8 +2430,8 @@ Scenario: Same workflow with EndianSafeSerializer
 
 ### Cross-References
 
-- See [Section 12.3](../05_autonomous_systems/02_quantization.md#123-q9_0-format) for Q9_0 quantization format details
-- See [Section 5.2](../02_foundations/01_hilbert_curve.md#52-morton-encoding) for 64-bit Hilbert index serialization
+- See [Section 12.3](../02_foundations/03_balanced_nonary_logic.md#123-q9_0-format) for Q9_0 quantization format details
+- See [Section 5.2](../02_foundations/01_9d_toroidal_geometry.md#52-morton-encoding) for 64-bit Hilbert index serialization
 - See [Section 19.1](#191-lsm-tree-architecture) for SSTable file format specification
 - See [Section 20.4](../06_persistence/02_gguf_export.md#204-metadata-encoding) for GGUF cross-platform considerations
 

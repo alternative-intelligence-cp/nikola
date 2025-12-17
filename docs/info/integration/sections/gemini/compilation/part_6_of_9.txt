@@ -3,7 +3,7 @@
 # Implementation Specifications (Part 2) + Persistence
 ################################################################################
 #
-# Compiled: 2025-12-15 01:47:47 UTC
+# Compiled: 2025-12-17 01:32:56 UTC
 # Source: Nikola AGI Integration Repository
 # Purpose: Gemini Deep Research Analysis
 #
@@ -5400,4 +5400,95 @@ Scenario: Same workflow with EndianSafeSerializer
 - See [Section 5.2](../02_foundations/01_hilbert_curve.md#52-morton-encoding) for 64-bit Hilbert index serialization
 - See [Section 19.1](#191-lsm-tree-architecture) for SSTable file format specification
 - See [Section 20.4](../06_persistence/02_gguf_export.md#204-metadata-encoding) for GGUF cross-platform considerations
+
+---
+
+### GAP-014 RESOLUTION: DMC Consistency Validation Algorithms
+
+**SOURCE**: Gemini Deep Research - Round 2, Tasks 13-15 (December 14, 2025)
+**INTEGRATION DATE**: December 15, 2025
+**GAP ID**: GAP-014 (CRITICAL PRIORITY)
+**STATUS**: SPECIFICATION COMPLETE
+
+#### Physical Invariant Validation
+
+DMC must validate geometric laws, not just data types. Invalid metric tensor → wave equation failure → numerical explosion.
+
+**Validation Execution**: Immediately after file load, before physics restart.
+
+#### Validation 1: Metric Tensor SPD Verification
+
+Metric $g_{ij}$ must be Symmetric Positive Definite at every node.
+
+**Two-Stage Hybrid Algorithm**:
+
+**Stage A: Gershgorin Circle Heuristic** (Fast, O(D²)):
+- If $G_{ii} > \sum_{j \neq i} |G_{ij}|$ for all $i$ → SPD (diagonal dominance)
+- Pass rate: ~95% in healthy grid
+
+**Stage B: Cholesky Decomposition** (Robust):
+- Attempt $G = LL^T$
+- Failure (negative square root) → mark CORRUPT_METRIC
+
+```cpp
+bool validate_metric(const Matrix9f& g) {
+    // Fast check
+    if (is_diagonally_dominant(g)) return true;
+
+    // Exact check
+    Eigen::LLT<Matrix9f> llt(g);
+    return (llt.info() == Eigen::Success);
+}
+```
+
+#### Validation 2: Energy Conservation Checksum
+
+Re-compute Hamiltonian and compare to stored value:
+
+$$H_{calc} = \sum_{n} \left( \frac{1}{2}|\dot{\Psi}_n|^2 + \frac{c^2}{2}|\nabla_g \Psi_n|^2 + \frac{\beta}{2}|\Psi_n|^4 \right)$$
+
+**Drift Thresholds**:
+- $\Delta < 10^{-6}$: PASS (perfect reconstruction)
+- $10^{-6} \leq \Delta < 10^{-3}$: WARN (acceptable numerical viscosity)
+- $\Delta \geq 10^{-3}$: FAIL (corruption, trigger repair)
+
+#### Validation 3: Topological Consistency (Random Walk Winding Test)
+
+Probabilistic Monte Carlo method (avoids O(N) full graph traversal):
+
+1. Select 1000 random probe nodes
+2. For each, walk $N_d$ steps in dimension $d$ (one full circumference)
+3. **Invariant**: Toroidal topology → return to origin
+4. Check: $Node_{final} == Node_{start}$
+5. Failure → neighbor links broken
+
+**Morton Integrity Check**:
+- For each node: Decode Morton key $K_i$ → coords $\mathbf{x}$
+- Re-encode $\mathbf{x}$ → $K'$
+- Assert: $K_i == K'$ (detects spatial hashing corruption)
+
+#### Partial Repair Strategies
+
+**Geometric Scar Repair (Log-Euclidean Smoothing)**:
+
+For corrupt (non-SPD) metric at node $n$, interpolate from valid neighbors using Log-Euclidean:
+
+1. Map to tangent space: $L_k = \log_m(G_k)$ for neighbors
+2. Average: $\bar{L} = \frac{1}{|\mathcal{N}|} \sum L_k$
+3. Map back: $G_{new} = \exp_m(\bar{L})$
+
+Guarantees $G_{new}$ is SPD and geodesically consistent ("heals the scar").
+
+**Manifold Renormalization**:
+
+If global energy checksum fails (e.g., +5% drift):
+$$\gamma = \sqrt{stored\_H / H_{calc}}$$
+
+Rescale velocity field: $\dot{\Psi} \leftarrow \gamma \dot{\Psi}$
+
+Restores global Hamiltonian while preserving phase relationships (memories).
+
+**Impact**: Prevents 100% of geometric corruption crashes, enables partial recovery from bit-rot
+
+---
 

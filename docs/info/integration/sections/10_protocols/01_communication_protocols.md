@@ -588,7 +588,7 @@ void ShadowSpine::promote_candidate_if_ready() {
 
 ### 10.3.5 Integration with CSVP
 
-**Cross-Reference:** See [Section 8.4: Safety Evolution (WP4)](../08_remediation/04_safety_evolution_wp4.md)
+**Cross-Reference:** See [Section 8.4: Safety Evolution (WP4)](../06_implementation_specifications/08_critical_remediations.md)
 
 Before promoting candidate:
 1. Run Code Safety Verification Protocol (CSVP)

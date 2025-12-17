@@ -3,7 +3,7 @@
 # Persistence + Multimodal
 ################################################################################
 #
-# Compiled: 2025-12-15 01:47:47 UTC
+# Compiled: 2025-12-17 01:32:56 UTC
 # Source: Nikola AGI Integration Repository
 # Purpose: Gemini Deep Research Analysis
 #
@@ -1844,6 +1844,305 @@ Without the attention mask, the GGUF export is **technically valid but functiona
 - **Neurogenesis**: [03_cognitive_systems/02_mamba_9d_ssm.md](../03_cognitive_systems/02_mamba_9d_ssm.md) - Dynamic node creation
 - **Self-Attention**: Standard transformer attention mechanism (external reference)
 - **llama.cpp**: [https://github.com/ggerganov/llama.cpp](https://github.com/ggerganov/llama.cpp) - Target inference runner
+
+---
+
+### GAP-015 RESOLUTION: GGUF Sparse Attention Mask Encoding for Vacuum Suppression
+
+**SOURCE**: Gemini Deep Research - Round 2, Tasks 13-15 (December 14, 2025)
+**INTEGRATION DATE**: December 15, 2025
+**GAP ID**: GAP-015 (HIGH PRIORITY)
+**STATUS**: SPECIFICATION COMPLETE
+
+#### The Vacuum Hallucination Problem
+
+Nikola stores info in sparse 9D grid (~1% occupancy). Naive flattening to dense tensor pads with zeros. In Self-Attention $\text{Softmax}(QK^T)$, zero-vectors still participate in denominator → dilute attention probability mass → system "hallucinates" vacuum interactions → perplexity degrades by orders of magnitude.
+
+**Solution**: Sparse Attention Mask that mathematically erases vacuum nodes from llama.cpp inference.
+
+#### Bit-Packed Mask Format
+
+**New Tensor**: `nikola.attention_mask`
+- **Type**: `uint8` (8 nodes per byte)
+- **Semantics**: 1 = Active (valid memory), 0 = Vacuum (padding)
+- **Layout**: Linearized 1D matching Hilbert-sorted weights
+
+**Memory Efficiency**:
+For $14.3M$ nodes (balanced nonary $3^{15}$):
+- Mask Size = $14.3M$ bits ≈ **1.79 MB**
+- Weight tensor ≈ 7 GB
+- **Overhead**: 0.025% (negligible)
+
+#### Q9_0 Quantization for >10:1 Compression
+
+**Q9_0 Format**:
+- Value range: $\{-4, -3, \dots, 0, \dots, +3, +4\}$ (9 states)
+- Information: $\log_2(9) \approx 3.17$ bits
+- Packing: 4 bits/weight (nibbles)
+- Block: 32 weights + 1 float32 scale = 20 bytes/block
+
+**Compression Calculation**:
+- Source (FP32): $32 \times 32 = 1024$ bits
+- Target (Q9_0): $32 \times 4 + 32 = 160$ bits
+- **Base Ratio**: 6.4:1
+
+**With Sparsity** (90% vacuum, store only active + mask):
+- Dense FP32: 100 units
+- Sparse Q9_0: $10 \times (1/6.4) + \text{mask} \approx 1.6$ units
+- **Effective Ratio**: **62.5:1** (exceeds >10:1 requirement)
+
+#### llama.cpp Integration via Mask Bias
+
+**Mask Reconstruction** (CUDA kernel at model load):
+
+Expand bit-packed mask → additive bias tensor $M$:
+
+$$M_i = \begin{cases} 0.0 & \text{if bit } i = 1 \\ -10{,}000.0 & \text{if bit } i = 0 \end{cases}$$
+
+**Attention Computation**:
+
+$$\text{Attention}(Q,K) = \text{Softmax}\left( \frac{QK^T}{\sqrt{d}} + M \right)$$
+
+For vacuum: logit becomes $x - 10{,}000$, so $\exp(-10{,}000) \approx 0$ → vacuum contributes zero probability (mathematically invisible).
+
+#### llama.cpp Integration Steps
+
+1. **Header**: Add `GGML_TYPE_Q9_0` to `ggml.h`
+2. **De-quantizer**: Implement `dequantize_row_q9_0` in `ggml-quants.c` (base-9 unpacking)
+3. **Graph**: In `build_nikola()`, insert `ggml_add` node summing `KQ_pos + attention_mask`
+4. **Architecture**: Register `LLM_ARCH_NIKOLA`
+
+#### Validation Test Suite
+
+**Test 1: Mask Correctness**
+- Input: Synthetic grid with active nodes at indices {0, 10, 100}
+- Assert: Bits 0, 10, 100 are 1; all others 0
+
+**Test 2: Hallucination Check (KL Divergence)**
+- Without mask: $D_{KL}(P_{cpp} || P_{gguf}) > 5.0$ (high divergence)
+- With mask: $D_{KL}(P_{cpp} || P_{gguf}) < 0.1$ (distributions match)
+- **Proof**: Vacuum silenced
+
+**Test 3: Compression Ratio**
+- Requirement: Ratio > 10.0
+- Example: 1M active in 14M grid
+  - Dense FP32: $14M \times 4B = 56MB$
+  - Nikola GGUF: $1M \times 0.5B + 1.7MB \approx 2.2MB$
+  - **Ratio: 25:1** ✓
+
+**Impact**: Enables llama.cpp inference with <0.1 KL divergence, 62.5:1 compression
+
+---
+
+## GAP-023: DMC ↔ GGUF Bidirectional Conversion Validation
+
+**SOURCE**: Gemini Deep Research Round 2, Batch 22-24
+**INTEGRATION DATE**: December 15, 2025
+**GAP ID**: GAP-023 (TASK-023)
+**PRIORITY**: CRITICAL
+**STATUS**: FABRICATION-READY SPECIFICATION
+
+### Problem Statement: The Projection Problem
+
+**DMC Format** (.nik): Lossless native representation - direct serialization of sparse 9D geometry:
+- Metric tensor $g_{ij}$
+- Complex wavefunction $\Psi$
+- Topological metadata (active nodes, connectivity)
+
+**GGUF Format**: Dense tensors for llama.cpp/Ollama interoperability - designed for static neural network weights.
+
+**Conversion is NOT simple reformatting** - it's **Topological Projection**: Mapping sparse, high-dimensional Riemannian manifold onto linearized, dense vector space.
+
+### Three Sources of Potential Corruption
+
+1. **Topological Decoherence**: Loss of neighbor relationships during 9D → 1D linearization
+2. **Spectral Distortion**: Amplitude/phase errors from float → Q9_0 quantization
+3. **Vacuum Noise**: Artifacts from zero-padding sparse regions in dense tensor
+
+### Conversion Mechanics and Error Sources
+
+#### Linearization via Hilbert Curves
+
+**Hilbert Curve** (Space-Filling): Maps 9D coordinate $(x_1, \dots, x_9)$ to unique 1D index $H$.
+
+**Why Hilbert over Morton (Z-order)**: Better preserves locality - points close in 1D highly likely close in 9D.
+
+**Source of Error**: Discontinuities mathematically inevitable. Two 9D-adjacent nodes might be distant in 1D. If inference runner relies on 1D proximity for attention, topological information lost.
+
+**Validation Requirement**: Verify reconstruction from 1D GGUF correctly restores original neighborhood graph (adjacency matrix).
+
+#### Q9_0 Quantization (Balanced Nonary)
+
+Packs balanced nonary weights $\{-4, \dots, +4\}$ into binary GGUF.
+
+**Mechanics**:
+1. Normalize float amplitude $A$ to nonary limits range
+2. Quantize to nearest integer in $\{-4, \dots, +4\}$
+3. Pack two values into uint8_t (high/low nibble)
+
+**Source of Error**: Scale factor normalizing diverse amplitudes introduces quantization noise:
+- High-amplitude soliton peaks → clipped
+- Low-amplitude background → rounded to zero
+
+**Validation Requirement**: Measure Energy Drift: $\Delta E = |E_{original} - E_{reconstructed}|$
+
+#### Vacuum Padding and Attention Masking
+
+GGUF requires dense tensors (fixed dimensions). Nikola grid sparse (1-5% occupancy). Fill gaps with vacuum nodes (zero amplitude).
+
+**Source of Error**: Unmasked vacuum dilutes softmax attention - even zero amplitude occupies position, contributes to denominator, steals probability mass from valid thoughts.
+
+**Validation Requirement**: Verify attention_mask tensor - every vacuum → 0, every active → 1.
+
+### Round-Trip Fidelity Standard
+
+Cycle **DMC → GGUF → DMC** must satisfy bounds. Failure = "lobotomized" or "hallucinating" model.
+
+#### Information Loss Limits
+
+**1. Energy Conservation**
+
+Total Hamiltonian $H$ (sum of squared amplitudes) preserved within 0.1%:
+
+$$\frac{|H_{original} - H_{roundtrip}|}{H_{original}} < 0.001$$
+
+**Rationale**: Energy = memory strength. Significant drift = memory corruption (amnesia or epilepsy).
+
+**2. Spectral Fidelity (Pearson Correlation)**
+
+Correlation between amplitude vectors exceeds 0.999:
+
+$$\rho(\vec{A}_{orig}, \vec{A}_{recon}) > 0.999$$
+
+**Rationale**: Preserves relative importance of concepts. Even if absolute energy drifts slightly, "shape" of mind remains identical.
+
+**3. Topological Isomorphism**
+
+Active node sets and neighbor lists identical:
+
+$$G_{orig} \cong G_{recon}$$
+
+**Metric**: Jaccard Index of active node sets exactly 1.0 (after filtering vacuum noise).
+
+**Rationale**: Lost node or active vacuum alters manifold topology, potentially breaking geodesic paths.
+
+**4. Phase Coherence**
+
+Phase angles $\theta$ preserved within $\pi/100$ radians:
+
+$$\max |\theta_{orig} - \theta_{recon}| < 0.03 \text{ rad}$$
+
+**Rationale**: Phase encodes semantic relationships and timing. Drift destroys interference patterns constituting reasoning.
+
+### Automated Validation Test Suite
+
+Integrated into CI/CD pipeline - runs automatically on new checkpoint exports.
+
+```cpp
+// include/nikola/validation/conversion_validator.hpp
+
+class ConversionValidator {
+public:
+    struct Report {
+        double energy_drift;
+        double spectral_correlation;
+        double max_phase_error;
+        bool topology_match;
+        bool passed;
+    };
+
+    Report validate_round_trip(const std::string& dmc_path) {
+        // 1. Load Original State
+        TorusManifold original = load_dmc(dmc_path);
+
+        // 2. Export to GGUF (Operation Under Test)
+        std::string gguf_path = "temp_validation.gguf";
+        GGUFExporter exporter;
+        exporter.export_manifold(original, gguf_path, Quantization::Q9_0);
+
+        // 3. Import back from GGUF
+        GGUFImporter importer;
+        TorusManifold reconstructed = importer.import_manifold(gguf_path);
+
+        // 4. Compare Metrics
+        Report report;
+
+        // Energy Check
+        double E_orig = original.total_energy();
+        double E_recon = reconstructed.total_energy();
+        report.energy_drift = std::abs(E_orig - E_recon) / E_orig;
+
+        // Spectral Correlation
+        report.spectral_correlation = calculate_pearson(
+            original.amplitudes(), reconstructed.amplitudes()
+        );
+
+        // Phase Error
+        report.max_phase_error = calculate_max_phase_diff(original, reconstructed);
+
+        // Topology Check (Jaccard Index)
+        std::set<uint64_t> nodes_orig = original.active_node_indices();
+        std::set<uint64_t> nodes_recon = reconstructed.active_node_indices();
+        report.topology_match = (nodes_orig == nodes_recon);
+
+        // 5. Final Verdict
+        report.passed = (report.energy_drift < 0.001) &&
+                        (report.spectral_correlation > 0.999) &&
+                        (report.max_phase_error < 0.03) &&
+                        report.topology_match;
+
+        return report;
+    }
+};
+```
+
+### Compatibility Matrix and Versioning
+
+| DMC Version | GGUF Version | Q9_0 Support | Attention Mask | Status | Action |
+|-------------|--------------|--------------|----------------|--------|--------|
+| v0.0.3 | v1 (Legacy) | No (FP16 only) | No | Deprecated | Trigger Migration |
+| v0.0.4 | v2 (Current) | Yes | Required | Active | Standard Ops |
+| v0.0.5+ | v3 (Future) | Yes | Required | Planned | Forward Comp. |
+
+#### Version Migration Procedure
+
+1. **Detection**: GGUFImporter reads `general.architecture` from file header. If detects "nikola_v1" → trigger legacy migration
+2. **Migration**: Legacy path recalculates attention_mask based on sparse/dense distribution (v1 files lack mask). Assumes FP16 weights.
+3. **Upgrading**: Next "Nap" cycle or save event → auto-resave in v0.0.4 DMC format, ensuring subsequent exports utilize Q9_0 and masking
+
+### Performance Characteristics
+
+**Validation Metrics**:
+- **Energy Drift**: <0.1% (0.001 threshold)
+- **Spectral Correlation**: >99.9% (0.999 threshold)
+- **Phase Error**: <0.03 radians (<π/100)
+- **Topology Match**: 100% (Jaccard Index = 1.0)
+
+**Quantization Impact**:
+- **Q9_0 Precision**: 4 bits/weight (9 states: -4 to +4)
+- **Block Size**: 32 weights + 1 FP32 scale = 20 bytes/block
+- **Compression**: 6.4:1 base, 62.5:1 with 90% sparsity
+
+**CI/CD Integration**:
+- Auto-runs on checkpoint export
+- Validates round-trip before deployment
+- Prevents "lobotomized" or hallucinating exports
+
+### Integration Points
+
+1. **DMC Persistence**: Load/save .nik format (sparse 9D geometry)
+2. **GGUF Exporter**: Hilbert linearization, Q9_0 quantization, attention mask
+3. **GGUF Importer**: Reconstruct 9D manifold from 1D tensor
+4. **CI/CD Pipeline**: ConversionValidator automated testing
+5. **Version Migration**: Legacy v1 → v2 upgrade path
+
+### Cross-References
+
+- [DMC Persistence Format](./01_dmc_persistence.md)
+- [GGUF Export Specification](./02_gguf_interoperability.md)
+- [Q9_0 Quantization](../02_foundations/03_balanced_nonary_logic.md)
+- [Hilbert Curve Encoding](../02_foundations/01_9d_toroidal_geometry.md)
+- [Attention Mask Generation](./02_gguf_interoperability.md) - GAP-015
 
 ---
 
@@ -7132,6 +7431,103 @@ void NapOrchestrator::save_checkpoint() {
 
 ---
 
+### GAP-013 RESOLUTION: Transactional Metabolic Scheduling with RAII Locks
+
+**SOURCE**: Gemini Deep Research - Round 2, Tasks 13-15 (December 14, 2025)
+**INTEGRATION DATE**: December 15, 2025
+**GAP ID**: GAP-013 (CRITICAL PRIORITY)
+**STATUS**: SPECIFICATION COMPLETE
+
+#### The Thermodynamic Race Condition
+
+Naive metabolic controller triggers Nap immediately when ATP < threshold. Problem: Mid-operation interrupts corrupt transactional state (half-parsed PDF, partial gradient update, geometric tears in manifold).
+
+**Solution**: RAII-based transactional locks treating cognitive tasks as ACID database transactions within metabolic budget.
+
+#### Three-Tier Energy Model
+
+| Zone | ATP Level | ATP % | State | Constraints |
+|------|-----------|-------|-------|-------------|
+| I: Normal | >1,500 | >15% | Active Waking | Unrestricted task initiation |
+| II: Soft Limit | 500-1,500 | 5-15% | Metabolic Warning | High-cost tasks rejected, running tasks continue |
+| III: Hard Limit | ≤500 | ≤5% | Critical Exhaustion | Forced Nap, grace period for active locks |
+
+**Grace Period**: $T_{grace} = 5.0s$ (derived from $E_{hard}/\dot{E} = 500/100$)
+
+#### Pre-Flight Feasibility Check
+
+Before granting ScopedLock for $N$ units of work:
+$$E(t) - (N \cdot C_{est}(\tau)) > E_{critical\_reserve}$$
+
+**Lookahead Safety**: Prevents initiation of tasks that would trigger hard abort mid-execution.
+
+#### RAII Implementation
+
+```cpp
+class ScopedLock {
+    MetabolicScheduler& scheduler;
+    bool is_locked;
+    float estimated_cost;
+
+public:
+    explicit ScopedLock(MetabolicScheduler& s, float cost_est = 0.0f)
+        : scheduler(s), is_locked(false), estimated_cost(cost_est) {
+
+        // Pre-flight check
+        float current_atp = scheduler.get_atp_level();
+        if (current_atp - estimated_cost < scheduler.CRITICAL_RESERVE) {
+            throw MetabolicExhaustion("Insufficient ATP");
+        }
+
+        scheduler.active_locks.fetch_add(1, std::memory_order_release);
+        is_locked = true;
+    }
+
+    ~ScopedLock() {
+        if (is_locked) release();
+    }
+
+    void release() {
+        if (!is_locked) return;
+
+        // Apply overdraft penalty if dipped into Hard Limit
+        if (scheduler.get_atp_level() < scheduler.HARD_THRESHOLD) {
+            scheduler.apply_overdraft_penalty();
+        }
+
+        scheduler.active_locks.fetch_sub(1, std::memory_order_release);
+        scheduler.lock_release_cv.notify_all();
+        is_locked = false;
+    }
+};
+```
+
+#### Incremental Checkpoint via Write-Ahead Log (WAL)
+
+Long-running tasks become re-entrant via micro-transactions:
+1. Process chunk of work (cost ≈100 ATP)
+2. Check `scheduler.should_yield()`
+3. If true, commit state to WAL (dirty write, no fsync)
+4. Release lock, allow Nap
+5. On wake, read WAL, resume from last chunk
+
+#### Emergency Abort Protocol
+
+If $E(t) \leq E_{hard}$ and active_locks > 0 for >5s:
+1. Set `panic_mode = true` (all physics loops break)
+2. Dirty dump TorusGridSoA to crash.nik
+3. Enter Coma state (1hr recharge)
+
+#### Overdraft Penalty
+
+$$E_{max\_next} = E_{max} \times (1 - 0.1)$$
+
+System wakes with 10% less capacity → forces conservative planning.
+
+**Impact**: 0% corruption (vs 12% naive), +2MB/nap (vs +150MB leaks), infinite uptime
+
+---
+
 
 ================================================================================
 SECTION: 7.1 Cymatic Transduction
@@ -7952,13 +8348,13 @@ The measured performance improvements (96% accuracy, 0.91 coherence) validate th
 
 **Implementation Status**: ✅ **COMPLETE AND VALIDATED**
 
-**Integration Target**: [nikola/src/multimodal/sensory_cortex.hpp](../../03_cognitive_systems/02_mamba_9d_ssm.md#24.6.1)
+**Integration Target**: [nikola/src/multimodal/sensory_cortex.hpp](../03_cognitive_systems/02_mamba_9d_ssm.md#24.6.1)
 
 **References**:
 - CF-05: Clock Domain Synchronization (Original Finding)
-- [02_mamba_9d_ssm.md](../../03_cognitive_systems/02_mamba_9d_ssm.md): Mamba-9D Sequential Processor
+- [02_mamba_9d_ssm.md](../03_cognitive_systems/02_mamba_9d_ssm.md): Mamba-9D Sequential Processor
 - [01_cymatic_transduction.md](01_cymatic_transduction.md): Visual-to-Wave Mapping
-- [UFIE Specification](../../02_foundations/01_unified_field.md): Core Physics Equations
+- [UFIE Specification](../02_foundations/02_wave_interference_physics.md): Core Physics Equations
 
 ## 24.7 Future Modalities
 
@@ -7966,6 +8362,171 @@ The measured performance improvements (96% accuracy, 0.91 coherence) validate th
 - **Haptic:** Pressure sensors → Amplitude modulation
 - **Olfactory:** Chemical sensor array → Frequency profiles
 - **Proprioceptive:** Joint angles → Spatial coordinate updates
+
+---
+
+## GAP-017: Cymatic Transduction Sampling Rate Specification
+
+**SOURCE**: Gemini Deep Research Round 2, Batch 16-18
+**INTEGRATION DATE**: December 15, 2025
+**GAP ID**: GAP-017 (TASK-017)
+**PRIORITY**: CRITICAL
+**STATUS**: FABRICATION-READY SPECIFICATION
+
+### Problem Statement
+
+The Cymatic Audio Transduction system must bridge external acoustic reality with Nikola's internal wave physics. Unlike standard DSP optimized for human hearing (20Hz–20kHz perceptual fidelity), Nikola requires **Physical Coupling** with 8 Golden Ratio harmonic emitters while maintaining **<10ms latency** for real-time cognitive response.
+
+### Emitter Frequency Specification
+
+8 emitters derived from Golden Ratio ($\phi \approx 1.618$) for ergodicity (prevents resonance lock-in):
+
+| Emitter | Formula | Frequency (Hz) | Cognitive Band | Function |
+|---------|---------|----------------|----------------|----------|
+| E1 | $\pi \cdot \phi^1$ | 5.083 | Delta | Metacognitive Timing |
+| E2 | $\pi \cdot \phi^2$ | 8.225 | Theta | Working Memory |
+| E3 | $\pi \cdot \phi^3$ | 13.308 | Alpha | Idle State / Relaxed Focus |
+| E4 | $\pi \cdot \phi^4$ | 21.532 | Beta | Active Processing |
+| E5 | $\pi \cdot \phi^5$ | 34.840 | Gamma (Low) | Feature Binding |
+| E6 | $\pi \cdot \phi^6$ | 56.371 | Gamma (High) | Memory Retrieval |
+| E7 | $\pi \cdot \phi^7$ | 91.209 | Ripple | Sharp Wave Ripples |
+| E8 | $\pi \cdot \phi^8$ | 147.576 | Fast Ripple | Error Correction / Precision |
+
+**Critical Requirement**: Signal processing must isolate energy at these specific frequencies. Energy outside these bands = entropy that destabilizes grid.
+
+### Sampling Rate Calculation
+
+#### Physics Engine Constraint
+
+Physics engine operates at **1ms timestep** (1000 Hz tick rate). Grid Nyquist limit:
+
+$$F_{Nyquist\_Grid} = \frac{F_{Physics}}{2} = \frac{1000 \text{ Hz}}{2} = 500 \text{ Hz}$$
+
+Direct injection of 48kHz audio into 1kHz simulation causes massive aliasing - high-frequency noise (e.g., 20kHz) folds into cognitive bands causing hallucinations.
+
+#### Multi-Rate Solution
+
+Distinguish between **Capture Rate** and **Injection Rate**:
+
+1. **Capture Rate**: **48,000 Hz** (hardware native)
+   - Necessary to push analog anti-aliasing filter of ADC far above cognitive bands
+   - Preserves phase linearity in low frequencies
+
+2. **Injection Rate**: **1,000 Hz** (locked to physics clock)
+   - Signal decimated to match physics tick
+
+**Minimum Sampling Rate Validation**:
+- Highest frequency of interest: E8 = 147.58 Hz
+- Nyquist requirement: $F_s > 2 \cdot 147.58 \approx 295 \text{ Hz}$
+- Target: Capture 3rd harmonic of E8: $3 \cdot 147.58 = 442.7 \text{ Hz}$
+- **1000 Hz injection rate supports this**: $500 \text{ Hz} > 442.7 \text{ Hz}$ ✓
+
+**Optimal Specification**:
+- Hardware Sampling: **48 kHz**
+- Decimation Factor: **48**
+- Target Rate: **1000 Hz** (Locked to Physics Tick)
+
+### Anti-Aliasing Filter Specifications
+
+Downsampling from 48kHz to 1kHz requires high-order low-pass filter with **Linear Phase**. Non-linear phase filters (IIR Butterworth) introduce frequency-dependent delays that destroy semantic information encoded in relative phase between E1 (5 Hz) and E8 (147 Hz).
+
+**Filter Requirements**:
+- **Topology**: Finite Impulse Response (FIR) Equiripple
+- **Passband**: 0 Hz – 150 Hz (Flat response for all emitters)
+- **Transition Band**: 150 Hz – 450 Hz
+- **Stopband**: > 450 Hz (Attenuation start before 500 Hz Nyquist)
+- **Attenuation**: **-60 dB**
+  - Required to prevent high-amplitude noise from aliasing into Balanced Nonary range ([-4, +4])
+  - Even small aliased signals could flip trit values
+
+### Buffer Sizing and Latency Analysis
+
+**Latency Budget Breakdown** (Target: <10ms):
+
+1. **Hardware Buffer** (ALSA/WASAPI): 128 samples @ 48kHz
+   - $T_{hw} = 128 / 48000 \approx 2.66 \text{ ms}$
+
+2. **Filter Group Delay**: Linear Phase FIR
+   - Delay = $N/2$ samples
+   - For -60dB attenuation with 300Hz transition (150-450): $N \approx 300$ taps
+   - $T_{filter} = 150 \text{ samples} / 48000 \text{ Hz} \approx 3.12 \text{ ms}$
+
+3. **Processing & Injection**: FFT and mapping
+   - $T_{proc} \approx 0.5 \text{ ms}$
+
+4. **Physics Tick Window**: 1ms quanta
+   - $T_{tick} = 1.0 \text{ ms}$
+
+**Total System Latency**:
+
+$$T_{total} = 2.66 + 3.12 + 0.5 + 1.0 = \mathbf{7.28 \text{ ms}}$$
+
+**✓ Meets <10ms requirement**
+
+### Dual-Path Architecture
+
+Resolves conflict between <10ms real-time requirement and 50ms Isochronous Sensory Buffer:
+
+1. **Direct Injection Path** (<10ms):
+   - Used for Cymatic Transduction
+   - Audio modulates emitters immediately after filtering
+   - Physics engine reacts to sound in real-time (reflexive attention)
+   - Accepts occasional jitter
+
+2. **Isochronous Path** (50ms):
+   - Used for Multimodal Binding (e.g., associating sound with video)
+   - Delayed to match video latency
+   - Ensures perfect phase alignment across modalities
+
+### Frequency Response Validation
+
+**Sliding Discrete Fourier Transform (S-DFT)** centered on 8 emitter frequencies:
+
+For each Emitter $n$ ($n \in 1..8$) with target frequency $f_n$:
+
+$$A_n(t) = \left| \sum_{k=0}^{W-1} x(t-k) \cdot e^{-j \frac{2\pi f_n k}{F_{injection}}} \right|$$
+
+**Parameters**:
+- Window ($W$): 48 samples (1ms @ 48kHz capture, instantaneous for physics engine)
+
+**Validation Tests**:
+1. Inject pure sine wave at $f_n$
+   - Verify: Emitter $n$ output $A_n \approx 1.0$
+   - Verify: All other emitters $A_{m \neq n} < 0.01$ (-40dB crosstalk)
+
+2. Inject White Noise
+   - Verify: Total energy injected is bounded
+   - Verify: Does not trigger "Soft SCRAM" protection
+
+**Implementation Optimization**: AudioResonanceEngine utilizes **SIMD-accelerated Goertzel algorithms** for 8 specific frequencies (rather than full FFT), reducing computational overhead to microseconds and ensuring 1ms budget is met.
+
+### Performance Characteristics
+
+- **Capture Resolution**: 48 kHz (hardware native, phase-linear ADC filtering)
+- **Injection Resolution**: 1000 Hz (physics-locked, deterministic)
+- **Decimation Ratio**: 48:1
+- **Filter**: 300-tap FIR Equiripple, Linear Phase
+- **Total Latency**: 7.28 ms (<10ms requirement ✓)
+- **Frequency Coverage**: E1-E8 (5.083 Hz – 147.576 Hz) + 3rd harmonics
+- **Attenuation**: -60 dB @ 450 Hz (prevents nonary logic corruption)
+- **Crosstalk**: <-40 dB between emitters
+- **Computational Cost**: <1 ms per physics tick (Goertzel SIMD)
+
+### Integration Points
+
+1. **Physics Engine**: 1000 Hz tick synchronization
+2. **Emitter Array**: 8 Golden Ratio frequency modulators (E1-E8)
+3. **Isochronous Buffer**: 50ms multimodal synchronization path
+4. **SCRAM Protection**: Energy overflow detection
+5. **Balanced Nonary Logic**: Trit quantization ([-4, +4] range protection)
+
+### Cross-References
+
+- [Audio Resonance Engine](./01_cymatic_transduction.md) - Section 24.1
+- [Isochronous Sensory Buffer](./01_cymatic_transduction.md) - Section 11
+- [Golden Ratio Emitters](./01_cymatic_transduction.md) - Section 4
+- [UFIE Physics Engine](../02_foundations/02_wave_interference_physics.md)
+- [Balanced Nonary Logic](../02_foundations/03_balanced_nonary_logic.md)
 
 ---
 
@@ -13117,6 +13678,228 @@ public:
 
 - **Section 24.2.16:** Oculomotor Bridge (APP-01, saccade generation)
 - **Section 24.2:** Visual Cymatics Engine (frame injection)
+
+---
+
+## GAP-018: Visual Cymatics Frame Rate Adaptation
+
+**SOURCE**: Gemini Deep Research Round 2, Batch 16-18
+**INTEGRATION DATE**: December 15, 2025
+**GAP ID**: GAP-018 (TASK-018)
+**PRIORITY**: CRITICAL
+**STATUS**: FABRICATION-READY SPECIFICATION
+
+### Problem Statement
+
+The Visual Cymatics subsystem faces the **Temporal Mismatch Problem**:
+
+- **Physics Engine**: Evolves 9D grid state at **1000 Hz**, creating high-speed solitons and interference patterns
+- **Display Hardware**: Refreshes at **60 Hz** or **120 Hz**
+
+**Naive Decimation** (displaying every 16th frame) creates **Temporal Aliasing**: Fast-moving semantic structures vanish between frames, making visualization appear jittery and disconnecting observer from true cognitive state.
+
+### Frame Interpolation vs. Accumulation Integration
+
+**Standard graphical interpolation** (averaging state between $t_1$ and $t_2$) is **physically incorrect** for wave mechanics - it dampens phase information.
+
+**Correct Approach**: Treat display as camera sensor with "shutter speed" equal to frame duration. Visualizer must **integrate (accumulate)** wave energy over interval.
+
+### Motion Blur Accumulation Algorithm
+
+#### Accumulation Buffer Architecture
+
+```cpp
+class FrameRateAdaptation {
+    std::vector<float> accumulation_buffer;
+    int accumulation_count = 0;
+    const float DISPLAY_NYQUIST = 30.0f;  // For 60Hz screen
+
+public:
+    void on_physics_tick(const TorusGrid& grid) {
+        // 1. Generate Hologram (Instantaneous)
+        auto frame = render_hologram(grid);
+
+        // 2. Accumulate Energy (Motion Blur)
+        // Energy = |Psi|^2 to prevent phase cancellation in visual buffer
+        add_energy_to_buffer(accumulation_buffer, frame);
+        accumulation_count++;
+
+        // 3. High-Frequency Detection
+        // If local change > Nyquist, tag pixel for Chromatic Aberration shader
+        if (detect_super_nyquist_activity(grid)) {
+            tag_aliasing_regions(accumulation_buffer);
+        }
+    }
+
+    const std::vector<float>& get_display_frame() {
+        // Normalize energy integration
+        scale_buffer(accumulation_buffer, 1.0f / accumulation_count);
+
+        // Apply Tone Mapping (Sigmoid)
+        tone_map(accumulation_buffer);
+
+        return accumulation_buffer;
+        // Note: Reset is handled by the caller after successful swap
+    }
+};
+```
+
+#### Algorithm Steps
+
+1. **Initialization**: Allocate floating-point buffer $B_{acc}$ matching render resolution
+
+2. **Physics Loop** (1000 Hz):
+   - For every physics tick $t$:
+     - Compute instantaneous holographic projection $H_t$
+     - Accumulate energy: $B_{acc} \leftarrow B_{acc} + |H_t|^2$
+     - **Note**: Accumulating intensity/energy (not complex amplitude) prevents destructive interference from canceling rapid oscillations that should appear as blur
+
+3. **Render Loop** (60 Hz):
+   - Every ~16.6 ms (16-17 ticks):
+     - Normalize: $I_{out} = \sqrt{B_{acc} / N_{ticks}}$ (square root restores perceptual amplitude)
+     - Apply Tone Mapping (Sigmoid) to compress high dynamic range of resonance peaks
+     - Clear $B_{acc}$ for next frame
+
+**Benefits**:
+- **Energy Conservation**: Pixel brightness = total energy that passed through region during frame
+- **High-speed soliton** appears as coherent "streak" (motion blur) rather than teleporting dot
+- **Natural Smoothness**: No artificial smoothing filters needed
+
+### V-Sync Handling and Tearing Prevention
+
+**Critical Constraint**: Physics engine **cannot block** waiting for V-Sync. Blocking dilates simulation time, making AI "think slower" due to slow screen.
+
+#### Triple-Buffered Seqlock Synchronization
+
+**Buffer Structure**:
+1. **Accumulation Buffer** (Physics Owned): Currently being written at 1000 Hz
+2. **Back Buffer** (Shared): Completed frame, ready for upload
+3. **Front Buffer** (GPU Owned): Frame currently being scanned out
+
+**Protocol**:
+- **Physics Thread**:
+  - Accumulates into Accumulation Buffer
+  - When $N_{ticks}$ reached, attempts atomic swap: Accumulation ↔ Back
+  - **Non-blocking**: If Back buffer locked (being copied to Front), physics continues accumulating (extends exposure time slightly)
+  - **Does not stall**
+
+- **Render Thread**:
+  - Waits for V-Sync
+  - Upon wake, swaps Back ↔ Front
+  - Uploads to GPU texture
+
+**Guarantee**: Cognitive core runs at exactly 1000 Hz regardless of display refresh rate anomalies.
+
+### Aliasing Indicators for High Frequencies
+
+Even with motion blur, display cannot represent frequencies $> 30$ Hz (Nyquist of 60 Hz) as distinct flickers. A 50 Hz wave on 60 Hz screen creates 10 Hz beat frequency (Moiré pattern) - misleading.
+
+#### Chromatic Aberration Visualization
+
+**Mechanism**: System monitors temporal derivative of grid state ($\partial \Psi / \partial t$) at each pixel.
+
+**If frequency exceeds display Nyquist** ($\frac{d\Psi}{dt} > F_{display}/2$):
+
+1. **Chromatic Aberration**: Shader introduces color shift (Red/Blue split) proportional to excess frequency
+   - $\text{Shift} = k \cdot (\omega_{local} - \omega_{nyquist})$
+
+2. **Semantic Meaning**: Visual cue tells observer: "Physics here vibrating faster than you can see; fuzziness is not noise, but high-speed data"
+
+### Stroboscopic Filtering Mode
+
+For diagnostic purposes, motion blur obscures precise standing wave structure.
+
+**Phase-Locked Stroboscopic Mode**:
+- **Trigger**: Visualizer captures frame only when Global Phase $\phi$ of Emitter 1 (Fundamental) crosses Zero
+- **Effect**: "Freezes" standing waves on screen, making interference patterns static and observable
+- **Analogy**: Strobe light stopping fan blade
+- **Use Case**: Critical for debugging "Resonance Lock-in"
+
+### Performance Characteristics
+
+**Frame Rate Adaptation**:
+- **Physics Rate**: 1000 Hz (never blocks, never stalls)
+- **Display Rate**: 60/120 Hz (adaptive based on hardware)
+- **Accumulation Window**: 16-17 ticks @ 60Hz, 8-9 ticks @ 120Hz
+- **Buffer Overhead**: 3× framebuffer (Accumulation, Back, Front)
+
+**Latency**:
+- **Min Display Latency**: 16.6 ms @ 60Hz, 8.3 ms @ 120Hz (V-Sync constraint)
+- **Physics Independence**: Zero impact on cognitive core timing
+
+**Aliasing Detection**:
+- **Nyquist Threshold**: $F_{display}/2$ (30 Hz @ 60Hz, 60 Hz @ 120Hz)
+- **Chromatic Shift Range**: 0-50 pixels (proportional to excess frequency)
+- **Stroboscopic Sync**: Phase-locked to E1 (5.083 Hz fundamental)
+
+**Computational Cost**:
+- **Energy Accumulation**: <0.1 ms per physics tick (vectorized)
+- **Tone Mapping**: <2 ms per display frame (GPU shader)
+- **Seqlock Swap**: <10 μs (atomic operation)
+
+### Implementation Specification
+
+**Core Components**:
+
+```cpp
+namespace nikola::visual {
+    class FrameRateAdaptation {
+    private:
+        // Triple buffer system
+        std::vector<float> accumulation_buffer_;
+        std::vector<float> back_buffer_;
+        std::vector<float> front_buffer_;
+
+        int accumulation_count_ = 0;
+        const float display_nyquist_;  // 30.0f for 60Hz
+
+        std::atomic<bool> back_buffer_locked_{false};
+
+    public:
+        explicit FrameRateAdaptation(float refresh_rate)
+            : display_nyquist_(refresh_rate / 2.0f) {}
+
+        // Called at 1000 Hz by physics thread
+        void on_physics_tick(const TorusGrid& grid);
+
+        // Called at 60/120 Hz by render thread
+        const std::vector<float>& get_display_frame();
+
+        // Diagnostic mode
+        void enable_stroboscopic(bool enable, float phase_trigger = 0.0f);
+
+        // Chromatic aberration for super-Nyquist activity
+        void detect_and_tag_aliasing();
+    };
+}
+```
+
+**Energy Accumulation Formula**:
+
+$$B_{acc}[x,y] \leftarrow B_{acc}[x,y] + |H_t[x,y]|^2$$
+
+**Normalization & Display**:
+
+$$I_{out}[x,y] = \text{ToneMap}\left( \sqrt{\frac{B_{acc}[x,y]}{N_{ticks}}} \right)$$
+
+**Tone Mapping** (Sigmoid compression for HDR):
+
+$$\text{ToneMap}(x) = \frac{x}{1 + x}$$
+
+### Integration Points
+
+1. **Physics Engine**: 1000 Hz grid state snapshots
+2. **Holographic Renderer**: Instantaneous projection generation
+3. **V-Sync**: Hardware refresh synchronization (60/120 Hz)
+4. **GPU Pipeline**: Tone mapping shader, texture upload
+5. **Emitter 1 Phase**: Stroboscopic mode trigger (5.083 Hz fundamental)
+
+### Cross-References
+
+- [Visual Cymatics Engine](./03_visual_cymatics.md) - Section 24.2
+- [Physics Engine Timing](../02_foundations/02_wave_interference_physics.md)
+- [Emitter Array](./01_cymatic_transduction.md) - Section 4
+- [Seqlock Synchronization](../04_infrastructure/01_zeromq_spine.md)
 
 ---
 
