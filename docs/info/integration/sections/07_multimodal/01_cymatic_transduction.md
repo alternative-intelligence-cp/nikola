@@ -811,13 +811,13 @@ The measured performance improvements (96% accuracy, 0.91 coherence) validate th
 
 **Implementation Status**: ✅ **COMPLETE AND VALIDATED**
 
-**Integration Target**: [nikola/src/multimodal/sensory_cortex.hpp](../../03_cognitive_systems/02_mamba_9d_ssm.md#24.6.1)
+**Integration Target**: [nikola/src/multimodal/sensory_cortex.hpp](../03_cognitive_systems/02_mamba_9d_ssm.md#24.6.1)
 
 **References**:
 - CF-05: Clock Domain Synchronization (Original Finding)
-- [02_mamba_9d_ssm.md](../../03_cognitive_systems/02_mamba_9d_ssm.md): Mamba-9D Sequential Processor
+- [02_mamba_9d_ssm.md](../03_cognitive_systems/02_mamba_9d_ssm.md): Mamba-9D Sequential Processor
 - [01_cymatic_transduction.md](01_cymatic_transduction.md): Visual-to-Wave Mapping
-- [UFIE Specification](../../02_foundations/01_unified_field.md): Core Physics Equations
+- [UFIE Specification](../02_foundations/02_wave_interference_physics.md): Core Physics Equations
 
 ## 24.7 Future Modalities
 
@@ -988,7 +988,7 @@ $$A_n(t) = \left| \sum_{k=0}^{W-1} x(t-k) \cdot e^{-j \frac{2\pi f_n k}{F_{injec
 - [Audio Resonance Engine](./01_cymatic_transduction.md) - Section 24.1
 - [Isochronous Sensory Buffer](./01_cymatic_transduction.md) - Section 11
 - [Golden Ratio Emitters](./01_cymatic_transduction.md) - Section 4
-- [UFIE Physics Engine](../02_foundations/01_unified_field.md)
+- [UFIE Physics Engine](../02_foundations/02_wave_interference_physics.md)
 - [Balanced Nonary Logic](../02_foundations/03_balanced_nonary_logic.md)
 
 ---

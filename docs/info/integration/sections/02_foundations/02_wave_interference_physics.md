@@ -10035,9 +10035,9 @@ During production operation, the Physics Oracle continuously monitors:
 
 - [Physics Engine Loop](./02_wave_interference_physics.md)
 - [Symplectic Integrator](./02_wave_interference_physics.md)
-- [KVM Executor](../05_autonomous_systems/02_kvm_executor.md)
+- [KVM Executor](../04_infrastructure/04_executor_kvm.md)
 - [SCRAM System](./02_wave_interference_physics.md)
-- [Adversarial Code Dojo](../05_autonomous_systems/02_kvm_executor.md)
+- [Adversarial Code Dojo](../04_infrastructure/04_executor_kvm.md)
 - [CI/CD Pipeline](../04_infrastructure/02_orchestrator_router.md)
 - [AVX-512 Fallback](../02_foundations/01_9d_toroidal_geometry.md) - GAP-029
 
