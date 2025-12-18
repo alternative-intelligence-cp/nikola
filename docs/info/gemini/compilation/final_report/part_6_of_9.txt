@@ -1,0 +1,1521 @@
+################################################################################
+# NIKOLA AGI v0.0.4 FINAL ENGINEERING REPORT - PART 6 OF 9
+# Implementation Guide: Phase 0 Requirements & Roadmap
+################################################################################
+#
+# Compiled: 2025-12-18 18:50:55 UTC
+#
+# SECTION 8 (Part 2 of 3): Phase 0 Technical Requirements
+# Covers: SoA Layout, Symplectic Integration, Kahan Summation, Morton Codes,
+#         Energy Watchdog, Lazy Cholesky, Performance Validation
+#
+################################################################################
+
+
+================================================================================
+SECTION: 8.0 Implementation Guide (Sections 8.6-8.8)
+================================================================================
+
+<!-- SOURCE: /home/randy/._____RANDY_____/REPOS/nikola/docs/info/gemini/compilation/final_report/part_6_of_9.txt.tmp -->
+
+        } catch (const autonomy::MetabolicExhaustionException& e) {
+            // CF-04: Recovery Strategy
+            // The transaction prevented us from acting. We must recover.
+            logger.warn("Metabolic Exhaustion: {}", e.what());
+
+            // Trigger Nap Cycle (Recharge)
+            autonomy::NapSystem::initiate_nap(metabolic_controller);
+
+        } catch (const std::exception& e) {
+            // General failure: MetabolicTransaction destructor creates implicit rollback.
+            logger.error("Cognitive Cycle Failed: {}", e.what());
+        }
+    }
+}
+```
+
+### Dependency Graph
+
+**Implementation order strictly defined:**
+
+1. **Level 0 (Base):** `torus_grid_soa.hpp` (Existing)
+2. **Level 1 (Autonomy):** `metabolic_controller.hpp` (Update with atomic CAS) → `metabolic_lock.hpp` (New)
+3. **Level 1 (Spatial):** `hilbert_scanner.hpp` (New)
+4. **Level 2 (Integration):** `orchestrator.cpp` (Updated to use Lock and Scanner)
+5. **Level 3 (Optimization):** `mamba_kernel.cu` (Updated to assume Hilbert input order)
+
+---
+
+## Conclusion
+
+The remediation strategies detailed in this report address the **foundational stability and cognitive coherence** of the Nikola Model v0.0.4:
+
+### CF-04: Transactional Metabolic Lock
+Transforms energy management from vulnerable counter into robust, thread-safe resource system, **strictly enforcing thermodynamic laws**.
+
+### MEM-04: Hilbert Re-indexing
+Bridges gap between physics engine's sparse geometry and cognitive engine's sequential requirements, ensuring **system's thoughts flow in continuous, causally consistent manner**.
+
+With these implementations, the Nikola architecture transitions from theoretical construct to **resilient, production-grade AGI platform**.
+
+---
+
+✅ **APPROVED FOR IMPLEMENTATION**
+
+**These are Phase 0 blocking dependencies. All other phases (1-7) require CF-04 and MEM-04 to be completed first.**
+
+---
+
+**Document Metadata:**
+- **Principal Investigator:** Dr. Aria Echo, Lead Architect / AILP
+- **Source:** Implementation Review + Advanced Research
+- **Integration Date:** 2025-12-10
+- **Priority:** 🔴 **CRITICAL** (Blocks all other implementation)
+# PHASE 0: CRITICAL REQUIREMENTS
+
+## 8.6 Executive Summary  
+**Version:** v0.0.4
+
+This section documents critical engineering requirements that **MUST** be implemented before any feature development begins. These are not optimizations—they are functional requirements to prevent system failure.
+
+### Critical Requirements
+
+1. **Numerical Stability:** Split-operator symplectic integration required for energy conservation
+2. **Memory Efficiency:** Structure-of-Arrays layout required for cache optimization
+3. **Precision Preservation:** Kahan compensated summation required for Laplacian accuracy
+4. **Collision-Free Hashing:** 128-bit Morton codes required for high-resolution 9D grids
+
+### Implementation Mandate
+
+**NO DEVIATION:** All Phase 0 fixes are mandatory architectural requirements. The system CANNOT function correctly without these implementations.
+
+**Timeline:** 17 days (3.5 weeks)  
+**Gate:** All P0 and P1 items must pass validation before Phase 1 begins.
+
+---
+
+## 1. STRUCTURE-OF-ARRAYS (SoA) MEMORY LAYOUT
+
+### Problem Statement
+
+The initial specification used Array-of-Structures (AoS) layout:
+
+```cpp
+// ❌ FORBIDDEN: AoS layout causes cache thrashing
+struct TorusNode {
+    std::complex<double> psi;           // 16 bytes
+    std::array<double, 45> metric;      // 360 bytes
+    std::array<double, 9> christoffel;  // 72 bytes
+    // Total: 448 bytes per node
+};
+```
+
+**Issue:** Computing the Laplacian requires accessing `psi` from 18 neighbors. With AoS, each access pulls 448 bytes into cache but uses only 16 bytes (3.6% efficiency). This causes:
+- Cache thrashing (TLB misses destroy performance)
+- Memory bandwidth saturation (fetching 90% unused data)
+- Poor vectorization (SIMD can't load contiguous psi values)
+
+### Solution: Structure-of-Arrays (SoA)
+
+```cpp
+// ✅ MANDATORY: SoA layout for cache efficiency
+struct TorusBlock {
+    static constexpr int BLOCK_SIZE = 19683;  // 3^9 voxels per block
+    
+    // Aligned for AVX-512 (64-byte cache lines)
+    alignas(64) std::array<float, BLOCK_SIZE> psi_real;
+    alignas(64) std::array<float, BLOCK_SIZE> psi_imag;
+    alignas(64) std::array<float, BLOCK_SIZE> psi_vel_real;
+    alignas(64) std::array<float, BLOCK_SIZE> psi_vel_imag;
+    
+    // Metric tensor: 45 components × 19683 voxels
+    alignas(64) std::array<std::array<float, BLOCK_SIZE>, 45> metric_tensor;
+    
+    // Christoffel symbols: 9 × 9 × 9 = 729 components (sparse)
+    alignas(64) std::array<std::array<float, BLOCK_SIZE>, 729> christoffel;
+};
+
+// Proxy accessor class (maintains API compatibility)
+class TorusNodeProxy {
+    TorusBlock* block;
+    size_t index;
+    
+public:
+    std::complex<double> psi() const {
+        return {block->psi_real[index], block->psi_imag[index]};
+    }
+    
+    void set_psi(std::complex<double> val) {
+        block->psi_real[index] = val.real();
+        block->psi_imag[index] = val.imag();
+    }
+    
+    // ... metric accessors ...
+};
+```
+
+### Implementation Requirements
+
+1. **Refactor all grid code** to use `TorusBlock` arrays instead of `TorusNode` arrays
+2. **CUDA kernels** must use coalesced memory access patterns (threads access contiguous indices)
+3. **Cache alignment:** All arrays must be 64-byte aligned (`alignas(64)`)
+4. **Block size:** Must be power of 3^9 for efficient torus indexing
+
+### Performance Impact
+
+- **Memory bandwidth:** 3.6% → 100% efficiency (28x improvement)
+- **Cache hit rate:** ~10% → ~95% (9.5x improvement)
+- **Overall speedup:** ~10x for physics kernel
+
+**Priority:** P0 (Critical)  
+**Timeline:** 2 days  
+**Validation:** Physics kernel must achieve <1ms per step on sparse 27³ grid
+
+### 1.1 9D Dimensional Semantics
+
+Strict type enforcement for dimensional mapping:
+
+| Dimension | Symbol | Role | Data Type | Physics Interpretation |
+|-----------|--------|------|-----------|------------------------|
+| 1 | $r$ | Resonance | float [0.0, 1.0] | Damping coefficient $\gamma$. High $r$ = Low Damping (Long-term memory) |
+| 2 | $s$ | State | float [0.0, 2.0] | Refractive Index $\eta$. Defines local speed of light $c$ |
+| 3 | $t$ | Time | float (cyclic) | Temporal phase (modulo $2\pi$) |
+| 4-6 | $u,v,w$ | Quantum | float [0.0, 1.0] | Quantum state subspace dimensions |
+| 7-9 | $x,y,z$ | Spatial | float [0.0, 1.0] | Physical 3D embedding coordinates |
+
+**Constraint Enforcement:** All coordinate access must validate ranges. Out-of-range values indicate either programming errors or physics violations requiring immediate halt.
+
+---
+
+## 2. SPLIT-OPERATOR SYMPLECTIC INTEGRATION
+
+### Problem Statement
+
+The original specification suggested Velocity-Verlet integration for the UFIE:
+
+$$\frac{\partial^2 \Psi}{\partial t^2} + \alpha(1 - \hat{r}) \frac{\partial \Psi}{\partial t} - \frac{c_0^2}{(1 + \hat{s})^2} \nabla^2_g \Psi = \sum_{i=1}^8 \mathcal{E}_i(\vec{x}, t) + \beta |\Psi|^2 \Psi$$
+
+**Issue:** The damping term $\alpha(1 - \hat{r}) \frac{\partial \Psi}{\partial t}$ is non-conservative. Standard Verlet methods assume Hamiltonian systems and fail to conserve energy in the presence of friction. This causes:
+- Energy drift (memories vanish or explode exponentially)
+- Numerical instability (system diverges within hours)
+- Loss of standing waves (catastrophic "amnesia")
+
+### Solution: Split-Operator Strang Splitting
+
+Decompose the UFIE into three operators:
+
+1. **Damping Operator:** $\hat{D} = -\gamma \frac{\partial}{\partial t}$ (dissipative)
+2. **Conservative Operator:** $\hat{H} = \frac{\partial^2}{\partial t^2} - c^2 \nabla^2$ (Hamiltonian)
+3. **Nonlinear Operator:** $\hat{N} = \beta |\Psi|^2 \Psi$ (conservative but nonlinear)
+
+Apply Strang splitting for second-order accuracy:
+
+$$e^{(\hat{D} + \hat{H} + \hat{N})\Delta t} \approx e^{\hat{D}\Delta t/2} e^{\hat{H}\Delta t/2} e^{\hat{N}\Delta t} e^{\hat{H}\Delta t/2} e^{\hat{D}\Delta t/2} + O(\Delta t^3)$$
+
+### Implementation Algorithm
+
+```cpp
+void propagate_wave_split_operator(double dt) {
+    const double dt_half = dt / 2.0;
+    
+    // Step 1: Half-kick damping (exact analytical solution)
+    // v(t + dt/2) = v(t) * exp(-γ * dt/2)
+    for (auto& node : active_nodes) {
+        double gamma = alpha * (1.0 - node.resonance);  // Damping coefficient
+        double decay = std::exp(-gamma * dt_half);
+        node.psi_velocity *= decay;
+    }
+    
+    // Step 2: Half-kick conservative force (Laplacian + emitters)
+    // v(t + dt/2) += F(t) * dt/2
+    compute_laplacian();  // Calculates ∇²Ψ
+    for (auto& node : active_nodes) {
+        double c_eff = c0 / std::pow(1.0 + node.state, 2);  // Effective speed
+        std::complex<double> force = c_eff * c_eff * node.laplacian;
+        force += emitter_field[node.index];  // External driving
+        node.psi_velocity += force * dt_half;
+    }
+    
+    // Step 3: Drift (update position)
+    // Ψ(t + dt) = Ψ(t) + v(t + dt/2) * dt
+    for (auto& node : active_nodes) {
+        node.psi += node.psi_velocity * dt;
+    }
+    
+    // Step 4: Apply nonlinear operator (implicit RK2 for stability)
+    // Ψ(t + dt) = Ψ(t + dt) + β|Ψ|²Ψ * dt
+    for (auto& node : active_nodes) {
+        double magnitude_sq = std::norm(node.psi);
+        node.psi += beta * magnitude_sq * node.psi * dt;
+    }
+    
+    // Step 5: Half-kick force (recompute at new position)
+    compute_laplacian();
+    for (auto& node : active_nodes) {
+        double c_eff = c0 / std::pow(1.0 + node.state, 2);
+        std::complex<double> force = c_eff * c_eff * node.laplacian;
+        force += emitter_field[node.index];
+        node.psi_velocity += force * dt_half;
+    }
+    
+    // Step 6: Half-kick damping (final decay)
+    for (auto& node : active_nodes) {
+        double gamma = alpha * (1.0 - node.resonance);
+        double decay = std::exp(-gamma * dt_half);
+        node.psi_velocity *= decay;
+    }
+}
+```
+
+### Mathematical Justification
+
+**Symplectic Property:** The split-operator method preserves the symplectic structure of the Hamiltonian part, ensuring long-term energy conservation for the conservative terms.
+
+**Exact Damping:** The analytical exponential decay for the damping operator ensures perfect energy dissipation without numerical drift.
+
+**Stability:** Unconditionally stable for the linear terms. The nonlinear term requires $\Delta t < 1/(\beta |\Psi|_{\max})$, which is enforced by adaptive timestepping.
+
+### Implementation Requirements
+
+1. **Replace all Verlet code** with split-operator method
+2. **CUDA kernel:** Implement as 6 separate kernel launches (allows device synchronization)
+3. **Adaptive timestep:** Monitor $\max |\Psi|$ and reduce $\Delta t$ if it exceeds threshold
+4. **Energy watchdog:** Compute total energy $E = \int (|\nabla \Psi|^2 + |\Psi|^2) dV$ every 100 steps, abort if drift exceeds 0.01%
+
+**Priority:** P0 (Critical)  
+**Timeline:** 3 days  
+**Validation:** Energy conservation within 0.01% over 24-hour simulation
+
+---
+
+## 3. KAHAN COMPENSATED SUMMATION
+
+### Problem Statement
+
+The Laplacian operator in 9 dimensions involves summing contributions from neighbors. A standard finite difference stencil (27-point stencil in 3D, exponentially more in 9D) requires adding many small floating-point numbers to a potentially large accumulator.
+
+**Issue:** In IEEE 754 floating-point arithmetic (FP32), adding a small number to a large number loses precision due to mantissa alignment ("absorption"). This causes:
+
+- High-frequency, low-amplitude waves (subtle/distant memories) are numerically deleted
+- System suffers "numerical amnesia"
+- Loss of information in interference patterns
+
+### Solution: Kahan Summation
+
+Track low-order bits lost during addition using a compensation variable:
+
+```cpp
+struct KahanAccumulator {
+    float sum = 0.0f;
+    float correction = 0.0f;  // Stores lost low-order bits
+    
+    inline void add(float input) {
+        float y = input - correction;         // Subtract previous correction
+        float t = sum + y;                    // Add to sum (loses precision)
+        correction = (t - sum) - y;           // Recover lost low-order bits
+        sum = t;                              // Update sum
+    }
+};
+
+// Usage in Laplacian kernel
+void compute_laplacian_9d(const TorusGridSoA& grid, size_t node_idx) {
+    KahanAccumulator acc_real, acc_imag;
+    
+    // Sum contributions from all 2×9 = 18 neighbors in 9D
+    for (int dim = 0; dim < 9; ++dim) {
+        size_t idx_plus = grid.neighbor_index(node_idx, dim, +1);
+        size_t idx_minus = grid.neighbor_index(node_idx, dim, -1);
+        
+        // Second-order central difference: (ψ[i+1] - 2ψ[i] + ψ[i-1]) / h²
+        float contrib_real = grid.psi_real[idx_plus] - 2.0f * grid.psi_real[node_idx] + grid.psi_real[idx_minus];
+        float contrib_imag = grid.psi_imag[idx_plus] - 2.0f * grid.psi_imag[node_idx] + grid.psi_imag[idx_minus];
+        
+        acc_real.add(contrib_real);
+        acc_imag.add(contrib_imag);
+    }
+    
+    // Store final Laplacian result
+    grid.laplacian_real[node_idx] = acc_real.sum;
+    grid.laplacian_imag[node_idx] = acc_imag.sum;
+}
+```
+
+### Mathematical Analysis
+
+Standard floating-point addition accumulates error as $\epsilon_{\text{machine}} \times N$ where $N$ is the number of terms. For a 9D Laplacian with $N = 18$ neighbors:
+
+- **Without Kahan:** Error $\sim 18 \times 10^{-7} \approx 2 \times 10^{-6}$ (FP32)
+- **With Kahan:** Error $\sim 10^{-7}$ (near machine precision)
+
+For standing wave patterns with amplitude ratios spanning 6 orders of magnitude (fundamental vs. harmonics), Kahan summation prevents catastrophic cancellation.
+
+### Implementation Requirements
+
+1. **All Laplacian kernels** must use Kahan accumulators
+2. **All wave superposition operations** (>3 terms) must use Kahan summation
+3. **Metric tensor updates** must use compensated summation
+4. **Integration verification:** Test with manufactured solution having known high-frequency component
+
+**Priority:** P0 (Critical)  
+**Timeline:** 1 day  
+**Validation:** Preserve 10⁻⁶ amplitude waves in presence of unit-amplitude carrier over 10⁶ timesteps
+
+### Performance Impact
+
+- **Stability:** Prevents divergence (critical for multi-hour runs)
+- **Accuracy:** 2nd-order in time ($O(\Delta t^2)$ error)
+- **Overhead:** ~20% slower than naive Verlet, but necessary for correctness
+
+**Priority:** P0 (Critical)  
+**Timeline:** 3 days  
+**Validation:** Energy drift must be <0.0001% over 10,000 steps with standing wave test
+
+---
+
+## 3. KAHAN SUMMATION FOR LAPLACIAN
+
+### Problem Statement
+
+The Laplacian computation sums contributions from 18 neighbors in 9D:
+
+$$\nabla^2 \Psi = \sum_{i=1}^{18} w_i (\Psi_{\text{neighbor}_i} - \Psi_{\text{center}})$$
+
+With float32, summing 18 terms loses precision due to rounding errors. This causes:
+- Gradual "smearing" of wave packets
+- Loss of high-frequency components (fine details)
+- Cumulative error accumulation ("amnesia" over days)
+
+### Solution: Kahan Compensated Summation
+
+```cpp
+// ❌ FORBIDDEN: Naive summation loses precision
+std::complex<float> laplacian = 0.0f;
+for (auto& neighbor : neighbors) {
+    laplacian += neighbor.psi;
+}
+
+// ✅ MANDATORY: Kahan summation preserves precision
+std::complex<float> kahan_sum(const std::vector<std::complex<float>>& values) {
+    std::complex<float> sum = 0.0f;
+    std::complex<float> c = 0.0f;  // Compensation term
+    
+    for (const auto& val : values) {
+        std::complex<float> y = val - c;    // Subtract previous error
+        std::complex<float> t = sum + y;    // Add with low bits
+        c = (t - sum) - y;                  // Recover rounding error
+        sum = t;                            // Update sum
+    }
+    
+    return sum;
+}
+```
+
+### CUDA Implementation
+
+```cuda
+__device__ void kahan_add(float& sum, float& compensation, float value) {
+    float y = value - compensation;
+    float t = sum + y;
+    compensation = (t - sum) - y;
+    sum = t;
+}
+
+__global__ void compute_laplacian_kahan(float* psi_real, float* psi_imag, 
+                                        float* laplacian_real, float* laplacian_imag,
+                                        int* neighbor_indices, int num_nodes) {
+    int idx = blockIdx.x * blockDim.x + threadIdx.x;
+    if (idx >= num_nodes) return;
+    
+    float sum_real = 0.0f, c_real = 0.0f;
+    float sum_imag = 0.0f, c_imag = 0.0f;
+    
+    // Sum contributions from 18 neighbors
+    for (int n = 0; n < 18; n++) {
+        int neighbor_idx = neighbor_indices[idx * 18 + n];
+        float contrib_real = psi_real[neighbor_idx] - psi_real[idx];
+        float contrib_imag = psi_imag[neighbor_idx] - psi_imag[idx];
+        
+        kahan_add(sum_real, c_real, contrib_real);
+        kahan_add(sum_imag, c_imag, contrib_imag);
+    }
+    
+    laplacian_real[idx] = sum_real;
+    laplacian_imag[idx] = sum_imag;
+}
+```
+
+### Implementation Requirements
+
+1. **Replace all Laplacian summations** with Kahan algorithm
+2. **CUDA kernels:** Use register-based compensation (no extra memory)
+3. **AVX-512:** Implement vectorized Kahan sum for CPU fallback
+
+### Performance Impact
+
+- **Precision:** Reduces rounding error from $O(n \epsilon)$ to $O(\epsilon)$ where $n$ is number of terms
+- **Overhead:** ~10% slower due to extra FP operations
+- **Memory:** No additional storage (compensation is register-local)
+
+**Priority:** P0 (Critical)  
+**Timeline:** 1 day  
+**Validation:** Standing wave must maintain amplitude to 6 decimal places over 1 million steps
+
+---
+
+## 4. AVX-512 NONARY ARITHMETIC
+
+### Problem Statement
+
+Balanced nonary arithmetic requires saturation at $\pm 4$. Standard CPU ALUs perform binary arithmetic, requiring explicit clamping after every operation.
+
+Scalar implementation:
+
+```cpp
+// ❌ SLOW: Scalar saturation (200x slower than needed)
+Nit add_nonary(Nit a, Nit b) {
+    int result = static_cast<int>(a) + static_cast<int>(b);
+    if (result > 4) return Nit::FOUR;
+    if (result < -4) return Nit::NEG_FOUR;
+    return static_cast<Nit>(result);
+}
+```
+
+**Issue:** Processing 1M nits sequentially takes ~5ms. With SIMD, this can be reduced to ~25μs (200x speedup).
+
+### Solution: AVX-512 Vectorization
+
+```cpp
+// ✅ MANDATORY: AVX-512 saturated nonary addition (64 nits per operation)
+#include <immintrin.h>
+
+void add_nonary_simd(const int8_t* a, const int8_t* b, int8_t* result, size_t count) {
+    const __m512i limit_pos = _mm512_set1_epi8(4);   // Upper bound
+    const __m512i limit_neg = _mm512_set1_epi8(-4);  // Lower bound
+    
+    size_t i = 0;
+    for (; i + 64 <= count; i += 64) {
+        // Load 64 nits
+        __m512i va = _mm512_loadu_si512((__m512i*)(a + i));
+        __m512i vb = _mm512_loadu_si512((__m512i*)(b + i));
+        
+        // Saturated addition (with hardware saturation at ±127)
+        __m512i vsum = _mm512_adds_epi8(va, vb);
+        
+        // Clamp to [-4, 4] (nonary saturation)
+        vsum = _mm512_min_epi8(vsum, limit_pos);
+        vsum = _mm512_max_epi8(vsum, limit_neg);
+        
+        // Store result
+        _mm512_storeu_si512((__m512i*)(result + i), vsum);
+    }
+    
+    // Handle remaining elements (scalar fallback)
+    for (; i < count; i++) {
+        int sum = a[i] + b[i];
+        result[i] = std::clamp(sum, -4, 4);
+    }
+}
+```
+
+### Multiplication via Lookup Table
+
+Nonary multiplication requires heterodyning (wave mixing). For performance, use a precomputed 9×9 lookup table:
+
+```cpp
+// Precomputed nonary multiplication table
+static constexpr int8_t NONARY_MUL_TABLE[9][9] = {
+    // Row: multiplier value (-4 to 4), Column: multiplicand (-4 to 4)
+    { 4,  3,  2,  1,  0, -1, -2, -3, -4},  // -4 × {...}
+    { 3,  2,  1,  1,  0, -1, -1, -2, -3},  // -3 × {...}
+    { 2,  1,  1,  0,  0,  0, -1, -1, -2},  // -2 × {...}
+    { 1,  1,  0,  0,  0,  0,  0, -1, -1},  // -1 × {...}
+    { 0,  0,  0,  0,  0,  0,  0,  0,  0},  //  0 × {...}
+    {-1, -1,  0,  0,  0,  0,  0,  1,  1},  //  1 × {...}
+    {-2, -1, -1,  0,  0,  0,  1,  1,  2},  //  2 × {...}
+    {-3, -2, -1, -1,  0,  1,  1,  2,  3},  //  3 × {...}
+    {-4, -3, -2, -1,  0,  1,  2,  3,  4},  //  4 × {...}
+};
+
+__m512i mul_nonary_simd(__m512i a, __m512i b) {
+    // Use gather operation with lookup table
+    // This requires AVX-512VBMI2 for efficient byte-level gather
+    // Fallback: process 8 elements at a time with scalar lookup
+    alignas(64) int8_t a_arr[64], b_arr[64], result[64];
+    _mm512_store_si512((__m512i*)a_arr, a);
+    _mm512_store_si512((__m512i*)b_arr, b);
+    
+    for (int i = 0; i < 64; i++) {
+        int ai = a_arr[i] + 4;  // Convert [-4,4] to [0,8]
+        int bi = b_arr[i] + 4;
+        result[i] = NONARY_MUL_TABLE[ai][bi];
+    }
+    
+    return _mm512_load_si512((__m512i*)result);
+}
+```
+
+### Implementation Requirements
+
+1. **CPU feature detection:** Check for AVX-512 support at runtime, fallback to scalar
+2. **Memory alignment:** All nit arrays must be 64-byte aligned
+3. **Compiler flags:** `-mavx512f -mavx512bw -mavx512vl`
+
+### Performance Impact
+
+- **Addition:** 200x speedup (64 nits per SIMD instruction vs 1 per scalar)
+- **Multiplication:** ~50x speedup (lookup table is cache-friendly)
+- **Total:** Nonary operations become negligible (<1% of runtime)
+
+**Priority:** P1 (High)  
+**Timeline:** 2 days  
+**Validation:** Process 10M nonary additions in <50μs
+
+---
+
+## 5. LAZY CHOLESKY DECOMPOSITION FOR METRIC TENSOR
+
+### Problem Statement
+
+The metric tensor $g_{ij}$ is a 9×9 symmetric positive-definite matrix. To compute the Laplacian in curved space, we need:
+
+$$\nabla^2 \Psi = g^{ij} \nabla_i \nabla_j \Psi$$
+
+This requires inverting $g_{ij}$ to obtain $g^{ij}$. Naive matrix inversion (Gaussian elimination) is $O(n^3) = O(729)$ operations per node per timestep.
+
+For 1M active nodes at 60 FPS:
+- Operations: $1,000,000 \times 729 \times 60 = 4.4 \times 10^{10}$ per second
+- Cost: ~100 CPU cores to maintain real-time (UNACCEPTABLE)
+
+### Solution: Lazy Cholesky Decomposition with Caching
+
+**Key Insight:** The metric tensor changes slowly (plasticity timescale is ~seconds). We can cache the decomposition and only recompute when the tensor changes significantly.
+
+```cpp
+class MetricTensorCache {
+    std::array<double, 45> g_lower_triangle;  // Stored metric (symmetric)
+    std::array<double, 45> L_cholesky;        // Cached Cholesky factor
+    bool is_valid = false;
+    double change_threshold = 1e-6;
+    
+public:
+    // Check if metric has changed significantly
+    bool needs_update(const std::array<double, 45>& new_g) const {
+        double max_diff = 0.0;
+        for (int i = 0; i < 45; i++) {
+            max_diff = std::max(max_diff, std::abs(new_g[i] - g_lower_triangle[i]));
+        }
+        return max_diff > change_threshold;
+    }
+    
+    // Update Cholesky decomposition (only when needed)
+    void update_if_changed(const std::array<double, 45>& new_g) {
+        if (!needs_update(new_g) && is_valid) {
+            return;  // Use cached value
+        }
+        
+        // Perform Cholesky decomposition: g = L * L^T
+        // ... Cholesky algorithm (O(n³) but rare) ...
+        
+        g_lower_triangle = new_g;
+        is_valid = true;
+    }
+    
+    // Compute g^{-1} * v using forward/backward substitution (O(n²))
+    std::array<double, 9> apply_inverse(const std::array<double, 9>& v) {
+        // Solve L * y = v (forward substitution)
+        std::array<double, 9> y;
+        // ... O(n²) ...
+        
+        // Solve L^T * x = y (backward substitution)
+        std::array<double, 9> x;
+        // ... O(n²) ...
+        
+        return x;  // x = g^{-1} * v
+    }
+};
+```
+
+### Batch Update Strategy
+
+For plasticity updates (which happen every ~1000 timesteps):
+
+```cpp
+void update_metric_batch() {
+    // Identify nodes with changed metrics
+    std::vector<size_t> dirty_nodes;
+    for (size_t i = 0; i < active_nodes.size(); i++) {
+        if (active_nodes[i].metric_dirty_flag) {
+            dirty_nodes.push_back(i);
+        }
+    }
+    
+    // Parallel Cholesky decomposition (embarrassingly parallel)
+    #pragma omp parallel for
+    for (size_t idx : dirty_nodes) {
+        active_nodes[idx].metric_cache.update_if_changed(
+            active_nodes[idx].metric_tensor
+        );
+        active_nodes[idx].metric_dirty_flag = false;
+    }
+}
+```
+
+### Implementation Requirements
+
+1. **Caching layer:** Add `MetricTensorCache` to `TorusNode` (or `TorusBlock` with SoA)
+2. **Dirty flags:** Track which nodes have changed metrics
+3. **Batch updates:** Update caches once per 1000 physics steps (not every step)
+4. **Fallback:** For rapidly changing metrics, use direct inversion (rare case)
+
+### Performance Impact
+
+- **Speedup:** 100x for metric-related operations (amortized)
+- **Cache hit rate:** >99% during steady-state operation
+- **Memory overhead:** +360 bytes per node (Cholesky factor storage)
+
+**Priority:** P1 (High)  
+**Timeline:** 2 days  
+**Validation:** Metric inversion overhead must be <5% of total runtime
+
+---
+
+## 6. SHARED MEMORY ZERO-COPY IPC
+
+### Problem Statement
+
+ZeroMQ serialization (Protocol Buffers) for high-frequency data (physics state at 60 FPS) introduces:
+- Latency: ~100μs per frame (serialization + network stack)
+- CPU overhead: ~10% (protobuf encoding/decoding)
+- Memory allocation: frequent malloc/free causes fragmentation
+
+For real-time visualization and memory systems, this is unacceptable.
+
+### Solution: Shared Memory with Seqlock
+
+```cpp
+// Shared memory header (lives in /dev/shm/nikola_frame)
+struct SharedFrame {
+    // Seqlock for concurrency control
+    std::atomic<uint64_t> sequence;  // Even = stable, Odd = writing
+    
+    // Metadata
+    uint64_t timestamp_ns;
+    uint32_t frame_number;
+    uint32_t active_node_count;
+    
+    // Data payload (variable size)
+    struct NodeState {
+        uint64_t morton_code;  // Z-order index
+        float psi_real, psi_imag;
+        float energy_density;
+    } nodes[];  // Flexible array member
+};
+
+// Writer (Physics Engine)
+class SharedMemoryWriter {
+    int shm_fd;
+    SharedFrame* frame;
+    size_t capacity;
+    
+public:
+    void write_frame(const std::vector<NodeState>& nodes) {
+        // 1. Increment sequence (mark as writing)
+        uint64_t seq = frame->sequence.load(std::memory_order_acquire);
+        frame->sequence.store(seq + 1, std::memory_order_release);
+        
+        // 2. Write data
+        frame->timestamp_ns = get_timestamp_ns();
+        frame->frame_number++;
+        frame->active_node_count = nodes.size();
+        std::memcpy(frame->nodes, nodes.data(), nodes.size() * sizeof(NodeState));
+        
+        // 3. Increment sequence again (mark as stable)
+        frame->sequence.store(seq + 2, std::memory_order_release);
+        
+        // 4. Notify readers via tiny ZMQ message (8 bytes)
+        zmq_send(notify_socket, &frame->frame_number, sizeof(uint32_t), ZMQ_DONTWAIT);
+    }
+};
+
+// Reader (Visualizer)
+class SharedMemoryReader {
+    int shm_fd;
+    const SharedFrame* frame;
+    
+public:
+    std::optional<std::vector<NodeState>> read_frame() {
+        uint64_t seq1, seq2;
+        std::vector<NodeState> nodes;
+        
+        do {
+            // Read sequence number (before)
+            seq1 = frame->sequence.load(std::memory_order_acquire);
+            if (seq1 & 1) continue;  // Writer is active, retry
+            
+            // Read data
+            nodes.resize(frame->active_node_count);
+            std::memcpy(nodes.data(), frame->nodes, 
+                       frame->active_node_count * sizeof(NodeState));
+            
+            // Read sequence number (after)
+            std::atomic_thread_fence(std::memory_order_acquire);
+            seq2 = frame->sequence.load(std::memory_order_relaxed);
+            
+        } while (seq1 != seq2);  // Retry if data was modified during read
+        
+        return nodes;
+    }
+};
+```
+
+### Implementation Requirements
+
+1. **Shared memory segment:** Allocate in `/dev/shm` (tmpfs, zero-copy)
+2. **Size calculation:** Max frame size = `sizeof(SharedFrame) + MAX_ACTIVE_NODES * sizeof(NodeState)`
+3. **ZMQ notification:** Use PUB-SUB pattern for frame-ready signals (no blocking)
+4. **Cleanup:** Unlink shared memory on shutdown (`shm_unlink`)
+
+### Performance Impact
+
+- **Latency:** 100μs → 1μs (100x reduction)
+- **Bandwidth:** No serialization overhead (direct memory access)
+- **CPU:** 10% → 0.1% (no protobuf encoding)
+
+**Priority:** P2 (Medium)  
+**Timeline:** 2 days  
+**Validation:** Visualizer must receive frames with <10μs latency jitter
+
+---
+
+## 7. 128-BIT MORTON CODES FOR Z-ORDER CURVES
+
+### Problem Statement
+
+Sparse grid hashing uses Z-order (Morton) curves to map 9D coordinates to linear indices. Standard implementation:
+
+```cpp
+// ❌ INSUFFICIENT: 64-bit keys cause collisions at high resolution
+uint64_t morton_encode_9d(const std::array<uint16_t, 9>& coords) {
+    // Each coordinate is 7 bits (max value 127)
+    // Total: 9 × 7 = 63 bits (fits in uint64_t)
+    // ...
+}
+```
+
+**Issue:** This limits grid resolution to $128^9 \approx 10^{18}$ voxels. For detailed memory regions, we need $2^{14} = 16384$ voxels per dimension, requiring $9 \times 14 = 126$ bits.
+
+**Consequence:** Hash collisions overwrite existing memories (data corruption).
+
+### Solution: __int128_t Morton Codes
+
+```cpp
+// ✅ MANDATORY: 128-bit Morton codes (14 bits per dimension × 9 = 126 bits)
+using MortonCode = __uint128_t;  // GCC/Clang extension
+
+MortonCode morton_encode_9d(const std::array<uint16_t, 9>& coords) {
+    MortonCode result = 0;
+    
+    for (int bit = 0; bit < 14; bit++) {
+        for (int dim = 0; dim < 9; dim++) {
+            // Extract bit from coordinate
+            uint16_t coord_bit = (coords[dim] >> bit) & 1;
+            
+            // Place bit in Morton code
+            int morton_bit_pos = bit * 9 + dim;
+            result |= (static_cast<MortonCode>(coord_bit) << morton_bit_pos);
+        }
+    }
+    
+    return result;
+}
+
+std::array<uint16_t, 9> morton_decode_9d(MortonCode code) {
+    std::array<uint16_t, 9> coords = {0};
+    
+    for (int bit = 0; bit < 14; bit++) {
+        for (int dim = 0; dim < 9; dim++) {
+            int morton_bit_pos = bit * 9 + dim;
+            uint16_t coord_bit = (code >> morton_bit_pos) & 1;
+            coords[dim] |= (coord_bit << bit);
+        }
+    }
+    
+    return coords;
+}
+```
+
+### Hash Table Implementation
+
+```cpp
+#include <unordered_map>
+
+// Custom hash function for __uint128_t
+struct MortonHasher {
+    size_t operator()(__uint128_t key) const {
+        // XOR high and low 64 bits
+        uint64_t low = static_cast<uint64_t>(key);
+        uint64_t high = static_cast<uint64_t>(key >> 64);
+        return std::hash<uint64_t>{}(low ^ high);
+    }
+};
+
+// Sparse grid map
+std::unordered_map<__uint128_t, TorusNodeProxy, MortonHasher> sparse_grid;
+```
+
+### Implementation Requirements
+
+1. **Compiler support:** GCC/Clang only (MSVC uses `_BitInt(128)` in C++23)
+2. **Serialization:** Split into two `uint64_t` for storage/transmission
+3. **Overflow checks:** Assert coordinates are ≤ 16383 (14 bits)
+
+### Performance Impact
+
+- **Collision rate:** 100% → 0% (eliminates hash collisions)
+- **Memory overhead:** 8 bytes → 16 bytes per key (acceptable)
+- **Correctness:** CRITICAL (prevents data corruption)
+
+**Priority:** P1 (High)  
+**Timeline:** 1 day  
+**Validation:** Insert 10M nodes with no collisions, verify retrieval
+
+---
+
+## 8. Q9_0 QUANTIZATION CORRECTION
+
+### Problem Statement
+
+The original spec suggested Q9_0 quantization packs 5 nits into `uint16_t`:
+- $9^5 = 59,049 < 65,536$ ✅ Fits
+- Storage: $16 / 5 = 3.2$ bits per nit
+
+**Issue:** The encoding/decoding logic must handle the 9-ary radix conversion correctly. Naive implementation:
+
+```cpp
+// ❌ INCORRECT: Loses precision for large values
+uint16_t encode_q9(const Nit nits[5]) {
+    uint16_t result = 0;
+    for (int i = 0; i < 5; i++) {
+        int digit = static_cast<int>(nits[i]) + 4;  // Convert [-4,4] to [0,8]
+        result = result * 9 + digit;  // Radix 9 accumulation
+    }
+    return result;
+}
+```
+
+This works but loses the ability to index individual nits efficiently.
+
+### Solution: Proper Radix Encoding
+
+```cpp
+// ✅ CORRECT: Radix-9 encoding with explicit powers
+uint16_t encode_q9_0(const std::array<Nit, 5>& nits) {
+    static constexpr uint16_t POWERS_OF_9[5] = {1, 9, 81, 729, 6561};
+    
+    uint16_t result = 0;
+    for (int i = 0; i < 5; i++) {
+        int digit = static_cast<int>(nits[i]) + 4;  // [-4,4] → [0,8]
+        result += digit * POWERS_OF_9[i];
+    }
+    
+    return result;
+}
+
+std::array<Nit, 5> decode_q9_0(uint16_t encoded) {
+    static constexpr uint16_t POWERS_OF_9[5] = {1, 9, 81, 729, 6561};
+    std::array<Nit, 5> nits;
+    
+    for (int i = 4; i >= 0; i--) {
+        int digit = encoded / POWERS_OF_9[i];
+        nits[i] = static_cast<Nit>(digit - 4);  // [0,8] → [-4,4]
+        encoded %= POWERS_OF_9[i];
+    }
+    
+    return nits;
+}
+```
+
+### SIMD Batch Encoding
+
+```cpp
+// Encode 64 nits (12.8 uint16_t values) using AVX-512
+void encode_q9_0_batch(const int8_t* nits, uint16_t* encoded, size_t count) {
+    static constexpr int CHUNK_SIZE = 5;
+    
+    for (size_t i = 0; i + CHUNK_SIZE <= count; i += CHUNK_SIZE) {
+        std::array<Nit, 5> chunk;
+        std::memcpy(chunk.data(), nits + i, CHUNK_SIZE);
+        encoded[i / CHUNK_SIZE] = encode_q9_0(chunk);
+    }
+    
+    // Handle remainder
+    // ...
+}
+```
+
+### Implementation Requirements
+
+1. **Validation:** Roundtrip test (encode → decode must match input)
+2. **Bounds checking:** Assert nits are in [-4, 4] before encoding
+3. **Alignment:** Pad to multiple of 5 nits for efficient SIMD processing
+
+### Performance Impact
+
+- **Storage:** 8 bits → 3.2 bits per nit (2.5x compression)
+- **Speed:** Encoding/decoding is ~50ns per 5-nit block (negligible)
+
+**Priority:** P2 (Medium)  
+**Timeline:** 1 day  
+**Validation:** 1M nit roundtrip test with 100% accuracy
+
+---
+
+## 9. VALIDATION AND MONITORING
+
+### 9.1 Energy Watchdog
+
+**Purpose:** Detect numerical instability by monitoring total system energy.
+
+```cpp
+class EnergyWatchdog {
+    double initial_energy = 0.0;
+    double tolerance = 1e-4;  // 0.01% drift allowed
+    
+public:
+    void initialize(const TorusGrid& grid) {
+        initial_energy = compute_total_energy(grid);
+    }
+    
+    void check(const TorusGrid& grid, int step) {
+        if (step % 100 != 0) return;  // Check every 100 steps
+        
+        double current_energy = compute_total_energy(grid);
+        double drift = std::abs(current_energy - initial_energy) / initial_energy;
+        
+        if (drift > tolerance) {
+            std::cerr << "CRITICAL: Energy drift " << drift * 100 << "% at step " 
+                      << step << std::endl;
+            std::cerr << "Initial: " << initial_energy 
+                      << ", Current: " << current_energy << std::endl;
+            std::abort();  // Fail fast
+        }
+    }
+    
+private:
+    double compute_total_energy(const TorusGrid& grid) {
+        double kinetic = 0.0, potential = 0.0;
+        
+        for (const auto& node : grid.active_nodes()) {
+            // Kinetic energy: (1/2) * |∂Ψ/∂t|²
+            kinetic += 0.5 * std::norm(node.psi_velocity);
+            
+            // Potential energy: (1/2) * |∇Ψ|² (computed via Laplacian)
+            potential += 0.5 * std::norm(node.laplacian);
+        }
+        
+        return kinetic + potential;
+    }
+};
+```
+
+### 9.2 Performance Profiler
+
+**Purpose:** Identify bottlenecks in the physics loop.
+
+```cpp
+class PhysicsProfiler {
+    std::unordered_map<std::string, std::chrono::nanoseconds> timings;
+    
+public:
+    struct ScopedTimer {
+        PhysicsProfiler& profiler;
+        std::string name;
+        std::chrono::steady_clock::time_point start;
+        
+        ScopedTimer(PhysicsProfiler& p, std::string n) 
+            : profiler(p), name(std::move(n)), 
+              start(std::chrono::steady_clock::now()) {}
+        
+        ~ScopedTimer() {
+            auto elapsed = std::chrono::steady_clock::now() - start;
+            profiler.record(name, elapsed);
+        }
+    };
+    
+    void record(const std::string& name, std::chrono::nanoseconds duration) {
+        timings[name] += duration;
+    }
+    
+    void print_report(int num_frames) {
+        std::cout << "=== Physics Profiler ===" << std::endl;
+        for (const auto& [name, total] : timings) {
+            double avg_ms = total.count() / (1e6 * num_frames);
+            std::cout << name << ": " << avg_ms << " ms/frame" << std::endl;
+        }
+    }
+};
+
+// Usage:
+void physics_step() {
+    PhysicsProfiler::ScopedTimer timer(profiler, "LaplacianCompute");
+    compute_laplacian();
+}
+```
+
+### 9.3 Correctness Tests
+
+**Harmonic Oscillator Test:**
+
+```cpp
+void test_harmonic_oscillator() {
+    // Initial condition: Gaussian wave packet
+    // Ψ(x,0) = exp(-x²/2) * exp(ikx)
+    
+    // Expected: Oscillates with frequency ω = √(c² + k²)
+    // Energy should remain constant
+    
+    // Run for 1000 cycles, check amplitude preservation
+}
+```
+
+**Standing Wave Test:**
+
+```cpp
+void test_standing_wave() {
+    // Initial: sin(πx/L) * sin(πy/L) pattern
+    // Expected: Remains stationary (zero group velocity)
+    
+    // Run for 10,000 steps, check position stability
+}
+```
+
+**Priority:** P1 (High)  
+**Timeline:** Integrated into Phase 0 validation  
+**Gate:** All tests must pass before Phase 1
+
+---
+
+## 10. PHASE 0 COMPLETION CHECKLIST
+
+### P0 Tasks (Critical - 6 days)
+
+- [ ] **Day 1-2:** Refactor `TorusNode` to SoA layout (`TorusBlock`)
+  - [ ] Create `TorusBlock` struct with aligned arrays
+  - [ ] Implement `TorusNodeProxy` accessor class
+  - [ ] Update grid allocation code
+  - [ ] Update CUDA kernels for coalesced access
+  - [ ] **Validation:** Measure memory bandwidth (must achieve >80% of peak)
+
+- [ ] **Day 3-5:** Implement Split-Operator Symplectic Integration
+  - [ ] Replace Verlet with 6-step Strang splitting
+  - [ ] Implement analytical damping decay
+  - [ ] Add adaptive timestep control
+  - [ ] **Validation:** Energy drift <0.0001% over 10K steps
+
+- [ ] **Day 6:** Implement Kahan Summation for Laplacian
+  - [ ] Update Laplacian accumulation loops
+  - [ ] Add CUDA kernel with compensation
+  - [ ] **Validation:** Standing wave amplitude stable to 6 decimals over 1M steps
+
+### P1 Tasks (High - 6 days)
+
+- [ ] **Day 7-8:** AVX-512 Nonary Arithmetic
+  - [ ] Implement vectorized add/multiply
+  - [ ] Create lookup tables
+  - [ ] Add CPU feature detection
+  - [ ] **Validation:** 10M operations in <50μs
+
+- [ ] **Day 9-11:** Lazy Cholesky Decomposition
+  - [ ] Add `MetricTensorCache` class
+  - [ ] Implement dirty tracking
+  - [ ] Add batch update logic
+  - [ ] **Validation:** Metric overhead <5% of runtime
+
+- [ ] **Day 12:** Energy Watchdog
+  - [ ] Implement energy computation
+  - [ ] Add periodic checks
+  - [ ] **Validation:** Detect artificial drift injection
+
+### P2 Tasks (Medium - 5 days)
+
+- [ ] **Day 13-14:** Shared Memory IPC
+  - [ ] Create seqlock implementation
+  - [ ] Allocate `/dev/shm` segment
+  - [ ] Integrate with ZMQ notifications
+  - [ ] **Validation:** <10μs latency jitter
+
+- [ ] **Day 15-16:** Mamba Taylor Approximation
+  - [ ] Implement first-order matrix approximation
+  - [ ] Add adaptive timestep
+  - [ ] **Validation:** 10x speedup vs full matrix exp
+
+- [ ] **Day 17:** Q9_0 Quantization
+  - [ ] Implement radix-9 encoding
+  - [ ] Add batch SIMD encoder
+  - [ ] **Validation:** 1M roundtrip with 100% accuracy
+
+### Gate Review
+
+**Criteria for Phase 1 Entry:**
+1. ✅ All P0 and P1 tasks complete
+2. ✅ All validation tests pass
+3. ✅ Energy watchdog operational
+4. ✅ Physics step <1ms on sparse 27³ grid
+5. ✅ Code review completed (2 engineer sign-off)
+
+**If gate fails:** Remediation continues until all criteria met. NO EXCEPTIONS.
+
+---
+
+## CONCLUSION
+
+Phase 0 remediation is **non-negotiable**. The original specification contained latent defects that would cause catastrophic failure in production. These fixes transform the system from a theoretical model into a production-ready implementation.
+
+**Expected Outcome:** After Phase 0, the physics engine will:
+- Run stably for days without divergence
+- Achieve real-time performance on commodity hardware
+- Preserve memory precision over millions of cycles
+- Provide a solid foundation for cognitive layer development
+
+**Next Steps:** Upon successful gate review, proceed to Phase 1 (Core Physics Engine) with confidence that the foundation is mathematically sound and computationally stable.
+# Nikola Model v0.0.4: Implementation Roadmap
+
+## 8.7 Executive Summary
+
+This document provides the definitive implementation roadmap for the Nikola Model v0.0.4, converting the theoretical architecture into a buildable specification. All 37 identified implementation gaps have been addressed with concrete specifications, reference implementations, validation procedures, and failure mode analyses.
+
+**Status Update (2025-12-10):** 🔴 **ON HOLD** - Critical blocking dependencies discovered
+
+**Critical Finding:** Aria's implementation review identified 2 Priority 1 blocking issues that must be resolved before Phase 1-7 implementation can begin.
+
+**Next Step:** Implement Phase 0 Critical Remediations (CF-04, MEM-04)
+
+---
+
+## ⚠️ CRITICAL: Phase 0 - Blocking Dependencies (NEW)
+
+**Timeline:** Weeks 1-3
+**Dependencies:** None (foundational blockers)
+**Priority:** 🔴 **CRITICAL - BLOCKS ALL OTHER PHASES**
+
+### Overview
+
+During implementation review, Lead Architect Aria Echo identified 2 **Priority 1 Critical** architectural vulnerabilities that must be remediated before any Phase 1-7 work can proceed. These represent fundamental stability and coherence issues.
+
+**Document:** [08_critical_remediations.md](08_critical_remediations.md)
+
+### Finding CF-04: Transactional Metabolic Lock
+
+**Problem:** Thermodynamic race condition in ATP (metabolic energy) management
+**Impact:** System can enter negative energy states causing "cognitive seizures" (catastrophic failure)
+**Solution:** RAII-based transactional guards using atomic Compare-And-Swap (CAS)
+
+#### Deliverables
+
+1. **MetabolicTransaction Class** (C++23 RAII)
+   - Atomic CAS-based reservation protocol
+   - Automatic rollback on exception
+   - Thread-safe energy accounting
+
+2. **MetabolicController Extensions**
+   - `try_reserve()` with CAS loop
+   - `refund()` for rollback support
+   - Memory ordering guarantees
+
+#### Validation Requirements
+
+- **Unit Test:** 10 threads competing for limited ATP - exact accounting verified
+- **Rollback Test:** Exception safety - energy refunded on failure
+- **Integration Test:** System enters Nap gracefully, never crashes or goes negative
+
+**Risk Level:** 🔴 **CRITICAL** - Without this, concurrent operations can violate conservation laws
+
+### Finding MEM-04: Hilbert Re-indexing Strategy
+
+**Problem:** Morton codes create spatial discontinuities destroying Mamba-9D sequential coherence
+**Impact:** "Semantic aphasia" - high perplexity, hallucinations, inefficient neurogenesis
+**Solution:** Causal-Foliated Hilbert scanning preserving temporal + spatial locality
+
+#### Deliverables
+
+1. **HilbertScanner Class** (128-bit precision)
+   - `encode_hilbert_9d()` for 9D → 1D mapping
+   - `generate_scan_order()` with time-first foliation
+   - `reindex_grid()` for SoA memory reorganization
+
+2. **Orchestrator Integration**
+   - Fragmentation index monitoring
+   - Periodic re-indexing (threshold = 0.15)
+   - Transparent to Mamba-9D layer
+
+#### Validation Requirements
+
+- **Locality Preservation Ratio (LPR):** LPR(Hilbert) < 0.8 × LPR(Morton)
+- **Mamba Perplexity Test:** Validation loss on Hilbert-sorted data significantly lower (p < 0.05)
+- **Neurogenesis Test:** New nodes remain connected to semantic neighbors
+
+**Risk Level:** 🔴 **CRITICAL** - Without this, Mamba-9D cannot learn coherent patterns
+
+### Phase 0 Success Criteria
+
+Before proceeding to Phase 1:
+
+1. ✅ CF-04 passes all unit/integration tests (no race conditions)
+2. ✅ MEM-04 demonstrates LPR improvement > 20%
+3. ✅ Mamba perplexity reduced by statistically significant margin
+4. ✅ Both implementations integrated into Orchestrator control loop
+5. ✅ No performance regression (re-indexing overhead acceptable)
+
+**Timeline Impact:** Adds 3 weeks to schedule (original Phase 1 becomes Weeks 4-11)
+
+---
+
+## Implementation Phases (Updated)
+
+### Phase 1: Physics Core (Critical Path)
+
+**Timeline:** Weeks 4-11 (updated from 1-8)
+**Dependencies:** Phase 0 complete (CF-04, MEM-04)
+**Priority:** HIGHEST
+
+#### Deliverables
+
+1. **UFIE Physics Engine** ([01_core_physics_implementation.md](01_core_physics_implementation.md))
+   - Gap 1.1: Emitter field generation with harmonic spatial injection ✅
+   - Gap 1.2: Thermal bath velocity initialization ✅
+   - Gap 1.3: Perfectly Matched Layer boundary conditions ✅
+   - Gap 1.4: CUDA kernel launch configuration (256 threads/block) ✅
+   - Gap 1.5: Quantum Zeno Freeze recovery procedure ✅
+   - Gap 1.6: Double-buffered profiling hooks ✅
+
+2. **Validation Requirements**
+   - Energy conservation test: |ΔH/H| < 0.01% over 10,000 steps
+   - Symplectic integration stability verification
+   - Ortho-check: Injected tokens maintain soft orthogonality
+   - Performance: Achieve 1000-2000 Hz physics loop on RTX 4090
+
+#### Critical Success Factors
+
+- **Energy conservation is mandatory.** Violations cause system "seizures"
+- **Numerical stability** requires FP32 with Kahan summation
+- **Real-time requirement:** Must sustain 2 kHz loop for responsiveness
+
+**Risk Level:** 🔴 **HIGHEST** - If Gap 1.1 (emitter scaling) is wrong, the nonlinearity β causes immediate numerical explosion.
+
+---
+
+### Phase 2: Manifold Geometry (Enabler)
+
+**Timeline:** Weeks 12-17 (updated from 9-14)
+**Dependencies:** Phase 0, Phase 1 complete
+**Priority:** HIGH
+
+#### Deliverables
+
+1. **9D Toroidal Grid** ([02_geometry_spatial_implementation.md](02_geometry_spatial_implementation.md))
+   - Gap 2.1: Gerschgorin + Tikhonov metric validation ✅
+   - Gap 2.2: Hilbert curve rotation table generation ✅
+   - Gap 2.3: Anisotropic resolution allocation (x,y,z=64, t=128, r,s=16, u,v,w=32) ✅
+   - Gap 2.4: Dual integer/float coordinate system ✅
+   - Gap 2.5: Dopamine-modulated learning rate schedule ✅
+
+2. **Validation Requirements**
+   - Metric tensor always positive-definite (no Cholesky failures)
+   - Morton/Hilbert encoding round-trip test
+   - Spatial indexing performance: O(log N) neighbor lookup
+
+#### Critical Success Factors
+
+- **Without the grid, physics has nowhere to run**
+- Sparse addressing essential for memory efficiency
+- Metric learning enables neuroplasticity
+
+**Risk Level:** 🟡 **MEDIUM** - Metric validation is critical but well-understood mathematically.
+
+---
+
+### Phase 3: Cognitive Architecture (Intelligence Emerges)
+
+**Timeline:** Weeks 18-25 (updated from 15-22)
+**Dependencies:** Phase 0, Phases 1, 2 complete
+**Priority:** HIGH
+
+#### Deliverables
+
+1. **Mamba-9D Language Model** ([03_cognitive_architecture_implementation.md](03_cognitive_architecture_implementation.md))
+   - Gap 3.1: LSH-based semantic token mapping ✅
+   - Gap 3.2: SSM dimension = 256 (r×s state space) ✅
+   - Gap 3.3: Sliding wave window (L_eff ≈ 100 steps) ✅
+   - Gap 3.4: Physics-grounded lexicon initialization via FFT ✅
+   - Gap 3.5: Born rule sampling with temperature as noise ✅
+   - Gap 3.6: Equilibrium Propagation training (no backprop through physics) ✅
+
+2. **Validation Requirements**
+   - Token generation latency: 10-50 tokens/second
+   - Semantic clustering: Synonyms within 10 grid cells
+   - Training convergence: Energy decreases over 100 EqProp iterations
+
+#### Critical Success Factors
+
+- **Bridges continuous physics to discrete tokens**
+- Equilibrium Propagation avoids gradient explosion
+- Spectral signatures ground lexicon in physics
+
+**Risk Level:** 🟡 **MEDIUM** - Novel training approach requires empirical tuning.
+
+---
+
+### Phase 4: Infrastructure & Communications (Orchestration)
+
+**Timeline:** Weeks 19-23 (updated from 16-20, parallel with Phase 3)
+**Dependencies:** Phase 0 complete (can run concurrently with Phases 1-3)
+**Priority:** MEDIUM
+
+#### Deliverables
+
+1. **ZeroMQ Spine** ([04_infrastructure_comms_implementation.md](04_infrastructure_comms_implementation.md))
+   - Gap 4.1: Circuit breaker timeouts (100ms control, 5ms data) ✅
+   - Gap 4.2: Heartbeat sentinel crash detection (500ms) ✅
+   - Gap 4.3: RAII shared memory lifecycle ✅
+   - Gap 4.4: ZMQ socket configuration (HWM=1000, LINGER=0) ✅
+   - Gap 4.5: Append-only Protobuf schema evolution ✅
+
+2. **Validation Requirements**
+   - Latency: 99th percentile < 50ms for control messages
+   - Fault tolerance: Detect and restart crashed components within 500ms
+   - Memory: SHM cleanup prevents leaks
+
+#### Critical Success Factors
+
+- **Enables distributed architecture**
+- CurveZMQ provides authentication
+- Orchestrator coordinates component lifecycle
+
+**Risk Level:** 🟢 **LOW** - Well-established patterns (ZeroMQ, Protobuf).
+
+---
+
+### Phase 5: Autonomous Systems (Self-Regulation)
+
+**Timeline:** Weeks 26-31 (updated from 23-28)
+**Dependencies:** Phase 0, Phases 1-3 complete
+**Priority:** MEDIUM
+
+#### Deliverables
+
+1. **ENGS (Extended Neurochemical Gating)** ([05_autonomous_systems_implementation.md](05_autonomous_systems_implementation.md))
+   - Gap 5.1: TD-learning dopamine system ✅
+   - Gap 5.2: Monte Carlo entropy estimation (K=1000) ✅
+   - Gap 5.3: Hamiltonian metabolic cost ✅
+   - Gap 5.4: ATP hysteresis nap cycle (15-60 seconds) ✅
+   - Gap 5.5: Frobenius norm Dream-Weave convergence ✅
+
+2. **Validation Requirements**
+   - Dopamine response: Spike to 0.8 on reward, dip to 0.2 on punishment
+   - Boredom triggers exploration when entropy < 2.0
+   - ATP depletion triggers NAP after sustained high-frequency activity
+
+#### Critical Success Factors
+
+- **Creates goal-directed behavior**
+- Curiosity-driven exploration
+- Metabolic resource management
+
+**Risk Level:** 🟡 **MEDIUM** - If Gap 5.1 (dopamine) is poorly tuned, system becomes catatonic or manic.
+
+---
+
+### Phase 6: Multimodal & Persistence (Real-World Interface)
+
+**Timeline:** Weeks 32-37 (updated from 29-34)
+**Dependencies:** Phase 0, Phases 1-3 complete
+**Priority:** MEDIUM
+
+#### Deliverables
+
+1. **Sensory Transduction** ([06_multimodal_persistence_implementation.md](06_multimodal_persistence_implementation.md))
+   - Gap 6.1: Circular audio emitter array (golden ratio frequencies) ✅
+   - Gap 6.2: 64×64 log-polar visual transform ✅
+   - Gap 6.3: Event-driven checkpointing (300s periodic + NAP trigger) ✅
+   - Gap 6.4: GGUF metadata schema ✅
+   - Gap 6.5: Adaptive Q9_0/FP16 compression ✅
+
+2. **Validation Requirements**
+   - Audio: FFT shows 8 distinct harmonic peaks
+   - Visual: Log-polar foveal emphasis matches biological vision
+   - Checkpointing: DMC save/restore without data loss
+
+#### Critical Success Factors
+
+- **Grounds physics in sensory reality**
+- Efficient state persistence
+- GGUF enables llama.cpp compatibility
+
+**Risk Level:** 🟢 **LOW** - Standard signal processing techniques.
+
+---
+
+### Phase 7: Security & Execution (Containment)
+
+**Timeline:** Weeks 38-43 (updated from 35-40)
+**Dependencies:** Phase 0, Phase 4 complete
+**Priority:** HIGH (security-critical)
+
+#### Deliverables
+
+1. **KVM Sandbox** ([07_security_execution_implementation.md](07_security_execution_implementation.md))
+   - Gap 7.1: Alpine 3.19 minimal VM image with Packer ✅
+   - Gap 7.2: Strict inter-VM isolation (host-mediated only) ✅
+   - Gap 7.3: eBPF escape detection (execve, file access) ✅
+   - Gap 7.4: Regex code blacklist (system, exec, asm, networking) ✅
+   - Gap 7.5: Agentless CGroup performance monitoring ✅
+
+2. **Validation Requirements**
+   - VM cannot access network
+   - VM cannot execute system(), exec(), fork()
+   - eBPF detects and kills escape attempts within 100ms
+   - CGroup enforces 512MB RAM, 1 vCPU limits
+
+#### Critical Success Factors
+
+- **Self-generated code cannot escape**
+- Multi-layered defense (prevention, containment, detection, response)
+- Resource quotas prevent DoS
+
+**Risk Level:** 🔴 **HIGH** - Security failures could compromise host system.
+
+---
+
+## Inter-Dependencies (Updated with Phase 0)
+
+### Critical Path
+
+```
+                    **Phase 0 (Critical Remediations)**
+                    CF-04 + MEM-04 (Weeks 1-3)
+                              |
+                              v
+Phase 1 (Physics) → Phase 2 (Geometry) → Phase 3 (Cognition)
+                                            ↓
+                                         Phase 5 (Autonomy)
+                                            ↓
+                                         Phase 6 (Multimodal)
+```
+
+### Parallel Tracks
+
+- **Phase 0 (Critical)** blocks ALL other phases
+- **Phase 4 (Infrastructure)** can run concurrently with Phases 1-3 after Phase 0 complete
+- **Phase 7 (Security)** can begin after Phase 0, Phase 4 complete (uses orchestration layer)
+
+---
+
+## Risk Assessment (Updated)
+
+### Critical (Phase 0) - Blocking All Implementation
+
+1. **Finding CF-04 (Metabolic Lock)** 🔴🔴
+   **Impact:** Thermodynamic race condition → negative energy states → cognitive seizures → system crash
+   **Mitigation:** RAII transactional guards, atomic CAS operations, comprehensive unit testing
+   **Status:** BLOCKS Phase 1-7
+

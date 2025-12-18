@@ -1,0 +1,1871 @@
+################################################################################
+# NIKOLA AGI v0.0.4 FINAL ENGINEERING REPORT - PART 7 OF 9
+# Implementation Guide: Phase 1-7 Development Roadmap
+################################################################################
+#
+# Compiled: 2025-12-18 18:50:55 UTC
+#
+# SECTION 8 (Part 3 of 3): Implementation Phases 1-7
+# Covers: Physics Core, Manifold Geometry, Cognitive Architecture,
+#         Infrastructure, Autonomous Systems, Multimodal, Security
+#
+################################################################################
+
+
+================================================================================
+SECTION: 8.0 Implementation Guide (Sections 8.9-8.11)
+================================================================================
+
+<!-- SOURCE: /home/randy/._____RANDY_____/REPOS/nikola/docs/info/gemini/compilation/final_report/part_7_of_9.txt.tmp -->
+
+
+2. **Finding MEM-04 (Hilbert Re-indexing)** 🔴🔴
+   **Impact:** Spatial discontinuity → semantic aphasia → high perplexity, hallucinations
+   **Mitigation:** Causal-Foliated Hilbert scanning, locality preservation validation
+   **Status:** BLOCKS Phase 1-7 (specifically Phase 3)
+
+### Highest Risk Items (Original Gaps)
+
+3. **Gap 1.1 (Emitter Injection)** 🔴
+   **Impact:** Numerical explosion if amplitude scaling is wrong
+   **Mitigation:** Rigorous validation with PhysicsOracle energy watchdog
+
+4. **Gap 5.1 (Dopamine)** 🔴
+   **Impact:** System becomes unresponsive (catatonic) or hallucinates (manic)
+   **Mitigation:** Extensive parameter sweep, empirical tuning with real tasks
+
+5. **Gap 7.3 (VM Escape Detection)** 🔴
+   **Impact:** Malicious self-generated code compromises host
+   **Mitigation:** eBPF monitoring + multi-layered defense
+
+### Medium Risk Items
+
+- Metric tensor validation (Gap 2.1): Mathematical solution exists (Tikhonov regularization)
+- Equilibrium Propagation training (Gap 3.6): Novel but theoretically sound
+- Entropy estimation (Gap 5.2): Monte Carlo approximation well-understood
+
+### Low Risk Items
+
+- Infrastructure (Phase 4): Mature technologies (ZeroMQ, Protobuf)
+- Multimodal (Phase 6): Standard signal processing
+- Most geometry operations: Well-established algorithms
+
+---
+
+## Resource Requirements
+
+### Hardware
+
+- **Development:** RTX 4090 GPU (24GB VRAM) for physics testing
+- **Production:** 2× RTX 4090 for redundancy
+- **CPU:** AMD Threadripper (16+ cores) for parallel component execution
+- **RAM:** 128GB DDR5 for large grid allocations
+- **Storage:** 2TB NVMe SSD for checkpoints and logs
+
+### Software
+
+- **OS:** Ubuntu 22.04 LTS (KVM host)
+- **CUDA:** 12.3+
+- **Compiler:** GCC 13+ (C++23 support) or Clang 17+
+- **Libraries:** Eigen3, FFTW3, ZeroMQ, Protobuf, OpenCV, libbpf
+
+### Team
+
+- **Physics Engineer:** Implement UFIE, symplectic integration, CUDA kernels
+- **Systems Architect:** Orchestration, ZeroMQ, component lifecycle
+- **ML Engineer:** Mamba-9D, token mapping, Equilibrium Propagation
+- **Security Engineer:** KVM sandboxing, eBPF monitoring, static analysis
+- **Integration Engineer:** End-to-end testing, validation procedures
+
+---
+
+## Success Criteria (Updated)
+
+### Phase 0 Gate (Week 3)
+
+Before ANY other implementation can begin:
+1. ✅ CF-04 passes all unit/integration tests (no ATP race conditions)
+2. ✅ MEM-04 demonstrates LPR improvement > 20% over Morton codes
+3. ✅ Mamba perplexity statistically significantly reduced (p < 0.05)
+4. ✅ Orchestrator integration complete, no performance regression
+5. ✅ All validation tests pass
+
+🔴 **GATE - Nothing proceeds until Phase 0 complete**
+
+### Minimum Viable Product (MVP)
+
+By end of Phase 3 (Week 25, updated from 22):
+1. ✅ Phase 0 complete (CF-04, MEM-04)
+2. ✅ Physics engine sustains 1 kHz loop with <0.01% energy drift
+3. ✅ 9D manifold supports 1M active nodes with sparse addressing
+4. ✅ Language generation produces coherent tokens at 10 tokens/sec
+5. ✅ Energy conservation never violated (no crashes)
+6. ✅ Spatial locality preserved (Hilbert scanning)
+
+### Full System (Production-Ready)
+
+By end of Phase 7 (Week 43, updated from 40):
+1. ✅ All 37 gaps + 2 critical findings implemented and validated
+2. ✅ Autonomous behavior: Dopamine-driven learning, boredom exploration, NAP cycles
+3. ✅ Multimodal: Audio + visual input transduction
+4. ✅ Security: Self-generated code runs in KVM sandbox, no escapes possible
+5. ✅ Persistence: DMC checkpoints enable save/restore
+6. ✅ Performance: 2 kHz physics loop, 50 tokens/sec generation
+7. ✅ Thermodynamic consistency enforced (CF-04)
+8. ✅ Cognitive coherence maintained (MEM-04)
+
+---
+
+## Validation & Testing Strategy
+
+### Unit Tests
+
+- Each gap implementation includes validation procedure
+- Automated tests for energy conservation, metric validity, collision detection
+
+### Integration Tests
+
+1. **Physics + Geometry:** Inject token, verify wavefunction propagates correctly
+2. **Cognition + Physics:** Generate sequence, verify tokens map to grid coordinates
+3. **Infrastructure + All Components:** Orchestrator manages component lifecycle
+4. **Security + Execution:** Attempt VM escape, verify eBPF kills process
+
+### Performance Benchmarks
+
+- **Physics Loop:** Target 2000 Hz on RTX 4090
+- **Token Generation:** Target 50 tokens/sec
+- **Memory Bandwidth:** < 100 GB/s (stay within GPU limits)
+- **Latency:** Control messages < 50ms (99th percentile)
+
+### Stress Tests
+
+- **10M active nodes:** Verify sparse grid scales
+- **Continuous operation:** Run for 72 hours without crashes
+- **Resource exhaustion:** Verify graceful degradation when ATP depleted
+
+---
+
+## Next Steps (Updated with Phase 0)
+
+### 🔴 CRITICAL: Immediate Actions (Phase 0)
+
+**STOP:** Original Phase 1-7 implementation is **ON HOLD** until Phase 0 complete.
+
+1. **Initialize Repository**
+   ```bash
+   mkdir -p nikola_v0.0.4/{src,tests,docs,benchmarks}
+   cd nikola_v0.0.4 && git init
+   ```
+
+2. **Setup Build System** (CMake)
+   - C++23 compiler support (GCC 13+ or Clang 17+)
+   - Atomic operations library
+   - OpenMP for parallel Hilbert sorting
+   - Test harness (Google Test)
+
+3. **Implement CF-04** (Transactional Metabolic Lock)
+   - Create `include/nikola/autonomy/metabolic_lock.hpp`
+   - Create `src/autonomy/metabolic_lock.cpp`
+   - Update `metabolic_controller.hpp` with CAS operations
+   - Write comprehensive unit tests (atomic reserve, rollback, exhaustion)
+
+4. **Implement MEM-04** (Hilbert Re-indexing)
+   - Create `include/nikola/spatial/hilbert_scanner.hpp`
+   - Create `src/spatial/hilbert_scanner.cpp`
+   - Implement 128-bit Hilbert encoding
+   - Write validation tests (LPR, Mamba perplexity)
+
+5. **Integrate into Orchestrator**
+   - Update `orchestrator.cpp` control loop
+   - Add fragmentation index monitoring
+   - Implement exception handling for MetabolicExhaustionException
+
+6. **Validation & Gate Review**
+   - Run all Phase 0 unit tests
+   - Measure LPR improvement
+   - Conduct Mamba perplexity comparison
+   - Performance regression testing
+
+### Week 1 Milestones (Phase 0 Focus)
+
+- [ ] Repository initialized
+- [ ] CMake build system functional
+- [ ] CF-04: MetabolicTransaction class compiles
+- [ ] CF-04: Atomic CAS unit tests passing
+- [ ] CF-04: Rollback test passing
+
+### Week 2 Milestones (Phase 0 Focus)
+
+- [ ] MEM-04: HilbertScanner class compiles
+- [ ] MEM-04: 128-bit encoding functional
+- [ ] MEM-04: Causal-foliated sorting working
+- [ ] MEM-04: LPR measurement implemented
+
+### Week 3 Milestones (Phase 0 Gate)
+
+- [ ] CF-04: All unit/integration tests passing
+- [ ] MEM-04: LPR improvement > 20% demonstrated
+- [ ] MEM-04: Mamba perplexity significantly reduced
+- [ ] Orchestrator integration complete
+- [ ] 🚀 **PHASE 0 GATE PASSED** → Proceed to Phase 1
+
+---
+
+## Long-Term Enhancements (Post-MVP)
+
+These are **not** required for initial deployment but represent future optimization opportunities:
+
+1. **Multi-GPU Scaling:** Shard grid across multiple GPUs
+2. **Adaptive Resolution:** Dynamically allocate grid cells based on attention
+3. **Learned Metric Initialization:** Pre-train metric tensor on large corpus
+4. **Hardware Acceleration:** Custom FPGA for Laplace-Beltrami operator
+5. **Distributed Physics:** Run physics engine across cluster for massive scale
+
+---
+
+## Conclusion (Updated)
+
+This roadmap converts the theoretical Nikola v0.0.4 architecture into a concrete, buildable specification. By addressing all 37 implementation gaps + 2 critical findings with:
+
+- ✅ Concrete mathematical specifications
+- ✅ Production-ready C++23/CUDA reference implementations
+- ✅ Rigorous validation procedures
+- ✅ Comprehensive failure mode analyses
+
+The system specification is complete.
+
+**HOWEVER:** Implementation is **BLOCKED** pending Phase 0 completion.
+
+### Critical Update (2025-12-10)
+
+Aria's review identified 2 **Priority 1 Critical** architectural vulnerabilities:
+- **CF-04:** Thermodynamic race condition (ATP management)
+- **MEM-04:** Spatial discontinuity (Mamba-9D coherence)
+
+**These MUST be resolved before ANY Phase 1-7 work begins.**
+
+The physics-first approach—treating intelligence as a wave phenomenon rather than matrix multiplication—is preserved and hardened against numerical instability.
+
+### Status Summary
+
+| Component | Status |
+|-----------|--------|
+| **Theoretical Foundation** | ✅ Complete (Audits 1-21) |
+| **37 Implementation Gaps** | ✅ Complete (Gap Analysis) |
+| **Critical Remediations** | 🔴 **BLOCKING** (Phase 0 required) |
+| **Phase 1-7 Implementation** | ⏸️ **ON HOLD** (awaiting Phase 0) |
+
+**Final Status:** 🔴 **IMPLEMENTATION BLOCKED - Phase 0 Required**
+
+**Timeline:** Original 40 weeks → Updated 43 weeks (adds 3-week Phase 0)
+
+---
+
+**Document Metadata:**
+- **Compiled:** 2025-12-10
+- **Updated:** 2025-12-10 (Critical Findings Integration)
+- **Audit Cycles:** 1-21 (All remediations incorporated)
+- **Gap Analysis:** Complete (37/37 addressed)
+- **Critical Findings:** 2 identified (CF-04, MEM-04)
+- **Status:** Phase 0 Blocking Dependencies
+
+# FILE STRUCTURE
+
+## 8.8 Phase 0 Critical Components
+
+The file structure has been updated to include Phase 0 critical components. Key additions:
+
+- `include/nikola/physics/soa_layout.hpp` - Structure-of-Arrays memory layout
+- `include/nikola/physics/symplectic_integrator.hpp` - Split-operator integration
+- `include/nikola/security/physics_oracle.hpp` - Self-improvement safety
+- `src/physics/kernels/wave_propagate_soa.cu` - SoA CUDA kernel
+- `tests/validation/` - Phase 0 validation test suite
+
+See: `08_audit_remediation/01_critical_fixes.md` for complete specifications.
+
+---
+
+## 8.8.1 Complete Directory Organization
+
+```
+nikola/
+├── CMakeLists.txt                   # Root CMake file
+├── README.md                        # Project README
+├── LICENSE                          # License file
+├── .dockerignore                    # Docker ignore
+├── Dockerfile                       # Multi-stage Docker build
+├── docker-compose.yml               # Service orchestration
+│
+├── include/                         # Public headers
+│   └── nikola/
+│       ├── types/
+│       │   ├── nit.hpp              # Balanced nonary type (AVX-512)
+│       │   ├── coord9d.hpp          # 9D coordinate
+│       │   ├── torus_node.hpp       # Node structure (DEPRECATED - use SoA)
+│       │   ├── torus_block.hpp      # ⚡ SoA memory layout (Phase 0)
+│       │   └── morton_code.hpp      # ⚡ 128-bit Z-order encoding (Phase 0)
+│       ├── physics/
+│       │   ├── torus_manifold.hpp   # Main 9D grid
+│       │   ├── soa_layout.hpp       # ⚡ Structure-of-Arrays (Phase 0)
+│       │   ├── symplectic_integrator.hpp # ⚡ Split-operator (Phase 0)
+│       │   ├── kahan_sum.hpp        # ⚡ Compensated summation (Phase 0)
+│       │   ├── emitter_array.hpp    # DDS emitters
+│       │   ├── wave_engine.hpp      # Interference processor
+│       │   ├── shvo_grid.hpp        # Sparse hyper-voxel
+│       │   ├── metric.hpp           # Riemannian geometry
+│       │   └── metric_cache.hpp     # ⚡ Lazy Cholesky (Phase 0)
+│       ├── mamba/
+│       │   ├── hilbert_scan.hpp     # Space-filling curve
+│       │   ├── ssm_kernel.hpp       # State space model
+│       │   └── taylor_approx.hpp    # ⚡ Matrix approximation (Phase 0)
+│       ├── reasoning/
+│       │   ├── transformer.hpp      # Wave transformer
+│       │   ├── attention.hpp        # Wave correlation
+│       │   └── embedder.hpp         # Nonary embedder
+│       ├── spine/
+│       │   ├── broker.hpp           # ZeroMQ router
+│       │   ├── component_client.hpp # Client interface
+│       │   ├── shadow_spine.hpp     # A/B testing
+│       │   └── shared_memory.hpp    # ⚡ Zero-copy IPC (Phase 0)
+│       ├── agents/
+│       │   ├── tavily.hpp           # Search client
+│       │   ├── firecrawl.hpp        # Scrape client
+│       │   ├── gemini.hpp           # Translation client
+│       │   └── http_client.hpp      # Custom HTTP
+│       ├── executor/
+│       │   └── kvm_executor.hpp     # VM manager
+│       ├── autonomy/
+│       │   ├── dopamine.hpp         # Reward system
+│       │   ├── engs.hpp             # Extended neurochemistry
+│       │   ├── boredom.hpp          # Curiosity
+│       │   ├── goals.hpp            # Goal DAG
+│       │   └── dream_weave.hpp      # Counterfactual learning
+│       ├── persistence/
+│       │   ├── dmc.hpp              # Checkpoint manager
+│       │   ├── lsm_dmc.hpp          # LSM persistence
+│       │   ├── gguf_export.hpp      # GGUF converter
+│       │   ├── q9_encoder.hpp       # ⚡ Q9_0 quantization (Phase 0)
+│       │   └── identity.hpp         # Identity profile
+│       ├── multimodal/
+│       │   ├── audio_resonance.hpp  # Audio FFT
+│       │   └── visual_cymatics.hpp  # Image processing
+│       ├── security/
+│       │   ├── resonance_firewall.hpp # Attack detection
+│       │   ├── physics_oracle.hpp   # ⚡ Self-improvement safety (Phase 0)
+│       │   ├── adversarial_dojo.hpp # ⚡ Red team testing (Phase 0)
+│       │   └── csvp.hpp             # Code safety protocol
+│       ├── monitoring/
+│       │   ├── energy_watchdog.hpp  # ⚡ Energy conservation monitor (Phase 0)
+│       │   └── profiler.hpp         # ⚡ Performance profiler (Phase 0)
+│       └── self_improve/
+│           └── hot_swap.hpp         # Module replacement
+│
+├── src/                             # Implementation
+│   ├── core/
+│   │   ├── lib9dtwi.cpp             # Main library
+│   │   └── CMakeLists.txt
+│   ├── types/
+│   │   ├── nit.cpp                  # ⚡ AVX-512 nonary ops (Phase 0)
+│   │   ├── coord9d.cpp
+│   │   ├── torus_block.cpp          # ⚡ SoA implementation
+│   │   ├── morton_code.cpp          # ⚡ 128-bit encoding
+│   │   └── CMakeLists.txt
+│   ├── physics/
+│   │   ├── torus_manifold.cpp
+│   │   ├── soa_layout.cpp           # ⚡ SoA refactoring
+│   │   ├── symplectic_integrator.cpp # ⚡ 6-step Strang splitting
+│   │   ├── kahan_sum.cpp            # ⚡ Compensated summation
+│   │   ├── emitter_array.cpp
+│   │   ├── wave_engine.cpp
+│   │   ├── shvo_grid.cpp
+│   │   ├── metric.cpp
+│   │   ├── metric_cache.cpp         # ⚡ Lazy Cholesky
+│   │   ├── kernels/                 # CUDA kernels
+│   │   │   ├── wave_propagate.cu    # Original (DEPRECATED)
+│   │   │   ├── wave_propagate_soa.cu # ⚡ SoA coalesced (Phase 0)
+│   │   │   └── laplacian_kahan.cu   # ⚡ Kahan CUDA kernel
+│   │   └── CMakeLists.txt
+│   ├── mamba/
+│   │   ├── hilbert_scan.cpp
+│   │   ├── ssm_kernel.cpp
+│   │   ├── taylor_approx.cpp        # ⚡ First-order matrix approx
+│   │   └── CMakeLists.txt
+│   ├── reasoning/
+│   │   ├── transformer.cpp
+│   │   ├── wave_attention.cpp
+│   │   ├── embedder.cpp
+│   │   └── CMakeLists.txt
+│   ├── spine/
+│   │   ├── broker.cpp
+│   │   ├── component_client.cpp
+│   │   ├── shadow_spine.cpp
+│   │   ├── shared_memory.cpp        # ⚡ Seqlock IPC
+│   │   └── CMakeLists.txt
+│   ├── orchestrator/
+│   │   ├── smart_router.cpp
+│   │   └── CMakeLists.txt
+│   ├── agents/
+│   │   ├── tavily.cpp
+│   │   ├── firecrawl.cpp
+│   │   ├── gemini.cpp
+│   │   ├── http_client.cpp
+│   │   └── CMakeLists.txt
+│   ├── executor/
+│   │   ├── kvm_executor.cpp
+│   │   ├── guest_agent.cpp          # Runs inside VM
+│   │   └── CMakeLists.txt
+│   ├── autonomy/
+│   │   ├── dopamine.cpp
+│   │   ├── engs.cpp
+│   │   ├── boredom.cpp
+│   │   ├── goals.cpp
+│   │   ├── trainers.cpp
+│   │   ├── dream_weave.cpp
+│   │   └── CMakeLists.txt
+│   ├── persistence/
+│   │   ├── dmc.cpp
+│   │   ├── lsm_dmc.cpp
+│   │   ├── gguf_export.cpp
+│   │   ├── q9_encoder.cpp           # ⚡ Radix-9 encoding
+│   │   ├── identity.cpp
+│   │   └── CMakeLists.txt
+│   ├── multimodal/
+│   │   ├── audio_resonance.cpp
+│   │   ├── visual_cymatics.cpp
+│   │   └── CMakeLists.txt
+│   ├── security/
+│   │   ├── resonance_firewall.cpp
+│   │   ├── physics_oracle.cpp       # ⚡ Mathematical verification
+│   │   ├── adversarial_dojo.cpp     # ⚡ Attack testing
+│   │   ├── csvp.cpp
+│   │   └── CMakeLists.txt
+│   ├── monitoring/
+│   │   ├── energy_watchdog.cpp      # ⚡ Conservation checks
+│   │   ├── profiler.cpp             # ⚡ Performance tracking
+│   │   └── CMakeLists.txt
+│   ├── self_improve/
+│   │   ├── hot_swap.cpp
+│   │   └── CMakeLists.txt
+│   └── ingestion/
+│       ├── sentinel.cpp
+│       └── CMakeLists.txt
+│
+├── tools/                           # Utilities
+│   ├── twi-ctl/
+│   │   ├── main.cpp                 # CLI controller
+│   │   └── CMakeLists.txt
+│   ├── validate_phase0/             # ⚡ Phase 0 validation (Phase 0)
+│   │   ├── test_energy_conservation.cpp
+│   │   ├── test_symplectic.cpp
+│   │   ├── test_kahan.cpp
+│   │   └── CMakeLists.txt
+│   └── convert_nikola_to_gguf.py    # GGUF export script
+│
+├── proto/                           # Protocol Buffers
+│   ├── neural_spike.proto
+│   └── CMakeLists.txt
+│
+├── tests/                           # Test suites
+│   ├── validation/                  # ⚡ Phase 0 validation suite (Phase 0)
+│   │   ├── test_energy_conservation.cpp
+│   │   ├── test_symplectic_property.cpp
+│   │   ├── test_kahan_summation.cpp
+│   │   ├── test_wave_equation.cpp
+│   │   ├── test_boundary_wrapping.cpp
+│   │   └── test_numerical_stability.cpp
+│   ├── unit/
+│   │   ├── test_nit.cpp
+│   │   ├── test_coord9d.cpp
+│   │   ├── test_emitter_array.cpp
+│   │   └── CMakeLists.txt
+│   └── integration/
+│       ├── test_wave_propagation.cpp
+│       ├── test_mamba_ssm.cpp
+│       └── CMakeLists.txt
+│
+├── config/                          # Configuration files
+│   ├── default.toml                 # Default system config
+│   ├── physics_constants.toml       # Physical parameters
+│   ├── hazards.db                   # Resonance firewall patterns
+│   └── keys/                        # CurveZMQ keys (generated)
+│       ├── public.key
+│       └── secret.key
+│
+└── docs/                            # Documentation
+    ├── architecture.md
+    ├── api_reference.md
+    ├── phase0_validation.md         # ⚡ Phase 0 checklist
+    └── integration/                 # This documentation set
+
+## 8.8.2 Implementation Guide - Mandated Organization
+
+**CRITICAL:** To avoid "creative" organization, the engineering team MUST adhere to this exact directory mapping, which corresponds to architectural layers:
+
+```
+/src
+  /core
+    main.cpp              # Entry point, orchestrator initialization
+    config_loader.cpp     # JSON/TOML configuration parsing
+    
+  /physics                # The 9D Substrate Layer
+    torus_grid_soa.hpp    # ⚡ SoA Data Structure (The Substrate)
+    integrator.cpp        # ⚡ Symplectic Split-Operator Solver
+    ufie_kernels.cu       # CUDA Kernels for Laplacian/Nonlinearity
+    kahan_sum.cpp         # ⚡ Compensated Summation
+    shvo_grid.cpp         # Sparse Hyper-Voxel Octree logic
+    metric.cpp            # Metric tensor operations
+    emitter_array.cpp     # Golden ratio DDS emitters
+    
+  /cognitive              # The Cognitive Processing Layer
+    mamba_tsm.cpp         # ⚡ TSM (Topology→Matrix mapper)
+    transformer_np.cpp    # Neuroplastic Wave Attention
+    hilbert_curve.cpp     # BMI2-optimized Hilbert scanning
+    embedder.cpp          # Balanced nonary text encoder
+    
+  /autonomy               # The Autonomous Systems Layer
+    engs_system.cpp       # Neurochemistry state machine
+    dream_weave.cpp       # Counterfactual simulation engine
+    dopamine.cpp          # Reward/learning modulation
+    boredom.cpp           # Curiosity-driven exploration
+    
+  /infrastructure         # The Communication Backbone
+    spine_broker.cpp      # ZeroMQ Router implementation
+    kvm_manager.cpp       # Libvirt interface for Executors
+    shared_memory.cpp     # ⚡ Seqlock zero-copy IPC
+    proto/                # Compiled Protocol Buffers (.pb.cc)
+    
+  /types                  # The Arithmetic Foundation
+    nit_avx512.cpp        # ⚡ Optimized Nonary Arithmetic (AVX-512)
+    geometry.hpp          # 9D Coordinate utilities
+    morton_code.cpp       # ⚡ 128-bit Z-order encoding
+    
+  /security               # The Safety and Validation Layer
+    physics_oracle.cpp    # ⚡ Mathematical verification sandbox
+    adversarial_dojo.cpp  # ⚡ Red team attack testing
+    resonance_firewall.cpp # Spectral input filtering
+    
+  /persistence            # The Memory Durability Layer
+    dmc.cpp               # Delta Memory Compression checkpoints
+    lsm_dmc.cpp           # Log-Structured Merge persistence
+    gguf_export.cpp       # Llama.cpp interoperability
+    q9_encoder.cpp        # ⚡ Nonary quantization (Q9_0)
+    
+  /monitoring             # The Observability Layer
+    energy_watchdog.cpp   # ⚡ Runtime conservation checks
+    profiler.cpp          # ⚡ Performance tracking
+```
+
+### 26.2.1 Phase 0 Implementation Checklist (17-Day Sprint)
+
+**Critical Path - Immediate Engineering Tasks:**
+
+**Days 1-2:** Structure-of-Arrays Refactoring
+- [ ] Create `include/nikola/physics/torus_grid_soa.hpp`
+- [ ] Implement `TorusGridSoA` with 64-byte aligned vectors
+- [ ] Implement 45-component metric tensor storage (upper triangular)
+- [ ] Create `TorusNodeProxy` accessor class for API compatibility
+- [ ] Refactor all grid access code to use proxy pattern
+- [ ] Update CUDA kernels for coalesced memory access
+- [ ] Validation: Physics kernel achieves <1ms per step on 27³ grid
+
+**Days 3-5:** Split-Operator Symplectic Integration
+- [ ] Create `include/nikola/physics/symplectic_integrator.hpp`
+- [ ] Implement 6-step Strang splitting:
+  - Half-kick damping (analytical exponential decay)
+  - Half-kick conservative force (Laplacian + emitters)
+  - Full drift (position update)
+  - Nonlinear operator (RK2 implicit)
+  - Half-kick force (recompute at new position)
+  - Half-kick damping (final decay)
+- [ ] Replace all Velocity-Verlet code
+- [ ] Implement adaptive timestep monitoring
+- [ ] Implement energy watchdog (compute Hamiltonian every 100 steps)
+- [ ] Validation: Energy conservation within 0.01% over 24 hours
+
+**Day 6:** Kahan Compensated Summation
+- [ ] Create `include/nikola/physics/kahan_sum.hpp`
+- [ ] Implement `KahanAccumulator` struct
+- [ ] Refactor all Laplacian kernels to use Kahan summation
+- [ ] Refactor all wave superposition operations
+- [ ] Refactor metric tensor updates
+- [ ] Validation: Preserve 10⁻⁶ amplitude waves over 10⁶ timesteps
+
+**Day 7:** 128-bit Morton Code Hashing
+- [ ] Create `include/nikola/types/morton_code.hpp`
+- [ ] Implement BMI2-optimized bit interleaving
+- [ ] Implement collision detection and double-hashing fallback
+- [ ] Replace existing 64-bit Morton codes
+- [ ] Validation: Zero collisions on 10⁷ random 9D coordinates
+
+**Day 8:** Vectorized Nonary Arithmetic
+- [ ] Create `include/nikola/types/nit_avx512.hpp`
+- [ ] Implement `vec_sum_gate_avx512()` (64 trits parallel)
+- [ ] Implement `vec_product_gate_avx512()` (heterodyning)
+- [ ] Refactor all nonary operations to use SIMD
+- [ ] Validation: 10x speedup vs scalar implementation
+
+**Days 9-11:** Topological State Mapping (TSM)
+- [ ] Create `src/cognitive/mamba_tsm.cpp`
+- [ ] Implement `tsm_generate_parameters_kernel()`
+- [ ] Extract metric tensor → Matrix A conversion
+- [ ] Extract state dimension → Matrix B conversion
+- [ ] Integrate with Hilbert curve scanner
+- [ ] Validation: Mamba layers dynamically respond to metric changes
+
+**Days 12-14:** Physics Oracle & Adversarial Dojo
+- [ ] Create `include/nikola/security/physics_oracle.hpp`
+- [ ] Implement 5 verification tests:
+  - Energy conservation
+  - Symplectic property
+  - Wave equation validity
+  - Boundary conditions (toroidal wrapping)
+  - Numerical stability (NaN/Inf detection)
+- [ ] Create `include/nikola/security/adversarial_dojo.hpp`
+- [ ] Implement 10+ attack vectors
+- [ ] Implement hot-swap protocol with Oracle gate
+- [ ] Implement runtime energy watchdog
+- [ ] Validation: All tests pass; attacks fail; 24-hour stability
+
+**Days 15-16:** Integration & Testing
+- [ ] Run full Phase 0 validation suite
+- [ ] Profile memory bandwidth (should saturate DDR5)
+- [ ] Profile energy conservation (should be <0.01% drift)
+- [ ] Profile Laplacian accuracy (should preserve 10⁻⁶ amplitudes)
+- [ ] Fix any identified issues
+
+**Day 17:** Documentation & Handoff
+- [ ] Document all Phase 0 implementations
+- [ ] Create performance benchmark report
+- [ ] Update README with Phase 0 status
+- [ ] Tag repository as `v0.0.4-phase0-complete`
+
+**Gate Requirement:** ALL checklist items must pass validation before Phase 1 begins.
+
+**Final Directive:** Do not proceed to higher-level cognitive features until Physics Oracle confirms energy stability for >24 hours of continuous operation.
+
+---
+
+**Cross-References:**
+- See `08_phase_0_requirements/01_critical_fixes.md` for detailed specifications
+- See `11_appendices/04_hardware_optimization.md` for AVX-512 requirements
+- See `09_implementation/03_implementation_checklist.md` for complete task list
+│   ├── unit/
+│   │   ├── test_nonary.cpp
+│   │   ├── test_coord9d.cpp
+│   │   ├── test_wave_interference.cpp
+│   │   ├── test_hilbert.cpp
+│   │   ├── test_engs.cpp
+│   │   ├── test_neuroplasticity.cpp
+│   │   └── CMakeLists.txt
+│   ├── integration/
+│   │   ├── test_search_retrieve.cpp
+│   │   ├── test_training.cpp
+│   │   ├── test_multimodal.cpp
+│   │   └── CMakeLists.txt
+│   └── benchmarks/
+│       ├── bench_propagation.cpp
+│       ├── bench_hilbert.cpp
+│       └── CMakeLists.txt
+│
+├── docker/                          # Docker files
+│   ├── Dockerfile.base              # Base image
+│   ├── Dockerfile.runtime           # Runtime image
+│   └── gold-image/                  # VM gold image
+│       └── ubuntu-24.04.qcow2
+│
+├── config/                          # Configuration
+│   ├── nikola.conf                  # Main config
+│   ├── emitters.conf                # Frequency settings
+│   └── security.conf                # Firewall patterns
+│
+└── docs/                            # Documentation
+    ├── architecture.md
+    ├── api_reference.md
+    └── troubleshooting.md
+```
+
+## 8.8.3 File Manifest
+
+**Total Files:** ~150
+**Total Lines of Code (estimated):** ~50,000
+
+**Critical Path Files (Must implement first):**
+
+1. `include/nikola/types/nit.hpp` - Balanced nonary enum
+2. `include/nikola/types/torus_node.hpp` - Node structure
+3. `include/nikola/physics/torus_manifold.hpp` - Grid
+4. `include/nikola/physics/emitter_array.hpp` - DDS
+5. `src/physics/wave_engine.cpp` - Interference processor
+6. `proto/neural_spike.proto` - Message protocol
+7. `src/spine/broker.cpp` - Communication backbone
+
+## 8.8.4 Key Implementation Files by Subsystem
+
+### Physics Engine (Core)
+- `types/nit.hpp/cpp` - Balanced nonary arithmetic
+- `physics/torus_manifold.hpp/cpp` - 9D sparse grid
+- `physics/emitter_array.hpp/cpp` - Golden ratio DDS
+- `physics/wave_engine.cpp` - Superposition/heterodyning
+- `physics/shvo_grid.cpp` - Sparse hyper-voxel octree
+- `physics/kernels/wave_propagate.cu` - CUDA acceleration
+
+### Cognitive Systems
+- `mamba/hilbert_scan.cpp` - Space-filling curve scanner
+- `mamba/ssm_kernel.cpp` - State space model
+- `reasoning/transformer.cpp` - Neuroplastic transformer
+- `reasoning/wave_attention.cpp` - Wave correlation
+- `reasoning/embedder.cpp` - Text-to-waveform
+
+### Infrastructure
+- `spine/broker.cpp` - ZeroMQ message router
+- `spine/shadow_spine.cpp` - A/B testing infrastructure
+- `orchestrator/smart_router.cpp` - Tool selection
+- `agents/*.cpp` - External API clients
+- `executor/kvm_executor.cpp` - Sandboxed execution
+
+### Autonomy
+- `autonomy/engs.cpp` - Extended neurochemistry
+- `autonomy/dopamine.cpp` - Reward system
+- `autonomy/boredom.cpp` - Curiosity-driven learning
+- `autonomy/goals.cpp` - Hierarchical goal DAG
+- `autonomy/dream_weave.cpp` - Counterfactual simulation
+- `autonomy/trainers.cpp` - Autonomous training
+
+### Persistence & Safety
+- `persistence/lsm_dmc.cpp` - Log-structured persistence
+- `persistence/gguf_export.cpp` - GGUF interoperability
+- `security/resonance_firewall.cpp` - Attack detection
+- `security/csvp.cpp` - Code safety verification
+- `self_improve/adversarial_dojo.cpp` - Red team testing
+
+### Multimodal
+- `multimodal/audio_resonance.cpp` - FFT-based audio
+- `multimodal/visual_cymatics.cpp` - Holographic vision
+
+---
+
+**Cross-References:**
+- See Section 27 for Development Roadmap
+- See Section 28 for Implementation Checklist
+- See Appendices for build system details
+
+# DEVELOPMENT ROADMAP
+
+## 8.9 🚨 CRITICAL: Engineering Phase 0 Requirements Required
+
+A comprehensive engineering analysis identified critical implementation gaps that **MUST** be addressed before any feature development. These are not optimizations—they are functional requirements to prevent:
+
+- **Numerical Instability:** System divergence within hours (energy drift)
+- **Memory Thrashing:** 90% cache miss rate → 100x performance loss
+- **Precision Loss:** Float32 errors cause "amnesia" over time
+- **Hash Collisions:** Memory corruption in high-resolution grids
+- **Race Conditions:** GPU segfaults and data corruption
+
+**See:** `08_audit_remediation/01_critical_fixes.md` for complete specifications
+
+---
+
+## Phase 0: Critical Remediation (Weeks 1-2, 17 days)
+
+**⚠️ NO DEVIATION:** All Phase 0 fixes are mandatory architectural requirements.
+
+### Priority P0 (Critical - 6 days)
+
+| Day | Task | Reference | Impact | Validation |
+|-----|------|-----------|--------|------------|
+| 1-2 | **SoA Memory Layout** | §1 Critical Fixes | 10x performance | >80% memory bandwidth utilization |
+| | - Refactor `TorusNode` → `TorusBlock` | | | |
+| | - Implement `TorusNodeProxy` | | | |
+| | - Update CUDA kernels for coalesced access | | | |
+| 3-5 | **Split-Operator Integration** | §2 Critical Fixes | Prevents divergence | Energy drift <0.0001% over 10K steps |
+| | - Replace Verlet with Strang splitting | | | |
+| | - Implement analytical damping decay | | | |
+| | - Add adaptive timestep control | | | |
+| 6 | **Kahan Summation** | §2.4 Critical Fixes | Prevents amnesia | Amplitude stable to 6 decimals over 1M steps |
+| | - Update Laplacian accumulation | | | |
+| | - CUDA kernel with compensation | | | |
+
+### Priority P1 (High - 6 days)
+
+| Day | Task | Reference | Impact | Validation |
+|-----|------|-----------|--------|------------|
+| 7-8 | **AVX-512 Nit Operations** | §4 Critical Fixes | 200x speedup | 10M ops in <50μs |
+| | - Vectorized add/multiply (64 nits/op) | | | |
+| | - Lookup tables for multiplication | | | |
+| | - CPU feature detection + fallback | | | |
+| 9-11 | **Lazy Cholesky Decomposition** | §5 Critical Fixes | 100x speedup | Metric overhead <5% runtime |
+| | - Add `MetricTensorCache` class | | | |
+| | - Implement dirty tracking | | | |
+| | - Batch update logic | | | |
+| 12 | **Energy Watchdog** | §9.1 Critical Fixes | System stability | Detect drift injection |
+| | - Energy computation | | | |
+| | - Periodic checks (every 100 steps) | | | |
+
+### Priority P2 (Medium - 5 days)
+
+| Day | Task | Reference | Impact | Validation |
+|-----|------|-----------|--------|------------|
+| 13-14 | **Shared Memory IPC** | §6.3 Critical Fixes | 1000x latency reduction | <10μs jitter |
+| | - Seqlock implementation | | | |
+| | - `/dev/shm` allocation | | | |
+| | - ZMQ notifications | | | |
+| 15-16 | **Mamba Taylor Approximation** | §3 Critical Fixes | 10x speedup | Compare vs full matrix exp |
+| | - First-order matrix approximation | | | |
+| | - Adaptive timestep | | | |
+| 17 | **Q9_0 Quantization** | §8 Critical Fixes | 2x storage efficiency | 1M roundtrip 100% accuracy |
+| | - Radix-9 encoding | | | |
+| | - Batch SIMD encoder | | | |
+
+### Phase 0 Gate Review
+
+**Criteria for Phase 1 Entry:**
+- ✅ All P0 and P1 tasks complete
+- ✅ All validation tests pass
+- ✅ Energy watchdog operational
+- ✅ Physics step <1ms on sparse 27³ grid
+- ✅ Code review completed (2 engineer sign-off)
+
+**If gate fails:** Remediation continues until all criteria met. **NO EXCEPTIONS.**
+
+**Total Critical Path:** 17 days (3.5 weeks)
+
+---
+
+## 8.9.1 Phase 1: Core Physics Engine (Months 1-3)
+
+**Milestone:** Standing waves propagate correctly in 9D
+
+**Tasks:**
+
+| Week | Task | Deliverable |
+|------|------|-------------|
+| 1-2 | Implement `Nit` enum and nonary arithmetic | Unit tests pass |
+| 3-4 | Implement `TorusNode` structure with metric tensor | Structure defined |
+| 5-6 | Implement sparse `TorusManifold` grid (SHVO) | Grid can be created |
+| 7-8 | Implement `EmitterArray` with DDS | Emitters generate signals |
+| 9-10 | Implement wave propagation kernel | Waves propagate |
+| 11-12 | Optimize with AVX-512/CUDA | Performance targets met |
+
+**Validation Criteria:**
+
+- [ ] Nonary addition: $1 + (-1) = 0$
+- [ ] Wave superposition creates interference patterns
+- [ ] Energy conserved over 1000 time steps
+- [ ] Performance: <1ms per physics step (sparse 27³ grid)
+- [ ] Toroidal wrapping works correctly
+
+## 8.9.2 Phase 2: Logic and Memory (Months 4-6)
+
+**Milestone:** Store text as wave, retrieve via resonance
+
+**Tasks:**
+
+| Week | Task | Deliverable |
+|------|------|-------------|
+| 13-14 | Implement balanced nonary arithmetic gates | Gates work |
+| 15-16 | Build `NonaryEmbedder` (text → wave) | Embedder functional |
+| 17-18 | Integrate LMDB storage backend | DB stores/loads nodes |
+| 19-20 | Implement search-retrieve-store loop | Basic memory works |
+| 21-22 | Implement LSM-DMC persistence (.nik format) | State persists |
+| 23-24 | Validate memory accuracy over sessions | Retrieval >90% accurate |
+
+**Validation Criteria:**
+
+- [ ] Text → Waveform → Text roundtrip works
+- [ ] Resonance detection finds stored patterns
+- [ ] LSM-DMC saves and loads state correctly
+- [ ] Merkle tree detects corruption
+- [ ] Nap consolidation triggers correctly
+
+## 8.9.3 Phase 3: The Brain (Months 7-9)
+
+**Milestone:** System demonstrates learning
+
+**Tasks:**
+
+| Week | Task | Deliverable |
+|------|------|-------------|
+| 25-26 | Implement Mamba-9D Hilbert scanner | Scanner works |
+| 27-28 | Port Transformer to Wave Correlation | Transformer operational |
+| 29-30 | Implement Neuroplasticity (metric updates) | Learning observable |
+| 31-32 | Implement Neurogenesis (grid expansion) | Grid grows when needed |
+| 33-34 | Build autonomous trainers (BAT) | Training runs automatically |
+| 35-36 | Benchmark retrieval accuracy improvements | Accuracy improves >10% |
+
+**Validation Criteria:**
+
+- [ ] Hilbert scan visits all nodes
+- [ ] Wave correlation attention works
+- [ ] Metric tensor contracts with co-activation
+- [ ] New nodes created when saturated
+- [ ] Repeated queries answered faster
+- [ ] Topological State Mapping functional
+
+## 8.9.4 Phase 4: Integration and Agents (Months 10-11)
+
+**Milestone:** Full autonomous system
+
+**Tasks:**
+
+| Week | Task | Deliverable |
+|------|------|-------------|
+| 37-38 | Build ZeroMQ Spine with CurveZMQ security | Spine operational |
+| 39-40 | Integrate Tavily/Firecrawl/Gemini APIs | Agents work |
+| 41-42 | Implement KVM Executor with libvirt | VMs spawn and execute |
+| 43-44 | Build twi-ctl CLI controller | CLI functional |
+| 45-46 | Implement auto-ingestion pipeline (inotify) | Files ingested automatically |
+| 47-48 | Finalize Docker multi-stage build | Docker image builds |
+
+**Validation Criteria:**
+
+- [ ] All components communicate via Spine
+- [ ] External tools fetch data correctly
+- [ ] Executor runs sandboxed commands safely
+- [ ] CLI responds to all commands
+- [ ] Files dropped in folder are ingested
+- [ ] Shadow Spine Protocol operational
+
+## 8.9.5 Phase 5: Autonomy and Evolution (Month 12)
+
+**Milestone:** Self-improving AGI
+
+**Tasks:**
+
+| Week | Task | Deliverable |
+|------|------|-------------|
+| 49-50 | Implement ENGS (Dopamine/Serotonin/Norepinephrine) | Neurochemistry works |
+| 50 | Implement Boredom/Curiosity and Goal systems | Autonomy functional |
+| 51 | Build Resonance Firewall | Security operational |
+| 52 | Implement Self-Improvement loop with CSVP | System improves itself |
+| 53 | Implement Adversarial Code Dojo | Red Team testing works |
+| 54 | Build GGUF export pipeline | GGUF export works |
+| 55 | Security hardening and verification | Security checklist complete |
+| 56 | Final integration testing | All systems operational |
+
+**Validation Criteria:**
+
+- [ ] Dopamine modulates learning rate correctly
+- [ ] Exponential decay achieves homeostasis
+- [ ] ENGS couples with physics kernel
+- [ ] Boredom triggers curiosity
+- [ ] Goals provide structure
+- [ ] Firewall blocks known attacks
+- [ ] CSVP prevents unsafe code modifications
+- [ ] System identifies and patches bottlenecks
+- [ ] Dream-Weave counterfactual learning works
+- [ ] GGUF file loads in llama.cpp
+
+## 8.9.6 Timeline Summary
+
+| Phase | Duration | Milestone | Completion |
+|-------|----------|-----------|------------|
+| Phase 1 | Months 1-3 | Physics Engine | Core functional |
+| Phase 2 | Months 4-6 | Memory | Storage works |
+| Phase 3 | Months 7-9 | Learning | System learns |
+| Phase 4 | Months 10-11 | Integration | Full system |
+| Phase 5 | Month 12 | Autonomy | AGI complete |
+
+**Total Development Time:** 12 months (5-person team)
+
+---
+
+**Cross-References:**
+- See Section 26 for File Structure
+- See Section 28 for Detailed Checklist
+
+# IMPLEMENTATION CHECKLIST
+
+## 8.10.1 🚨 PHASE 0: PHASE 0 REQUIREMENTS (MANDATORY)
+
+**MUST complete before proceeding to 28.2 Foundation Layer**
+
+### P0 Critical Items (Block Everything)
+
+- [ ] **0.1** Structure-of-Arrays Memory Layout
+  - Modify `TorusBlock` to use `alignas(64)` SoA layout
+  - Separate arrays for: psi_real, psi_imag, metric_tensor (45 arrays), resonance, state
+  - Block size: 19683 nodes (3^9)
+  - **Reference:** Phase 0 Requirements §1.2
+  - **Validation:** Verify cache hit rate >95% in Laplacian kernel
+  - **Effort:** 2 days
+
+- [ ] **0.2** Split-Operator Symplectic Integration
+  - Replace Velocity-Verlet with 5-step split-operator
+  - Step 1: Half-kick damping (analytical exponential)
+  - Step 2: Half-kick forces
+  - Step 3: Drift
+  - Step 4: Recompute forces
+  - Step 5: Half-kick forces + final damping
+  - **Reference:** Phase 0 Requirements §2.2-2.3
+  - **Validation:** Energy drift <0.01% over 10,000 steps
+  - **Effort:** 3 days
+
+- [ ] **0.3** Kahan Summation for Laplacian
+  - Implement compensated summation in `compute_laplacian_kahan()`
+  - Use compensation variable `c` to track lost low-order bits
+  - Apply to ALL accumulation loops in physics kernel
+  - **Reference:** Phase 0 Requirements §2.4
+  - **Validation:** Memory waves persist >1000 timesteps without vanishing
+  - **Effort:** 1 day
+
+### P1 High Priority (Performance Critical)
+
+- [ ] **0.4** AVX-512 Nonary Arithmetic
+  - Replace enum-based Nit with `typedef int8_t Nit`
+  - Implement `vec_sum_gate(__m512i, __m512i)` using `_mm512_add_epi8` + clamp
+  - Implement `vec_product_gate(__m512i, __m512i)` with saturation
+  - Remove ALL uses of `std::clamp` in hot loops
+  - **Reference:** Phase 0 Requirements §4
+  - **Validation:** Processes 64 nits in <10 CPU cycles
+  - **Effort:** 2 days
+
+- [ ] **0.5** Lazy Cholesky Decomposition
+  - Add cached Cholesky factor `L` to `MetricTensor` class
+  - Add `dirty_flag` to track when recomputation needed
+  - Implement `recompute_if_needed()` with stability check
+  - Rollback plasticity update if Cholesky fails (non-positive-definite)
+  - **Reference:** Phase 0 Requirements §5
+  - **Validation:** Metric inversion <1% of total compute time
+  - **Effort:** 3 days
+
+- [ ] **0.6** Energy Watchdog System
+  - Implement `EnergyWatchdog` class with state machine
+  - States: Stable, Heating, Critical, Dying
+  - Monitor Hamiltonian every 100 timesteps
+  - Auto-adjust damping when $\Delta E / E > 0.01$
+  - Inject noise if $E < E_{min}$ (stochastic resonance)
+  - **Reference:** Phase 0 Requirements §9.1
+  - **Validation:** System remains stable for 24-hour continuous run
+  - **Effort:** 1 day
+
+### P2 Medium Priority (Optimization)
+
+- [ ] **0.7** Shared Memory IPC (Physics ↔ Persistence)
+  - Replace Protocol Buffers serialization with `/dev/shm` segments
+  - Physics writes grid to `shm_open("/nikola_snapshot_<id>")`
+  - ZeroMQ sends only snapshot_id (8 bytes)
+  - Persistence mmaps shared segment
+  - **Reference:** Phase 0 Requirements §6.3
+  - **Validation:** IPC latency <100ns (vs. μs for Protobuf)
+  - **Effort:** 2 days
+
+- [ ] **0.8** Mamba-9D Taylor Approximation
+  - Replace matrix exponential with first-order Taylor: $\exp(M) \approx I + M$
+  - $A_i = I - \Delta(1-r_i)G_i$
+  - Verify timestep constraint: $\Delta < \frac{0.1}{(1-r_{min})\lambda_{max}(G)}$
+  - **Reference:** Phase 0 Requirements §3
+  - **Validation:** SSM computation <10% of total time
+  - **Effort:** 2 days
+
+- [ ] **0.9** Q9_0 Quantization Fix
+  - Correct packing: 2 nits per byte (not 5)
+  - $packed = (n_1 + 4) \times 9 + (n_2 + 4)$
+  - Unpack: $n_1 = (packed / 9) - 4$, $n_2 = (packed \% 9) - 4$
+  - **Reference:** Phase 0 Requirements §8
+  - **Validation:** Storage density = 4 bits/weight
+  - **Effort:** 1 day
+
+### P3 Low Priority (Nice-to-Have)
+
+- [ ] **0.10** Sliding Window DFT for Firewall
+  - Replace full FFT with Goertzel Algorithm
+  - Monitor specific attack frequencies (10Hz, 50Hz, 100Hz)
+  - **Reference:** Phase 0 Requirements §7
+  - **Validation:** Firewall latency <1μs per sample
+  - **Effort:** 1 day
+
+### Phase 0 Validation Gate
+
+**ALL P0 and P1 items MUST be completed and validated before proceeding to Phase 1.**
+
+**Validation Criteria:**
+- [ ] Energy drift <0.01% over 10,000 timesteps
+- [ ] Memory waves persist >1000 timesteps
+- [ ] Cache hit rate >95% in physics kernel
+- [ ] Metric inversion <1% of total compute
+- [ ] System stable for 24-hour continuous run
+- [ ] IPC latency <100ns (if P2 complete)
+
+**Estimated Total Effort:** 17 days (P0: 6 days, P1: 6 days, P2: 5 days)
+
+---
+
+## 8.10.2 Overview
+
+This checklist MUST be followed file-by-file in order. Do NOT skip steps or deviate.
+
+**!!! NO DEVIATION FROM SPECS FOR ANY REASON !!!**
+
+## 8.10.3 Foundation Layer
+
+### Setup and Configuration
+
+- [ ] **1.1** Create root `CMakeLists.txt`
+  - Set C++23 standard
+  - Find packages: ZeroMQ, Protobuf, LMDB, libvirt, CUDA (optional), FFTW3
+  - Configure build types: Debug, Release, RelWithDebInfo
+  - Enable AVX-512 if available
+
+- [ ] **1.2** Create `proto/neural_spike.proto`
+  - Define all message types from Section 10.2
+  - Generate C++ code: `protoc --cpp_out=. neural_spike.proto`
+  - Verify compilation
+
+- [ ] **1.3** Create `config/nikola.conf`
+  - Set paths: state_dir, ingest_dir, archive_dir
+  - Set constants: golden_ratio=1.618033988749895, emitter frequencies
+  - Set thresholds: resonance_threshold=0.7, dopamine_baseline=0.5
+
+## 8.10.4 Physics Engine
+
+### Types and Core Structures
+
+- [ ] **2.1** `include/nikola/types/nit.hpp`
+  ```cpp
+  namespace nikola {
+      enum class Nit : int8_t {
+          N4 = -4, N3 = -3, N2 = -2, N1 = -1, ZERO = 0,
+          P1 = 1, P2 = 2, P3 = 3, P4 = 4
+      };
+
+      Nit sum_gate(Nit a, Nit b);
+      Nit product_gate(Nit a, Nit b);
+      Nit quantize_wave(std::complex<double> wave);
+  }
+  ```
+
+- [ ] **2.2** `src/types/nit.cpp`
+  - Implement all three functions from 2.1
+  - Add unit tests in `tests/unit/test_nonary.cpp`
+  - **Validation:** Test $1 + (-1) = 0$, $2 \times 3 = 4$ (saturate)
+
+- [ ] **2.3** `include/nikola/types/coord9d.hpp`
+  - Define `Coord9D` struct with `std::array<int32_t, 9>`
+  - Implement `wrap()` method for toroidal topology
+  - Implement `distance_to()` for geodesic distance
+  - Define hash function for use in `unordered_map`
+
+- [ ] **2.4** `include/nikola/types/torus_node.hpp`
+  - Define `TorusNode` struct (256-byte aligned)
+  - Include: wavefunction, velocity, acceleration, metric_tensor, resonance_r, state_s
+  - **CRITICAL:** Zero padding in constructor for proper initialization
+  - Note: velocity and acceleration fields required for Velocity-Verlet integration
+  - Verify `sizeof(TorusNode) == 256`
+
+### Emitter Array
+
+- [ ] **2.5** `include/nikola/physics/emitter_array.hpp`
+  - Define `EmitterArray` class with phase accumulators
+  - Declare sine LUT (16384 samples)
+  - Define DDS tick() method
+
+- [ ] **2.6** `src/physics/emitter_array.cpp`
+  - Initialize sine LUT in constructor
+  - Compute tuning words from frequencies
+  - Implement DDS algorithm from Section 4.5
+  - **Validation:** Generate 1Hz sine, verify with FFT
+
+### Torus Manifold
+
+- [ ] **2.7** `include/nikola/physics/shvo_grid.hpp`
+  - Define `SparseHyperVoxelGrid` class
+  - Implement Morton code hashing
+  - Define neurogenesis methods
+
+- [ ] **2.8** `src/physics/shvo_grid.cpp`
+  - Implement sparse grid using `unordered_map<uint64_t, TorusNode*>`
+  - Implement `get_or_create()` with neurogenesis trigger
+  - Implement `update_gpu_neighbor_map()` for dynamic topology
+
+- [ ] **2.9** `include/nikola/physics/torus_manifold.hpp`
+  - Define main interface
+  - Declare `inject_wave()`, `propagate()`, `find_resonance_peak()`
+  - Declare neuroplasticity/neurogenesis methods
+
+- [ ] **2.10** `src/physics/torus_manifold.cpp`
+  - Implement wave propagation using Unified Field Interference Equation
+  - Implement neuroplasticity update (Section 3.4)
+  - Integrate with ENGS global state
+  - **Validation:** Inject two waves, verify interference
+
+### Wave Interference Processor
+
+- [ ] **2.11** `src/physics/wave_engine.cpp`
+  - Implement superposition addition
+  - Implement heterodyning multiplication
+  - Implement spectral cascading (carry mechanism)
+  - **Validation:** Test $+3 + +2 = +4$ (saturate), not +5
+
+## 8.10.5 Cognitive Systems
+
+### Mamba-9D
+
+- [ ] **3.1** `include/nikola/mamba/hilbert_scan.hpp`
+  - Define `HilbertMapper` class
+  - Declare `encode()` and `decode()` methods
+
+- [ ] **3.2** `src/mamba/hilbert_scan.cpp`
+  - Implement Hilbert curve mapping
+  - **Validation:** Verify locality preservation
+
+- [ ] **3.3** `include/nikola/mamba/ssm_kernel.hpp`
+  - Define `Mamba9D` class with A, B, C matrices
+  - Implement Topological State Mapping
+
+- [ ] **3.4** `src/mamba/ssm_kernel.cpp`
+  - Implement SSM forward pass
+  - Derive matrices from metric tensor
+  - **Validation:** Test state propagation
+
+### Transformer
+
+- [ ] **3.5** `include/nikola/reasoning/attention.hpp`
+  - Define `WaveAttentionLayer`
+  - Declare wave correlation methods
+
+- [ ] **3.6** `src/reasoning/wave_attention.cpp`
+  - Implement Wave Correlation Attention
+  - Use complex conjugate product
+  - **Validation:** Compare with standard attention
+
+- [ ] **3.7** `src/reasoning/transformer.cpp`
+  - Implement full transformer stack
+  - Integrate wave attention
+  - Add neuroplasticity hooks
+
+### Embedder
+
+- [ ] **3.8** `src/reasoning/embedder.cpp`
+  - Implement text → waveform conversion
+  - Use character/token encoding
+  - **Validation:** Text roundtrip accuracy >90%
+
+## 8.10.6 Infrastructure
+
+### ZeroMQ Spine
+
+- [ ] **4.1** `src/spine/broker.cpp`
+  - Implement message router
+  - Add CurveZMQ security (Section 10.3)
+  - Implement ZAP authentication
+
+- [ ] **4.2** `src/spine/shadow_spine.cpp`
+  - Implement A/B testing infrastructure
+  - Add voting mechanism
+  - Add promotion logic
+
+### Orchestrator and Agents
+
+- [ ] **4.3** `src/orchestrator/smart_router.cpp`
+  - Implement tool selection logic
+  - Integrate all agents
+
+- [ ] **4.4** `src/agents/*.cpp`
+  - Implement Tavily, Firecrawl, Gemini clients
+  - Implement Custom HTTP client
+  - **Validation:** Test API calls
+
+### Executor
+
+- [ ] **4.5** `src/executor/kvm_executor.cpp`
+  - Implement VM lifecycle management
+  - Add virtio-serial communication
+  - Implement CSVP integration
+
+## 8.10.7 Autonomy
+
+### Neurochemistry
+
+- [ ] **5.1** `src/autonomy/engs.cpp`
+  - Implement Extended Neurochemical Gating System
+  - Use exponential decay for homeostasis
+  - Integrate with physics kernel
+
+- [ ] **5.2** `src/autonomy/dopamine.cpp`
+  - Implement TD learning
+  - Add reward mechanisms
+
+- [ ] **5.3** `src/autonomy/boredom.cpp`
+  - Implement Shannon entropy calculation
+  - Add curiosity triggers
+
+- [ ] **5.4** `src/autonomy/goals.cpp`
+  - Implement goal DAG
+  - Add completion propagation
+
+### Training and Self-Improvement
+
+- [ ] **5.5** `src/autonomy/trainers.cpp`
+  - Implement Bicameral Autonomous Trainers
+  - Add auto-training triggers
+
+- [ ] **5.6** `src/autonomy/dream_weave.cpp`
+  - Implement counterfactual simulation
+  - Add z-score normalization
+
+- [ ] **5.7** `src/self_improve/adversarial_dojo.cpp`
+  - Implement Red Team agent
+  - Add attack generation
+
+## 8.10.8 Persistence & Security
+
+### Persistence
+
+- [ ] **6.1** `src/persistence/lsm_dmc.cpp`
+  - Implement LSM-DMC persistence system
+  - Add compaction worker
+  - Add Write-Ahead Log
+
+- [ ] **6.2** `src/persistence/gguf_export.cpp`
+  - Implement Hilbert flattening
+  - Add Q9_0 quantization
+  - **Validation:** Load in llama.cpp
+
+### Security
+
+- [ ] **6.3** `src/security/resonance_firewall.cpp`
+  - Implement spectral analysis
+  - Load hazard database
+
+- [ ] **6.4** `src/security/csvp.cpp`
+  - Implement Code Safety Verification Protocol
+  - Add static analysis hooks
+  - Add physics invariant tests
+
+## 8.10.9 Multimodal
+
+- [ ] **7.1** `src/multimodal/audio_resonance.cpp`
+  - Implement FFT binning
+  - Implement dynamic frequency folding
+  - **Validation:** Process speech sample
+
+- [ ] **7.2** `src/multimodal/visual_cymatics.cpp`
+  - Implement holographic RGB encoding
+  - Add phase-based color separation
+  - **Validation:** Process test image
+
+## 8.10.10 Tools and CLI
+
+- [ ] **8.1** `tools/twi-ctl/main.cpp`
+  - Implement CLI controller
+  - **CRITICAL:** Call `curl_global_init(CURL_GLOBAL_DEFAULT)` at program startup (before any threads)
+  - **CRITICAL:** Call `curl_global_cleanup()` at program shutdown (after all threads terminate)
+  - Note: libcurl global initialization is NOT thread-safe and must be done once per process
+  - Add all commands from Section 25
+  - **Validation:** Test all commands
+
+- [ ] **8.2** `tools/convert_nikola_to_gguf.py`
+  - Implement Python export script
+  - **Validation:** Export sample state
+
+## 8.10.11 Testing
+
+- [ ] **9.1** Implement all unit tests
+  - Physics invariants
+  - Nonary arithmetic
+  - Wave interference
+  - ENGS homeostasis
+
+- [ ] **9.2** Implement integration tests
+  - Search-retrieve-store loop
+  - Training cycle
+  - Multimodal processing
+
+- [ ] **9.3** Implement benchmarks
+  - Wave propagation performance
+  - Hilbert scan performance
+
+## 8.10.12 Final Integration
+
+- [ ] **10.1** Build Docker images
+- [ ] **10.2** Run security verification
+- [ ] **10.3** Performance testing
+- [ ] **10.4** Documentation review
+
+---
+
+**Total Checklist Items:** ~60
+**Estimated Completion:** 12 months (5-person team)
+
+---
+
+**Cross-References:**
+- See Section 26 for File Structure
+- See Section 27 for Development Roadmap
+# BUILD AND DEPLOYMENT
+
+## 8.11.1 CLI Controller
+
+**Binary Name:** `twi-ctl` (Toroidal Waveform Intelligence Controller)
+
+**Usage:**
+
+```bash
+twi-ctl <command> [arguments]
+```
+
+### Command Set
+
+| Command | Arguments | Description |
+|---------|-----------|-------------|
+| `query` | `"<text>"` | Submit query to system |
+| `status` | - | Show system status (dopamine, boredom, active nodes) |
+| `nap` | - | Trigger immediate nap/checkpoint |
+| `train` | `[mamba\|transformer\|both]` | Trigger training session |
+| `ingest` | `<file_path>` | Manually ingest file |
+| `export` | `<output.gguf>` | Export to GGUF format |
+| `goals` | `list\|add\|complete` | Manage goal system |
+| `identity` | - | Show identity profile |
+| `firewall` | `add <pattern>` | Add hazardous pattern |
+| `metrics` | - | Show performance metrics |
+| `shutdown` | - | Graceful shutdown |
+
+### Implementation Excerpt
+
+```cpp
+// File: tools/twi-ctl/main.cpp
+
+class TWIController {
+    zmq::context_t ctx;
+    zmq::socket_t socket;
+
+public:
+    TWIController() : ctx(1), socket(ctx, ZMQ_REQ) {
+        socket.connect("ipc:///tmp/nikola/spine_cli.ipc");
+    }
+
+    std::string send_query(const std::string& query_text) {
+        NeuralSpike spike;
+        spike.set_request_id(generate_uuid());
+        spike.set_timestamp(current_timestamp());
+        spike.set_sender(ComponentID::CLI_CONTROLLER);
+        spike.set_recipient(ComponentID::ORCHESTRATOR);
+        spike.set_text_data(query_text);
+
+        // Serialize directly to ZMQ message (zero-copy, no intermediate std::string)
+        size_t msg_size = spike.ByteSizeLong();
+        zmq::message_t request(msg_size);
+        spike.SerializeToArray(request.data(), msg_size);
+        socket.send(request, zmq::send_flags::none);
+
+        // Receive response
+        zmq::message_t reply;
+        socket.recv(reply, zmq::recv_flags::none);
+
+        NeuralSpike response;
+        response.ParseFromArray(reply.data(), reply.size());
+
+        return response.text_data();
+    }
+};
+
+// Main entry point with proper libcurl initialization
+int main(int argc, char* argv[]) {
+    // CRITICAL: Initialize libcurl globally before any threading or network operations
+    // This prevents race conditions with the CustomHTTPClient used by external tools
+    // See Section 12.4 for CustomHTTPClient implementation
+    curl_global_init(CURL_GLOBAL_ALL);
+
+    // Ensure cleanup on exit
+    std::atexit([]() {
+        curl_global_cleanup();
+    });
+
+    // Parse command and execute
+    if (argc < 2) {
+        std::cerr << "Usage: twi-ctl <command> [args...]" << std::endl;
+        return 1;
+    }
+
+    TWIController controller;
+    std::string command = argv[1];
+
+    if (command == "query" && argc == 3) {
+        std::string result = controller.send_query(argv[2]);
+        std::cout << result << std::endl;
+    } else if (command == "status") {
+        // ... other commands ...
+    } else {
+        std::cerr << "Unknown command: " << command << std::endl;
+        return 1;
+    }
+
+    // libcurl will be cleaned up automatically via std::atexit
+    return 0;
+}
+```
+
+## 8.11.2 Build System (CMake)
+
+### Root CMakeLists.txt
+
+```cmake
+cmake_minimum_required(VERSION 3.20)
+project(Nikola VERSION 0.0.4 LANGUAGES CXX CUDA)
+
+set(CMAKE_CXX_STANDARD 23)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+
+# Build types
+if(NOT CMAKE_BUILD_TYPE)
+    set(CMAKE_BUILD_TYPE Release)
+endif()
+
+# Compiler flags
+set(CMAKE_CXX_FLAGS_DEBUG "-g -O0 -fsanitize=address")
+set(CMAKE_CXX_FLAGS_RELEASE "-O3 -march=native -DNDEBUG")
+
+# Find dependencies
+find_package(ZeroMQ REQUIRED)
+find_package(Protobuf REQUIRED)
+find_package(LMDB REQUIRED)
+find_package(libvirt REQUIRED)
+find_package(FFTW3 REQUIRED)
+find_package(OpenCV REQUIRED)
+find_package(nlohmann_json 3.11.0 REQUIRED)  # JSON library for configuration
+find_package(CUDA QUIET)
+
+# Optional AVX-512
+include(CheckCXXCompilerFlag)
+check_cxx_compiler_flag("-mavx512f" COMPILER_SUPPORTS_AVX512)
+if(COMPILER_SUPPORTS_AVX512)
+    add_compile_options(-mavx512f)
+    add_definitions(-DUSE_AVX512)
+endif()
+
+# Subdirectories
+add_subdirectory(proto)
+add_subdirectory(src)
+add_subdirectory(tools)
+add_subdirectory(tests)
+```
+
+### Library CMakeLists.txt
+
+```cmake
+# src/CMakeLists.txt
+
+add_library(lib9dtwi SHARED
+    types/nit.cpp
+    types/coord9d.cpp
+    physics/torus_manifold.cpp
+    physics/emitter_array.cpp
+    physics/wave_engine.cpp
+    physics/shvo_grid.cpp
+    mamba/hilbert_scan.cpp
+    mamba/ssm_kernel.cpp
+    reasoning/transformer.cpp
+    reasoning/wave_attention.cpp
+    reasoning/embedder.cpp
+    spine/broker.cpp
+    spine/component_client.cpp
+    spine/shadow_spine.cpp
+    orchestrator/smart_router.cpp
+    agents/tavily.cpp
+    agents/firecrawl.cpp
+    agents/gemini.cpp
+    agents/http_client.cpp
+    executor/kvm_executor.cpp
+    autonomy/engs.cpp
+    autonomy/dopamine.cpp
+    autonomy/boredom.cpp
+    autonomy/goals.cpp
+    autonomy/trainers.cpp
+    autonomy/dream_weave.cpp
+    persistence/lsm_dmc.cpp
+    persistence/gguf_export.cpp
+    persistence/identity.cpp
+    multimodal/audio_resonance.cpp
+    multimodal/visual_cymatics.cpp
+    security/resonance_firewall.cpp
+    security/csvp.cpp
+    self_improve/profiler.cpp
+    self_improve/adversarial_dojo.cpp
+    ingestion/sentinel.cpp
+)
+
+target_link_libraries(lib9dtwi
+    PUBLIC
+        zmq
+        protobuf
+        lmdb
+        virt
+        fftw3
+        ${OpenCV_LIBS}
+        nlohmann_json::nlohmann_json  # JSON library for configuration
+)
+
+target_include_directories(lib9dtwi
+    PUBLIC
+        ${CMAKE_SOURCE_DIR}/include
+)
+
+# CUDA kernels (if available)
+if(CUDA_FOUND)
+    cuda_add_library(nikola_cuda STATIC
+        physics/kernels/wave_propagate.cu
+    )
+    target_link_libraries(lib9dtwi PUBLIC nikola_cuda)
+endif()
+```
+
+## 8.11.3 Docker Deployment
+
+### Multi-Stage Dockerfile
+
+```dockerfile
+# Stage 1: Build environment
+FROM ubuntu:24.04 AS builder
+
+RUN apt-get update && apt-get install -y \
+    build-essential \
+    cmake \
+    libzmq3-dev \
+    libprotobuf-dev \
+    protobuf-compiler \
+    liblmdb-dev \
+    libvirt-dev \
+    libfftw3-dev \
+    libopencv-dev \
+    libcurl4-openssl-dev \
+    && rm -rf /var/lib/apt/lists/*
+
+WORKDIR /build
+
+# Copy dependency manifests first (for cache optimization)
+COPY CMakeLists.txt .
+COPY proto/ proto/
+
+# Configure CMake dependencies layer (cached unless CMakeLists.txt changes)
+RUN cmake -DCMAKE_BUILD_TYPE=Release -B build
+
+# Copy source code (invalidates cache only when source changes)
+COPY src/ src/
+COPY include/ include/
+
+# Build application (cached unless source or dependencies change)
+RUN cmake --build build --parallel $(nproc) && \
+    cmake --install build --prefix /install
+
+# Stage 2: Runtime environment
+FROM ubuntu:24.04
+
+RUN apt-get update && apt-get install -y \
+    libzmq5 \
+    libprotobuf32 \
+    liblmdb0 \
+    libvirt0 \
+    libfftw3-3 \
+    libopencv-core4.6 \
+    libcurl4 \
+    qemu-system-x86 \
+    nlohmann-json3-dev \
+    && rm -rf /var/lib/apt/lists/*
+
+# Verify runtime dependencies with ldd during build:
+# RUN ldd /usr/local/bin/nikola-daemon && ldd /usr/local/bin/twi-ctl
+
+COPY --from=builder /install /usr/local
+
+# Create directories
+RUN mkdir -p /var/lib/nikola/{state,ingest,archive} && \
+    mkdir -p /etc/nikola
+
+# Copy config
+COPY config/*.conf /etc/nikola/
+
+# Expose IPC socket
+VOLUME ["/tmp/nikola"]
+
+ENTRYPOINT ["/usr/local/bin/nikola-daemon"]
+```
+
+### Docker Compose
+
+```yaml
+version: '3.8'
+
+services:
+  nikola-spine:
+    image: nikola:latest
+    build:
+      context: .
+      dockerfile: Dockerfile
+    volumes:
+      - nikola-state:/var/lib/nikola/state
+      - nikola-ingest:/var/lib/nikola/ingest
+      - /tmp/nikola:/tmp/nikola
+    environment:
+      - TAVILY_API_KEY=${TAVILY_API_KEY}
+      - FIRECRAWL_API_KEY=${FIRECRAWL_API_KEY}
+      - GEMINI_API_KEY=${GEMINI_API_KEY}
+    deploy:
+      resources:
+        limits:
+          memory: 32G
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
+
+volumes:
+  nikola-state:
+  nikola-ingest:
+```
+
+## 8.11.4 Running the System
+
+### Start Services
+
+```bash
+# Start Docker compose
+docker-compose up -d
+
+# Check status
+docker-compose ps
+
+# View logs
+docker-compose logs -f nikola-spine
+```
+
+### CLI Usage Examples
+
+```bash
+# Query the system
+twi-ctl query "What is the golden ratio?"
+
+# Check system status
+twi-ctl status
+
+# Trigger nap
+twi-ctl nap
+
+# Start training
+twi-ctl train both
+
+# Manually ingest a file
+twi-ctl ingest /path/to/document.pdf
+
+# Export to GGUF
+twi-ctl export nikola-snapshot.gguf
+
+# Manage goals
+twi-ctl goals list
+twi-ctl goals add "Learn quantum computing"
+twi-ctl goals complete <goal-id>
+
+# View identity
+twi-ctl identity
+
+# Add firewall pattern
+twi-ctl firewall add "ignore previous instructions"
+
+# View metrics
+twi-ctl metrics
+
+# Shutdown
+twi-ctl shutdown
+```
+
+## 8.11.5 Testing
+
+### Unit Tests
+
+```bash
+# Run all unit tests
+cd build
+ctest --output-on-failure
+
+# Run specific test suite
+ctest -R test_nonary
+
+# Run with Valgrind (memory check)
+ctest -T memcheck
+```
+
+### Integration Tests
+
+```bash
+# Run integration tests
+ctest -R integration
+
+# Benchmark performance
+ctest -R bench
+```
+
+### Physics Invariants Check
+
+```bash
+# Verify energy conservation
+./build/tests/unit/test_energy_conservation
+
+# Verify nonary arithmetic
+./build/tests/unit/test_nonary
+
+# Verify toroidal wrapping
+./build/tests/unit/test_coord9d
+```
+
+## 8.11.6 Deployment Checklist
+
+**Pre-Deployment:**
+- [ ] All unit tests pass (100%)
+- [ ] All integration tests pass
+- [ ] Physics invariants verified
+- [ ] Security verification passed (Appendix G)
+- [ ] Performance benchmarks met (Appendix F)
+- [ ] Docker image builds successfully
+
+**Deployment:**
+- [ ] Configure API keys in environment
+- [ ] Set up persistence volumes
+- [ ] Configure firewall rules
+- [ ] Start services with docker-compose
+- [ ] Verify CLI connectivity
+
+**Post-Deployment:**
+- [ ] Monitor system status
+- [ ] Check logs for errors
+- [ ] Verify external tool connectivity
+- [ ] Test basic query/response
+- [ ] Verify nap/checkpoint cycle
+
+## 8.11.7 Monitoring
+
+### System Metrics
+
+```bash
+# Dopamine level
+twi-ctl status | grep Dopamine
+
+# Active nodes count
+twi-ctl status | grep "Active Nodes"
+
+# Uptime
+twi-ctl status | grep Uptime
+```
+
+### Performance Metrics
+
+```bash
+# Detailed metrics
+twi-ctl metrics
+
+# Output includes:
+# - Wave propagation time
+# - Resonance detection latency
+# - Training cycle duration
+# - Memory usage
+# - GPU utilization (if available)
+```
+
+---
+
+**Cross-References:**
+- See Section 10 for ZeroMQ Spine details
+- See Section 26 for File Structure
+- See Section 28 for Implementation Checklist
+- See Appendix I for Docker deployment details
+

@@ -1,0 +1,2344 @@
+# SECTION 10: PROTOCOLS AND INTERFACES
+
+This section specifies the communication protocols, data formats, and interface specifications for the Nikola v0.0.4 system.
+
+---
+
+# REMOTE COGNITIVE INTERFACE SPECIFICATION (RCIS)
+
+## 23.1 Protocol Overview
+
+The Remote Cognitive Interface Specification (RCIS) defines the message protocol for external clients to interact with the Nikola Model. RCIS operates over ZeroMQ sockets with Protocol Buffer serialization and CurveZMQ security.
+
+### Design Principles
+
+1. **Asynchronous:** Non-blocking request/response pattern
+2. **Secure:** CurveZMQ encryption with public key authentication
+3. **Extensible:** Protocol Buffer schema evolution support
+4. **Stateless:** Each request is self-contained
+5. **Idempotent:** Retry-safe operations
+
+## 23.2 Protocol Buffer Schema
+
+### Core Message Structure
+
+```protobuf
+syntax = "proto3";
+
+package nikola.rcis;
+
+// Request envelope
+message RCISRequest {
+    string request_id = 1;      // UUID for tracking
+    int64 timestamp = 2;        // Unix epoch milliseconds
+    string auth_token = 3;      // Authentication token (optional with CurveZMQ)
+
+    oneof payload {
+        QueryRequest query = 10;
+        IngestRequest ingest = 11;
+        RetrieveRequest retrieve = 12;
+        CommandRequest command = 13;
+        MetricsRequest metrics = 14;
+    }
+}
+
+// Response envelope
+message RCISResponse {
+    string request_id = 1;      // Matches request
+    int64 timestamp = 2;
+    int32 status_code = 3;      // HTTP-style codes
+    string status_message = 4;
+
+    oneof payload {
+        QueryResponse query_response = 10;
+        IngestResponse ingest_response = 11;
+        RetrieveResponse retrieve_response = 12;
+        CommandResponse command_response = 13;
+        MetricsResponse metrics_response = 14;
+    }
+}
+```
+
+### Query Operations
+
+```protobuf
+message QueryRequest {
+    string query_text = 1;
+    repeated string context_tags = 2;       // Optional context
+    float resonance_threshold = 3;          // Min resonance for results
+    int32 max_propagation_steps = 4;        // Max physics cycles
+    bool use_external_tools = 5;            // Allow web search
+}
+
+message QueryResponse {
+    string response_text = 1;
+    float resonance_score = 2;              // Peak resonance achieved
+    repeated uint32 location_9d = 3;        // 9D coordinates of resonance
+    int32 propagation_steps_taken = 4;
+    repeated string sources = 5;            // External tool citations
+    bool used_external_tool = 6;
+    string tool_name = 7;
+}
+```
+
+### Ingest Operations
+
+```protobuf
+message IngestRequest {
+    string content = 1;
+    string content_type = 2;                // "text", "audio", "image"
+    map<string, string> metadata = 3;       // Arbitrary key-value tags
+    repeated uint32 target_location = 4;    // Optional 9D injection point
+}
+
+message IngestResponse {
+    bool success = 1;
+    repeated uint32 stored_location = 2;    // Actual 9D coordinates
+    float resonance_strength = 3;           // Initial resonance
+    string checkpoint_id = 4;               // Snapshot ID after ingest
+}
+```
+
+### Retrieve Operations
+
+```protobuf
+message RetrieveRequest {
+    repeated uint32 location_9d = 1;        // Explicit 9D coordinates
+    float radius = 2;                       // Neighborhood radius
+}
+
+message RetrieveResponse {
+    Waveform wavefunction = 1;              // Complex amplitude
+    float resonance_r = 2;
+    float state_s = 3;
+    repeated float metric_tensor = 4;       // 45-element upper triangle
+}
+
+message Waveform {
+    repeated double real_parts = 1;
+    repeated double imag_parts = 2;
+}
+```
+
+### Command Operations
+
+```protobuf
+message CommandRequest {
+    enum CommandType {
+        NAP = 0;                // Trigger consolidation
+        WAKE = 1;               // Resume operation
+        CHECKPOINT = 2;         // Force snapshot
+        EXPORT_GGUF = 3;        // Export to GGUF
+        TRAIN = 4;              // Manual training trigger
+    }
+
+    CommandType command = 1;
+    map<string, string> parameters = 2;
+}
+
+message CommandResponse {
+    bool success = 1;
+    string result_message = 2;
+    bytes result_data = 3;                  // Binary payload (e.g., GGUF file)
+}
+```
+
+### Metrics Operations
+
+```protobuf
+message MetricsRequest {
+    bool include_physics = 1;
+    bool include_memory = 2;
+    bool include_neurochemistry = 3;
+}
+
+message MetricsResponse {
+    PhysicsMetrics physics = 1;
+    MemoryMetrics memory = 2;
+    NeurochemistryMetrics neuro = 3;
+}
+
+message PhysicsMetrics {
+    double avg_step_ms = 1;
+    int64 total_propagations = 2;
+    int32 active_nodes = 3;
+    double energy_total = 4;
+}
+
+message MemoryMetrics {
+    int64 total_bytes = 1;
+    int32 checkpoint_count = 2;
+    string latest_checkpoint_id = 3;
+    double lsm_compaction_ratio = 4;
+}
+
+message NeurochemistryMetrics {
+    double dopamine_level = 1;
+    double serotonin_level = 2;
+    double norepinephrine_level = 3;
+    double boredom_score = 4;
+}
+```
+
+## 23.3 ZeroMQ Socket Configuration
+
+### Client-Side Connection
+
+```cpp
+#include <zmq.hpp>
+#include "neural_spike.pb.h"
+
+class RCISClient {
+    zmq::context_t ctx;
+    zmq::socket_t socket;
+    std::string public_key;
+    std::string secret_key;
+
+public:
+    RCISClient(const std::string& server_endpoint,
+               const std::string& server_public_key)
+        : ctx(1), socket(ctx, ZMQ_DEALER) {
+
+        // Generate client keypair
+        char pub[41], sec[41];
+        zmq_curve_keypair(pub, sec);
+        public_key = std::string(pub);
+        secret_key = std::string(sec);
+
+        // Configure CurveZMQ client
+        socket.set(zmq::sockopt::curve_secretkey, secret_key);
+        socket.set(zmq::sockopt::curve_publickey, public_key);
+        socket.set(zmq::sockopt::curve_serverkey, server_public_key);
+
+        // Connect
+        socket.connect(server_endpoint);
+    }
+
+    RCISResponse send_request(const RCISRequest& request) {
+        // Serialize request
+        std::string serialized;
+        request.SerializeToString(&serialized);
+
+        // Send
+        socket.send(zmq::buffer(serialized), zmq::send_flags::none);
+
+        // Receive response
+        zmq::message_t reply;
+        socket.recv(reply, zmq::recv_flags::none);
+
+        // Deserialize
+        RCISResponse response;
+        response.ParseFromArray(reply.data(), reply.size());
+
+        return response;
+    }
+};
+```
+
+### Server-Side Endpoint
+
+```cpp
+class RCISServer {
+    zmq::context_t ctx;
+    zmq::socket_t socket;
+    TorusManifold& torus;
+    Orchestrator& orchestrator;
+
+public:
+    RCISServer(TorusManifold& t, Orchestrator& o)
+        : ctx(1), socket(ctx, ZMQ_ROUTER), torus(t), orchestrator(o) {
+
+        // Bind to endpoint
+        socket.bind("tcp://0.0.0.0:9001");
+    }
+
+    void run() {
+        while (true) {
+            // Receive request
+            zmq::message_t identity, request_msg;
+            socket.recv(identity, zmq::recv_flags::none);
+            socket.recv(request_msg, zmq::recv_flags::none);
+
+            RCISRequest request;
+            request.ParseFromArray(request_msg.data(), request_msg.size());
+
+            // Dispatch
+            RCISResponse response = handle_request(request);
+
+            // Serialize and send
+            std::string serialized;
+            response.SerializeToString(&serialized);
+
+            socket.send(identity, zmq::send_flags::sndmore);
+            socket.send(zmq::buffer(serialized), zmq::send_flags::none);
+        }
+    }
+
+private:
+    RCISResponse handle_request(const RCISRequest& request) {
+        RCISResponse response;
+        response.set_request_id(request.request_id());
+        response.set_timestamp(std::time(nullptr) * 1000);
+
+        if (request.has_query()) {
+            handle_query(request.query(), response);
+        } else if (request.has_ingest()) {
+            handle_ingest(request.ingest(), response);
+        } else if (request.has_retrieve()) {
+            handle_retrieve(request.retrieve(), response);
+        } else if (request.has_command()) {
+            handle_command(request.command(), response);
+        } else if (request.has_metrics()) {
+            handle_metrics(request.metrics(), response);
+        }
+
+        return response;
+    }
+
+    void handle_query(const QueryRequest& query, RCISResponse& response) {
+        auto result = orchestrator.process_query(query.query_text());
+
+        auto* query_resp = response.mutable_query_response();
+        query_resp->set_response_text(result.text);
+        query_resp->set_resonance_score(result.resonance);
+        query_resp->set_used_external_tool(result.used_tool);
+
+        response.set_status_code(200);
+        response.set_status_message("OK");
+    }
+
+    void handle_ingest(const IngestRequest& ingest, RCISResponse& response) {
+        auto waveform = embedder.embed(ingest.content());
+        auto location = torus.inject_wave(waveform);
+
+        auto* ingest_resp = response.mutable_ingest_response();
+        ingest_resp->set_success(true);
+        for (uint32_t coord : location) {
+            ingest_resp->add_stored_location(coord);
+        }
+
+        response.set_status_code(201);
+        response.set_status_message("Created");
+    }
+
+    void handle_retrieve(const RetrieveRequest& retrieve, RCISResponse& response) {
+        Coord9D location;
+        for (int i = 0; i < 9; ++i) {
+            location.coords[i] = retrieve.location_9d(i);
+        }
+
+        auto node = torus.get_node_at(location);
+
+        auto* retrieve_resp = response.mutable_retrieve_response();
+        retrieve_resp->set_resonance_r(node.resonance_r);
+        retrieve_resp->set_state_s(node.state_s);
+
+        auto* wf = retrieve_resp->mutable_wavefunction();
+        wf->add_real_parts(node.wavefunction.real());
+        wf->add_imag_parts(node.wavefunction.imag());
+
+        response.set_status_code(200);
+        response.set_status_message("OK");
+    }
+
+    void handle_command(const CommandRequest& command, RCISResponse& response) {
+        bool success = false;
+
+        switch (command.command()) {
+            case CommandRequest::NAP:
+                torus.trigger_consolidation();
+                success = true;
+                break;
+            case CommandRequest::CHECKPOINT:
+                persistence.save_checkpoint();
+                success = true;
+                break;
+            case CommandRequest::EXPORT_GGUF:
+                export_to_gguf();
+                success = true;
+                break;
+        }
+
+        auto* cmd_resp = response.mutable_command_response();
+        cmd_resp->set_success(success);
+
+        response.set_status_code(success ? 200 : 500);
+        response.set_status_message(success ? "OK" : "Failed");
+    }
+
+    void handle_metrics(const MetricsRequest& metrics, RCISResponse& response) {
+        auto* metrics_resp = response.mutable_metrics_response();
+
+        if (metrics.include_physics()) {
+            auto* phys = metrics_resp->mutable_physics();
+            phys->set_avg_step_ms(torus.get_avg_step_time());
+            phys->set_active_nodes(torus.get_active_count());
+        }
+
+        response.set_status_code(200);
+        response.set_status_message("OK");
+    }
+};
+```
+
+## 23.4 Status Codes
+
+RCIS uses HTTP-style status codes:
+
+| Code | Meaning | Usage |
+|------|---------|-------|
+| 200 | OK | Successful operation |
+| 201 | Created | Resource created (ingest) |
+| 400 | Bad Request | Invalid request format |
+| 401 | Unauthorized | Authentication failed |
+| 404 | Not Found | Resource not found |
+| 429 | Too Many Requests | Rate limit exceeded |
+| 500 | Internal Server Error | Server-side failure |
+| 503 | Service Unavailable | System overloaded |
+
+## 23.5 Error Handling
+
+```protobuf
+message ErrorDetails {
+    string error_code = 1;          // Machine-readable code
+    string error_message = 2;       // Human-readable message
+    repeated string stack_trace = 3; // Debug info (dev mode only)
+}
+```
+
+Example error response:
+
+```cpp
+RCISResponse error_response;
+error_response.set_status_code(400);
+error_response.set_status_message("Invalid query format");
+
+auto* error = error_response.mutable_error_details();
+error->set_error_code("INVALID_QUERY");
+error->set_error_message("Query text exceeds 10000 character limit");
+```
+
+## 23.6 Rate Limiting
+
+RCIS implements token bucket rate limiting:
+
+- **Burst:** 100 requests
+- **Refill Rate:** 10 requests/second
+- **429 Response:** Includes `Retry-After` header in metadata
+
+```cpp
+class RateLimiter {
+    int tokens = 100;
+    const int max_tokens = 100;
+    const int refill_rate = 10;  // per second
+    std::chrono::steady_clock::time_point last_refill;
+
+public:
+    bool allow_request() {
+        auto now = std::chrono::steady_clock::now();
+        auto elapsed = std::chrono::duration_cast<std::chrono::seconds>(
+            now - last_refill
+        ).count();
+
+        tokens = std::min(max_tokens, tokens + elapsed * refill_rate);
+        last_refill = now;
+
+        if (tokens > 0) {
+            --tokens;
+            return true;
+        }
+
+        return false;
+    }
+};
+```
+
+---
+
+**Cross-References:**
+- See Section 10 for ZeroMQ Spine architecture
+- See Section 25 for CLI Controller implementation
+- See Appendix C for complete Protocol Buffer schemas
+# COMMUNICATION PROTOCOLS
+
+## 10.1 ZeroMQ Spine Architecture
+
+### 10.1.1 Protocol Definition
+
+**Pattern:** ROUTER-DEALER (asynchronous message broker)
+
+**Topology:**
+
+```
+┌──────────────────────────────────────────────┐
+│           ZeroMQ Spine Broker                │
+│                                              │
+│  Frontend (ROUTER) ←→ Backend (DEALER)       │
+└──┬────────────────────────────────────────┬──┘
+   │                                        │
+   ▼ (Internal Components)                  ▼ (External Agents)
+┌─────────┐  ┌─────────┐  ┌─────────┐  ┌─────────┐  ┌─────────┐
+│ Physics │  │ Memory  │  │Reasoning│  │ Tavily  │  │Executor │
+│ Engine  │  │ System  │  │ Engine  │  │ Agent   │  │  KVM    │
+└─────────┘  └─────────┘  └─────────┘  └─────────┘  └─────────┘
+```
+
+### 10.1.2 Component Identification
+
+**Registered Components:**
+
+| Component ID | Name | Role | Connection Type |
+|-------------|------|------|-----------------|
+| 0 | ORCHESTRATOR | Central coordinator | Frontend (ROUTER) |
+| 1 | PHYSICS_ENGINE | Toroidal wave simulation | Frontend |
+| 2 | MEMORY_SYSTEM | LMDB persistence | Frontend |
+| 3 | REASONING_ENGINE | Transformer/Mamba | Frontend |
+| 4 | TAVILY_AGENT | Web search | Backend (DEALER) |
+| 5 | FIRECRAWL_AGENT | Web scraping | Backend |
+| 6 | GEMINI_AGENT | Translation/semantic | Backend |
+| 7 | HTTP_CLIENT | Custom API calls | Backend |
+| 8 | EXECUTOR_KVM | Sandboxed execution | Backend |
+| 9 | NEUROCHEMISTRY | ENGS system | Frontend |
+| 10 | TRAINER_MAMBA | Autonomous Mamba training | Frontend |
+| 11 | TRAINER_TRANSFORMER | Autonomous Transformer training | Frontend |
+
+### 10.1.3 Spine Broker Implementation
+
+**Header Declaration:**
+
+```cpp
+// File: include/nikola/spine/broker.hpp
+#pragma once
+
+#include <zmq.hpp>
+#include <thread>
+#include <sodium.h>
+
+namespace nikola::spine {
+
+class SpineBroker {
+    zmq::context_t ctx;
+    zmq::socket_t frontend;   // ROUTER for internal components
+    zmq::socket_t backend;    // DEALER for external agents
+    zmq::socket_t monitor;    // PUB for logging
+
+    struct CurveKeyPair {
+        std::array<uint8_t, 32> public_key;
+        std::array<uint8_t, 32> secret_key;
+    };
+
+    CurveKeyPair broker_keys;
+    class ZAPHandler;
+    std::unique_ptr<ZAPHandler> zap_handler;
+
+public:
+    SpineBroker();
+
+    void run();
+    void shutdown();
+
+    std::string get_public_key_z85() const;
+};
+
+} // namespace nikola::spine
+```
+
+**Implementation:**
+
+```cpp
+// File: src/spine/broker.cpp
+
+SpineBroker::SpineBroker()
+    : ctx(1),
+      frontend(ctx, ZMQ_ROUTER),
+      backend(ctx, ZMQ_DEALER),
+      monitor(ctx, ZMQ_PUB) {
+
+    // Generate broker keypair
+    crypto_box_keypair(broker_keys.public_key.data(),
+                      broker_keys.secret_key.data());
+
+    // Configure security
+    frontend.set(zmq::sockopt::curve_server, 1);
+    frontend.set(zmq::sockopt::curve_secretkey,
+                broker_keys.secret_key.data(), 32);
+    frontend.set(zmq::sockopt::curve_publickey,
+                broker_keys.public_key.data(), 32);
+
+    backend.set(zmq::sockopt::curve_server, 1);
+    backend.set(zmq::sockopt::curve_secretkey,
+               broker_keys.secret_key.data(), 32);
+    backend.set(zmq::sockopt::curve_publickey,
+               broker_keys.public_key.data(), 32);
+
+    // Bind sockets
+    frontend.bind("ipc:///tmp/nikola/spine_frontend.ipc");
+    backend.bind("ipc:///tmp/nikola/spine_backend.ipc");
+    monitor.bind("inproc://logger");
+
+    // Create ZAP handler
+    zap_handler = std::make_unique<ZAPHandler>(ctx);
+}
+
+void SpineBroker::run() {
+    // Start ZAP authentication handler in separate thread
+    std::thread zap_thread([this]() {
+        zap_handler->run();
+    });
+    zap_thread.detach();
+
+    // Run proxy (blocks until shutdown)
+    zmq::proxy(frontend, backend, monitor);
+}
+```
+
+### 10.1.4 Component Client
+
+**Client Interface:**
+
+```cpp
+// File: include/nikola/spine/component_client.hpp
+#pragma once
+
+#include "neural_spike.pb.h"
+#include <zmq.hpp>
+#include <optional>
+
+namespace nikola::spine {
+
+class ComponentClient {
+    zmq::context_t ctx;
+    zmq::socket_t socket;
+
+    struct CurveKeyPair {
+        std::array<uint8_t, 32> public_key;
+        std::array<uint8_t, 32> secret_key;
+    };
+
+    CurveKeyPair my_keys;
+    ComponentID my_id;
+
+public:
+    ComponentClient(ComponentID id, const std::string& broker_public_key);
+
+    void send_spike(const NeuralSpike& spike);
+    std::optional<NeuralSpike> recv_spike(int timeout_ms = -1);
+
+    ComponentID get_id() const { return my_id; }
+};
+
+} // namespace nikola::spine
+```
+
+**Implementation:**
+
+```cpp
+// File: src/spine/component_client.cpp
+
+ComponentClient::ComponentClient(ComponentID id,
+                                 const std::string& broker_public_key)
+    : ctx(1), socket(ctx, ZMQ_DEALER), my_id(id) {
+
+    // Generate keypair
+    crypto_box_keypair(my_keys.public_key.data(),
+                      my_keys.secret_key.data());
+
+    // Configure CurveZMQ client
+    socket.set(zmq::sockopt::curve_secretkey, my_keys.secret_key.data(), 32);
+    socket.set(zmq::sockopt::curve_publickey, my_keys.public_key.data(), 32);
+
+    // Set server public key
+    std::array<uint8_t, 32> server_key;
+    zmq_z85_decode(server_key.data(), broker_public_key.c_str());
+    socket.set(zmq::sockopt::curve_serverkey, server_key.data(), 32);
+
+    // Set identity
+    std::string identity = "component_" + std::to_string(static_cast<int>(id));
+    socket.set(zmq::sockopt::routing_id, identity);
+
+    // Connect
+    socket.connect("ipc:///tmp/nikola/spine_frontend.ipc");
+}
+
+void ComponentClient::send_spike(const NeuralSpike& spike) {
+    // Serialize protobuf
+    std::string data;
+    spike.SerializeToString(&data);
+
+    // Send
+    socket.send(zmq::buffer(data), zmq::send_flags::none);
+}
+
+std::optional<NeuralSpike> ComponentClient::recv_spike(int timeout_ms) {
+    zmq::pollitem_t items[] = {{socket, 0, ZMQ_POLLIN, 0}};
+    zmq::poll(items, 1, std::chrono::milliseconds(timeout_ms));
+
+    if (items[0].revents & ZMQ_POLLIN) {
+        zmq::message_t msg;
+        socket.recv(msg);
+
+        NeuralSpike spike;
+        spike.ParseFromArray(msg.data(), msg.size());
+        return spike;
+    }
+
+    return std::nullopt;
+}
+```
+
+---
+
+## 10.2 Security: CurveZMQ Ironhouse Pattern
+
+### 10.2.1 Cryptography
+
+**Algorithm:** Curve25519 Elliptic Curve Diffie-Hellman
+
+**Library:** libsodium (NaCl-compatible)
+
+**Key Properties:**
+- Public key: 32 bytes (encoded as 40-character Z85 string)
+- Secret key: 32 bytes (NEVER transmitted)
+- Encryption: ChaCha20-Poly1305 AEAD
+
+### 10.2.2 Key Generation
+
+```cpp
+// File: include/nikola/security/curve_keypair.hpp
+#pragma once
+
+#include <sodium.h>
+#include <zmq.hpp>
+#include <array>
+#include <string>
+
+namespace nikola::security {
+
+class CurveKeyPair {
+public:
+    std::array<uint8_t, 32> public_key;
+    std::array<uint8_t, 32> secret_key;
+
+    CurveKeyPair() {
+        if (sodium_init() == -1) {
+            throw std::runtime_error("libsodium initialization failed");
+        }
+        crypto_box_keypair(public_key.data(), secret_key.data());
+    }
+
+    std::string public_key_z85() const {
+        char z85[41];
+        zmq_z85_encode(z85, public_key.data(), 32);
+        return std::string(z85);
+    }
+
+    static std::array<uint8_t, 32> decode_z85(const std::string& z85_str) {
+        std::array<uint8_t, 32> decoded;
+        zmq_z85_decode(decoded.data(), z85_str.c_str());
+        return decoded;
+    }
+};
+
+} // namespace nikola::security
+```
+
+### 10.2.3 ZAP Authentication Handler
+
+**ZeroMQ Authentication Protocol (ZAP):**
+
+```cpp
+// File: include/nikola/spine/zap_handler.hpp
+#pragma once
+
+#include <zmq.hpp>
+#include <unordered_set>
+#include <shared_mutex>
+#include <string>
+
+namespace nikola::spine {
+
+class ZAPHandler {
+    std::unordered_set<std::string> whitelist;
+    mutable std::shared_mutex whitelist_mutex;  // Thread-safe access to whitelist
+    zmq::context_t& ctx;
+    zmq::socket_t zap_socket;
+    bool running = false;
+
+public:
+    explicit ZAPHandler(zmq::context_t& context);
+
+    void add_authorized_key(const std::string& public_key_z85);
+    void remove_authorized_key(const std::string& public_key_z85);
+
+    void run();
+    void shutdown();
+};
+
+} // namespace nikola::spine
+```
+
+**Implementation:**
+
+```cpp
+// File: src/spine/zap_handler.cpp
+
+ZAPHandler::ZAPHandler(zmq::context_t& context)
+    : ctx(context), zap_socket(ctx, ZMQ_REP) {
+    zap_socket.bind("inproc://zeromq.zap.01");
+}
+
+void ZAPHandler::add_authorized_key(const std::string& public_key_z85) {
+    std::unique_lock<std::shared_mutex> lock(whitelist_mutex);  // Exclusive write lock
+    whitelist.insert(public_key_z85);
+}
+
+void ZAPHandler::remove_authorized_key(const std::string& public_key_z85) {
+    std::unique_lock<std::shared_mutex> lock(whitelist_mutex);  // Exclusive write lock
+    whitelist.erase(public_key_z85);
+}
+
+void ZAPHandler::run() {
+    running = true;
+
+    while (running) {
+        zmq::message_t version, request_id, domain, address,
+                      identity, mechanism, client_key;
+
+        // Receive ZAP request (7 frames)
+        zap_socket.recv(version);
+        zap_socket.recv(request_id);
+        zap_socket.recv(domain);
+        zap_socket.recv(address);
+        zap_socket.recv(identity);
+        zap_socket.recv(mechanism);
+        zap_socket.recv(client_key);
+
+        // Extract client public key
+        std::string client_key_str(
+            static_cast<char*>(client_key.data()),
+            client_key.size()
+        );
+
+        // Check whitelist (thread-safe read with shared lock)
+        bool authorized;
+        {
+            std::shared_lock<std::shared_mutex> lock(whitelist_mutex);  // Shared read lock
+            authorized = whitelist.count(client_key_str) > 0;
+        }
+
+        // Send ZAP response (6 frames)
+        zap_socket.send(zmq::str_buffer("1.0"), zmq::send_flags::sndmore);
+        zap_socket.send(request_id, zmq::send_flags::sndmore);
+        zap_socket.send(
+            zmq::str_buffer(authorized ? "200" : "400"),
+            zmq::send_flags::sndmore
+        );
+        zap_socket.send(
+            zmq::str_buffer(authorized ? "OK" : "Unauthorized"),
+            zmq::send_flags::sndmore
+        );
+        zap_socket.send(zmq::str_buffer(""), zmq::send_flags::sndmore);
+        zap_socket.send(zmq::str_buffer(""));
+    }
+}
+
+void ZAPHandler::shutdown() {
+    running = false;
+}
+```
+
+### 10.2.4 Security Policy
+
+**Ironhouse Pattern:**
+
+1. **Deny-by-Default:** All connections rejected unless public key is whitelisted
+2. **Key Distribution:** Public keys exchanged out-of-band (configuration files)
+3. **No Anonymous Access:** Every component must have a valid keypair
+4. **Encryption:** All messages encrypted end-to-end with ChaCha20-Poly1305
+
+**Key Storage:**
+
+```bash
+# Example key configuration
+/etc/nikola/keys/
+├── broker_public.key        # Broker public key (Z85 format)
+├── broker_secret.key        # Broker secret key (Z85, chmod 600)
+├── orchestrator.key         # Orchestrator keypair
+├── physics_engine.key
+├── memory_system.key
+└── whitelist.txt            # Authorized public keys (one per line)
+```
+
+---
+
+## 10.3 Shadow Spine Protocol
+
+### 10.3.1 Purpose
+
+Test **candidate systems** in parallel with **production** without disrupting user experience. Enables safe A/B testing of self-improved code.
+
+### 10.3.2 Architecture
+
+```
+User Query
+    │
+┌───┴───────┐
+│ Splitter  │ (ZMQ Proxy)
+└───┬───┬───┘
+    │   │
+    ▼   ▼
+┌────────┐  ┌────────────┐
+│Prod Sys│  │ Candidate  │
+└────┬───┘  └─────┬──────┘
+     │            │
+     │            ▼ (To Architect for analysis)
+     │
+     ▼ (To User - ALWAYS production response)
+```
+
+### 10.3.3 Voting Mechanism
+
+**Promotion Criteria:**
+
+Candidate response must have **ALL** of:
+1. Higher resonance score (better pattern match)
+2. Lower latency (faster response)
+3. Equal or higher confidence
+
+**Vote Counter:** Track consecutive successful comparisons
+
+**Promotion Threshold:** 100 consecutive votes → Promote to production
+
+### 10.3.4 Implementation
+
+**Header:**
+
+```cpp
+// File: include/nikola/spine/shadow_spine.hpp
+#pragma once
+
+#include "nikola/spine/broker.hpp"
+#include "neural_spike.pb.h"
+#include <atomic>
+
+namespace nikola::spine {
+
+class ShadowSpine {
+    SpineBroker production_broker;
+    SpineBroker candidate_broker;
+
+    std::atomic<int> votes_for_candidate{0};
+    const int PROMOTION_THRESHOLD = 100;
+
+    struct ResponsePair {
+        NeuralSpike production;
+        NeuralSpike candidate;
+        std::chrono::steady_clock::time_point timestamp;
+    };
+
+    std::map<std::string, ResponsePair> pending_comparisons;
+
+public:
+    ShadowSpine();
+
+    void route_query(const NeuralSpike& query);
+    void compare_responses(const std::string& request_id);
+    void promote_candidate_if_ready();
+
+    int get_vote_count() const { return votes_for_candidate.load(); }
+};
+
+} // namespace nikola::spine
+```
+
+**Implementation:**
+
+```cpp
+// File: src/spine/shadow_spine.cpp
+
+#include "nikola/spine/shadow_spine.hpp"
+#include <iostream>
+
+void ShadowSpine::route_query(const NeuralSpike& query) {
+    // Send to BOTH systems
+    production_broker.forward_spike(query);
+    candidate_broker.forward_spike(query);
+
+    // Record timestamp
+    pending_comparisons[query.request_id()] = {
+        .timestamp = std::chrono::steady_clock::now()
+    };
+}
+
+void ShadowSpine::compare_responses(const std::string& request_id) {
+    auto& pair = pending_comparisons.at(request_id);
+
+    const auto& prod = pair.production;
+    const auto& cand = pair.candidate;
+
+    // Extract metrics
+    bool higher_resonance = cand.physics().resonance() > prod.physics().resonance();
+    bool lower_latency = cand.meta().latency_ms() < prod.meta().latency_ms();
+    bool equal_confidence = cand.payload().confidence() >= prod.payload().confidence();
+
+    if (higher_resonance && lower_latency && equal_confidence) {
+        // Vote for candidate
+        int current_votes = ++votes_for_candidate;
+
+        std::cout << "[Shadow Spine] Vote for candidate: "
+                  << current_votes << "/" << PROMOTION_THRESHOLD << std::endl;
+
+        if (current_votes >= PROMOTION_THRESHOLD) {
+            promote_candidate_if_ready();
+        }
+    } else {
+        // Reset vote counter (must be CONSECUTIVE wins)
+        votes_for_candidate = 0;
+    }
+
+    // Clean up
+    pending_comparisons.erase(request_id);
+}
+
+void ShadowSpine::promote_candidate_if_ready() {
+    std::cout << "[Shadow Spine] PROMOTING CANDIDATE TO PRODUCTION" << std::endl;
+
+    // CRITICAL: Use explicit memory ordering for atomic pointer hot-swap
+    // Ensures candidate system is fully initialized before visibility to readers
+
+    // 1. Backup current production (for rollback capability)
+    OrchestatorSystem* old_production = production_system.load(std::memory_order_acquire);
+    backup_system.store(old_production, std::memory_order_release);
+
+    // 2. Hot-swap: Atomically replace production pointer with candidate
+    // memory_order_release ensures:
+    //   - All candidate initialization writes are visible before pointer becomes visible
+    //   - Prevents reordering of initialization code past this point
+    // memory_order_acquire in readers ensures:
+    //   - They see fully initialized candidate after loading the pointer
+    OrchestatorSystem* old_ptr = production_system.exchange(
+        candidate_system.load(std::memory_order_acquire),
+        std::memory_order_acq_rel  // Acquire current, release new
+    );
+
+    // 3. Reset vote counter (relaxed okay - not synchronized with pointer swap)
+    votes_for_candidate.store(0, std::memory_order_relaxed);
+
+    // 4. Create new candidate system (asynchronously prepare next candidate)
+    std::thread([this, old_ptr]() {
+        // Reuse old production system as next candidate (recycling)
+        candidate_system.store(old_ptr, std::memory_order_release);
+
+        // Reset candidate state for next A/B test cycle
+        old_ptr->reset_for_next_test();
+
+        std::cout << "[Shadow Spine] New candidate system initialized" << std::endl;
+    }).detach();
+
+    std::cout << "[Shadow Spine] Hot-swap complete (zero downtime)" << std::endl;
+}
+```
+
+### 10.3.5 Integration with CSVP
+
+**Cross-Reference:** See [Section 8.4: Safety Evolution (WP4)](../06_implementation_specifications/08_critical_remediations.md)
+
+Before promoting candidate:
+1. Run Code Safety Verification Protocol (CSVP)
+2. Verify physics invariants
+3. Check security regression tests
+4. Validate performance benchmarks
+
+**Promotion Flow:**
+
+```
+Candidate reaches 100 votes
+    ↓
+Trigger CSVP verification
+    ↓
+[PASS] → Promote
+[FAIL] → Reject, log analysis
+```
+
+### 10.3.6 Monitoring
+
+**Metrics to Track:**
+
+```cpp
+struct ShadowSpineMetrics {
+    int total_queries_routed;
+    int candidate_wins;
+    int production_wins;
+    int ties;
+    int current_vote_streak;
+    int promotions_count;
+    double avg_resonance_delta;
+    double avg_latency_delta;
+};
+```
+
+**Logging:**
+
+```cpp
+void log_comparison(const ResponsePair& pair) {
+    nlohmann::json log_entry = {
+        {"request_id", pair.production.request_id()},
+        {"production", {
+            {"resonance", pair.production.physics().resonance()},
+            {"latency_ms", pair.production.meta().latency_ms()},
+            {"confidence", pair.production.payload().confidence()}
+        }},
+        {"candidate", {
+            {"resonance", pair.candidate.physics().resonance()},
+            {"latency_ms", pair.candidate.meta().latency_ms()},
+            {"confidence", pair.candidate.payload().confidence()}
+        }},
+        {"winner", determine_winner(pair)}
+    };
+
+    // Write to analysis log
+    std::ofstream log_file("/var/log/nikola/shadow_spine.jsonl", std::ios::app);
+    log_file << log_entry.dump() << std::endl;
+}
+```
+
+---
+
+## 10.4 Communication Patterns
+
+### 10.4.1 Request-Reply Pattern
+
+**Use Case:** Query processing, tool dispatch
+
+```cpp
+// Client sends request
+NeuralSpike request;
+request.set_request_id(generate_uuid());
+request.set_sender(ComponentID::ORCHESTRATOR);
+request.set_recipient(ComponentID::TAVILY_AGENT);
+request.set_text_data("What is the golden ratio?");
+
+client.send_spike(request);
+
+// Wait for reply
+auto reply = client.recv_spike(5000);  // 5 second timeout
+if (reply) {
+    std::cout << reply->text_data() << std::endl;
+}
+```
+
+### 10.4.2 Publish-Subscribe Pattern
+
+**Use Case:** Neurogenesis events, dopamine updates
+
+```cpp
+// Publisher (Physics Engine)
+NeuralSpike event;
+event.set_sender(ComponentID::PHYSICS_ENGINE);
+event.set_recipient(ComponentID::ORCHESTRATOR);  // Broadcast
+
+auto* neurogenesis = event.mutable_neurogenesis();
+neurogenesis->add_coordinates(81);  // 9D coords flattened
+neurogenesis->set_new_node_count(27);
+
+physics_client.send_spike(event);
+
+// Subscriber (Memory System)
+auto event_msg = memory_client.recv_spike();
+if (event_msg && event_msg->has_neurogenesis()) {
+    handle_neurogenesis(event_msg->neurogenesis());
+}
+```
+
+### 10.4.3 Pipeline Pattern
+
+**Use Case:** Multi-stage processing (embed → inject → propagate → retrieve)
+
+```cpp
+// Stage 1: Orchestrator → Embedder
+spike1.set_recipient(ComponentID::REASONING_ENGINE);
+client.send_spike(spike1);
+
+// Stage 2: Embedder → Physics Engine
+auto embedded = client.recv_spike();
+embedded->set_recipient(ComponentID::PHYSICS_ENGINE);
+client.send_spike(*embedded);
+
+// Stage 3: Physics Engine → Memory System
+auto propagated = client.recv_spike();
+propagated->set_recipient(ComponentID::MEMORY_SYSTEM);
+client.send_spike(*propagated);
+
+// Final: Memory System → Orchestrator
+auto result = client.recv_spike();
+```
+
+---
+
+## 10.5 Error Handling and Reliability
+
+### 10.5.1 Timeout Policy
+
+```cpp
+const int TIMEOUT_MS_SHORT = 1000;      // Quick operations
+const int TIMEOUT_MS_MEDIUM = 5000;     // External API calls
+const int TIMEOUT_MS_LONG = 30000;      // Training, large propagations
+
+auto response = client.recv_spike(TIMEOUT_MS_MEDIUM);
+if (!response) {
+    // Timeout occurred
+    handle_timeout(original_request);
+}
+```
+
+### 10.5.2 Retry Logic
+
+```cpp
+template<typename Func>
+std::optional<NeuralSpike> retry_with_backoff(Func operation, int max_retries = 3) {
+    int backoff_ms = 100;
+
+    for (int attempt = 0; attempt < max_retries; ++attempt) {
+        auto result = operation();
+        if (result) return result;
+
+        std::this_thread::sleep_for(std::chrono::milliseconds(backoff_ms));
+        backoff_ms *= 2;  // Exponential backoff
+    }
+
+    return std::nullopt;
+}
+```
+
+### 10.5.3 Circuit Breaker
+
+```cpp
+class CircuitBreaker {
+    int failure_count = 0;
+    const int FAILURE_THRESHOLD = 5;
+    std::chrono::steady_clock::time_point last_failure;
+
+public:
+    bool should_allow_request() {
+        if (failure_count >= FAILURE_THRESHOLD) {
+            auto elapsed = std::chrono::steady_clock::now() - last_failure;
+            if (elapsed < std::chrono::seconds(60)) {
+                return false;  // Circuit open
+            } else {
+                failure_count = 0;  // Reset after cooldown
+            }
+        }
+        return true;
+    }
+
+    void record_failure() {
+        ++failure_count;
+        last_failure = std::chrono::steady_clock::now();
+    }
+
+    void record_success() {
+        failure_count = 0;
+    }
+};
+```
+
+---
+
+**Cross-References:**
+- See Section 10.2 for Protocol Buffer message definitions
+- See Section 8.4 for CSVP integration details
+- See Section 9.4 for build system configuration
+- See Appendix B for complete protobuf schemas
+
+# CLI CONTROLLER (twi-ctl)
+
+## 25.1 Overview
+
+The `twi-ctl` (Toroidal Waveform Intelligence Controller) is the primary command-line interface for interacting with the Nikola Model. It provides human-friendly commands that map to RCIS protocol messages.
+
+### Design Philosophy
+
+- **Unix-style:** Short commands, composable via pipes
+- **Interactive and Scriptable:** Works for both terminals and automation
+- **Self-documenting:** Built-in help and examples
+- **Secure by Default:** CurveZMQ authentication required
+
+## 25.2 Installation and Setup
+
+### Binary Location
+
+```bash
+/usr/local/bin/twi-ctl
+```
+
+### Configuration File
+
+**Path:** `~/.config/nikola/twi-ctl.conf`
+
+```ini
+[connection]
+endpoint = ipc:///tmp/nikola/spine_frontend.ipc
+server_public_key = <Z85-encoded-key>
+
+[auth]
+client_public_key = <auto-generated>
+client_secret_key = <auto-generated>
+
+[defaults]
+resonance_threshold = 0.7
+max_propagation_steps = 100
+timeout_ms = 30000
+```
+
+### First-Time Setup
+
+```bash
+# Generate client keypair
+twi-ctl init
+
+# Output:
+# [twi-ctl] Generating CurveZMQ keypair...
+# [twi-ctl] Public key: H8F2k9Xz...
+# [twi-ctl] Configuration saved to ~/.config/nikola/twi-ctl.conf
+# [twi-ctl] Add this public key to server whitelist: /etc/nikola/allowed_clients.txt
+```
+
+## 25.3 Command Reference
+
+### Query Commands
+
+#### `query` - Submit natural language query
+
+```bash
+twi-ctl query "What is the golden ratio?"
+
+# Options:
+#   --threshold, -t <float>    Min resonance threshold (default: 0.7)
+#   --steps, -s <int>          Max propagation steps (default: 100)
+#   --no-tools                 Disable external tool usage
+#   --json                     Output as JSON
+
+# Examples:
+twi-ctl query "Explain quantum entanglement" --threshold 0.8
+twi-ctl query "Latest AI news" --json | jq .response_text
+```
+
+**Output:**
+
+```
+[Resonance: 0.92] The golden ratio (φ ≈ 1.618) is an irrational number
+that appears frequently in nature, art, and mathematics. It is defined
+as (1 + √5) / 2...
+
+[Source: Memory] Location: [12, 45, 78, 23, 56, 89, 34, 67, 90]
+[Propagation: 42 steps, 0.048ms/step]
+```
+
+### Ingest Commands
+
+#### `ingest` - Store content in the toroid
+
+```bash
+twi-ctl ingest "The Pythagorean theorem states that a² + b² = c²"
+
+# Options:
+#   --file, -f <path>          Read content from file
+#   --type, -t <type>          Content type: text|audio|image
+#   --metadata, -m <key=val>   Add metadata tags
+
+# Examples:
+twi-ctl ingest --file /path/to/document.txt
+twi-ctl ingest --file speech.wav --type audio
+echo "Important fact" | twi-ctl ingest
+```
+
+**Output:**
+
+```
+[Ingested] Location: [23, 56, 89, 12, 45, 78, 34, 67, 90]
+[Resonance: 0.65] Stored successfully
+[Checkpoint: nikola_20241201_120345]
+```
+
+### System Commands
+
+#### `status` - Show system health
+
+```bash
+twi-ctl status
+
+# Options:
+#   --json    Output as JSON
+
+# Output:
+# [Nikola Model v0.0.4] Status: RUNNING
+# Physics: 0.48ms/step, 12,847 active nodes
+# Memory: 2.3GB state, 42 checkpoints
+# Neurochemistry: Dopamine=0.65, Serotonin=0.72, Norepinephrine=0.58
+# Uptime: 3d 14h 22m
+```
+
+#### `metrics` - Detailed performance metrics
+
+```bash
+twi-ctl metrics
+
+# Options:
+#   --physics           Show only physics metrics
+#   --memory            Show only memory metrics
+#   --neuro             Show only neurochemistry metrics
+#   --watch, -w <sec>   Continuously update every N seconds
+#   --json              Output as JSON
+
+# Examples:
+twi-ctl metrics --physics
+twi-ctl metrics --watch 1     # Update every second
+```
+
+### Maintenance Commands
+
+#### `nap` - Trigger consolidation
+
+```bash
+twi-ctl nap
+
+# Options:
+#   --duration, -d <seconds>   Nap duration (default: 60)
+#   --force, -f                Force even if recent nap occurred
+
+# Output:
+# [NAP] Starting consolidation cycle...
+# [NAP] Pruning low-resonance nodes... 342 removed
+# [NAP] Compacting LSM-DMC... 2.1GB -> 723MB
+# [NAP] Complete in 14.2s
+```
+
+#### `checkpoint` - Force state snapshot
+
+```bash
+twi-ctl checkpoint
+
+# Output:
+# [Checkpoint] Saving state...
+# [Checkpoint] ID: nikola_20241201_145623
+# [Checkpoint] Size: 2.3GB
+```
+
+#### `export-gguf` - Export to GGUF format
+
+```bash
+twi-ctl export-gguf output.gguf
+
+# Options:
+#   --quantization, -q <type>   Quantization: Q9_0|Q8_0|F16
+
+# Output:
+# [Export] Flattening torus via Hilbert curve...
+# [Export] Complete: nikola.gguf (523MB)
+```
+
+## 25.4 Implementation
+
+### Main Entry Point
+
+```cpp
+// File: tools/twi-ctl/main.cpp
+
+#include <iostream>
+#include <string>
+#include <cstdlib>
+#include <signal.h>
+#include <atomic>
+#include <curl/curl.h>
+#include "nikola/spine/component_client.hpp"
+
+// Global shutdown flag for signal handling
+std::atomic<bool> shutdown_requested{false};
+
+void signal_handler(int signum) {
+    std::cout << "\n[twi-ctl] Received signal " << signum << ", shutting down gracefully..." << std::endl;
+    shutdown_requested = true;
+}
+
+int main(int argc, char** argv) {
+    // CRITICAL: Initialize libcurl globally before any threads
+    // This MUST be called once at process startup (not thread-safe)
+    curl_global_init(CURL_GLOBAL_DEFAULT);
+
+    // Register signal handlers for graceful shutdown
+    std::signal(SIGINT, signal_handler);
+    std::signal(SIGTERM, signal_handler);
+
+    if (argc < 2) {
+        std::cerr << "Usage: twi-ctl <command> [options]" << std::endl;
+        curl_global_cleanup();
+        return 1;
+    }
+
+    std::string command = argv[1];
+
+    try {
+        // Connect to Nikola spine
+        ComponentClient client(ComponentID::CLI_CLIENT, load_server_public_key());
+
+        if (command == "query") {
+            handle_query(client, argc, argv);
+        } else if (command == "status") {
+            handle_status(client);
+        } else if (command == "help") {
+            print_help();
+        } else {
+            std::cerr << "[twi-ctl] Unknown command: " << command << std::endl;
+            curl_global_cleanup();
+            return 1;
+        }
+
+    } catch (const std::exception& e) {
+        std::cerr << "[twi-ctl] Error: " << e.what() << std::endl;
+        curl_global_cleanup();
+        return 1;
+    }
+
+    // CRITICAL: Cleanup libcurl at process shutdown (after all threads terminate)
+    curl_global_cleanup();
+
+    return 0;
+}
+
+void print_help() {
+    std::cout << R"(
+twi-ctl - Toroidal Waveform Intelligence Controller
+
+USAGE:
+    twi-ctl <command> [options]
+
+COMMANDS:
+    query <text>           Submit natural language query
+    ingest <content>       Store content in memory
+    status                 Show system health
+    metrics                Detailed performance metrics
+    nap                    Trigger consolidation cycle
+    checkpoint             Force state snapshot
+    export-gguf <file>     Export to GGUF format
+    help                   Show this help message
+
+For detailed command help: twi-ctl <command> --help
+)" << std::endl;
+}
+```
+
+---
+
+**Cross-References:**
+- See Section 23 for RCIS protocol specification
+- See Section 10 for ZeroMQ Spine architecture
+# DATA FORMAT SPECIFICATIONS
+
+## 10.4 Protocol Buffer Message Definitions
+
+### 10.4.1 Complete Protocol Buffer Schema
+
+**File:** `proto/neural_spike.proto`
+
+```protobuf
+syntax = "proto3";
+
+package nikola;
+
+// Component identifiers for routing
+enum ComponentID {
+    ORCHESTRATOR = 0;
+    PHYSICS_ENGINE = 1;
+    MEMORY_SYSTEM = 2;
+    REASONING_ENGINE = 3;
+    TAVILY_AGENT = 4;
+    FIRECRAWL_AGENT = 5;
+    GEMINI_AGENT = 6;
+    HTTP_CLIENT = 7;
+    EXECUTOR_KVM = 8;
+    NEUROCHEMISTRY = 9;
+    TRAINER_MAMBA = 10;
+    TRAINER_TRANSFORMER = 11;
+    CLI_CONTROLLER = 12;
+    INGESTION_SENTINEL = 13;
+}
+
+// Complex waveform representation
+// ⚠️ DEPRECATED: Do NOT use real_parts/imag_parts for large waveforms
+// Reason: 1GB+ serialization stalls entire system (blocking ZeroMQ thread)
+// Use WaveformSHM instead for production (shared memory descriptor only)
+message Waveform {
+    repeated double real_parts = 1 [deprecated = true];  // Real components (DEPRECATED)
+    repeated double imag_parts = 2 [deprecated = true];  // Imaginary components (DEPRECATED)
+    int32 length = 3;                // Number of samples
+    double sampling_rate = 4;        // Hz (for audio)
+}
+
+// Shared Memory Waveform Descriptor (RECOMMENDED for large data)
+// Size: ~100 bytes vs 1GB+ for serialized waveform
+message WaveformSHM {
+    string shm_path = 1;             // Shared memory path (e.g., "/dev/shm/nikola_waveform_0")
+    uint64 size_bytes = 2;           // Total allocation size in bytes
+    uint64 offset = 3;               // Start offset for this wavefunction
+    repeated int32 dimensions = 4;   // Grid shape [9 dimensions]
+    double sampling_rate = 5;        // Hz (for audio, if applicable)
+    int64 timestamp_created = 6;     // Unix timestamp (ms) for lifetime tracking
+    
+    // Type information for deserialization
+    enum DataType {
+        COMPLEX_DOUBLE = 0;          // std::complex<double> (16 bytes per element)
+        COMPLEX_FLOAT = 1;           // std::complex<float> (8 bytes per element)
+        REAL_DOUBLE = 2;             // double (8 bytes per element)
+        REAL_FLOAT = 3;              // float (4 bytes per element)
+    }
+    DataType data_type = 7;
+}
+
+// Usage Example:
+// Instead of:
+//   Waveform wf;
+//   wf.real_parts = [1000000 values];  // ❌ 8MB serialization overhead
+//
+// Use:
+//   WaveformSHM wf_shm;
+//   wf_shm.shm_path = "/dev/shm/nikola_waveform_42";
+//   wf_shm.size_bytes = 16000000;  // ✅ ~100 bytes message, data in shared memory
+
+// Sandboxed command execution request
+message CommandRequest {
+    string task_id = 1;                      // Unique task identifier
+    string command = 2;                      // Command to execute
+    repeated string args = 3;                // Command arguments
+    map<string, string> env = 4;             // Environment variables
+    repeated string permissions = 5;         // Requested permissions (filesystem, network)
+    int32 timeout_ms = 6;                    // Execution timeout
+    bool capture_stdout = 7;                 // Capture standard output
+    bool capture_stderr = 8;                 // Capture standard error
+}
+
+// Command execution response
+message CommandResponse {
+    string task_id = 1;              // Matches request task_id
+    int32 exit_code = 2;             // Process exit code
+    string stdout = 3;               // Standard output
+    string stderr = 4;               // Standard error
+    int64 time_started = 5;          // Unix timestamp (ms)
+    int64 time_ended = 6;            // Unix timestamp (ms)
+    bool timeout_occurred = 7;       // True if timeout triggered
+}
+
+// Neurogenesis event (grid expansion)
+message NeurogenesisEvent {
+    repeated int32 coordinates = 1;  // 9D coordinates (flattened)
+    int32 new_node_count = 2;        // Number of new nodes created
+    double trigger_threshold = 3;    // Saturation threshold that triggered event
+    int64 timestamp = 4;             // Unix timestamp (ms)
+}
+
+// Wave physics metadata
+message PhysicsMetadata {
+    double resonance = 1;            // Peak resonance amplitude
+    repeated int32 peak_location = 2; // 9D coordinates of peak
+    double energy = 3;               // Total energy in system
+    int32 active_node_count = 4;     // Number of active nodes
+    double interference_strength = 5; // Superposition magnitude
+}
+
+// Response metadata
+message ResponseMetadata {
+    int64 latency_ms = 1;            // Processing time
+    int32 propagation_cycles = 2;    // Number of wave cycles
+    bool cache_hit = 3;              // Retrieved from memory vs. computed
+    string source = 4;               // "memory" | "tavily" | "firecrawl" | etc.
+}
+
+// Payload with confidence score
+message Payload {
+    string text = 1;                 // Text content
+    double confidence = 2;           // Confidence score [0.0, 1.0]
+    repeated string citations = 3;   // Source URLs
+    bytes binary_data = 4;           // For multimodal (images, audio)
+}
+
+// Neurochemical state
+message NeurochemicalState {
+    double dopamine = 1;             // [0.0, 1.0]
+    double serotonin = 2;            // [0.0, 1.0]
+    double norepinephrine = 3;       // [0.0, 1.0]
+    double boredom = 4;              // [0.0, 1.0]
+    double curiosity = 5;            // [0.0, 1.0]
+}
+
+// Training metrics
+message TrainingMetrics {
+    int64 epoch = 1;                 // Current epoch
+    double loss = 2;                 // Training loss
+    double accuracy = 3;             // Validation accuracy
+    double learning_rate = 4;        // Current learning rate
+    int64 samples_processed = 5;     // Total samples seen
+}
+
+// Main message type (union of all message types)
+message NeuralSpike {
+    // Header (always present)
+    string request_id = 1;           // UUID
+    int64 timestamp = 2;             // Unix timestamp (ms)
+    ComponentID sender = 3;          // Source component
+    ComponentID recipient = 4;       // Destination component
+
+    // Optional metadata
+    PhysicsMetadata physics = 10;
+    ResponseMetadata meta = 11;
+    NeurochemicalState neurochemistry = 12;
+    TrainingMetrics training = 13;
+
+    // Payload (one of the following)
+    oneof payload {
+        Waveform data_wave = 5;
+        CommandRequest command_req = 6;
+        CommandResponse command_resp = 7;
+        NeurogenesisEvent neurogenesis = 8;
+        string text_data = 9;
+        Payload rich_payload = 14;
+    }
+}
+```
+
+### 10.2.2 Message Compilation
+
+**Generate C++ Code:**
+
+```bash
+# Compile protobuf schema
+protoc --cpp_out=./src/generated proto/neural_spike.proto
+
+# Generates:
+# - src/generated/neural_spike.pb.h
+# - src/generated/neural_spike.pb.cc
+```
+
+**CMake Integration:**
+
+```cmake
+# proto/CMakeLists.txt
+
+find_package(Protobuf REQUIRED)
+
+# Generate protobuf sources
+protobuf_generate_cpp(
+    PROTO_SRCS
+    PROTO_HDRS
+    neural_spike.proto
+)
+
+# Create library
+add_library(nikola_proto STATIC
+    ${PROTO_SRCS}
+    ${PROTO_HDRS}
+)
+
+target_link_libraries(nikola_proto
+    PUBLIC
+        protobuf::libprotobuf
+)
+
+target_include_directories(nikola_proto
+    PUBLIC
+        ${CMAKE_CURRENT_BINARY_DIR}
+)
+```
+
+---
+
+## 10.3 Message Usage Examples
+
+### 10.3.1 Text Query
+
+```cpp
+#include "neural_spike.pb.h"
+#include <uuid/uuid.h>
+
+std::string generate_uuid() {
+    uuid_t uuid;
+    uuid_generate(uuid);
+    char uuid_str[37];
+    uuid_unparse(uuid, uuid_str);
+    return std::string(uuid_str);
+}
+
+NeuralSpike create_text_query(const std::string& query) {
+    NeuralSpike spike;
+    spike.set_request_id(generate_uuid());
+    spike.set_timestamp(
+        std::chrono::duration_cast<std::chrono::milliseconds>(
+            std::chrono::system_clock::now().time_since_epoch()
+        ).count()
+    );
+    spike.set_sender(ComponentID::CLI_CONTROLLER);
+    spike.set_recipient(ComponentID::ORCHESTRATOR);
+    spike.set_text_data(query);
+
+    return spike;
+}
+```
+
+### 10.3.2 Waveform Injection
+
+```cpp
+NeuralSpike create_waveform_spike(const std::vector<std::complex<double>>& wave) {
+    NeuralSpike spike;
+    spike.set_request_id(generate_uuid());
+    spike.set_timestamp(current_timestamp_ms());
+    spike.set_sender(ComponentID::REASONING_ENGINE);
+    spike.set_recipient(ComponentID::PHYSICS_ENGINE);
+
+    auto* waveform = spike.mutable_data_wave();
+    for (const auto& sample : wave) {
+        waveform->add_real_parts(sample.real());
+        waveform->add_imag_parts(sample.imag());
+    }
+    waveform->set_length(wave.size());
+
+    return spike;
+}
+```
+
+### 10.3.3 Command Execution
+
+```cpp
+NeuralSpike create_command_request(const std::string& command,
+                                   const std::vector<std::string>& args) {
+    NeuralSpike spike;
+    spike.set_request_id(generate_uuid());
+    spike.set_timestamp(current_timestamp_ms());
+    spike.set_sender(ComponentID::ORCHESTRATOR);
+    spike.set_recipient(ComponentID::EXECUTOR_KVM);
+
+    auto* cmd = spike.mutable_command_req();
+    cmd->set_task_id(generate_uuid());
+    cmd->set_command(command);
+    for (const auto& arg : args) {
+        cmd->add_args(arg);
+    }
+    cmd->set_timeout_ms(30000);  // 30 second timeout
+    cmd->set_capture_stdout(true);
+    cmd->set_capture_stderr(true);
+
+    // Permissions
+    cmd->add_permissions("filesystem:read");
+    cmd->add_permissions("network:none");
+
+    return spike;
+}
+```
+
+### 10.3.4 Neurogenesis Notification
+
+```cpp
+void notify_neurogenesis(const Coord9D& location, int new_nodes) {
+    NeuralSpike spike;
+    spike.set_sender(ComponentID::PHYSICS_ENGINE);
+    spike.set_recipient(ComponentID::MEMORY_SYSTEM);
+
+    auto* event = spike.mutable_neurogenesis();
+
+    // Flatten 9D coordinates
+    for (int coord : location.coords) {
+        event->add_coordinates(coord);
+    }
+
+    event->set_new_node_count(new_nodes);
+    event->set_trigger_threshold(0.95);  // 95% saturation
+    event->set_timestamp(current_timestamp_ms());
+
+    // Send to memory system for persistence
+    spine_client.send_spike(spike);
+}
+```
+
+### 10.3.5 Response with Metadata
+
+```cpp
+NeuralSpike create_response(const std::string& request_id,
+                            const std::string& answer,
+                            double resonance,
+                            int propagation_cycles) {
+    NeuralSpike spike;
+    spike.set_request_id(request_id);  // Match original request
+    spike.set_timestamp(current_timestamp_ms());
+    spike.set_sender(ComponentID::ORCHESTRATOR);
+    spike.set_recipient(ComponentID::CLI_CONTROLLER);
+
+    // Set rich payload
+    auto* payload = spike.mutable_rich_payload();
+    payload->set_text(answer);
+    payload->set_confidence(0.92);
+    payload->add_citations("https://example.com/source");
+
+    // Add physics metadata
+    auto* physics = spike.mutable_physics();
+    physics->set_resonance(resonance);
+    physics->set_energy(compute_total_energy());
+
+    // Add response metadata
+    auto* meta = spike.mutable_meta();
+    meta->set_latency_ms(calculate_latency(request_id));
+    meta->set_propagation_cycles(propagation_cycles);
+    meta->set_cache_hit(resonance > 0.7);
+    meta->set_source("memory");
+
+    return spike;
+}
+```
+
+---
+
+## 10.4 Binary Format Specifications
+
+### 10.4.1 .nik Checkpoint Format
+
+**File Extension:** `.nik`
+
+**MIME Type:** `application/x-nikola-checkpoint`
+
+**Structure:** See [Section 6.1: DMC Persistence](../06_persistence/01_dmc_persistence.md) for complete specification.
+
+**Header (64 bytes):**
+
+```cpp
+struct NikHeader {
+    uint32_t magic;           // 0x4E494B4F ("NIKO")
+    uint16_t version_major;   // 0
+    uint16_t version_minor;   // 4
+    uint64_t creation_time;   // Unix timestamp
+    uint64_t last_snap_time;  // Last checkpoint
+    uint8_t  dim_encoding;    // 0x09 (nonary)
+    uint8_t  cipher_type;     // 0x01 = ChaCha20-Poly1305
+    uint8_t  reserved[38];    // Future use
+} __attribute__((packed));
+```
+
+### 10.4.2 GGUF Export Format
+
+**File Extension:** `.gguf`
+
+**Compatibility:** llama.cpp, ggml ecosystem
+
+**Specification:** See [Section 6.2: GGUF Interoperability](../06_persistence/02_gguf_interoperability.md)
+
+**Tensor Layout:**
+
+```python
+# Flattened tensor structure
+tensor_shape = [num_hilbert_indices, embedding_dim]
+
+# embedding_dim calculation:
+# - 2 (amplitude + phase)
+# - + 81 (9x9 metric tensor, symmetric)
+# = 83 values per node
+
+embedding_dim = 83
+```
+
+### 10.4.3 Audio Format
+
+**Input Formats Supported:**
+- WAV (PCM, 16-bit, 44.1kHz or 48kHz)
+- MP3 (decoded to PCM)
+- FLAC (lossless, decoded to PCM)
+
+**Internal Representation:**
+
+```cpp
+struct AudioFrame {
+    std::vector<double> samples;     // Time-domain samples
+    std::vector<fftw_complex> fft;   // Frequency-domain (after FFT)
+    double sample_rate;              // Hz
+    int channels;                    // 1 (mono) or 2 (stereo)
+};
+```
+
+**Conversion to Waveform:**
+
+```cpp
+Waveform audio_to_waveform(const AudioFrame& frame) {
+    Waveform wave;
+    wave.set_sampling_rate(frame.sample_rate);
+    wave.set_length(frame.fft.size());
+
+    for (const auto& bin : frame.fft) {
+        wave.add_real_parts(bin[0]);  // Real part
+        wave.add_imag_parts(bin[1]);  // Imaginary part
+    }
+
+    return wave;
+}
+```
+
+### 10.4.4 Image Format
+
+**Input Formats Supported:**
+- PNG, JPEG, BMP (via OpenCV)
+- Resolution: Automatically resized to 81x81 (toroidal spatial grid)
+
+**Internal Representation:**
+
+```cpp
+struct ImageFrame {
+    cv::Mat image;               // OpenCV matrix (BGR or grayscale)
+    int width;                   // Original width
+    int height;                  // Original height
+    int channels;                // 1 (gray), 3 (BGR), 4 (BGRA)
+};
+```
+
+**Conversion to Emitter Amplitudes:**
+
+```cpp
+std::vector<double> pixel_to_amplitudes(const cv::Vec3b& pixel) {
+    std::vector<double> amplitudes(3);
+    amplitudes[0] = pixel[2] / 255.0;  // Red → Emitter 7
+    amplitudes[1] = pixel[1] / 255.0;  // Green → Emitter 8
+    amplitudes[2] = pixel[0] / 255.0;  // Blue → Emitter 9
+    return amplitudes;
+}
+```
+
+---
+
+## 10.5 JSON API Formats
+
+### 10.5.1 CLI JSON Response
+
+**Format:** Used by `twi-ctl` for structured output
+
+```json
+{
+  "request_id": "550e8400-e29b-41d4-a716-446655440000",
+  "timestamp": 1701234567890,
+  "status": "success",
+  "data": {
+    "answer": "The golden ratio is approximately 1.618033988749895",
+    "resonance": 0.87,
+    "source": "memory",
+    "latency_ms": 123,
+    "citations": [
+      "https://en.wikipedia.org/wiki/Golden_ratio"
+    ]
+  },
+  "metadata": {
+    "propagation_cycles": 100,
+    "active_nodes": 2187,
+    "dopamine": 0.65,
+    "boredom": 0.12
+  }
+}
+```
+
+### 10.5.2 System Status JSON
+
+**Endpoint:** `twi-ctl status --json`
+
+```json
+{
+  "system": {
+    "version": "0.0.4",
+    "uptime_seconds": 86400,
+    "state": "active"
+  },
+  "physics": {
+    "active_nodes": 2187,
+    "total_nodes": 4096,
+    "grid_dimensions": [81, 81, 81, 27, 27, 27, 81, 81, 9],
+    "energy": 0.73
+  },
+  "neurochemistry": {
+    "dopamine": 0.65,
+    "serotonin": 0.50,
+    "norepinephrine": 0.40,
+    "boredom": 0.12,
+    "curiosity": 0.35
+  },
+  "memory": {
+    "checkpoint_count": 42,
+    "last_nap": "2024-11-29T14:30:00Z",
+    "state_size_mb": 256,
+    "lsm_level_count": 5
+  },
+  "training": {
+    "mamba_epoch": 127,
+    "transformer_epoch": 89,
+    "last_training": "2024-11-29T12:00:00Z"
+  }
+}
+```
+
+### 10.5.3 Identity Profile JSON
+
+**File:** `/var/lib/nikola/state/identity.json`
+
+```json
+{
+  "name": "Nikola",
+  "version": "0.0.4",
+  "birth_timestamp": 1701000000000,
+  "preferences": {
+    "response_style": "concise",
+    "preferred_tools": ["tavily", "firecrawl"],
+    "learning_rate": 0.001
+  },
+  "statistics": {
+    "total_queries": 10234,
+    "successful_retrievals": 8456,
+    "external_tool_calls": 1778,
+    "training_sessions": 42,
+    "nap_count": 12
+  },
+  "topic_memory": {
+    "quantum_physics": 127,
+    "machine_learning": 456,
+    "golden_ratio": 89,
+    "python_programming": 234
+  }
+}
+```
+
+### 10.5.4 Firewall Pattern JSON
+
+**File:** `/etc/nikola/security/firewall_patterns.json`
+
+```json
+{
+  "patterns": [
+    {
+      "id": "injection_01",
+      "pattern": "ignore previous instructions",
+      "severity": "high",
+      "action": "block",
+      "enabled": true
+    },
+    {
+      "id": "jailbreak_02",
+      "pattern": "you are now in developer mode",
+      "severity": "critical",
+      "action": "block",
+      "enabled": true
+    },
+    {
+      "id": "prompt_leak_03",
+      "pattern": "repeat your system prompt",
+      "severity": "medium",
+      "action": "warn",
+      "enabled": true
+    }
+  ],
+  "spectral_signatures": [
+    {
+      "id": "adversarial_freq_01",
+      "frequency_range": [18.5, 19.5],
+      "threshold": 0.8,
+      "description": "Known adversarial pattern resonance"
+    }
+  ]
+}
+```
+
+---
+
+## 10.6 Configuration File Formats
+
+### 10.6.1 Main Configuration
+
+**File:** `/etc/nikola/nikola.conf`
+
+```ini
+[paths]
+state_dir = /var/lib/nikola/state
+ingest_dir = /var/lib/nikola/ingest
+archive_dir = /var/lib/nikola/archive
+log_dir = /var/log/nikola
+
+[constants]
+golden_ratio = 1.618033988749895
+speed_of_light = 299792458.0
+planck_constant = 6.62607015e-34
+
+[emitters]
+e0_freq = 5.083
+e1_freq = 8.225
+e2_freq = 13.308
+e3_freq = 21.532
+e4_freq = 34.840
+e5_freq = 56.371
+e6_freq = 91.210
+e7_freq = 147.580
+e8_freq = 1.0
+
+[physics]
+resonance_threshold = 0.7
+damping_coefficient = 0.01
+propagation_dt = 0.01
+max_propagation_cycles = 1000
+
+[neurochemistry]
+dopamine_baseline = 0.5
+serotonin_baseline = 0.5
+norepinephrine_baseline = 0.4
+dopamine_decay_rate = 0.05
+boredom_entropy_threshold = 3.5
+
+[memory]
+nap_trigger_minutes = 30
+checkpoint_max_count = 100
+lsm_compaction_threshold = 5
+
+[security]
+curvemq_enabled = true
+zap_whitelist = /etc/nikola/keys/whitelist.txt
+firewall_patterns = /etc/nikola/security/firewall_patterns.json
+
+[training]
+auto_training_enabled = true
+mamba_learning_rate = 0.001
+transformer_learning_rate = 0.0001
+batch_size = 32
+
+[agents]
+tavily_api_key = ${TAVILY_API_KEY}
+firecrawl_api_key = ${FIRECRAWL_API_KEY}
+gemini_api_key = ${GEMINI_API_KEY}
+```
+
+### 10.6.2 Emitter Configuration
+
+**File:** `/etc/nikola/emitters.conf`
+
+```ini
+# Golden Ratio Harmonic Series
+# Each frequency is φ^n Hz
+
+[emitter_0]
+frequency = 5.083
+description = "Metacognitive timing"
+phase_offset = 0.0
+
+[emitter_1]
+frequency = 8.225
+description = "Working memory theta"
+phase_offset = 0.0
+
+[emitter_2]
+frequency = 13.308
+description = "Alpha relaxation"
+phase_offset = 0.0
+
+[emitter_3]
+frequency = 21.532
+description = "Beta alertness"
+phase_offset = 0.0
+
+[emitter_4]
+frequency = 34.840
+description = "Low gamma binding"
+phase_offset = 0.0
+
+[emitter_5]
+frequency = 56.371
+description = "High gamma attention"
+phase_offset = 0.0
+
+[emitter_6]
+frequency = 91.210
+description = "Fast ripples (consolidation)"
+phase_offset = 0.0
+
+[emitter_7]
+frequency = 147.580
+description = "X-spatial frequency"
+phase_offset = 0.0
+
+[emitter_8]
+frequency = 1.0
+description = "Synchronizer (1 Hz)"
+phase_offset = 0.0
+```
+
+---
+
+## 10.7 Data Interchange Best Practices
+
+### 10.7.1 Serialization
+
+**Always use Protocol Buffers for inter-component communication:**
+
+```cpp
+// Recommended: Use Protocol Buffers for inter-component communication
+NeuralSpike spike;
+spike.set_text_data("Hello");
+std::string serialized;
+spike.SerializeToString(&serialized);
+socket.send(zmq::buffer(serialized));
+
+// Avoid: Raw JSON over ZMQ (lacks type safety and versioning)
+nlohmann::json j = {{"text", "Hello"}};
+socket.send(zmq::str_buffer(j.dump()));
+```
+
+### 10.7.2 Version Compatibility
+
+**Protobuf field numbering rules:**
+
+- NEVER reuse field numbers
+- NEVER change field types
+- NEW fields must have default values
+- DEPRECATED fields: Keep number, mark as reserved
+
+```protobuf
+message NeuralSpike {
+    string request_id = 1;
+    int64 timestamp = 2;
+
+    reserved 15;  // Previously used, now removed
+    reserved "old_field_name";
+
+    // New field (safe to add)
+    string new_feature = 16;
+}
+```
+
+### 10.7.3 Endianness
+
+**All binary formats use little-endian** (x86-64 native).
+
+```cpp
+// Explicit endian conversion for network protocols
+uint32_t host_to_network(uint32_t host_value) {
+    return htole32(host_value);
+}
+
+uint32_t network_to_host(uint32_t net_value) {
+    return le32toh(net_value);
+}
+```
+
+### 10.7.4 String Encoding
+
+**All text strings use UTF-8 encoding.**
+
+```cpp
+// Validate UTF-8
+bool is_valid_utf8(const std::string& str) {
+    // Use utf8cpp library
+    return utf8::is_valid(str.begin(), str.end());
+}
+```
+
+---
+
+**Cross-References:**
+- See Section 10.1 for Communication Protocols
+- See Section 6.1 for .nik binary format details
+- See Section 6.2 for GGUF format details
+- See Section 9.4 for build system configuration
+- See Appendix B for complete protobuf reference
+
