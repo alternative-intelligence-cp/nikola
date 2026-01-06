@@ -26,7 +26,6 @@ Given
 φ=golden ratio
 π=PI
 ₮=32/27
-η=13
 ※= reference phase
 Δ=change
 ϕ= phase offset
