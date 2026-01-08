@@ -53,27 +53,27 @@
 
 ## SECTION 8: IMPLEMENTATION GUIDE
 
-- [8.1 File Structure and Organization](09_implementation/01_file_structure.md)
-- [8.2 Development Roadmap](09_implementation/02_development_roadmap.md)
-- [8.3 Implementation Checklist](09_implementation/03_implementation_checklist.md)
-- [8.4 Build and Deployment](09_implementation/04_build_deployment.md)
+- [8.1 File Structure and Organization](08_implementation/01_file_structure.md)
+- [8.2 Development Roadmap](08_implementation/02_development_roadmap.md)
+- [8.3 Implementation Checklist](08_implementation/03_implementation_checklist.md)
+- [8.4 Build and Deployment](08_implementation/04_build_deployment.md)
 
 ## SECTION 9: PROTOCOLS AND INTERFACES
 
-- [9.1 RCIS Specification](10_protocols/01_rcis_specification.md)
-- [9.2 CLI Controller](10_protocols/02_cli_controller.md)
+- [9.1 RCIS Specification](09_protocols/01_rcis_specification.md)
+- [9.2 CLI Controller](09_protocols/02_cli_controller.md)
 
 ## APPENDICES
 
-- [Appendix A: Code Reference](11_appendices/A_code_reference.md)
-- [Appendix B: Mathematical Reference](11_appendices/B_mathematical_reference.md)
-- [Appendix C: Protocol Specifications](11_appendices/C_protocol_specifications.md)
-- [Appendix D: Hardware Optimization](11_appendices/D_hardware_optimization.md)
-- [Appendix E: Troubleshooting Guide](11_appendices/E_troubleshooting.md)
-- [Appendix F: Performance Benchmarks](11_appendices/F_performance_benchmarks.md)
-- [Appendix G: Security Checklist](11_appendices/G_security_checklist.md)
-- [Appendix H: Theoretical Foundations](11_appendices/H_theoretical_foundations.md)
-- [Appendix I: Docker Deployment](11_appendices/I_docker_deployment.md)
+- [Appendix A: Code Reference](10_appendices/A_code_reference.md)
+- [Appendix B: Mathematical Reference](10_appendices/B_mathematical_reference.md)
+- [Appendix C: Protocol Specifications](10_appendices/C_protocol_specifications.md)
+- [Appendix D: Hardware Optimization](10_appendices/D_hardware_optimization.md)
+- [Appendix E: Troubleshooting Guide](10_appendices/E_troubleshooting.md)
+- [Appendix F: Performance Benchmarks](10_appendices/F_performance_benchmarks.md)
+- [Appendix G: Security Checklist](10_appendices/G_security_checklist.md)
+- [Appendix H: Theoretical Foundations](10_appendices/H_theoretical_foundations.md)
+- [Appendix I: Docker Deployment](10_appendices/I_docker_deployment.md)
 
 ---
 
