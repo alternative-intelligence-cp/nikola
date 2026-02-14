@@ -46,7 +46,7 @@ The translation from mathematical theory to C++23 implementation contains critic
 | **Numerical Stability** | Hamiltonian divergence (energy drift) due to non-symplectic integration | System "hallucination" and crash within 10⁴ timesteps | Split-Operator Symplectic Integration (Phase 0) |
 | **Memory Latency** | Cache thrashing from Array-of-Structures layout | Physics engine 100x slower than real-time; missed resonance | Structure-of-Arrays (SoA) Layout (Phase 0) |
 | **Cognitive Coupling** | Undefined Metric Tensor → Mamba-9D mapping | Cognitive core fails to learn from substrate | Topological State Mapping (TSM) kernel |
-| **Arithmetic Precision** | Floating-point rounding in Laplacian summation | "Amnesia" - low-amplitude memories vanish | Kahan Compensated Summation |
+| **Arithmetic Precision** | Floating-point rounding in Laplacian summation | "Amnesia" - low-amplitude memories vanish | Kahan Compensated Summation (FP); fix256 Q128.128 (deterministic) |
 | **Safety** | No conservation law enforcement during self-improvement | Self-generated code violates physics → instability | Physics Oracle Runtime Watchdog (Section 4.5.4) |
 | **Pointer Invalidation** | Vector resizing during neurogenesis invalidates external agent references | Segfault crash when agents access deallocated memory | Paged Block Pool with stable pointers (Phase 0) |
 | **Carry Avalanche** | Recursive overflow in balanced nonary arithmetic | Energy explosion across all 9 dimensions → system divergence | Two-Phase Spectral Cascading with saturation |
