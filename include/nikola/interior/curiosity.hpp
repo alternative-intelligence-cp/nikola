@@ -3,6 +3,8 @@
 #include <string>
 #include <vector>
 #include <functional>
+#include <map>
+#include <cstdint>
 
 namespace nikola::interior {
 

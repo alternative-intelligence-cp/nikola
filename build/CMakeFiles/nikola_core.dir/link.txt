@@ -1,0 +1,2 @@
+/usr/bin/ar qc libnikola_core.a CMakeFiles/nikola_core.dir/src/autonomy/metabolic_controller.cpp.o CMakeFiles/nikola_core.dir/src/autonomy/metabolic_lock.cpp.o CMakeFiles/nikola_core.dir/src/spatial/hilbert_scanner.cpp.o CMakeFiles/nikola_core.dir/src/core/config.cpp.o CMakeFiles/nikola_core.dir/nes.pb.cc.o CMakeFiles/nikola_core.dir/irsp.pb.cc.o
+/usr/bin/ranlib libnikola_core.a

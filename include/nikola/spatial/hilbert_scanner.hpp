@@ -99,13 +99,6 @@ public:
 
 private:
     uint32_t order_;  // Bits per dimension
-
-    // Helper functions for Hilbert curve generation
-    static uint32_t gray_code(uint32_t x) noexcept;
-    static uint32_t inverse_gray_code(uint32_t x) noexcept;
-    
-    // Bit manipulation utilities
-    static void rotate_right(Coord9D& coords, uint32_t rotation) noexcept;
     static void rotate_left(Coord9D& coords, uint32_t rotation) noexcept;
 };
 

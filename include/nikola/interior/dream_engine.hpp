@@ -4,11 +4,16 @@
 #include <vector>
 #include <string>
 
+#include <nikola/cognitive/attention_primer.hpp>
+
 namespace nikola::interior {
 
 // Forward declaration
 class TorusManifold;
 class QuantumScratchpad;
+
+// Import Coord9D from cognitive namespace
+using Coord9D = nikola::cognitive::Coord9D;
 
 /**
  * @brief Dream Engine - Memory Consolidation and Pattern Synthesis

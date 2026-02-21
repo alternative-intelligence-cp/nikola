@@ -1,0 +1,12 @@
+MetabolicLock 9 0.00138996
+HilbertScanner 9 0.00378995
+Vector9D 9 0.00131245
+PhysicsCore 9 0.124181
+Phase2GeometryMemory 8 0.00301286
+Phase3Cognitive 7 0.00696237
+Phase4Infrastructure 6 0.0065318
+Phase5Autonomous 4 0.00243209
+Phase6Multimodal 3 0.00475457
+Phase7Security 3 0.00632928
+Phase8Foundations 1 0.0118896
+---

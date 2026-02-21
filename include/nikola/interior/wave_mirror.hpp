@@ -4,10 +4,15 @@
 #include <complex>
 #include <array>
 
+#include <nikola/cognitive/attention_primer.hpp>
+
 namespace nikola::interior {
 
 // Forward declaration
 class TorusManifold;
+
+// Import Coord9D from cognitive namespace
+using Coord9D = nikola::cognitive::Coord9D;
 
 /**
  * @brief Wave Mirror - Introspection and Self-Awareness

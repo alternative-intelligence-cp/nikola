@@ -2,13 +2,19 @@
 
 #include <string>
 #include <vector>
+#include <map>
 #include <cstdint>
+
+// Coord9D is defined in attention_primer.hpp
+#include <nikola/cognitive/attention_primer.hpp>
 
 namespace nikola::interior {
 
 // Forward declarations
 class TorusManifold;
-struct Coord9D;
+
+// Import Coord9D from cognitive namespace
+using Coord9D = nikola::cognitive::Coord9D;
 
 /**
  * @brief Internal Dialogue System - Thinking Out Loud to Myself

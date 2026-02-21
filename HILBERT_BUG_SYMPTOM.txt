@@ -1,0 +1,57 @@
+HILBERT CURVE IMPLEMENTATION BUG - COORDINATE ROTATION SYMPTOM
+================================================================
+
+PROBLEM: Coordinates are getting permuted/rotated during round-trip conversion.
+
+EXPECTED BEHAVIOR:
+------------------
+coords_to_index([4, 6, 5, 2, 3, 4, 2, 3, 5]) -> some_index
+index_to_coords(some_index) -> [4, 6, 5, 2, 3, 4, 2, 3, 5]  ✓ EXACT MATCH
+
+ACTUAL BEHAVIOR (all attempts):
+--------------------------------
+coords_to_index([4, 6, 5, 2, 3, 4, 2, 3, 5]) -> some_index
+index_to_coords(some_index) -> [6, 5, 2, 3, 4, 2, 3, 5, 4]  ✗ ROTATED!
+
+Notice: The values are cyclically shifted - last element moved to position 1.
+
+STATISTICS:
+-----------
+- Testing 262,144 points (4^9 grid with order=2, 2 bits per dimension)
+- 262,042 failures (99.96% failure rate)
+- Only 102 points round-trip correctly (0.04% success rate)
+- Locality preservation: 66% (need >85%)
+
+WHAT WE'VE TRIED:
+-----------------
+1. Fixed obvious bug: rotate_left() was calling rotate_right() 
+   Result: Still 99.96% failure
+
+2. Implemented Hamilton's "Compact Hilbert Indices" algorithm from papers
+   Result: Still coordinate rotation/permutation
+
+3. Implemented Skilling's algorithm from scratch
+   Result: Still coordinate rotation/permutation
+
+4. Used reference library (spectral3d/hilbert_hpp) directly
+   Result: Type mismatch - library uses full bitwidth (all 8 bits of uint8_t)
+           We need variable precision (only lower N bits, e.g., 2 bits for order=2)
+
+THE CORE ISSUE:
+---------------
+The Hilbert curve transformations (rotation/reflection) that maintain curve 
+continuity between recursion levels are NOT being applied correctly.
+
+Simple dimension swapping is insufficient. The algorithm requires precise
+bit-level transformations that depend on:
+- Current position in the curve
+- Entry/exit orientations at each recursion level
+- Gray code encoding/decoding
+- Proper state tracking across iterations
+
+CRITICAL QUESTION FOR RESEARCH:
+--------------------------------
+How do you correctly implement the rotation/reflection transformations for
+a 9-dimensional Hilbert curve with variable bit precision (order 1-7)?
+
+What is the exact transformation logic that prevents coordinate permutation?

@@ -1,0 +1,1 @@
+/usr/bin/c++ -O2 -g -DNDEBUG CMakeFiles/test_metabolic_lock.dir/tests/unit/metabolic_lock_test.cpp.o -o test_metabolic_lock  libnikola_core.a /usr/lib/libCatch2Main.a /usr/lib/x86_64-linux-gnu/libprotobuf.so /usr/lib/x86_64-linux-gnu/libzmq.so /usr/lib/libCatch2.a 
