@@ -303,4 +303,73 @@ inline void mul_nit_batch(const Nit* a, const Nit* b, Nit* result, size_t count)
 #endif
 }
 
+// ============================================================================
+// Two-Phase Spectral Cascading — Overflow Cascade Termination
+// ============================================================================
+//
+// Balanced base-9 carry propagation.  Unlike sum_gate (which saturates),
+// cascade_overflow wraps around:
+//   sum =  5 → wrapped = -4, carry = +1   (5 - 9 = -4)
+//   sum = -5 → wrapped = +4, carry = -1   (-5 + 9 = +4)
+//
+// Guaranteed termination in ≤ 9 propagation steps because each step
+// either resolves the carry (carry == 0) or advances one dimension.
+// Any residual carry after all 9 dimensions are exhausted is stored
+// in entropy_sink for logging to EntropyTracker.
+//
+// Reference: "Overflow Cascade Termination Research.md"
+
+/**
+ * @brief Result of a balanced-base-9 cascade overflow propagation.
+ *
+ * @param digits      The 9-dimensional Nit vector after carry propagation.
+ * @param entropy_sink Non-zero when the carry could not be fully absorbed by
+ *                    any of the 9 dimensions; this excess should be forwarded
+ *                    to the system EntropyTracker.
+ */
+struct CascadeResult {
+    std::array<Nit, 9> digits;
+    int entropy_sink;  ///< unresolvable carry remainder (±1 or 0)
+};
+
+/**
+ * @brief Propagate a carry through a 9-dimensional balanced-base-9 digit vector.
+ *
+ * Starting at @p start_dim, adds @p carry to each successive dimension until
+ * the carry reaches 0 or all 9 dimensions are exhausted.  Each dimension
+ * wraps modulo 9 (±4 ↔ ∓4) rather than saturating.
+ *
+ * @param digits      Input 9D Nit vector.
+ * @param start_dim   First dimension to absorb the carry (0..8).
+ * @param carry       Initial carry amount; may be arbitrarily large — the
+ *                    function reduces it by ±1 per dimension step.
+ * @return CascadeResult with the updated digit vector and any entropy_sink.
+ *
+ * @note If |carry| > 9 the function still terminates correctly; large initial
+ *       carries simply saturate into entropy_sink faster.
+ */
+[[nodiscard]] inline CascadeResult
+cascade_overflow(std::array<Nit, 9> digits, int start_dim, int carry) noexcept
+{
+    // Clamp start_dim to valid range to guard against misuse.
+    if (start_dim < 0) start_dim = 0;
+    if (start_dim > 8) start_dim = 8;
+
+    for (int d = start_dim; d < 9 && carry != 0; ++d) {
+        const int sum = static_cast<int>(digits[d]) + carry;
+        if (sum > NIT_MAX) {           // e.g. sum = +5 → wrapped = -4
+            digits[d] = static_cast<Nit>(sum - 9);
+            carry     = +1;
+        } else if (sum < NIT_MIN) {   // e.g. sum = -5 → wrapped = +4
+            digits[d] = static_cast<Nit>(sum + 9);
+            carry     = -1;
+        } else {
+            digits[d] = static_cast<Nit>(sum);
+            carry     = 0;            // absorbed — cascade terminates
+        }
+    }
+    // Any residual carry is the entropy_sink (unresolvable dimensional excess).
+    return {digits, carry};
+}
+
 } // namespace nikola::foundation

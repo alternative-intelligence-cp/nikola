@@ -38,6 +38,9 @@
 #include <string>
 #include <vector>
 
+// Priority task dispatcher — no ZMQ dependency
+#include <nikola/infrastructure/task_dispatcher.hpp>
+
 // Forward declarations — intentionally NO zmq.hpp here (IMP-04 ABI firewall)
 namespace nikola::infrastructure {
 
@@ -125,11 +128,11 @@ public:
     explicit Orchestrator(OrchestratorConfig config = {});
     ~Orchestrator();
 
-    // Non-copyable; movable
+    // Non-copyable, non-movable (TaskDispatcher contains a std::mutex)
     Orchestrator(const Orchestrator&)            = delete;
     Orchestrator& operator=(const Orchestrator&) = delete;
-    Orchestrator(Orchestrator&&) noexcept;
-    Orchestrator& operator=(Orchestrator&&) noexcept;
+    Orchestrator(Orchestrator&&)                 = delete;
+    Orchestrator& operator=(Orchestrator&&)      = delete;
 
     // -----------------------------------------------------------------------
     // Lifecycle
@@ -191,9 +194,53 @@ public:
 
     [[nodiscard]] const OrchestratorConfig& config() const noexcept;
 
+    // -----------------------------------------------------------------------
+    // Priority task dispatch (Phase 13)
+    // -----------------------------------------------------------------------
+
+    /**
+     * @brief Submit a task to the priority work queue.
+     *
+     * Thread-safe; may be called from any thread.  Tasks are dispatched on
+     * the next call to process_pending_tasks() (from any thread).
+     *
+     * @param priority  Urgency tier (CRITICAL < HIGH < NORMAL < LOW).
+     * @param name      Human-readable label for diagnostics.
+     * @param fn        Callable to execute.
+     */
+    void enqueue_task(TaskPriority priority, std::string name,
+                      std::function<void()> fn)
+    {
+        dispatcher_.enqueue(priority, std::move(name), std::move(fn));
+    }
+
+    /**
+     * @brief Drain up to @p max_tasks tasks from the priority queue.
+     *
+     * @param max_tasks  0 = drain all pending tasks.
+     * @return Number of tasks dispatched.
+     */
+    std::size_t process_pending_tasks(std::size_t max_tasks = 0)
+    {
+        return dispatcher_.process_all(max_tasks);
+    }
+
+    /** @brief Number of pending (un-dispatched) tasks. */
+    [[nodiscard]] std::size_t task_queue_size() const
+    {
+        return dispatcher_.size();
+    }
+
+    /** @brief Cumulative task dispatch statistics. */
+    [[nodiscard]] TaskStats task_stats() const noexcept
+    {
+        return dispatcher_.stats();
+    }
+
 private:
     struct Impl; ///< ZMQ objects live here — complete type defined in .cpp / impl block
     std::unique_ptr<Impl> impl_;
+    TaskDispatcher        dispatcher_; ///< Priority work queue (no ZMQ dependency)
 };
 
 } // namespace nikola::infrastructure
@@ -241,7 +288,8 @@ struct Orchestrator::Impl {
     std::thread                    watchdog_thread;
     std::mutex                     send_mutex;
 
-    RestartFn restart_fn;
+    RestartFn      restart_fn;
+    TaskDispatcher* dispatcher_ptr{nullptr};  ///< Back-pointer for watchdog
 
     explicit Impl(OrchestratorConfig cfg)
         : config(std::move(cfg))
@@ -256,6 +304,9 @@ struct Orchestrator::Impl {
 
     void run_watchdog() {
         while (running.load(std::memory_order_acquire)) {
+            // Drain priority task queue on each watchdog tick
+            if (dispatcher_ptr) dispatcher_ptr->process_all();
+
             auto dead = watchdog.check_health();
             for (auto& name : dead) {
                 watchdog.kill_and_cleanup(name);
@@ -280,12 +331,11 @@ struct Orchestrator::Impl {
 
 Orchestrator::Orchestrator(OrchestratorConfig config)
     : impl_(std::make_unique<Impl>(std::move(config)))
-{}
+{
+    impl_->dispatcher_ptr = &dispatcher_;
+}
 
 Orchestrator::~Orchestrator() { stop(); }
-
-Orchestrator::Orchestrator(Orchestrator&&) noexcept = default;
-Orchestrator& Orchestrator::operator=(Orchestrator&&) noexcept = default;
 
 void Orchestrator::start() {
     if (impl_->running.load()) return;
@@ -297,7 +347,9 @@ void Orchestrator::start() {
     impl_->running.store(true, std::memory_order_release);
     impl_->state.store(OrchestratorState::RUNNING, std::memory_order_release);
 
-    impl_->watchdog_thread = std::thread([this]{ impl_->run_watchdog(); });
+    impl_->watchdog_thread = std::thread([this]{ 
+        impl_->run_watchdog();
+    });
 }
 
 void Orchestrator::stop() {

@@ -20,13 +20,18 @@
 
 #include <atomic>
 #include <chrono>
+#include <condition_variable>
 #include <csignal>
 #include <deque>
 #include <filesystem>
 #include <fstream>
 #include <functional>
+#include <memory>
+#include <mutex>
+#include <queue>
 #include <sstream>
 #include <string>
+#include <thread>
 #include <vector>
 
 namespace nikola::multimodal {
@@ -37,6 +42,102 @@ namespace nikola::multimodal {
 
 inline constexpr int CHECKPOINT_INTERVAL_SEC = 300;
 inline constexpr int MAX_PERIODIC_CHECKPOINTS = 10;
+
+// ============================================================================
+// AsyncWriteQueue — background I/O worker for CheckpointManager
+// ============================================================================
+
+/**
+ * Single-threaded write-back queue.
+ *
+ * Callers enqueue arbitrary lambdas (file writes, callbacks) which are
+ * executed serially on a dedicated worker thread, keeping the physics loop
+ * free of blocking I/O.  flush() blocks until all enqueued jobs complete.
+ */
+class AsyncWriteQueue {
+public:
+    AsyncWriteQueue()
+    {
+        worker_ = std::thread([this]{ run(); });
+    }
+
+    ~AsyncWriteQueue() { shutdown(); }
+
+    // Non-copyable, non-movable
+    AsyncWriteQueue(const AsyncWriteQueue&)            = delete;
+    AsyncWriteQueue& operator=(const AsyncWriteQueue&) = delete;
+    AsyncWriteQueue(AsyncWriteQueue&&)                 = delete;
+    AsyncWriteQueue& operator=(AsyncWriteQueue&&)      = delete;
+
+    /** Enqueue a write job.  Returns immediately. */
+    void enqueue(std::function<void()> fn)
+    {
+        {
+            std::lock_guard<std::mutex> lk(mtx_);
+            queue_.push(std::move(fn));
+        }
+        cv_.notify_one();
+    }
+
+    /** Number of jobs currently waiting in the queue. */
+    [[nodiscard]] std::size_t size() const noexcept
+    {
+        std::lock_guard<std::mutex> lk(mtx_);
+        return queue_.size();
+    }
+
+    /** Block until all enqueued jobs have finished executing. */
+    void flush()
+    {
+        std::unique_lock<std::mutex> lk(mtx_);
+        idle_cv_.wait(lk, [this]{
+            return queue_.empty() && active_ == 0;
+        });
+    }
+
+    /** Stop the worker thread (called automatically on destruction). */
+    void shutdown()
+    {
+        {
+            std::lock_guard<std::mutex> lk(mtx_);
+            if (stop_) return;
+            stop_ = true;
+        }
+        cv_.notify_one();
+        if (worker_.joinable()) worker_.join();
+    }
+
+private:
+    void run()
+    {
+        while (true) {
+            std::unique_lock<std::mutex> lk(mtx_);
+            cv_.wait(lk, [this]{ return !queue_.empty() || stop_; });
+
+            if (stop_ && queue_.empty()) break;
+
+            auto fn = std::move(queue_.front());
+            queue_.pop();
+            ++active_;
+            lk.unlock();
+
+            try { fn(); } catch (...) { /* absorb; log if needed */ }
+
+            lk.lock();
+            --active_;
+            if (queue_.empty() && active_ == 0)
+                idle_cv_.notify_all();
+        }
+    }
+
+    mutable std::mutex              mtx_;
+    std::condition_variable         cv_;       ///< new work available
+    std::condition_variable         idle_cv_;  ///< queue drained
+    std::queue<std::function<void()>> queue_;
+    std::thread                     worker_;
+    int                             active_{0};
+    bool                            stop_{false};
+};
 
 // ============================================================================
 // Gap 6.3 — CheckpointManager
@@ -97,10 +198,57 @@ public:
         if (shutdown_requested_.load()) {
             flush_shutdown();
         }
+        // Drain any pending async writes before destruction
+        if (write_queue_) write_queue_->flush();
     }
 
     /** Set the callback that actually writes state to disk. */
     void set_save_callback(SaveCallback cb) { save_cb_ = std::move(cb); }
+
+    /**
+     * @brief Enable or disable asynchronous write dispatch.
+     *
+     * When enabled, the save callback (or built-in marker write) is executed
+     * on a background thread so that the physics loop is never stalled by I/O.
+     * When disabled (default), writes happen synchronously in do_checkpoint().
+     *
+     * Calling this while async writes are already enabled and pending is safe;
+     * the existing queue is flushed first.
+     */
+    void set_async_writes(bool enable)
+    {
+        if (enable == async_writes_) return;
+        if (!enable && write_queue_) {
+            write_queue_->flush(); // drain before switching back to sync
+        }
+        async_writes_ = enable;
+        if (enable && !write_queue_) {
+            write_queue_ = std::make_unique<AsyncWriteQueue>();
+        }
+    }
+
+    /** @brief True if async write mode is active. */
+    [[nodiscard]] bool async_writes_enabled() const noexcept { return async_writes_; }
+
+    /**
+     * @brief Block until all pending async write jobs have completed.
+     *
+     * No-op in synchronous mode.  Safe to call at any time.
+     */
+    void flush()
+    {
+        if (write_queue_) write_queue_->flush();
+    }
+
+    /**
+     * @brief Number of write jobs currently waiting in the async queue.
+     *
+     * Returns 0 in synchronous mode.
+     */
+    [[nodiscard]] std::size_t pending_writes() const noexcept
+    {
+        return write_queue_ ? write_queue_->size() : 0u;
+    }
 
     /**
      * Call every iteration of the main loop.
@@ -162,6 +310,8 @@ private:
     TimePoint    last_periodic_;
     bool         last_napping_;
     SaveCallback save_cb_;
+    bool         async_writes_{false};
+    std::unique_ptr<AsyncWriteQueue> write_queue_;
 
     // Retention
     std::deque<CheckpointRecord>  periodic_queue_;  // max MAX_PERIODIC_CHECKPOINTS
@@ -195,18 +345,28 @@ private:
 
         const std::string path = build_path(ts_ms, reason);
 
-        // Invoke user callback if set — otherwise write a minimal marker file
-        if (save_cb_) {
-            save_cb_(path, reason);
-        } else {
-            std::ofstream f(path, std::ios::binary);
-            if (f) {
-                const uint32_t magic = 0x444D4300u; // "DMC\0"
-                f.write(reinterpret_cast<const char*>(&magic), sizeof(magic));
-                f.write(reinterpret_cast<const char*>(&ts_ms), sizeof(ts_ms));
-                const uint8_t r = static_cast<uint8_t>(reason);
-                f.write(reinterpret_cast<const char*>(&r), sizeof(r));
+        // Build write lambda — captures everything by value so it's safe to
+        // dispatch asynchronously after this stack frame returns.
+        auto write_fn = [this, path, reason, ts_ms]() {
+            if (save_cb_) {
+                save_cb_(path, reason);
+            } else {
+                std::ofstream f(path, std::ios::binary);
+                if (f) {
+                    const uint32_t magic = 0x444D4300u; // "DMC\0"
+                    f.write(reinterpret_cast<const char*>(&magic), sizeof(magic));
+                    f.write(reinterpret_cast<const char*>(&ts_ms), sizeof(ts_ms));
+                    const uint8_t r = static_cast<uint8_t>(reason);
+                    f.write(reinterpret_cast<const char*>(&r), sizeof(r));
+                }
             }
+        };
+
+        // Dispatch: async (non-blocking) or sync (blocking on current thread)
+        if (async_writes_ && write_queue_) {
+            write_queue_->enqueue(std::move(write_fn));
+        } else {
+            write_fn();
         }
 
         CheckpointRecord rec{path, reason, ts_ms};

@@ -6,5 +6,5 @@ CXX_DEFINES =
 
 CXX_INCLUDES = -I/home/randy/Workspace/REPOS/nikola/include -I/home/randy/Workspace/REPOS/nikola/build -isystem /usr/include/eigen3
 
-CXX_FLAGS = -O2 -g -DNDEBUG -std=c++23 -fPIC -Wall -Wextra -Wpedantic -Werror=return-type
+CXX_FLAGS = -O3 -DNDEBUG -std=c++23 -fPIC -Wall -Wextra -Wpedantic -Werror=return-type
 

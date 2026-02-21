@@ -1,116 +1,164 @@
 [
 {
   "directory": "/home/randy/Workspace/REPOS/nikola/build",
-  "command": "/usr/bin/c++  -I/home/randy/Workspace/REPOS/nikola/include -I/home/randy/Workspace/REPOS/nikola/build -isystem /usr/include/eigen3 -O2 -g -DNDEBUG -std=c++23 -fPIC -Wall -Wextra -Wpedantic -Werror=return-type -o CMakeFiles/nikola_core.dir/src/autonomy/metabolic_controller.cpp.o -c /home/randy/Workspace/REPOS/nikola/src/autonomy/metabolic_controller.cpp",
+  "command": "/usr/bin/c++  -I/home/randy/Workspace/REPOS/nikola/include -I/home/randy/Workspace/REPOS/nikola/build -isystem /usr/include/eigen3 -O3 -DNDEBUG -std=c++23 -fPIC -Wall -Wextra -Wpedantic -Werror=return-type -o CMakeFiles/nikola_core.dir/src/autonomy/metabolic_controller.cpp.o -c /home/randy/Workspace/REPOS/nikola/src/autonomy/metabolic_controller.cpp",
   "file": "/home/randy/Workspace/REPOS/nikola/src/autonomy/metabolic_controller.cpp",
   "output": "CMakeFiles/nikola_core.dir/src/autonomy/metabolic_controller.cpp.o"
 },
 {
   "directory": "/home/randy/Workspace/REPOS/nikola/build",
-  "command": "/usr/bin/c++  -I/home/randy/Workspace/REPOS/nikola/include -I/home/randy/Workspace/REPOS/nikola/build -isystem /usr/include/eigen3 -O2 -g -DNDEBUG -std=c++23 -fPIC -Wall -Wextra -Wpedantic -Werror=return-type -o CMakeFiles/nikola_core.dir/src/autonomy/metabolic_lock.cpp.o -c /home/randy/Workspace/REPOS/nikola/src/autonomy/metabolic_lock.cpp",
+  "command": "/usr/bin/c++  -I/home/randy/Workspace/REPOS/nikola/include -I/home/randy/Workspace/REPOS/nikola/build -isystem /usr/include/eigen3 -O3 -DNDEBUG -std=c++23 -fPIC -Wall -Wextra -Wpedantic -Werror=return-type -o CMakeFiles/nikola_core.dir/src/autonomy/metabolic_lock.cpp.o -c /home/randy/Workspace/REPOS/nikola/src/autonomy/metabolic_lock.cpp",
   "file": "/home/randy/Workspace/REPOS/nikola/src/autonomy/metabolic_lock.cpp",
   "output": "CMakeFiles/nikola_core.dir/src/autonomy/metabolic_lock.cpp.o"
 },
 {
   "directory": "/home/randy/Workspace/REPOS/nikola/build",
-  "command": "/usr/bin/c++  -I/home/randy/Workspace/REPOS/nikola/include -I/home/randy/Workspace/REPOS/nikola/build -isystem /usr/include/eigen3 -O2 -g -DNDEBUG -std=c++23 -fPIC -Wall -Wextra -Wpedantic -Werror=return-type -o CMakeFiles/nikola_core.dir/src/spatial/hilbert_scanner.cpp.o -c /home/randy/Workspace/REPOS/nikola/src/spatial/hilbert_scanner.cpp",
+  "command": "/usr/bin/c++  -I/home/randy/Workspace/REPOS/nikola/include -I/home/randy/Workspace/REPOS/nikola/build -isystem /usr/include/eigen3 -O3 -DNDEBUG -std=c++23 -fPIC -Wall -Wextra -Wpedantic -Werror=return-type -o CMakeFiles/nikola_core.dir/src/spatial/hilbert_scanner.cpp.o -c /home/randy/Workspace/REPOS/nikola/src/spatial/hilbert_scanner.cpp",
   "file": "/home/randy/Workspace/REPOS/nikola/src/spatial/hilbert_scanner.cpp",
   "output": "CMakeFiles/nikola_core.dir/src/spatial/hilbert_scanner.cpp.o"
 },
 {
   "directory": "/home/randy/Workspace/REPOS/nikola/build",
-  "command": "/usr/bin/c++  -I/home/randy/Workspace/REPOS/nikola/include -I/home/randy/Workspace/REPOS/nikola/build -isystem /usr/include/eigen3 -O2 -g -DNDEBUG -std=c++23 -fPIC -Wall -Wextra -Wpedantic -Werror=return-type -o CMakeFiles/nikola_core.dir/src/core/config.cpp.o -c /home/randy/Workspace/REPOS/nikola/src/core/config.cpp",
+  "command": "/usr/bin/c++  -I/home/randy/Workspace/REPOS/nikola/include -I/home/randy/Workspace/REPOS/nikola/build -isystem /usr/include/eigen3 -O3 -DNDEBUG -std=c++23 -fPIC -Wall -Wextra -Wpedantic -Werror=return-type -o CMakeFiles/nikola_core.dir/src/core/config.cpp.o -c /home/randy/Workspace/REPOS/nikola/src/core/config.cpp",
   "file": "/home/randy/Workspace/REPOS/nikola/src/core/config.cpp",
   "output": "CMakeFiles/nikola_core.dir/src/core/config.cpp.o"
 },
 {
   "directory": "/home/randy/Workspace/REPOS/nikola/build",
-  "command": "/usr/bin/c++  -I/home/randy/Workspace/REPOS/nikola/include -I/home/randy/Workspace/REPOS/nikola/build -isystem /usr/include/eigen3 -O2 -g -DNDEBUG -std=c++23 -fPIC -Wall -Wextra -Wpedantic -Werror=return-type -o CMakeFiles/nikola_core.dir/nes.pb.cc.o -c /home/randy/Workspace/REPOS/nikola/build/nes.pb.cc",
+  "command": "/usr/bin/c++  -I/home/randy/Workspace/REPOS/nikola/include -I/home/randy/Workspace/REPOS/nikola/build -isystem /usr/include/eigen3 -O3 -DNDEBUG -std=c++23 -fPIC -Wall -Wextra -Wpedantic -Werror=return-type -o CMakeFiles/nikola_core.dir/nes.pb.cc.o -c /home/randy/Workspace/REPOS/nikola/build/nes.pb.cc",
   "file": "/home/randy/Workspace/REPOS/nikola/build/nes.pb.cc",
   "output": "CMakeFiles/nikola_core.dir/nes.pb.cc.o"
 },
 {
   "directory": "/home/randy/Workspace/REPOS/nikola/build",
-  "command": "/usr/bin/c++  -I/home/randy/Workspace/REPOS/nikola/include -I/home/randy/Workspace/REPOS/nikola/build -isystem /usr/include/eigen3 -O2 -g -DNDEBUG -std=c++23 -fPIC -Wall -Wextra -Wpedantic -Werror=return-type -o CMakeFiles/nikola_core.dir/irsp.pb.cc.o -c /home/randy/Workspace/REPOS/nikola/build/irsp.pb.cc",
+  "command": "/usr/bin/c++  -I/home/randy/Workspace/REPOS/nikola/include -I/home/randy/Workspace/REPOS/nikola/build -isystem /usr/include/eigen3 -O3 -DNDEBUG -std=c++23 -fPIC -Wall -Wextra -Wpedantic -Werror=return-type -o CMakeFiles/nikola_core.dir/irsp.pb.cc.o -c /home/randy/Workspace/REPOS/nikola/build/irsp.pb.cc",
   "file": "/home/randy/Workspace/REPOS/nikola/build/irsp.pb.cc",
   "output": "CMakeFiles/nikola_core.dir/irsp.pb.cc.o"
 },
 {
   "directory": "/home/randy/Workspace/REPOS/nikola/build",
-  "command": "/usr/bin/c++  -I/home/randy/Workspace/REPOS/nikola/include -I/home/randy/Workspace/REPOS/nikola/build -isystem /usr/include/eigen3 -O2 -g -DNDEBUG -std=c++23 -fPIE -Wall -Wextra -Wpedantic -Werror=return-type -o CMakeFiles/test_metabolic_lock.dir/tests/unit/metabolic_lock_test.cpp.o -c /home/randy/Workspace/REPOS/nikola/tests/unit/metabolic_lock_test.cpp",
+  "command": "/usr/bin/c++  -I/home/randy/Workspace/REPOS/nikola/include -I/home/randy/Workspace/REPOS/nikola/build -isystem /usr/include/eigen3 -O3 -DNDEBUG -std=c++23 -fPIE -Wall -Wextra -Wpedantic -Werror=return-type -o CMakeFiles/test_metabolic_lock.dir/tests/unit/metabolic_lock_test.cpp.o -c /home/randy/Workspace/REPOS/nikola/tests/unit/metabolic_lock_test.cpp",
   "file": "/home/randy/Workspace/REPOS/nikola/tests/unit/metabolic_lock_test.cpp",
   "output": "CMakeFiles/test_metabolic_lock.dir/tests/unit/metabolic_lock_test.cpp.o"
 },
 {
   "directory": "/home/randy/Workspace/REPOS/nikola/build",
-  "command": "/usr/bin/c++  -I/home/randy/Workspace/REPOS/nikola/include -I/home/randy/Workspace/REPOS/nikola/build -isystem /usr/include/eigen3 -O2 -g -DNDEBUG -std=c++23 -fPIE -Wall -Wextra -Wpedantic -Werror=return-type -o CMakeFiles/test_hilbert_scanner.dir/tests/unit/hilbert_scanner_test.cpp.o -c /home/randy/Workspace/REPOS/nikola/tests/unit/hilbert_scanner_test.cpp",
+  "command": "/usr/bin/c++  -I/home/randy/Workspace/REPOS/nikola/include -I/home/randy/Workspace/REPOS/nikola/build -isystem /usr/include/eigen3 -O3 -DNDEBUG -std=c++23 -fPIE -Wall -Wextra -Wpedantic -Werror=return-type -o CMakeFiles/test_hilbert_scanner.dir/tests/unit/hilbert_scanner_test.cpp.o -c /home/randy/Workspace/REPOS/nikola/tests/unit/hilbert_scanner_test.cpp",
   "file": "/home/randy/Workspace/REPOS/nikola/tests/unit/hilbert_scanner_test.cpp",
   "output": "CMakeFiles/test_hilbert_scanner.dir/tests/unit/hilbert_scanner_test.cpp.o"
 },
 {
   "directory": "/home/randy/Workspace/REPOS/nikola/build",
-  "command": "/usr/bin/c++  -I/home/randy/Workspace/REPOS/nikola/include -I/home/randy/Workspace/REPOS/nikola/build -isystem /usr/include/eigen3 -O2 -g -DNDEBUG -std=c++23 -fPIE -Wall -Wextra -Wpedantic -Werror=return-type -o CMakeFiles/test_vector9d.dir/tests/unit/vector9d_test.cpp.o -c /home/randy/Workspace/REPOS/nikola/tests/unit/vector9d_test.cpp",
+  "command": "/usr/bin/c++  -I/home/randy/Workspace/REPOS/nikola/include -I/home/randy/Workspace/REPOS/nikola/build -isystem /usr/include/eigen3 -O3 -DNDEBUG -std=c++23 -fPIE -Wall -Wextra -Wpedantic -Werror=return-type -o CMakeFiles/test_vector9d.dir/tests/unit/vector9d_test.cpp.o -c /home/randy/Workspace/REPOS/nikola/tests/unit/vector9d_test.cpp",
   "file": "/home/randy/Workspace/REPOS/nikola/tests/unit/vector9d_test.cpp",
   "output": "CMakeFiles/test_vector9d.dir/tests/unit/vector9d_test.cpp.o"
 },
 {
   "directory": "/home/randy/Workspace/REPOS/nikola/build",
-  "command": "/usr/bin/c++  -I/home/randy/Workspace/REPOS/nikola/include -I/home/randy/Workspace/REPOS/nikola/build -isystem /usr/include/eigen3 -O2 -g -DNDEBUG -std=c++23 -fPIE -Wall -Wextra -Wpedantic -Werror=return-type -o CMakeFiles/test_physics_core.dir/tests/unit/physics_core_test.cpp.o -c /home/randy/Workspace/REPOS/nikola/tests/unit/physics_core_test.cpp",
+  "command": "/usr/bin/c++  -I/home/randy/Workspace/REPOS/nikola/include -I/home/randy/Workspace/REPOS/nikola/build -isystem /usr/include/eigen3 -O3 -DNDEBUG -std=c++23 -fPIE -Wall -Wextra -Wpedantic -Werror=return-type -o CMakeFiles/test_physics_core.dir/tests/unit/physics_core_test.cpp.o -c /home/randy/Workspace/REPOS/nikola/tests/unit/physics_core_test.cpp",
   "file": "/home/randy/Workspace/REPOS/nikola/tests/unit/physics_core_test.cpp",
   "output": "CMakeFiles/test_physics_core.dir/tests/unit/physics_core_test.cpp.o"
 },
 {
   "directory": "/home/randy/Workspace/REPOS/nikola/build",
-  "command": "/usr/bin/c++  -I/home/randy/Workspace/REPOS/nikola/include -I/home/randy/Workspace/REPOS/nikola/build -isystem /usr/include/eigen3 -O2 -g -DNDEBUG -std=c++23 -fPIE -Wall -Wextra -Wpedantic -Werror=return-type -o CMakeFiles/test_phase2_geometry_memory.dir/tests/unit/phase2_geometry_memory_test.cpp.o -c /home/randy/Workspace/REPOS/nikola/tests/unit/phase2_geometry_memory_test.cpp",
+  "command": "/usr/bin/c++  -I/home/randy/Workspace/REPOS/nikola/include -I/home/randy/Workspace/REPOS/nikola/build -isystem /usr/include/eigen3 -O3 -DNDEBUG -std=c++23 -fPIE -Wall -Wextra -Wpedantic -Werror=return-type -o CMakeFiles/test_phase2_geometry_memory.dir/tests/unit/phase2_geometry_memory_test.cpp.o -c /home/randy/Workspace/REPOS/nikola/tests/unit/phase2_geometry_memory_test.cpp",
   "file": "/home/randy/Workspace/REPOS/nikola/tests/unit/phase2_geometry_memory_test.cpp",
   "output": "CMakeFiles/test_phase2_geometry_memory.dir/tests/unit/phase2_geometry_memory_test.cpp.o"
 },
 {
   "directory": "/home/randy/Workspace/REPOS/nikola/build",
-  "command": "/usr/bin/c++  -I/home/randy/Workspace/REPOS/nikola/include -I/home/randy/Workspace/REPOS/nikola/build -isystem /usr/include/eigen3 -O2 -g -DNDEBUG -std=c++23 -fPIE -Wall -Wextra -Wpedantic -Werror=return-type -o CMakeFiles/test_phase3_cognitive.dir/tests/unit/phase3_cognitive_test.cpp.o -c /home/randy/Workspace/REPOS/nikola/tests/unit/phase3_cognitive_test.cpp",
+  "command": "/usr/bin/c++  -I/home/randy/Workspace/REPOS/nikola/include -I/home/randy/Workspace/REPOS/nikola/build -isystem /usr/include/eigen3 -O3 -DNDEBUG -std=c++23 -fPIE -Wall -Wextra -Wpedantic -Werror=return-type -o CMakeFiles/test_phase3_cognitive.dir/tests/unit/phase3_cognitive_test.cpp.o -c /home/randy/Workspace/REPOS/nikola/tests/unit/phase3_cognitive_test.cpp",
   "file": "/home/randy/Workspace/REPOS/nikola/tests/unit/phase3_cognitive_test.cpp",
   "output": "CMakeFiles/test_phase3_cognitive.dir/tests/unit/phase3_cognitive_test.cpp.o"
 },
 {
   "directory": "/home/randy/Workspace/REPOS/nikola/build",
-  "command": "/usr/bin/c++  -I/home/randy/Workspace/REPOS/nikola/include -I/home/randy/Workspace/REPOS/nikola/build -isystem /usr/include/eigen3 -O2 -g -DNDEBUG -std=c++23 -fPIE -Wall -Wextra -Wpedantic -Werror=return-type -o CMakeFiles/test_phase4_infrastructure.dir/tests/unit/phase4_infrastructure_test.cpp.o -c /home/randy/Workspace/REPOS/nikola/tests/unit/phase4_infrastructure_test.cpp",
+  "command": "/usr/bin/c++  -I/home/randy/Workspace/REPOS/nikola/include -I/home/randy/Workspace/REPOS/nikola/build -isystem /usr/include/eigen3 -O3 -DNDEBUG -std=c++23 -fPIE -Wall -Wextra -Wpedantic -Werror=return-type -o CMakeFiles/test_phase4_infrastructure.dir/tests/unit/phase4_infrastructure_test.cpp.o -c /home/randy/Workspace/REPOS/nikola/tests/unit/phase4_infrastructure_test.cpp",
   "file": "/home/randy/Workspace/REPOS/nikola/tests/unit/phase4_infrastructure_test.cpp",
   "output": "CMakeFiles/test_phase4_infrastructure.dir/tests/unit/phase4_infrastructure_test.cpp.o"
 },
 {
   "directory": "/home/randy/Workspace/REPOS/nikola/build",
-  "command": "/usr/bin/c++  -I/home/randy/Workspace/REPOS/nikola/include -I/home/randy/Workspace/REPOS/nikola/build -isystem /usr/include/eigen3 -O2 -g -DNDEBUG -std=c++23 -fPIE -Wall -Wextra -Wpedantic -Werror=return-type -o CMakeFiles/test_phase5_autonomous.dir/tests/unit/phase5_autonomous_test.cpp.o -c /home/randy/Workspace/REPOS/nikola/tests/unit/phase5_autonomous_test.cpp",
+  "command": "/usr/bin/c++  -I/home/randy/Workspace/REPOS/nikola/include -I/home/randy/Workspace/REPOS/nikola/build -isystem /usr/include/eigen3 -O3 -DNDEBUG -std=c++23 -fPIE -Wall -Wextra -Wpedantic -Werror=return-type -o CMakeFiles/test_phase5_autonomous.dir/tests/unit/phase5_autonomous_test.cpp.o -c /home/randy/Workspace/REPOS/nikola/tests/unit/phase5_autonomous_test.cpp",
   "file": "/home/randy/Workspace/REPOS/nikola/tests/unit/phase5_autonomous_test.cpp",
   "output": "CMakeFiles/test_phase5_autonomous.dir/tests/unit/phase5_autonomous_test.cpp.o"
 },
 {
   "directory": "/home/randy/Workspace/REPOS/nikola/build",
-  "command": "/usr/bin/c++  -I/home/randy/Workspace/REPOS/nikola/include -I/home/randy/Workspace/REPOS/nikola/build -isystem /usr/include/eigen3 -O2 -g -DNDEBUG -std=c++23 -fPIE -Wall -Wextra -Wpedantic -Werror=return-type -o CMakeFiles/test_phase6_multimodal.dir/tests/unit/phase6_multimodal_test.cpp.o -c /home/randy/Workspace/REPOS/nikola/tests/unit/phase6_multimodal_test.cpp",
+  "command": "/usr/bin/c++  -I/home/randy/Workspace/REPOS/nikola/include -I/home/randy/Workspace/REPOS/nikola/build -isystem /usr/include/eigen3 -O3 -DNDEBUG -std=c++23 -fPIE -Wall -Wextra -Wpedantic -Werror=return-type -o CMakeFiles/test_phase6_multimodal.dir/tests/unit/phase6_multimodal_test.cpp.o -c /home/randy/Workspace/REPOS/nikola/tests/unit/phase6_multimodal_test.cpp",
   "file": "/home/randy/Workspace/REPOS/nikola/tests/unit/phase6_multimodal_test.cpp",
   "output": "CMakeFiles/test_phase6_multimodal.dir/tests/unit/phase6_multimodal_test.cpp.o"
 },
 {
   "directory": "/home/randy/Workspace/REPOS/nikola/build",
-  "command": "/usr/bin/c++  -I/home/randy/Workspace/REPOS/nikola/include -I/home/randy/Workspace/REPOS/nikola/build -isystem /usr/include/eigen3 -O2 -g -DNDEBUG -std=c++23 -fPIE -Wall -Wextra -Wpedantic -Werror=return-type -o CMakeFiles/test_phase7_security.dir/tests/unit/phase7_security_test.cpp.o -c /home/randy/Workspace/REPOS/nikola/tests/unit/phase7_security_test.cpp",
+  "command": "/usr/bin/c++  -I/home/randy/Workspace/REPOS/nikola/include -I/home/randy/Workspace/REPOS/nikola/build -isystem /usr/include/eigen3 -O3 -DNDEBUG -std=c++23 -fPIE -Wall -Wextra -Wpedantic -Werror=return-type -o CMakeFiles/test_phase7_security.dir/tests/unit/phase7_security_test.cpp.o -c /home/randy/Workspace/REPOS/nikola/tests/unit/phase7_security_test.cpp",
   "file": "/home/randy/Workspace/REPOS/nikola/tests/unit/phase7_security_test.cpp",
   "output": "CMakeFiles/test_phase7_security.dir/tests/unit/phase7_security_test.cpp.o"
 },
 {
   "directory": "/home/randy/Workspace/REPOS/nikola/build",
-  "command": "/usr/bin/c++  -I/home/randy/Workspace/REPOS/nikola/include -I/home/randy/Workspace/REPOS/nikola/build -isystem /usr/include/eigen3 -O2 -g -DNDEBUG -std=c++23 -fPIE -Wall -Wextra -Wpedantic -Werror=return-type -o CMakeFiles/test_phase8_foundations.dir/tests/unit/phase8_foundations_test.cpp.o -c /home/randy/Workspace/REPOS/nikola/tests/unit/phase8_foundations_test.cpp",
+  "command": "/usr/bin/c++  -I/home/randy/Workspace/REPOS/nikola/include -I/home/randy/Workspace/REPOS/nikola/build -isystem /usr/include/eigen3 -O3 -DNDEBUG -std=c++23 -fPIE -Wall -Wextra -Wpedantic -Werror=return-type -o CMakeFiles/test_phase8_foundations.dir/tests/unit/phase8_foundations_test.cpp.o -c /home/randy/Workspace/REPOS/nikola/tests/unit/phase8_foundations_test.cpp",
   "file": "/home/randy/Workspace/REPOS/nikola/tests/unit/phase8_foundations_test.cpp",
   "output": "CMakeFiles/test_phase8_foundations.dir/tests/unit/phase8_foundations_test.cpp.o"
 },
 {
   "directory": "/home/randy/Workspace/REPOS/nikola/build",
-  "command": "/usr/bin/c++  -I/home/randy/Workspace/REPOS/nikola/include -I/home/randy/Workspace/REPOS/nikola/build -isystem /usr/include/eigen3 -O2 -g -DNDEBUG -std=c++23 -fPIE -Wall -Wextra -Wpedantic -Werror=return-type -o CMakeFiles/genesis_stub_test.dir/tests/genesis_stub_test.cpp.o -c /home/randy/Workspace/REPOS/nikola/tests/genesis_stub_test.cpp",
-  "file": "/home/randy/Workspace/REPOS/nikola/tests/genesis_stub_test.cpp",
-  "output": "CMakeFiles/genesis_stub_test.dir/tests/genesis_stub_test.cpp.o"
+  "command": "/usr/bin/c++  -I/home/randy/Workspace/REPOS/nikola/include -I/home/randy/Workspace/REPOS/nikola/build -isystem /usr/include/eigen3 -O3 -DNDEBUG -std=c++23 -fPIE -Wall -Wextra -Wpedantic -Werror=return-type -o CMakeFiles/test_phase9_bootstrap.dir/tests/unit/phase9_bootstrap_test.cpp.o -c /home/randy/Workspace/REPOS/nikola/tests/unit/phase9_bootstrap_test.cpp",
+  "file": "/home/randy/Workspace/REPOS/nikola/tests/unit/phase9_bootstrap_test.cpp",
+  "output": "CMakeFiles/test_phase9_bootstrap.dir/tests/unit/phase9_bootstrap_test.cpp.o"
 },
 {
   "directory": "/home/randy/Workspace/REPOS/nikola/build",
-  "command": "/usr/bin/c++  -I/home/randy/Workspace/REPOS/nikola/include -I/home/randy/Workspace/REPOS/nikola/build -isystem /usr/include/eigen3 -O2 -g -DNDEBUG -std=c++23 -fPIE -Wall -Wextra -Wpedantic -Werror=return-type -o CMakeFiles/config_test.dir/tests/config_test.cpp.o -c /home/randy/Workspace/REPOS/nikola/tests/config_test.cpp",
-  "file": "/home/randy/Workspace/REPOS/nikola/tests/config_test.cpp",
-  "output": "CMakeFiles/config_test.dir/tests/config_test.cpp.o"
+  "command": "/usr/bin/c++  -I/home/randy/Workspace/REPOS/nikola/include -I/home/randy/Workspace/REPOS/nikola/build -isystem /usr/include/eigen3 -O3 -DNDEBUG -std=c++23 -fPIE -Wall -Wextra -Wpedantic -Werror=return-type -o CMakeFiles/test_phase10_holographic.dir/tests/unit/phase10_holographic_test.cpp.o -c /home/randy/Workspace/REPOS/nikola/tests/unit/phase10_holographic_test.cpp",
+  "file": "/home/randy/Workspace/REPOS/nikola/tests/unit/phase10_holographic_test.cpp",
+  "output": "CMakeFiles/test_phase10_holographic.dir/tests/unit/phase10_holographic_test.cpp.o"
+},
+{
+  "directory": "/home/randy/Workspace/REPOS/nikola/build",
+  "command": "/usr/bin/c++  -I/home/randy/Workspace/REPOS/nikola/include -I/home/randy/Workspace/REPOS/nikola/build -isystem /usr/include/eigen3 -O3 -DNDEBUG -std=c++23 -fPIE -Wall -Wextra -Wpedantic -Werror=return-type -o CMakeFiles/test_phase11_cognitive_gen.dir/tests/unit/phase11_cognitive_gen_test.cpp.o -c /home/randy/Workspace/REPOS/nikola/tests/unit/phase11_cognitive_gen_test.cpp",
+  "file": "/home/randy/Workspace/REPOS/nikola/tests/unit/phase11_cognitive_gen_test.cpp",
+  "output": "CMakeFiles/test_phase11_cognitive_gen.dir/tests/unit/phase11_cognitive_gen_test.cpp.o"
+},
+{
+  "directory": "/home/randy/Workspace/REPOS/nikola/build",
+  "command": "/usr/bin/c++ -DNIKOLA_ACAS_SCRIPTS_DIR=\\\"/home/randy/Workspace/REPOS/nikola/src/acas\\\" -I/home/randy/Workspace/REPOS/nikola/include -I/home/randy/Workspace/REPOS/nikola/build -isystem /usr/include/eigen3 -O3 -DNDEBUG -std=c++23 -fPIE -Wall -Wextra -Wpedantic -Werror=return-type -o CMakeFiles/test_phase12_acas_bridge.dir/tests/unit/phase12_acas_bridge_test.cpp.o -c /home/randy/Workspace/REPOS/nikola/tests/unit/phase12_acas_bridge_test.cpp",
+  "file": "/home/randy/Workspace/REPOS/nikola/tests/unit/phase12_acas_bridge_test.cpp",
+  "output": "CMakeFiles/test_phase12_acas_bridge.dir/tests/unit/phase12_acas_bridge_test.cpp.o"
+},
+{
+  "directory": "/home/randy/Workspace/REPOS/nikola/build",
+  "command": "/usr/bin/c++  -I/home/randy/Workspace/REPOS/nikola/include -I/home/randy/Workspace/REPOS/nikola/build -isystem /usr/include/eigen3 -O3 -DNDEBUG -std=c++23 -fPIE -Wall -Wextra -Wpedantic -Werror=return-type -o CMakeFiles/test_phase13_task_dispatcher.dir/tests/unit/phase13_task_dispatcher_test.cpp.o -c /home/randy/Workspace/REPOS/nikola/tests/unit/phase13_task_dispatcher_test.cpp",
+  "file": "/home/randy/Workspace/REPOS/nikola/tests/unit/phase13_task_dispatcher_test.cpp",
+  "output": "CMakeFiles/test_phase13_task_dispatcher.dir/tests/unit/phase13_task_dispatcher_test.cpp.o"
+},
+{
+  "directory": "/home/randy/Workspace/REPOS/nikola/build",
+  "command": "/usr/bin/c++  -I/home/randy/Workspace/REPOS/nikola/include -I/home/randy/Workspace/REPOS/nikola/build -isystem /usr/include/eigen3 -O3 -DNDEBUG -std=c++23 -fPIE -Wall -Wextra -Wpedantic -Werror=return-type -o CMakeFiles/test_phase14_async_checkpoint.dir/tests/unit/phase14_async_checkpoint_test.cpp.o -c /home/randy/Workspace/REPOS/nikola/tests/unit/phase14_async_checkpoint_test.cpp",
+  "file": "/home/randy/Workspace/REPOS/nikola/tests/unit/phase14_async_checkpoint_test.cpp",
+  "output": "CMakeFiles/test_phase14_async_checkpoint.dir/tests/unit/phase14_async_checkpoint_test.cpp.o"
+},
+{
+  "directory": "/home/randy/Workspace/REPOS/nikola/build",
+  "command": "/usr/bin/c++  -I/home/randy/Workspace/REPOS/nikola/include -I/home/randy/Workspace/REPOS/nikola/build -isystem /usr/include/eigen3 -O3 -DNDEBUG -std=c++23 -fPIE -Wall -Wextra -Wpedantic -Werror=return-type -o CMakeFiles/test_phase15_hamiltonian_value.dir/tests/unit/phase15_hamiltonian_value_test.cpp.o -c /home/randy/Workspace/REPOS/nikola/tests/unit/phase15_hamiltonian_value_test.cpp",
+  "file": "/home/randy/Workspace/REPOS/nikola/tests/unit/phase15_hamiltonian_value_test.cpp",
+  "output": "CMakeFiles/test_phase15_hamiltonian_value.dir/tests/unit/phase15_hamiltonian_value_test.cpp.o"
+},
+{
+  "directory": "/home/randy/Workspace/REPOS/nikola/build",
+  "command": "/usr/bin/c++  -I/home/randy/Workspace/REPOS/nikola/include -I/home/randy/Workspace/REPOS/nikola/build -isystem /usr/include/eigen3 -O3 -DNDEBUG -std=c++23 -fPIE -Wall -Wextra -Wpedantic -Werror=return-type -o CMakeFiles/test_phase16_coord_serializer.dir/tests/unit/phase16_coord_serializer_test.cpp.o -c /home/randy/Workspace/REPOS/nikola/tests/unit/phase16_coord_serializer_test.cpp",
+  "file": "/home/randy/Workspace/REPOS/nikola/tests/unit/phase16_coord_serializer_test.cpp",
+  "output": "CMakeFiles/test_phase16_coord_serializer.dir/tests/unit/phase16_coord_serializer_test.cpp.o"
+},
+{
+  "directory": "/home/randy/Workspace/REPOS/nikola/build",
+  "command": "/usr/bin/c++  -I/home/randy/Workspace/REPOS/nikola/include -I/home/randy/Workspace/REPOS/nikola/build -isystem /usr/include/eigen3 -O3 -DNDEBUG -std=c++23 -fPIE -Wall -Wextra -Wpedantic -Werror=return-type -o CMakeFiles/test_phase17_bootstrap_manager.dir/tests/unit/phase17_bootstrap_manager_test.cpp.o -c /home/randy/Workspace/REPOS/nikola/tests/unit/phase17_bootstrap_manager_test.cpp",
+  "file": "/home/randy/Workspace/REPOS/nikola/tests/unit/phase17_bootstrap_manager_test.cpp",
+  "output": "CMakeFiles/test_phase17_bootstrap_manager.dir/tests/unit/phase17_bootstrap_manager_test.cpp.o"
+},
+{
+  "directory": "/home/randy/Workspace/REPOS/nikola/build",
+  "command": "/usr/bin/c++ -DNIKOLA_AUTONOMY_ENGINE_IMPL -I/home/randy/Workspace/REPOS/nikola/include -I/home/randy/Workspace/REPOS/nikola/build -isystem /usr/include/eigen3 -O3 -DNDEBUG -std=c++23 -fPIE -Wall -Wextra -Wpedantic -Werror=return-type -o CMakeFiles/nikola_first_light.dir/src/main.cpp.o -c /home/randy/Workspace/REPOS/nikola/src/main.cpp",
+  "file": "/home/randy/Workspace/REPOS/nikola/src/main.cpp",
+  "output": "CMakeFiles/nikola_first_light.dir/src/main.cpp.o"
 }
 ]

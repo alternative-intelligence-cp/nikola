@@ -207,15 +207,63 @@ if(NIKOLA_BUILD_TESTS)
     target_link_libraries(test_phase8_foundations PRIVATE nikola_core Catch2::Catch2WithMain)
     add_test(NAME Phase8Foundations COMMAND test_phase8_foundations)
 
+    # Phase 9 Unit Tests: Bootstrap (ManifoldSeeder + PhysicsMonitor)
+    add_executable(test_phase9_bootstrap tests/unit/phase9_bootstrap_test.cpp)
+    target_link_libraries(test_phase9_bootstrap PRIVATE nikola_core Catch2::Catch2WithMain)
+    add_test(NAME Phase9Bootstrap COMMAND test_phase9_bootstrap)
+
+    # Phase 10 Unit Tests: HolographicLexicon (IMP-02)
+    add_executable(test_phase10_holographic tests/unit/phase10_holographic_test.cpp)
+    target_link_libraries(test_phase10_holographic PRIVATE nikola_core Catch2::Catch2WithMain)
+    add_test(NAME Phase10Holographic COMMAND test_phase10_holographic)
+
+    # Phase 11 Unit Tests: CognitiveGenerator + ConceptMinter (COG-05)
+    add_executable(test_phase11_cognitive_gen tests/unit/phase11_cognitive_gen_test.cpp)
+    target_link_libraries(test_phase11_cognitive_gen PRIVATE nikola_core Catch2::Catch2WithMain)
+    add_test(NAME Phase11CognitiveGen COMMAND test_phase11_cognitive_gen)
+
+    # Phase 12 Unit Tests: AcasBridge + ACAS Python IPC
+    add_executable(test_phase12_acas_bridge tests/unit/phase12_acas_bridge_test.cpp)
+    target_link_libraries(test_phase12_acas_bridge PRIVATE nikola_core Catch2::Catch2WithMain)
+    target_compile_definitions(test_phase12_acas_bridge PRIVATE
+        NIKOLA_ACAS_SCRIPTS_DIR="${CMAKE_SOURCE_DIR}/src/acas")
+    add_test(NAME Phase12AcasBridge COMMAND test_phase12_acas_bridge)
+
+    # Phase 13 Unit Tests: TaskDispatcher + Priority-aware Orchestrator
+    add_executable(test_phase13_task_dispatcher tests/unit/phase13_task_dispatcher_test.cpp)
+    target_link_libraries(test_phase13_task_dispatcher PRIVATE nikola_core Catch2::Catch2WithMain)
+    add_test(NAME Phase13TaskDispatcher COMMAND test_phase13_task_dispatcher)
+
+    # Phase 14 Unit Tests: AsyncWriteQueue + CheckpointManager async persistence
+    add_executable(test_phase14_async_checkpoint tests/unit/phase14_async_checkpoint_test.cpp)
+    target_link_libraries(test_phase14_async_checkpoint PRIVATE nikola_core Catch2::Catch2WithMain)
+    add_test(NAME Phase14AsyncCheckpoint COMMAND test_phase14_async_checkpoint)
+
+    # Phase 15 Unit Tests: Hamiltonian Value Function (NIK-005)
+    add_executable(test_phase15_hamiltonian_value tests/unit/phase15_hamiltonian_value_test.cpp)
+    target_link_libraries(test_phase15_hamiltonian_value PRIVATE nikola_core Catch2::Catch2WithMain)
+    add_test(NAME Phase15HamiltonianValue COMMAND test_phase15_hamiltonian_value)
+
+    # Phase 16 Unit Tests: Coord9D Portability / CoordSerializer (NIK-003)
+    add_executable(test_phase16_coord_serializer tests/unit/phase16_coord_serializer_test.cpp)
+    target_link_libraries(test_phase16_coord_serializer PRIVATE nikola_core Catch2::Catch2WithMain)
+    add_test(NAME Phase16CoordSerializer COMMAND test_phase16_coord_serializer)
+
+    # Phase 17 Unit Tests: Bootstrap Token Security / BootstrapManager (NIK-002)
+    add_executable(test_phase17_bootstrap_manager tests/unit/phase17_bootstrap_manager_test.cpp)
+    target_link_libraries(test_phase17_bootstrap_manager PRIVATE nikola_core Catch2::Catch2WithMain)
+    add_test(NAME Phase17BootstrapManager COMMAND test_phase17_bootstrap_manager)
+
     message(STATUS "Tests configured - run with: make test")
 endif()
 
-# Legacy test stubs (for backward compatibility)
-add_executable(genesis_stub_test tests/genesis_stub_test.cpp)
-target_link_libraries(genesis_stub_test PRIVATE nikola_core)
-
-add_executable(config_test tests/config_test.cpp)
-target_link_libraries(config_test PRIVATE nikola_core)
+# ============================================================================
+# FIRST LIGHT — Nikola first cold-start executable
+# ============================================================================
+add_executable(nikola_first_light src/main.cpp)
+target_compile_definitions(nikola_first_light PRIVATE NIKOLA_AUTONOMY_ENGINE_IMPL)
+target_link_libraries(nikola_first_light PRIVATE nikola_core)
+message(STATUS "First Light executable: nikola_first_light")
 
 # Installation
 install(TARGETS nikola_core
@@ -272,6 +320,15 @@ if(NIKOLA_BUILD_TESTS)
     message(STATUS "  - Phase 6: phase6_multimodal")
     message(STATUS "  - Phase 7: phase7_security")
     message(STATUS "  - Phase 8: phase8_foundations")
+    message(STATUS "  - Phase 9: phase9_bootstrap")
+    message(STATUS "  - Phase 10: phase10_holographic")
+    message(STATUS "  - Phase 11: phase11_cognitive_gen")
+    message(STATUS "  - Phase 12: phase12_acas_bridge")
+    message(STATUS "  - Phase 13: phase13_task_dispatcher")
+    message(STATUS "  - Phase 14: phase14_async_checkpoint")
+    message(STATUS "  - Phase 15: phase15_hamiltonian_value (NIK-005)")
+    message(STATUS "  - Phase 16: phase16_coord_serializer (NIK-003)")
+    message(STATUS "  - Phase 17: phase17_bootstrap_manager (NIK-002)")
 endif()
 message(STATUS "")
 message(STATUS "Phase 4: Infrastructure & Communications  [COMPLETE ✓]")

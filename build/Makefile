@@ -328,30 +328,134 @@ test_phase8_foundations/fast:
 .PHONY : test_phase8_foundations/fast
 
 #=============================================================================
-# Target rules for targets named genesis_stub_test
+# Target rules for targets named test_phase9_bootstrap
 
 # Build rule for target.
-genesis_stub_test: cmake_check_build_system
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 genesis_stub_test
-.PHONY : genesis_stub_test
+test_phase9_bootstrap: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 test_phase9_bootstrap
+.PHONY : test_phase9_bootstrap
 
 # fast build rule for target.
-genesis_stub_test/fast:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/genesis_stub_test.dir/build.make CMakeFiles/genesis_stub_test.dir/build
-.PHONY : genesis_stub_test/fast
+test_phase9_bootstrap/fast:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_phase9_bootstrap.dir/build.make CMakeFiles/test_phase9_bootstrap.dir/build
+.PHONY : test_phase9_bootstrap/fast
 
 #=============================================================================
-# Target rules for targets named config_test
+# Target rules for targets named test_phase10_holographic
 
 # Build rule for target.
-config_test: cmake_check_build_system
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 config_test
-.PHONY : config_test
+test_phase10_holographic: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 test_phase10_holographic
+.PHONY : test_phase10_holographic
 
 # fast build rule for target.
-config_test/fast:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/config_test.dir/build.make CMakeFiles/config_test.dir/build
-.PHONY : config_test/fast
+test_phase10_holographic/fast:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_phase10_holographic.dir/build.make CMakeFiles/test_phase10_holographic.dir/build
+.PHONY : test_phase10_holographic/fast
+
+#=============================================================================
+# Target rules for targets named test_phase11_cognitive_gen
+
+# Build rule for target.
+test_phase11_cognitive_gen: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 test_phase11_cognitive_gen
+.PHONY : test_phase11_cognitive_gen
+
+# fast build rule for target.
+test_phase11_cognitive_gen/fast:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_phase11_cognitive_gen.dir/build.make CMakeFiles/test_phase11_cognitive_gen.dir/build
+.PHONY : test_phase11_cognitive_gen/fast
+
+#=============================================================================
+# Target rules for targets named test_phase12_acas_bridge
+
+# Build rule for target.
+test_phase12_acas_bridge: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 test_phase12_acas_bridge
+.PHONY : test_phase12_acas_bridge
+
+# fast build rule for target.
+test_phase12_acas_bridge/fast:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_phase12_acas_bridge.dir/build.make CMakeFiles/test_phase12_acas_bridge.dir/build
+.PHONY : test_phase12_acas_bridge/fast
+
+#=============================================================================
+# Target rules for targets named test_phase13_task_dispatcher
+
+# Build rule for target.
+test_phase13_task_dispatcher: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 test_phase13_task_dispatcher
+.PHONY : test_phase13_task_dispatcher
+
+# fast build rule for target.
+test_phase13_task_dispatcher/fast:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_phase13_task_dispatcher.dir/build.make CMakeFiles/test_phase13_task_dispatcher.dir/build
+.PHONY : test_phase13_task_dispatcher/fast
+
+#=============================================================================
+# Target rules for targets named test_phase14_async_checkpoint
+
+# Build rule for target.
+test_phase14_async_checkpoint: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 test_phase14_async_checkpoint
+.PHONY : test_phase14_async_checkpoint
+
+# fast build rule for target.
+test_phase14_async_checkpoint/fast:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_phase14_async_checkpoint.dir/build.make CMakeFiles/test_phase14_async_checkpoint.dir/build
+.PHONY : test_phase14_async_checkpoint/fast
+
+#=============================================================================
+# Target rules for targets named test_phase15_hamiltonian_value
+
+# Build rule for target.
+test_phase15_hamiltonian_value: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 test_phase15_hamiltonian_value
+.PHONY : test_phase15_hamiltonian_value
+
+# fast build rule for target.
+test_phase15_hamiltonian_value/fast:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_phase15_hamiltonian_value.dir/build.make CMakeFiles/test_phase15_hamiltonian_value.dir/build
+.PHONY : test_phase15_hamiltonian_value/fast
+
+#=============================================================================
+# Target rules for targets named test_phase16_coord_serializer
+
+# Build rule for target.
+test_phase16_coord_serializer: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 test_phase16_coord_serializer
+.PHONY : test_phase16_coord_serializer
+
+# fast build rule for target.
+test_phase16_coord_serializer/fast:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_phase16_coord_serializer.dir/build.make CMakeFiles/test_phase16_coord_serializer.dir/build
+.PHONY : test_phase16_coord_serializer/fast
+
+#=============================================================================
+# Target rules for targets named test_phase17_bootstrap_manager
+
+# Build rule for target.
+test_phase17_bootstrap_manager: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 test_phase17_bootstrap_manager
+.PHONY : test_phase17_bootstrap_manager
+
+# fast build rule for target.
+test_phase17_bootstrap_manager/fast:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_phase17_bootstrap_manager.dir/build.make CMakeFiles/test_phase17_bootstrap_manager.dir/build
+.PHONY : test_phase17_bootstrap_manager/fast
+
+#=============================================================================
+# Target rules for targets named nikola_first_light
+
+# Build rule for target.
+nikola_first_light: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 nikola_first_light
+.PHONY : nikola_first_light
+
+# fast build rule for target.
+nikola_first_light/fast:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/nikola_first_light.dir/build.make CMakeFiles/nikola_first_light.dir/build
+.PHONY : nikola_first_light/fast
 
 irsp.pb.o: irsp.pb.cc.o
 .PHONY : irsp.pb.o
@@ -473,6 +577,30 @@ src/core/config.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/nikola_core.dir/build.make CMakeFiles/nikola_core.dir/src/core/config.cpp.s
 .PHONY : src/core/config.cpp.s
 
+src/main.o: src/main.cpp.o
+.PHONY : src/main.o
+
+# target to build an object file
+src/main.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/nikola_first_light.dir/build.make CMakeFiles/nikola_first_light.dir/src/main.cpp.o
+.PHONY : src/main.cpp.o
+
+src/main.i: src/main.cpp.i
+.PHONY : src/main.i
+
+# target to preprocess a source file
+src/main.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/nikola_first_light.dir/build.make CMakeFiles/nikola_first_light.dir/src/main.cpp.i
+.PHONY : src/main.cpp.i
+
+src/main.s: src/main.cpp.s
+.PHONY : src/main.s
+
+# target to generate assembly for a file
+src/main.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/nikola_first_light.dir/build.make CMakeFiles/nikola_first_light.dir/src/main.cpp.s
+.PHONY : src/main.cpp.s
+
 src/spatial/hilbert_scanner.o: src/spatial/hilbert_scanner.cpp.o
 .PHONY : src/spatial/hilbert_scanner.o
 
@@ -496,54 +624,6 @@ src/spatial/hilbert_scanner.s: src/spatial/hilbert_scanner.cpp.s
 src/spatial/hilbert_scanner.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/nikola_core.dir/build.make CMakeFiles/nikola_core.dir/src/spatial/hilbert_scanner.cpp.s
 .PHONY : src/spatial/hilbert_scanner.cpp.s
-
-tests/config_test.o: tests/config_test.cpp.o
-.PHONY : tests/config_test.o
-
-# target to build an object file
-tests/config_test.cpp.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/config_test.dir/build.make CMakeFiles/config_test.dir/tests/config_test.cpp.o
-.PHONY : tests/config_test.cpp.o
-
-tests/config_test.i: tests/config_test.cpp.i
-.PHONY : tests/config_test.i
-
-# target to preprocess a source file
-tests/config_test.cpp.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/config_test.dir/build.make CMakeFiles/config_test.dir/tests/config_test.cpp.i
-.PHONY : tests/config_test.cpp.i
-
-tests/config_test.s: tests/config_test.cpp.s
-.PHONY : tests/config_test.s
-
-# target to generate assembly for a file
-tests/config_test.cpp.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/config_test.dir/build.make CMakeFiles/config_test.dir/tests/config_test.cpp.s
-.PHONY : tests/config_test.cpp.s
-
-tests/genesis_stub_test.o: tests/genesis_stub_test.cpp.o
-.PHONY : tests/genesis_stub_test.o
-
-# target to build an object file
-tests/genesis_stub_test.cpp.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/genesis_stub_test.dir/build.make CMakeFiles/genesis_stub_test.dir/tests/genesis_stub_test.cpp.o
-.PHONY : tests/genesis_stub_test.cpp.o
-
-tests/genesis_stub_test.i: tests/genesis_stub_test.cpp.i
-.PHONY : tests/genesis_stub_test.i
-
-# target to preprocess a source file
-tests/genesis_stub_test.cpp.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/genesis_stub_test.dir/build.make CMakeFiles/genesis_stub_test.dir/tests/genesis_stub_test.cpp.i
-.PHONY : tests/genesis_stub_test.cpp.i
-
-tests/genesis_stub_test.s: tests/genesis_stub_test.cpp.s
-.PHONY : tests/genesis_stub_test.s
-
-# target to generate assembly for a file
-tests/genesis_stub_test.cpp.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/genesis_stub_test.dir/build.make CMakeFiles/genesis_stub_test.dir/tests/genesis_stub_test.cpp.s
-.PHONY : tests/genesis_stub_test.cpp.s
 
 tests/unit/hilbert_scanner_test.o: tests/unit/hilbert_scanner_test.cpp.o
 .PHONY : tests/unit/hilbert_scanner_test.o
@@ -592,6 +672,198 @@ tests/unit/metabolic_lock_test.s: tests/unit/metabolic_lock_test.cpp.s
 tests/unit/metabolic_lock_test.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_metabolic_lock.dir/build.make CMakeFiles/test_metabolic_lock.dir/tests/unit/metabolic_lock_test.cpp.s
 .PHONY : tests/unit/metabolic_lock_test.cpp.s
+
+tests/unit/phase10_holographic_test.o: tests/unit/phase10_holographic_test.cpp.o
+.PHONY : tests/unit/phase10_holographic_test.o
+
+# target to build an object file
+tests/unit/phase10_holographic_test.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_phase10_holographic.dir/build.make CMakeFiles/test_phase10_holographic.dir/tests/unit/phase10_holographic_test.cpp.o
+.PHONY : tests/unit/phase10_holographic_test.cpp.o
+
+tests/unit/phase10_holographic_test.i: tests/unit/phase10_holographic_test.cpp.i
+.PHONY : tests/unit/phase10_holographic_test.i
+
+# target to preprocess a source file
+tests/unit/phase10_holographic_test.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_phase10_holographic.dir/build.make CMakeFiles/test_phase10_holographic.dir/tests/unit/phase10_holographic_test.cpp.i
+.PHONY : tests/unit/phase10_holographic_test.cpp.i
+
+tests/unit/phase10_holographic_test.s: tests/unit/phase10_holographic_test.cpp.s
+.PHONY : tests/unit/phase10_holographic_test.s
+
+# target to generate assembly for a file
+tests/unit/phase10_holographic_test.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_phase10_holographic.dir/build.make CMakeFiles/test_phase10_holographic.dir/tests/unit/phase10_holographic_test.cpp.s
+.PHONY : tests/unit/phase10_holographic_test.cpp.s
+
+tests/unit/phase11_cognitive_gen_test.o: tests/unit/phase11_cognitive_gen_test.cpp.o
+.PHONY : tests/unit/phase11_cognitive_gen_test.o
+
+# target to build an object file
+tests/unit/phase11_cognitive_gen_test.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_phase11_cognitive_gen.dir/build.make CMakeFiles/test_phase11_cognitive_gen.dir/tests/unit/phase11_cognitive_gen_test.cpp.o
+.PHONY : tests/unit/phase11_cognitive_gen_test.cpp.o
+
+tests/unit/phase11_cognitive_gen_test.i: tests/unit/phase11_cognitive_gen_test.cpp.i
+.PHONY : tests/unit/phase11_cognitive_gen_test.i
+
+# target to preprocess a source file
+tests/unit/phase11_cognitive_gen_test.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_phase11_cognitive_gen.dir/build.make CMakeFiles/test_phase11_cognitive_gen.dir/tests/unit/phase11_cognitive_gen_test.cpp.i
+.PHONY : tests/unit/phase11_cognitive_gen_test.cpp.i
+
+tests/unit/phase11_cognitive_gen_test.s: tests/unit/phase11_cognitive_gen_test.cpp.s
+.PHONY : tests/unit/phase11_cognitive_gen_test.s
+
+# target to generate assembly for a file
+tests/unit/phase11_cognitive_gen_test.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_phase11_cognitive_gen.dir/build.make CMakeFiles/test_phase11_cognitive_gen.dir/tests/unit/phase11_cognitive_gen_test.cpp.s
+.PHONY : tests/unit/phase11_cognitive_gen_test.cpp.s
+
+tests/unit/phase12_acas_bridge_test.o: tests/unit/phase12_acas_bridge_test.cpp.o
+.PHONY : tests/unit/phase12_acas_bridge_test.o
+
+# target to build an object file
+tests/unit/phase12_acas_bridge_test.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_phase12_acas_bridge.dir/build.make CMakeFiles/test_phase12_acas_bridge.dir/tests/unit/phase12_acas_bridge_test.cpp.o
+.PHONY : tests/unit/phase12_acas_bridge_test.cpp.o
+
+tests/unit/phase12_acas_bridge_test.i: tests/unit/phase12_acas_bridge_test.cpp.i
+.PHONY : tests/unit/phase12_acas_bridge_test.i
+
+# target to preprocess a source file
+tests/unit/phase12_acas_bridge_test.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_phase12_acas_bridge.dir/build.make CMakeFiles/test_phase12_acas_bridge.dir/tests/unit/phase12_acas_bridge_test.cpp.i
+.PHONY : tests/unit/phase12_acas_bridge_test.cpp.i
+
+tests/unit/phase12_acas_bridge_test.s: tests/unit/phase12_acas_bridge_test.cpp.s
+.PHONY : tests/unit/phase12_acas_bridge_test.s
+
+# target to generate assembly for a file
+tests/unit/phase12_acas_bridge_test.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_phase12_acas_bridge.dir/build.make CMakeFiles/test_phase12_acas_bridge.dir/tests/unit/phase12_acas_bridge_test.cpp.s
+.PHONY : tests/unit/phase12_acas_bridge_test.cpp.s
+
+tests/unit/phase13_task_dispatcher_test.o: tests/unit/phase13_task_dispatcher_test.cpp.o
+.PHONY : tests/unit/phase13_task_dispatcher_test.o
+
+# target to build an object file
+tests/unit/phase13_task_dispatcher_test.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_phase13_task_dispatcher.dir/build.make CMakeFiles/test_phase13_task_dispatcher.dir/tests/unit/phase13_task_dispatcher_test.cpp.o
+.PHONY : tests/unit/phase13_task_dispatcher_test.cpp.o
+
+tests/unit/phase13_task_dispatcher_test.i: tests/unit/phase13_task_dispatcher_test.cpp.i
+.PHONY : tests/unit/phase13_task_dispatcher_test.i
+
+# target to preprocess a source file
+tests/unit/phase13_task_dispatcher_test.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_phase13_task_dispatcher.dir/build.make CMakeFiles/test_phase13_task_dispatcher.dir/tests/unit/phase13_task_dispatcher_test.cpp.i
+.PHONY : tests/unit/phase13_task_dispatcher_test.cpp.i
+
+tests/unit/phase13_task_dispatcher_test.s: tests/unit/phase13_task_dispatcher_test.cpp.s
+.PHONY : tests/unit/phase13_task_dispatcher_test.s
+
+# target to generate assembly for a file
+tests/unit/phase13_task_dispatcher_test.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_phase13_task_dispatcher.dir/build.make CMakeFiles/test_phase13_task_dispatcher.dir/tests/unit/phase13_task_dispatcher_test.cpp.s
+.PHONY : tests/unit/phase13_task_dispatcher_test.cpp.s
+
+tests/unit/phase14_async_checkpoint_test.o: tests/unit/phase14_async_checkpoint_test.cpp.o
+.PHONY : tests/unit/phase14_async_checkpoint_test.o
+
+# target to build an object file
+tests/unit/phase14_async_checkpoint_test.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_phase14_async_checkpoint.dir/build.make CMakeFiles/test_phase14_async_checkpoint.dir/tests/unit/phase14_async_checkpoint_test.cpp.o
+.PHONY : tests/unit/phase14_async_checkpoint_test.cpp.o
+
+tests/unit/phase14_async_checkpoint_test.i: tests/unit/phase14_async_checkpoint_test.cpp.i
+.PHONY : tests/unit/phase14_async_checkpoint_test.i
+
+# target to preprocess a source file
+tests/unit/phase14_async_checkpoint_test.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_phase14_async_checkpoint.dir/build.make CMakeFiles/test_phase14_async_checkpoint.dir/tests/unit/phase14_async_checkpoint_test.cpp.i
+.PHONY : tests/unit/phase14_async_checkpoint_test.cpp.i
+
+tests/unit/phase14_async_checkpoint_test.s: tests/unit/phase14_async_checkpoint_test.cpp.s
+.PHONY : tests/unit/phase14_async_checkpoint_test.s
+
+# target to generate assembly for a file
+tests/unit/phase14_async_checkpoint_test.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_phase14_async_checkpoint.dir/build.make CMakeFiles/test_phase14_async_checkpoint.dir/tests/unit/phase14_async_checkpoint_test.cpp.s
+.PHONY : tests/unit/phase14_async_checkpoint_test.cpp.s
+
+tests/unit/phase15_hamiltonian_value_test.o: tests/unit/phase15_hamiltonian_value_test.cpp.o
+.PHONY : tests/unit/phase15_hamiltonian_value_test.o
+
+# target to build an object file
+tests/unit/phase15_hamiltonian_value_test.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_phase15_hamiltonian_value.dir/build.make CMakeFiles/test_phase15_hamiltonian_value.dir/tests/unit/phase15_hamiltonian_value_test.cpp.o
+.PHONY : tests/unit/phase15_hamiltonian_value_test.cpp.o
+
+tests/unit/phase15_hamiltonian_value_test.i: tests/unit/phase15_hamiltonian_value_test.cpp.i
+.PHONY : tests/unit/phase15_hamiltonian_value_test.i
+
+# target to preprocess a source file
+tests/unit/phase15_hamiltonian_value_test.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_phase15_hamiltonian_value.dir/build.make CMakeFiles/test_phase15_hamiltonian_value.dir/tests/unit/phase15_hamiltonian_value_test.cpp.i
+.PHONY : tests/unit/phase15_hamiltonian_value_test.cpp.i
+
+tests/unit/phase15_hamiltonian_value_test.s: tests/unit/phase15_hamiltonian_value_test.cpp.s
+.PHONY : tests/unit/phase15_hamiltonian_value_test.s
+
+# target to generate assembly for a file
+tests/unit/phase15_hamiltonian_value_test.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_phase15_hamiltonian_value.dir/build.make CMakeFiles/test_phase15_hamiltonian_value.dir/tests/unit/phase15_hamiltonian_value_test.cpp.s
+.PHONY : tests/unit/phase15_hamiltonian_value_test.cpp.s
+
+tests/unit/phase16_coord_serializer_test.o: tests/unit/phase16_coord_serializer_test.cpp.o
+.PHONY : tests/unit/phase16_coord_serializer_test.o
+
+# target to build an object file
+tests/unit/phase16_coord_serializer_test.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_phase16_coord_serializer.dir/build.make CMakeFiles/test_phase16_coord_serializer.dir/tests/unit/phase16_coord_serializer_test.cpp.o
+.PHONY : tests/unit/phase16_coord_serializer_test.cpp.o
+
+tests/unit/phase16_coord_serializer_test.i: tests/unit/phase16_coord_serializer_test.cpp.i
+.PHONY : tests/unit/phase16_coord_serializer_test.i
+
+# target to preprocess a source file
+tests/unit/phase16_coord_serializer_test.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_phase16_coord_serializer.dir/build.make CMakeFiles/test_phase16_coord_serializer.dir/tests/unit/phase16_coord_serializer_test.cpp.i
+.PHONY : tests/unit/phase16_coord_serializer_test.cpp.i
+
+tests/unit/phase16_coord_serializer_test.s: tests/unit/phase16_coord_serializer_test.cpp.s
+.PHONY : tests/unit/phase16_coord_serializer_test.s
+
+# target to generate assembly for a file
+tests/unit/phase16_coord_serializer_test.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_phase16_coord_serializer.dir/build.make CMakeFiles/test_phase16_coord_serializer.dir/tests/unit/phase16_coord_serializer_test.cpp.s
+.PHONY : tests/unit/phase16_coord_serializer_test.cpp.s
+
+tests/unit/phase17_bootstrap_manager_test.o: tests/unit/phase17_bootstrap_manager_test.cpp.o
+.PHONY : tests/unit/phase17_bootstrap_manager_test.o
+
+# target to build an object file
+tests/unit/phase17_bootstrap_manager_test.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_phase17_bootstrap_manager.dir/build.make CMakeFiles/test_phase17_bootstrap_manager.dir/tests/unit/phase17_bootstrap_manager_test.cpp.o
+.PHONY : tests/unit/phase17_bootstrap_manager_test.cpp.o
+
+tests/unit/phase17_bootstrap_manager_test.i: tests/unit/phase17_bootstrap_manager_test.cpp.i
+.PHONY : tests/unit/phase17_bootstrap_manager_test.i
+
+# target to preprocess a source file
+tests/unit/phase17_bootstrap_manager_test.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_phase17_bootstrap_manager.dir/build.make CMakeFiles/test_phase17_bootstrap_manager.dir/tests/unit/phase17_bootstrap_manager_test.cpp.i
+.PHONY : tests/unit/phase17_bootstrap_manager_test.cpp.i
+
+tests/unit/phase17_bootstrap_manager_test.s: tests/unit/phase17_bootstrap_manager_test.cpp.s
+.PHONY : tests/unit/phase17_bootstrap_manager_test.s
+
+# target to generate assembly for a file
+tests/unit/phase17_bootstrap_manager_test.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_phase17_bootstrap_manager.dir/build.make CMakeFiles/test_phase17_bootstrap_manager.dir/tests/unit/phase17_bootstrap_manager_test.cpp.s
+.PHONY : tests/unit/phase17_bootstrap_manager_test.cpp.s
 
 tests/unit/phase2_geometry_memory_test.o: tests/unit/phase2_geometry_memory_test.cpp.o
 .PHONY : tests/unit/phase2_geometry_memory_test.o
@@ -761,6 +1033,30 @@ tests/unit/phase8_foundations_test.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_phase8_foundations.dir/build.make CMakeFiles/test_phase8_foundations.dir/tests/unit/phase8_foundations_test.cpp.s
 .PHONY : tests/unit/phase8_foundations_test.cpp.s
 
+tests/unit/phase9_bootstrap_test.o: tests/unit/phase9_bootstrap_test.cpp.o
+.PHONY : tests/unit/phase9_bootstrap_test.o
+
+# target to build an object file
+tests/unit/phase9_bootstrap_test.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_phase9_bootstrap.dir/build.make CMakeFiles/test_phase9_bootstrap.dir/tests/unit/phase9_bootstrap_test.cpp.o
+.PHONY : tests/unit/phase9_bootstrap_test.cpp.o
+
+tests/unit/phase9_bootstrap_test.i: tests/unit/phase9_bootstrap_test.cpp.i
+.PHONY : tests/unit/phase9_bootstrap_test.i
+
+# target to preprocess a source file
+tests/unit/phase9_bootstrap_test.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_phase9_bootstrap.dir/build.make CMakeFiles/test_phase9_bootstrap.dir/tests/unit/phase9_bootstrap_test.cpp.i
+.PHONY : tests/unit/phase9_bootstrap_test.cpp.i
+
+tests/unit/phase9_bootstrap_test.s: tests/unit/phase9_bootstrap_test.cpp.s
+.PHONY : tests/unit/phase9_bootstrap_test.s
+
+# target to generate assembly for a file
+tests/unit/phase9_bootstrap_test.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_phase9_bootstrap.dir/build.make CMakeFiles/test_phase9_bootstrap.dir/tests/unit/phase9_bootstrap_test.cpp.s
+.PHONY : tests/unit/phase9_bootstrap_test.cpp.s
+
 tests/unit/physics_core_test.o: tests/unit/physics_core_test.cpp.o
 .PHONY : tests/unit/physics_core_test.o
 
@@ -822,11 +1118,18 @@ help:
 	@echo "... list_install_components"
 	@echo "... rebuild_cache"
 	@echo "... test"
-	@echo "... config_test"
-	@echo "... genesis_stub_test"
 	@echo "... nikola_core"
+	@echo "... nikola_first_light"
 	@echo "... test_hilbert_scanner"
 	@echo "... test_metabolic_lock"
+	@echo "... test_phase10_holographic"
+	@echo "... test_phase11_cognitive_gen"
+	@echo "... test_phase12_acas_bridge"
+	@echo "... test_phase13_task_dispatcher"
+	@echo "... test_phase14_async_checkpoint"
+	@echo "... test_phase15_hamiltonian_value"
+	@echo "... test_phase16_coord_serializer"
+	@echo "... test_phase17_bootstrap_manager"
 	@echo "... test_phase2_geometry_memory"
 	@echo "... test_phase3_cognitive"
 	@echo "... test_phase4_infrastructure"
@@ -834,6 +1137,7 @@ help:
 	@echo "... test_phase6_multimodal"
 	@echo "... test_phase7_security"
 	@echo "... test_phase8_foundations"
+	@echo "... test_phase9_bootstrap"
 	@echo "... test_physics_core"
 	@echo "... test_vector9d"
 	@echo "... irsp.pb.o"
@@ -851,21 +1155,42 @@ help:
 	@echo "... src/core/config.o"
 	@echo "... src/core/config.i"
 	@echo "... src/core/config.s"
+	@echo "... src/main.o"
+	@echo "... src/main.i"
+	@echo "... src/main.s"
 	@echo "... src/spatial/hilbert_scanner.o"
 	@echo "... src/spatial/hilbert_scanner.i"
 	@echo "... src/spatial/hilbert_scanner.s"
-	@echo "... tests/config_test.o"
-	@echo "... tests/config_test.i"
-	@echo "... tests/config_test.s"
-	@echo "... tests/genesis_stub_test.o"
-	@echo "... tests/genesis_stub_test.i"
-	@echo "... tests/genesis_stub_test.s"
 	@echo "... tests/unit/hilbert_scanner_test.o"
 	@echo "... tests/unit/hilbert_scanner_test.i"
 	@echo "... tests/unit/hilbert_scanner_test.s"
 	@echo "... tests/unit/metabolic_lock_test.o"
 	@echo "... tests/unit/metabolic_lock_test.i"
 	@echo "... tests/unit/metabolic_lock_test.s"
+	@echo "... tests/unit/phase10_holographic_test.o"
+	@echo "... tests/unit/phase10_holographic_test.i"
+	@echo "... tests/unit/phase10_holographic_test.s"
+	@echo "... tests/unit/phase11_cognitive_gen_test.o"
+	@echo "... tests/unit/phase11_cognitive_gen_test.i"
+	@echo "... tests/unit/phase11_cognitive_gen_test.s"
+	@echo "... tests/unit/phase12_acas_bridge_test.o"
+	@echo "... tests/unit/phase12_acas_bridge_test.i"
+	@echo "... tests/unit/phase12_acas_bridge_test.s"
+	@echo "... tests/unit/phase13_task_dispatcher_test.o"
+	@echo "... tests/unit/phase13_task_dispatcher_test.i"
+	@echo "... tests/unit/phase13_task_dispatcher_test.s"
+	@echo "... tests/unit/phase14_async_checkpoint_test.o"
+	@echo "... tests/unit/phase14_async_checkpoint_test.i"
+	@echo "... tests/unit/phase14_async_checkpoint_test.s"
+	@echo "... tests/unit/phase15_hamiltonian_value_test.o"
+	@echo "... tests/unit/phase15_hamiltonian_value_test.i"
+	@echo "... tests/unit/phase15_hamiltonian_value_test.s"
+	@echo "... tests/unit/phase16_coord_serializer_test.o"
+	@echo "... tests/unit/phase16_coord_serializer_test.i"
+	@echo "... tests/unit/phase16_coord_serializer_test.s"
+	@echo "... tests/unit/phase17_bootstrap_manager_test.o"
+	@echo "... tests/unit/phase17_bootstrap_manager_test.i"
+	@echo "... tests/unit/phase17_bootstrap_manager_test.s"
 	@echo "... tests/unit/phase2_geometry_memory_test.o"
 	@echo "... tests/unit/phase2_geometry_memory_test.i"
 	@echo "... tests/unit/phase2_geometry_memory_test.s"
@@ -887,6 +1212,9 @@ help:
 	@echo "... tests/unit/phase8_foundations_test.o"
 	@echo "... tests/unit/phase8_foundations_test.i"
 	@echo "... tests/unit/phase8_foundations_test.s"
+	@echo "... tests/unit/phase9_bootstrap_test.o"
+	@echo "... tests/unit/phase9_bootstrap_test.i"
+	@echo "... tests/unit/phase9_bootstrap_test.s"
 	@echo "... tests/unit/physics_core_test.o"
 	@echo "... tests/unit/physics_core_test.i"
 	@echo "... tests/unit/physics_core_test.s"

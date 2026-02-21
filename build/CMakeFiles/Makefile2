@@ -75,8 +75,16 @@ all: CMakeFiles/test_phase5_autonomous.dir/all
 all: CMakeFiles/test_phase6_multimodal.dir/all
 all: CMakeFiles/test_phase7_security.dir/all
 all: CMakeFiles/test_phase8_foundations.dir/all
-all: CMakeFiles/genesis_stub_test.dir/all
-all: CMakeFiles/config_test.dir/all
+all: CMakeFiles/test_phase9_bootstrap.dir/all
+all: CMakeFiles/test_phase10_holographic.dir/all
+all: CMakeFiles/test_phase11_cognitive_gen.dir/all
+all: CMakeFiles/test_phase12_acas_bridge.dir/all
+all: CMakeFiles/test_phase13_task_dispatcher.dir/all
+all: CMakeFiles/test_phase14_async_checkpoint.dir/all
+all: CMakeFiles/test_phase15_hamiltonian_value.dir/all
+all: CMakeFiles/test_phase16_coord_serializer.dir/all
+all: CMakeFiles/test_phase17_bootstrap_manager.dir/all
+all: CMakeFiles/nikola_first_light.dir/all
 .PHONY : all
 
 # The main recursive "preinstall" target.
@@ -96,8 +104,16 @@ clean: CMakeFiles/test_phase5_autonomous.dir/clean
 clean: CMakeFiles/test_phase6_multimodal.dir/clean
 clean: CMakeFiles/test_phase7_security.dir/clean
 clean: CMakeFiles/test_phase8_foundations.dir/clean
-clean: CMakeFiles/genesis_stub_test.dir/clean
-clean: CMakeFiles/config_test.dir/clean
+clean: CMakeFiles/test_phase9_bootstrap.dir/clean
+clean: CMakeFiles/test_phase10_holographic.dir/clean
+clean: CMakeFiles/test_phase11_cognitive_gen.dir/clean
+clean: CMakeFiles/test_phase12_acas_bridge.dir/clean
+clean: CMakeFiles/test_phase13_task_dispatcher.dir/clean
+clean: CMakeFiles/test_phase14_async_checkpoint.dir/clean
+clean: CMakeFiles/test_phase15_hamiltonian_value.dir/clean
+clean: CMakeFiles/test_phase16_coord_serializer.dir/clean
+clean: CMakeFiles/test_phase17_bootstrap_manager.dir/clean
+clean: CMakeFiles/nikola_first_light.dir/clean
 .PHONY : clean
 
 #=============================================================================
@@ -107,7 +123,7 @@ clean: CMakeFiles/config_test.dir/clean
 CMakeFiles/nikola_core.dir/all:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/nikola_core.dir/build.make CMakeFiles/nikola_core.dir/depend
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/nikola_core.dir/build.make CMakeFiles/nikola_core.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/home/randy/Workspace/REPOS/nikola/build/CMakeFiles --progress-num=5,6,7,8,9,10,11,12,13 "Built target nikola_core"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/home/randy/Workspace/REPOS/nikola/build/CMakeFiles --progress-num=1,2,3,4,5,6,7,8,9 "Built target nikola_core"
 .PHONY : CMakeFiles/nikola_core.dir/all
 
 # Build rule for subdir invocation for target.
@@ -133,7 +149,7 @@ CMakeFiles/nikola_core.dir/clean:
 CMakeFiles/test_metabolic_lock.dir/all: CMakeFiles/nikola_core.dir/all
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_metabolic_lock.dir/build.make CMakeFiles/test_metabolic_lock.dir/depend
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_metabolic_lock.dir/build.make CMakeFiles/test_metabolic_lock.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/home/randy/Workspace/REPOS/nikola/build/CMakeFiles --progress-num=16,17 "Built target test_metabolic_lock"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/home/randy/Workspace/REPOS/nikola/build/CMakeFiles --progress-num=14,15 "Built target test_metabolic_lock"
 .PHONY : CMakeFiles/test_metabolic_lock.dir/all
 
 # Build rule for subdir invocation for target.
@@ -159,7 +175,7 @@ CMakeFiles/test_metabolic_lock.dir/clean:
 CMakeFiles/test_hilbert_scanner.dir/all: CMakeFiles/nikola_core.dir/all
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_hilbert_scanner.dir/build.make CMakeFiles/test_hilbert_scanner.dir/depend
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_hilbert_scanner.dir/build.make CMakeFiles/test_hilbert_scanner.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/home/randy/Workspace/REPOS/nikola/build/CMakeFiles --progress-num=14,15 "Built target test_hilbert_scanner"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/home/randy/Workspace/REPOS/nikola/build/CMakeFiles --progress-num=12,13 "Built target test_hilbert_scanner"
 .PHONY : CMakeFiles/test_hilbert_scanner.dir/all
 
 # Build rule for subdir invocation for target.
@@ -185,7 +201,7 @@ CMakeFiles/test_hilbert_scanner.dir/clean:
 CMakeFiles/test_vector9d.dir/all: CMakeFiles/nikola_core.dir/all
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_vector9d.dir/build.make CMakeFiles/test_vector9d.dir/depend
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_vector9d.dir/build.make CMakeFiles/test_vector9d.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/home/randy/Workspace/REPOS/nikola/build/CMakeFiles --progress-num=34,35 "Built target test_vector9d"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/home/randy/Workspace/REPOS/nikola/build/CMakeFiles --progress-num=50,51 "Built target test_vector9d"
 .PHONY : CMakeFiles/test_vector9d.dir/all
 
 # Build rule for subdir invocation for target.
@@ -211,7 +227,7 @@ CMakeFiles/test_vector9d.dir/clean:
 CMakeFiles/test_physics_core.dir/all: CMakeFiles/nikola_core.dir/all
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_physics_core.dir/build.make CMakeFiles/test_physics_core.dir/depend
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_physics_core.dir/build.make CMakeFiles/test_physics_core.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/home/randy/Workspace/REPOS/nikola/build/CMakeFiles --progress-num=32,33 "Built target test_physics_core"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/home/randy/Workspace/REPOS/nikola/build/CMakeFiles --progress-num=48,49 "Built target test_physics_core"
 .PHONY : CMakeFiles/test_physics_core.dir/all
 
 # Build rule for subdir invocation for target.
@@ -237,7 +253,7 @@ CMakeFiles/test_physics_core.dir/clean:
 CMakeFiles/test_phase2_geometry_memory.dir/all: CMakeFiles/nikola_core.dir/all
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_phase2_geometry_memory.dir/build.make CMakeFiles/test_phase2_geometry_memory.dir/depend
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_phase2_geometry_memory.dir/build.make CMakeFiles/test_phase2_geometry_memory.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/home/randy/Workspace/REPOS/nikola/build/CMakeFiles --progress-num=18,19 "Built target test_phase2_geometry_memory"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/home/randy/Workspace/REPOS/nikola/build/CMakeFiles --progress-num=32,33 "Built target test_phase2_geometry_memory"
 .PHONY : CMakeFiles/test_phase2_geometry_memory.dir/all
 
 # Build rule for subdir invocation for target.
@@ -263,7 +279,7 @@ CMakeFiles/test_phase2_geometry_memory.dir/clean:
 CMakeFiles/test_phase3_cognitive.dir/all: CMakeFiles/nikola_core.dir/all
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_phase3_cognitive.dir/build.make CMakeFiles/test_phase3_cognitive.dir/depend
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_phase3_cognitive.dir/build.make CMakeFiles/test_phase3_cognitive.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/home/randy/Workspace/REPOS/nikola/build/CMakeFiles --progress-num=20,21 "Built target test_phase3_cognitive"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/home/randy/Workspace/REPOS/nikola/build/CMakeFiles --progress-num=34,35 "Built target test_phase3_cognitive"
 .PHONY : CMakeFiles/test_phase3_cognitive.dir/all
 
 # Build rule for subdir invocation for target.
@@ -289,7 +305,7 @@ CMakeFiles/test_phase3_cognitive.dir/clean:
 CMakeFiles/test_phase4_infrastructure.dir/all: CMakeFiles/nikola_core.dir/all
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_phase4_infrastructure.dir/build.make CMakeFiles/test_phase4_infrastructure.dir/depend
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_phase4_infrastructure.dir/build.make CMakeFiles/test_phase4_infrastructure.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/home/randy/Workspace/REPOS/nikola/build/CMakeFiles --progress-num=22,23 "Built target test_phase4_infrastructure"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/home/randy/Workspace/REPOS/nikola/build/CMakeFiles --progress-num=36,37 "Built target test_phase4_infrastructure"
 .PHONY : CMakeFiles/test_phase4_infrastructure.dir/all
 
 # Build rule for subdir invocation for target.
@@ -315,7 +331,7 @@ CMakeFiles/test_phase4_infrastructure.dir/clean:
 CMakeFiles/test_phase5_autonomous.dir/all: CMakeFiles/nikola_core.dir/all
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_phase5_autonomous.dir/build.make CMakeFiles/test_phase5_autonomous.dir/depend
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_phase5_autonomous.dir/build.make CMakeFiles/test_phase5_autonomous.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/home/randy/Workspace/REPOS/nikola/build/CMakeFiles --progress-num=24,25 "Built target test_phase5_autonomous"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/home/randy/Workspace/REPOS/nikola/build/CMakeFiles --progress-num=38,39 "Built target test_phase5_autonomous"
 .PHONY : CMakeFiles/test_phase5_autonomous.dir/all
 
 # Build rule for subdir invocation for target.
@@ -341,7 +357,7 @@ CMakeFiles/test_phase5_autonomous.dir/clean:
 CMakeFiles/test_phase6_multimodal.dir/all: CMakeFiles/nikola_core.dir/all
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_phase6_multimodal.dir/build.make CMakeFiles/test_phase6_multimodal.dir/depend
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_phase6_multimodal.dir/build.make CMakeFiles/test_phase6_multimodal.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/home/randy/Workspace/REPOS/nikola/build/CMakeFiles --progress-num=26,27 "Built target test_phase6_multimodal"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/home/randy/Workspace/REPOS/nikola/build/CMakeFiles --progress-num=40,41 "Built target test_phase6_multimodal"
 .PHONY : CMakeFiles/test_phase6_multimodal.dir/all
 
 # Build rule for subdir invocation for target.
@@ -367,7 +383,7 @@ CMakeFiles/test_phase6_multimodal.dir/clean:
 CMakeFiles/test_phase7_security.dir/all: CMakeFiles/nikola_core.dir/all
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_phase7_security.dir/build.make CMakeFiles/test_phase7_security.dir/depend
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_phase7_security.dir/build.make CMakeFiles/test_phase7_security.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/home/randy/Workspace/REPOS/nikola/build/CMakeFiles --progress-num=28,29 "Built target test_phase7_security"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/home/randy/Workspace/REPOS/nikola/build/CMakeFiles --progress-num=42,43 "Built target test_phase7_security"
 .PHONY : CMakeFiles/test_phase7_security.dir/all
 
 # Build rule for subdir invocation for target.
@@ -393,7 +409,7 @@ CMakeFiles/test_phase7_security.dir/clean:
 CMakeFiles/test_phase8_foundations.dir/all: CMakeFiles/nikola_core.dir/all
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_phase8_foundations.dir/build.make CMakeFiles/test_phase8_foundations.dir/depend
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_phase8_foundations.dir/build.make CMakeFiles/test_phase8_foundations.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/home/randy/Workspace/REPOS/nikola/build/CMakeFiles --progress-num=30,31 "Built target test_phase8_foundations"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/home/randy/Workspace/REPOS/nikola/build/CMakeFiles --progress-num=44,45 "Built target test_phase8_foundations"
 .PHONY : CMakeFiles/test_phase8_foundations.dir/all
 
 # Build rule for subdir invocation for target.
@@ -413,56 +429,264 @@ CMakeFiles/test_phase8_foundations.dir/clean:
 .PHONY : CMakeFiles/test_phase8_foundations.dir/clean
 
 #=============================================================================
-# Target rules for target CMakeFiles/genesis_stub_test.dir
+# Target rules for target CMakeFiles/test_phase9_bootstrap.dir
 
 # All Build rule for target.
-CMakeFiles/genesis_stub_test.dir/all: CMakeFiles/nikola_core.dir/all
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/genesis_stub_test.dir/build.make CMakeFiles/genesis_stub_test.dir/depend
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/genesis_stub_test.dir/build.make CMakeFiles/genesis_stub_test.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/home/randy/Workspace/REPOS/nikola/build/CMakeFiles --progress-num=3,4 "Built target genesis_stub_test"
-.PHONY : CMakeFiles/genesis_stub_test.dir/all
+CMakeFiles/test_phase9_bootstrap.dir/all: CMakeFiles/nikola_core.dir/all
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_phase9_bootstrap.dir/build.make CMakeFiles/test_phase9_bootstrap.dir/depend
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_phase9_bootstrap.dir/build.make CMakeFiles/test_phase9_bootstrap.dir/build
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/home/randy/Workspace/REPOS/nikola/build/CMakeFiles --progress-num=46,47 "Built target test_phase9_bootstrap"
+.PHONY : CMakeFiles/test_phase9_bootstrap.dir/all
 
 # Build rule for subdir invocation for target.
-CMakeFiles/genesis_stub_test.dir/rule: cmake_check_build_system
+CMakeFiles/test_phase9_bootstrap.dir/rule: cmake_check_build_system
 	$(CMAKE_COMMAND) -E cmake_progress_start /home/randy/Workspace/REPOS/nikola/build/CMakeFiles 11
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 CMakeFiles/genesis_stub_test.dir/all
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 CMakeFiles/test_phase9_bootstrap.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start /home/randy/Workspace/REPOS/nikola/build/CMakeFiles 0
-.PHONY : CMakeFiles/genesis_stub_test.dir/rule
+.PHONY : CMakeFiles/test_phase9_bootstrap.dir/rule
 
 # Convenience name for target.
-genesis_stub_test: CMakeFiles/genesis_stub_test.dir/rule
-.PHONY : genesis_stub_test
+test_phase9_bootstrap: CMakeFiles/test_phase9_bootstrap.dir/rule
+.PHONY : test_phase9_bootstrap
 
 # clean rule for target.
-CMakeFiles/genesis_stub_test.dir/clean:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/genesis_stub_test.dir/build.make CMakeFiles/genesis_stub_test.dir/clean
-.PHONY : CMakeFiles/genesis_stub_test.dir/clean
+CMakeFiles/test_phase9_bootstrap.dir/clean:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_phase9_bootstrap.dir/build.make CMakeFiles/test_phase9_bootstrap.dir/clean
+.PHONY : CMakeFiles/test_phase9_bootstrap.dir/clean
 
 #=============================================================================
-# Target rules for target CMakeFiles/config_test.dir
+# Target rules for target CMakeFiles/test_phase10_holographic.dir
 
 # All Build rule for target.
-CMakeFiles/config_test.dir/all: CMakeFiles/nikola_core.dir/all
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/config_test.dir/build.make CMakeFiles/config_test.dir/depend
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/config_test.dir/build.make CMakeFiles/config_test.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/home/randy/Workspace/REPOS/nikola/build/CMakeFiles --progress-num=1,2 "Built target config_test"
-.PHONY : CMakeFiles/config_test.dir/all
+CMakeFiles/test_phase10_holographic.dir/all: CMakeFiles/nikola_core.dir/all
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_phase10_holographic.dir/build.make CMakeFiles/test_phase10_holographic.dir/depend
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_phase10_holographic.dir/build.make CMakeFiles/test_phase10_holographic.dir/build
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/home/randy/Workspace/REPOS/nikola/build/CMakeFiles --progress-num=16,17 "Built target test_phase10_holographic"
+.PHONY : CMakeFiles/test_phase10_holographic.dir/all
 
 # Build rule for subdir invocation for target.
-CMakeFiles/config_test.dir/rule: cmake_check_build_system
+CMakeFiles/test_phase10_holographic.dir/rule: cmake_check_build_system
 	$(CMAKE_COMMAND) -E cmake_progress_start /home/randy/Workspace/REPOS/nikola/build/CMakeFiles 11
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 CMakeFiles/config_test.dir/all
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 CMakeFiles/test_phase10_holographic.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start /home/randy/Workspace/REPOS/nikola/build/CMakeFiles 0
-.PHONY : CMakeFiles/config_test.dir/rule
+.PHONY : CMakeFiles/test_phase10_holographic.dir/rule
 
 # Convenience name for target.
-config_test: CMakeFiles/config_test.dir/rule
-.PHONY : config_test
+test_phase10_holographic: CMakeFiles/test_phase10_holographic.dir/rule
+.PHONY : test_phase10_holographic
 
 # clean rule for target.
-CMakeFiles/config_test.dir/clean:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/config_test.dir/build.make CMakeFiles/config_test.dir/clean
-.PHONY : CMakeFiles/config_test.dir/clean
+CMakeFiles/test_phase10_holographic.dir/clean:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_phase10_holographic.dir/build.make CMakeFiles/test_phase10_holographic.dir/clean
+.PHONY : CMakeFiles/test_phase10_holographic.dir/clean
+
+#=============================================================================
+# Target rules for target CMakeFiles/test_phase11_cognitive_gen.dir
+
+# All Build rule for target.
+CMakeFiles/test_phase11_cognitive_gen.dir/all: CMakeFiles/nikola_core.dir/all
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_phase11_cognitive_gen.dir/build.make CMakeFiles/test_phase11_cognitive_gen.dir/depend
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_phase11_cognitive_gen.dir/build.make CMakeFiles/test_phase11_cognitive_gen.dir/build
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/home/randy/Workspace/REPOS/nikola/build/CMakeFiles --progress-num=18,19 "Built target test_phase11_cognitive_gen"
+.PHONY : CMakeFiles/test_phase11_cognitive_gen.dir/all
+
+# Build rule for subdir invocation for target.
+CMakeFiles/test_phase11_cognitive_gen.dir/rule: cmake_check_build_system
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/randy/Workspace/REPOS/nikola/build/CMakeFiles 11
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 CMakeFiles/test_phase11_cognitive_gen.dir/all
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/randy/Workspace/REPOS/nikola/build/CMakeFiles 0
+.PHONY : CMakeFiles/test_phase11_cognitive_gen.dir/rule
+
+# Convenience name for target.
+test_phase11_cognitive_gen: CMakeFiles/test_phase11_cognitive_gen.dir/rule
+.PHONY : test_phase11_cognitive_gen
+
+# clean rule for target.
+CMakeFiles/test_phase11_cognitive_gen.dir/clean:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_phase11_cognitive_gen.dir/build.make CMakeFiles/test_phase11_cognitive_gen.dir/clean
+.PHONY : CMakeFiles/test_phase11_cognitive_gen.dir/clean
+
+#=============================================================================
+# Target rules for target CMakeFiles/test_phase12_acas_bridge.dir
+
+# All Build rule for target.
+CMakeFiles/test_phase12_acas_bridge.dir/all: CMakeFiles/nikola_core.dir/all
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_phase12_acas_bridge.dir/build.make CMakeFiles/test_phase12_acas_bridge.dir/depend
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_phase12_acas_bridge.dir/build.make CMakeFiles/test_phase12_acas_bridge.dir/build
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/home/randy/Workspace/REPOS/nikola/build/CMakeFiles --progress-num=20,21 "Built target test_phase12_acas_bridge"
+.PHONY : CMakeFiles/test_phase12_acas_bridge.dir/all
+
+# Build rule for subdir invocation for target.
+CMakeFiles/test_phase12_acas_bridge.dir/rule: cmake_check_build_system
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/randy/Workspace/REPOS/nikola/build/CMakeFiles 11
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 CMakeFiles/test_phase12_acas_bridge.dir/all
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/randy/Workspace/REPOS/nikola/build/CMakeFiles 0
+.PHONY : CMakeFiles/test_phase12_acas_bridge.dir/rule
+
+# Convenience name for target.
+test_phase12_acas_bridge: CMakeFiles/test_phase12_acas_bridge.dir/rule
+.PHONY : test_phase12_acas_bridge
+
+# clean rule for target.
+CMakeFiles/test_phase12_acas_bridge.dir/clean:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_phase12_acas_bridge.dir/build.make CMakeFiles/test_phase12_acas_bridge.dir/clean
+.PHONY : CMakeFiles/test_phase12_acas_bridge.dir/clean
+
+#=============================================================================
+# Target rules for target CMakeFiles/test_phase13_task_dispatcher.dir
+
+# All Build rule for target.
+CMakeFiles/test_phase13_task_dispatcher.dir/all: CMakeFiles/nikola_core.dir/all
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_phase13_task_dispatcher.dir/build.make CMakeFiles/test_phase13_task_dispatcher.dir/depend
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_phase13_task_dispatcher.dir/build.make CMakeFiles/test_phase13_task_dispatcher.dir/build
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/home/randy/Workspace/REPOS/nikola/build/CMakeFiles --progress-num=22,23 "Built target test_phase13_task_dispatcher"
+.PHONY : CMakeFiles/test_phase13_task_dispatcher.dir/all
+
+# Build rule for subdir invocation for target.
+CMakeFiles/test_phase13_task_dispatcher.dir/rule: cmake_check_build_system
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/randy/Workspace/REPOS/nikola/build/CMakeFiles 11
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 CMakeFiles/test_phase13_task_dispatcher.dir/all
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/randy/Workspace/REPOS/nikola/build/CMakeFiles 0
+.PHONY : CMakeFiles/test_phase13_task_dispatcher.dir/rule
+
+# Convenience name for target.
+test_phase13_task_dispatcher: CMakeFiles/test_phase13_task_dispatcher.dir/rule
+.PHONY : test_phase13_task_dispatcher
+
+# clean rule for target.
+CMakeFiles/test_phase13_task_dispatcher.dir/clean:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_phase13_task_dispatcher.dir/build.make CMakeFiles/test_phase13_task_dispatcher.dir/clean
+.PHONY : CMakeFiles/test_phase13_task_dispatcher.dir/clean
+
+#=============================================================================
+# Target rules for target CMakeFiles/test_phase14_async_checkpoint.dir
+
+# All Build rule for target.
+CMakeFiles/test_phase14_async_checkpoint.dir/all: CMakeFiles/nikola_core.dir/all
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_phase14_async_checkpoint.dir/build.make CMakeFiles/test_phase14_async_checkpoint.dir/depend
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_phase14_async_checkpoint.dir/build.make CMakeFiles/test_phase14_async_checkpoint.dir/build
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/home/randy/Workspace/REPOS/nikola/build/CMakeFiles --progress-num=24,25 "Built target test_phase14_async_checkpoint"
+.PHONY : CMakeFiles/test_phase14_async_checkpoint.dir/all
+
+# Build rule for subdir invocation for target.
+CMakeFiles/test_phase14_async_checkpoint.dir/rule: cmake_check_build_system
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/randy/Workspace/REPOS/nikola/build/CMakeFiles 11
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 CMakeFiles/test_phase14_async_checkpoint.dir/all
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/randy/Workspace/REPOS/nikola/build/CMakeFiles 0
+.PHONY : CMakeFiles/test_phase14_async_checkpoint.dir/rule
+
+# Convenience name for target.
+test_phase14_async_checkpoint: CMakeFiles/test_phase14_async_checkpoint.dir/rule
+.PHONY : test_phase14_async_checkpoint
+
+# clean rule for target.
+CMakeFiles/test_phase14_async_checkpoint.dir/clean:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_phase14_async_checkpoint.dir/build.make CMakeFiles/test_phase14_async_checkpoint.dir/clean
+.PHONY : CMakeFiles/test_phase14_async_checkpoint.dir/clean
+
+#=============================================================================
+# Target rules for target CMakeFiles/test_phase15_hamiltonian_value.dir
+
+# All Build rule for target.
+CMakeFiles/test_phase15_hamiltonian_value.dir/all: CMakeFiles/nikola_core.dir/all
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_phase15_hamiltonian_value.dir/build.make CMakeFiles/test_phase15_hamiltonian_value.dir/depend
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_phase15_hamiltonian_value.dir/build.make CMakeFiles/test_phase15_hamiltonian_value.dir/build
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/home/randy/Workspace/REPOS/nikola/build/CMakeFiles --progress-num=26,27 "Built target test_phase15_hamiltonian_value"
+.PHONY : CMakeFiles/test_phase15_hamiltonian_value.dir/all
+
+# Build rule for subdir invocation for target.
+CMakeFiles/test_phase15_hamiltonian_value.dir/rule: cmake_check_build_system
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/randy/Workspace/REPOS/nikola/build/CMakeFiles 11
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 CMakeFiles/test_phase15_hamiltonian_value.dir/all
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/randy/Workspace/REPOS/nikola/build/CMakeFiles 0
+.PHONY : CMakeFiles/test_phase15_hamiltonian_value.dir/rule
+
+# Convenience name for target.
+test_phase15_hamiltonian_value: CMakeFiles/test_phase15_hamiltonian_value.dir/rule
+.PHONY : test_phase15_hamiltonian_value
+
+# clean rule for target.
+CMakeFiles/test_phase15_hamiltonian_value.dir/clean:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_phase15_hamiltonian_value.dir/build.make CMakeFiles/test_phase15_hamiltonian_value.dir/clean
+.PHONY : CMakeFiles/test_phase15_hamiltonian_value.dir/clean
+
+#=============================================================================
+# Target rules for target CMakeFiles/test_phase16_coord_serializer.dir
+
+# All Build rule for target.
+CMakeFiles/test_phase16_coord_serializer.dir/all: CMakeFiles/nikola_core.dir/all
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_phase16_coord_serializer.dir/build.make CMakeFiles/test_phase16_coord_serializer.dir/depend
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_phase16_coord_serializer.dir/build.make CMakeFiles/test_phase16_coord_serializer.dir/build
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/home/randy/Workspace/REPOS/nikola/build/CMakeFiles --progress-num=28,29 "Built target test_phase16_coord_serializer"
+.PHONY : CMakeFiles/test_phase16_coord_serializer.dir/all
+
+# Build rule for subdir invocation for target.
+CMakeFiles/test_phase16_coord_serializer.dir/rule: cmake_check_build_system
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/randy/Workspace/REPOS/nikola/build/CMakeFiles 11
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 CMakeFiles/test_phase16_coord_serializer.dir/all
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/randy/Workspace/REPOS/nikola/build/CMakeFiles 0
+.PHONY : CMakeFiles/test_phase16_coord_serializer.dir/rule
+
+# Convenience name for target.
+test_phase16_coord_serializer: CMakeFiles/test_phase16_coord_serializer.dir/rule
+.PHONY : test_phase16_coord_serializer
+
+# clean rule for target.
+CMakeFiles/test_phase16_coord_serializer.dir/clean:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_phase16_coord_serializer.dir/build.make CMakeFiles/test_phase16_coord_serializer.dir/clean
+.PHONY : CMakeFiles/test_phase16_coord_serializer.dir/clean
+
+#=============================================================================
+# Target rules for target CMakeFiles/test_phase17_bootstrap_manager.dir
+
+# All Build rule for target.
+CMakeFiles/test_phase17_bootstrap_manager.dir/all: CMakeFiles/nikola_core.dir/all
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_phase17_bootstrap_manager.dir/build.make CMakeFiles/test_phase17_bootstrap_manager.dir/depend
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_phase17_bootstrap_manager.dir/build.make CMakeFiles/test_phase17_bootstrap_manager.dir/build
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/home/randy/Workspace/REPOS/nikola/build/CMakeFiles --progress-num=30,31 "Built target test_phase17_bootstrap_manager"
+.PHONY : CMakeFiles/test_phase17_bootstrap_manager.dir/all
+
+# Build rule for subdir invocation for target.
+CMakeFiles/test_phase17_bootstrap_manager.dir/rule: cmake_check_build_system
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/randy/Workspace/REPOS/nikola/build/CMakeFiles 11
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 CMakeFiles/test_phase17_bootstrap_manager.dir/all
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/randy/Workspace/REPOS/nikola/build/CMakeFiles 0
+.PHONY : CMakeFiles/test_phase17_bootstrap_manager.dir/rule
+
+# Convenience name for target.
+test_phase17_bootstrap_manager: CMakeFiles/test_phase17_bootstrap_manager.dir/rule
+.PHONY : test_phase17_bootstrap_manager
+
+# clean rule for target.
+CMakeFiles/test_phase17_bootstrap_manager.dir/clean:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_phase17_bootstrap_manager.dir/build.make CMakeFiles/test_phase17_bootstrap_manager.dir/clean
+.PHONY : CMakeFiles/test_phase17_bootstrap_manager.dir/clean
+
+#=============================================================================
+# Target rules for target CMakeFiles/nikola_first_light.dir
+
+# All Build rule for target.
+CMakeFiles/nikola_first_light.dir/all: CMakeFiles/nikola_core.dir/all
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/nikola_first_light.dir/build.make CMakeFiles/nikola_first_light.dir/depend
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/nikola_first_light.dir/build.make CMakeFiles/nikola_first_light.dir/build
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/home/randy/Workspace/REPOS/nikola/build/CMakeFiles --progress-num=10,11 "Built target nikola_first_light"
+.PHONY : CMakeFiles/nikola_first_light.dir/all
+
+# Build rule for subdir invocation for target.
+CMakeFiles/nikola_first_light.dir/rule: cmake_check_build_system
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/randy/Workspace/REPOS/nikola/build/CMakeFiles 11
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 CMakeFiles/nikola_first_light.dir/all
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/randy/Workspace/REPOS/nikola/build/CMakeFiles 0
+.PHONY : CMakeFiles/nikola_first_light.dir/rule
+
+# Convenience name for target.
+nikola_first_light: CMakeFiles/nikola_first_light.dir/rule
+.PHONY : nikola_first_light
+
+# clean rule for target.
+CMakeFiles/nikola_first_light.dir/clean:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/nikola_first_light.dir/build.make CMakeFiles/nikola_first_light.dir/clean
+.PHONY : CMakeFiles/nikola_first_light.dir/clean
 
 #=============================================================================
 # Special targets to cleanup operation of make.

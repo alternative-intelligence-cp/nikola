@@ -33,6 +33,7 @@
 // All autonomy gap headers are lightweight (stdlib only) — include upfront
 #include <nikola/autonomy/dopamine_system.hpp>
 #include <nikola/autonomy/entropy_estimator.hpp>
+#include <nikola/autonomy/hamiltonian_value.hpp>   // NIK-005
 #include <nikola/autonomy/metabolic_simulator.hpp>
 #include <nikola/autonomy/nap_controller.hpp>
 #include <nikola/autonomy/dream_weave.hpp>
@@ -109,6 +110,11 @@ public:
     /**
      * @brief Advance all autonomy systems by one timestep.
      *
+     * @note  The dopamine signal in this overload uses Σ|Ψ|² as the value
+     *        estimate.  For a standing wave this oscillates at 2ω, causing
+     *        spurious negative TD errors ("Stroboscopic Value Collapse",
+     *        NIK-005).  Prefer tick_physics() when vel spans are available.
+     *
      * @param dt          Elapsed seconds since last tick.
      * @param psi_real    Re(Ψ) span (may be empty — entropy/ATP use last).
      * @param psi_imag    Im(Ψ) span.
@@ -120,6 +126,35 @@ public:
               std::span<const float> psi_imag,
               Reward                 reward    = Reward::NEUTRAL,
               float                  wall_time = 0.0f);
+
+    /**
+     * @brief Advance all autonomy systems using the full Hamiltonian value.
+     *
+     * Resolves NIK-005: uses HamiltonianValue::compute_spans() which includes
+     * kinetic energy (|V|²), making the dopamine signal invariant for stable
+     * standing waves — TD error δ → 0 for conserved states.
+     *
+     * @param dt          Elapsed seconds since last tick.
+     * @param psi_real    Re(Ψ) span.
+     * @param psi_imag    Im(Ψ) span.
+     * @param vel_real    Re(∂_t Ψ) span — Störmer-Verlet velocity field.
+     * @param vel_imag    Im(∂_t Ψ) span.
+     * @param beta        Nonlinear coupling constant β.
+     * @param reward      External reward signal for dopamine update.
+     * @param wall_time   Monotonic wall-clock seconds (for NapController).
+     */
+    void tick_physics(float                  dt,
+                      std::span<const float> psi_real,
+                      std::span<const float> psi_imag,
+                      std::span<const float> vel_real,
+                      std::span<const float> vel_imag,
+                      float                  beta      = 0.0f,
+                      Reward                 reward    = Reward::NEUTRAL,
+                      float                  wall_time = 0.0f);
+
+    /// Expose the HamiltonianValue config (γ weights, H_max) for tuning.
+    [[nodiscard]] HamiltonianValue&       hamiltonian_value()       noexcept;
+    [[nodiscard]] const HamiltonianValue& hamiltonian_value() const noexcept;
 
     /// Override: allow the nap stepper used by DreamWeaveEngine during naps.
     void set_dream_stepper(DreamWeaveEngine::Stepper stepper);
@@ -176,6 +211,7 @@ struct AutonomyEngineImpl {
     MetabolicSimulator metabolic;
     NapController      nap;
     DreamWeaveEngine   dream;
+    HamiltonianValue   hamiltonian_value_fn;  // NIK-005
 
     float last_entropy = 0.0f;
     float entropy_acc  = 0.0f;   // accumulates dt for subset sampling
@@ -223,7 +259,8 @@ void AutonomyEngine::tick(float                  dt,
 {
     auto& I = *impl_;
 
-    // --- 1. Total energy (Σ|Ψ|²) for dopamine ---
+    // --- 1. Total energy (Σ|Ψ|²) for dopamine — NOTE: stroboscopic (NIK-005)
+    //         Use tick_physics() to pass vel spans for the invariant Hamiltonian.
     float total_energy = 0.0f;
     for (std::size_t i = 0, n = std::min(psi_real.size(), psi_imag.size()); i < n; ++i) {
         float r = psi_real[i], im = psi_imag[i];
@@ -258,6 +295,56 @@ void AutonomyEngine::tick(float                  dt,
     // --- 5. Nap state machine ---
     I.nap.update(I.metabolic.atp(), wall_time);
 }
+
+// ── tick_physics — NIK-005: Hamiltonian-based stable dopamine ─────────────────
+
+void AutonomyEngine::tick_physics(
+        float                  dt,
+        std::span<const float> psi_real,
+        std::span<const float> psi_imag,
+        std::span<const float> vel_real,
+        std::span<const float> vel_imag,
+        float                  beta,
+        Reward                 reward,
+        float                  wall_time)
+{
+    auto& I = *impl_;
+
+    // --- 1. Full Hamiltonian H = γ_K|V|² + γ_P|Ψ|² + γ_NL β/2|Ψ|⁴ (no 2ω flicker)
+    const float total_energy = I.hamiltonian_value_fn.compute_spans(
+            psi_real, psi_imag, vel_real, vel_imag, beta);
+
+    // --- 2. Dopamine TD update + decay ---
+    I.dopamine.update(total_energy, reward);
+    I.dopamine.decay(dt);
+
+    // --- 3. Entropy + boredom ---
+    if (I.cfg.enable_boredom && !psi_real.empty()) {
+        I.entropy_acc += dt;
+        if (I.entropy_acc >= I.cfg.entropy_sample_dt) {
+            I.last_entropy = I.entropy_est.estimate(psi_real, psi_imag);
+            I.entropy_acc  = 0.0f;
+        }
+        I.boredom.update(I.last_entropy, dt);
+
+        if (I.boredom.should_explore() && on_explore) {
+            on_explore();
+        }
+    }
+
+    // --- 4. Metabolic cost ---
+    if (!I.nap.is_napping()) {
+        I.metabolic.consume_by_rate(total_energy, dt);
+    } else {
+        I.metabolic.recharge(dt);
+    }
+
+    // --- 5. Nap state machine ---
+    I.nap.update(I.metabolic.atp(), wall_time);
+}
+
+HamiltonianValue&       AutonomyEngine::hamiltonian_value()       noexcept { return impl_->hamiltonian_value_fn; }
+const HamiltonianValue& AutonomyEngine::hamiltonian_value() const noexcept { return impl_->hamiltonian_value_fn; }
 
 void AutonomyEngine::set_dream_stepper(DreamWeaveEngine::Stepper s) {
     impl_->dream_stepper = std::move(s);

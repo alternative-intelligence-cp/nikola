@@ -486,3 +486,113 @@ TEST_CASE("Nit + Nyte pipeline: encode complex wave series", "[nit][integration]
     const Nyte ny = Nyte::encode(nits);
     CHECK(ny.decode() == nits);  // lossless round-trip through Nyte
 }
+
+// ============================================================================
+// cascade_overflow — Two-Phase Spectral Cascading tests
+// ============================================================================
+
+using nikola::foundation::CascadeResult;
+using nikola::foundation::cascade_overflow;
+
+TEST_CASE("cascade_overflow: no overflow — carry absorbed in first dim", "[nit][cascade]") {
+    std::array<Nit, 9> d{};          // all zeros
+    auto r = cascade_overflow(d, 0, 2);
+    CHECK(r.digits[0] == 2);
+    CHECK(r.entropy_sink == 0);
+    for (int i = 1; i < 9; ++i) CHECK(r.digits[i] == 0);
+}
+
+TEST_CASE("cascade_overflow: single overflow — dim 0 wraps, carry goes to dim 1", "[nit][cascade]") {
+    // spec case 1: digits[0]=+3, carry=+2 → 3+2=5 → -4 carry+1 → digits[1]=0+1=1
+    std::array<Nit, 9> d{};
+    d[0] = 3;
+    auto r = cascade_overflow(d, 0, 2);
+    CHECK(r.digits[0] == -4);
+    CHECK(r.digits[1] ==  1);
+    CHECK(r.entropy_sink == 0);
+}
+
+TEST_CASE("cascade_overflow: two-hop cascade — dims 0 and 1 overflow to entropy", "[nit][cascade]") {
+    // spec case 2: digits[0]=+4, digits[1]=+4, carry=+1
+    // 4+1=5 → -4 carry+1 → 4+1=5 → -4 carry+1 → dims 2..8 are 0, so 0+1=1 absorbed
+    std::array<Nit, 9> d{};
+    d[0] = 4; d[1] = 4;
+    auto r = cascade_overflow(d, 0, 1);
+    CHECK(r.digits[0] == -4);
+    CHECK(r.digits[1] == -4);
+    CHECK(r.digits[2] ==  1);   // carry absorbed at dim 2
+    CHECK(r.entropy_sink == 0);
+}
+
+TEST_CASE("cascade_overflow: full 9D saturation — carry escapes to entropy_sink", "[nit][cascade]") {
+    // All 9 dims at +4, carry +1 → cascades through all, residual carry = +1
+    std::array<Nit, 9> d;
+    d.fill(4);
+    auto r = cascade_overflow(d, 0, 1);
+    for (int i = 0; i < 9; ++i) CHECK(r.digits[i] == -4);
+    CHECK(r.entropy_sink == 1);
+}
+
+TEST_CASE("cascade_overflow: negative carry wraps correctly", "[nit][cascade]") {
+    // digits[0]=-3, carry=-2 → -3-2=-5 → +4 carry=-1 → digits[1]=0-1=-1
+    std::array<Nit, 9> d{};
+    d[0] = -3;
+    auto r = cascade_overflow(d, 0, -2);
+    CHECK(r.digits[0] ==  4);
+    CHECK(r.digits[1] == -1);
+    CHECK(r.entropy_sink == 0);
+}
+
+TEST_CASE("cascade_overflow: negative full saturation — negative entropy_sink", "[nit][cascade]") {
+    std::array<Nit, 9> d;
+    d.fill(-4);
+    auto r = cascade_overflow(d, 0, -1);
+    for (int i = 0; i < 9; ++i) CHECK(r.digits[i] == 4);
+    CHECK(r.entropy_sink == -1);
+}
+
+TEST_CASE("cascade_overflow: start_dim > 0 leaves earlier dims unmodified", "[nit][cascade]") {
+    std::array<Nit, 9> d{};
+    d[0] = 2; d[5] = 3;
+    // start at dim 5, carry +2: 3+2=5 → -4 carry+1 → dim 6: 0+1=1
+    auto r = cascade_overflow(d, 5, 2);
+    CHECK(r.digits[0] ==  2);   // untouched
+    CHECK(r.digits[5] == -4);
+    CHECK(r.digits[6] ==  1);
+    CHECK(r.entropy_sink == 0);
+}
+
+TEST_CASE("cascade_overflow: carry=0 is a no-op", "[nit][cascade]") {
+    std::array<Nit, 9> d;
+    d.fill(3);
+    auto r = cascade_overflow(d, 0, 0);
+    CHECK(r.digits == d);
+    CHECK(r.entropy_sink == 0);
+}
+
+TEST_CASE("cascade_overflow: input digits are not modified (value semantics)", "[nit][cascade]") {
+    std::array<Nit, 9> original;
+    original.fill(2);
+    auto orig_copy = original;
+    [[maybe_unused]] auto _ = cascade_overflow(original, 0, 3);   // result intentionally unused — testing value semantics
+    CHECK(original == orig_copy);       // original should be unchanged
+}
+
+TEST_CASE("cascade_overflow: exact NIT_MAX boundary — no wrap when at max, carry=0", "[nit][cascade]") {
+    std::array<Nit, 9> d{};
+    d[0] = 4;
+    auto r = cascade_overflow(d, 0, 0);
+    CHECK(r.digits[0] == 4);
+    CHECK(r.entropy_sink == 0);
+}
+
+TEST_CASE("cascade_overflow: chain from middle dim wraps around remaining dims only", "[nit][cascade]") {
+    // start_dim=7, all dims at 4, carry +1 → dim7 wraps, carry+1 → dim8 wraps, carry+1 → entropy
+    std::array<Nit, 9> d;
+    d.fill(4);
+    auto r = cascade_overflow(d, 7, 1);
+    for (int i = 0; i < 7; ++i) CHECK(r.digits[i] ==  4);  // dims 0..6: untouched
+    CHECK(r.digits[7] == -4);
+    CHECK(r.digits[8] == -4);
+    CHECK(r.entropy_sink == 1);
+}

@@ -1,13 +1,13 @@
-Start testing: Feb 21 01:29 EST
+Start testing: Feb 21 02:52 EST
 ----------------------------------------------------------
-1/11 Testing: MetabolicLock
-1/11 Test: MetabolicLock
+1/20 Testing: MetabolicLock
+1/20 Test: MetabolicLock
 Command: "/home/randy/Workspace/REPOS/nikola/build/test_metabolic_lock"
 Directory: /home/randy/Workspace/REPOS/nikola/build
-"MetabolicLock" start time: Feb 21 01:29 EST
+"MetabolicLock" start time: Feb 21 02:52 EST
 Output:
 ----------------------------------------------------------
-Randomness seeded to: 636011044
+Randomness seeded to: 4076764041
 ===============================================================================
 All tests passed (30 assertions in 8 test cases)
 
@@ -15,18 +15,18 @@ All tests passed (30 assertions in 8 test cases)
 Test time =   0.01 sec
 ----------------------------------------------------------
 Test Passed.
-"MetabolicLock" end time: Feb 21 01:29 EST
+"MetabolicLock" end time: Feb 21 02:52 EST
 "MetabolicLock" time elapsed: 00:00:00
 ----------------------------------------------------------
 
-2/11 Testing: HilbertScanner
-2/11 Test: HilbertScanner
+2/20 Testing: HilbertScanner
+2/20 Test: HilbertScanner
 Command: "/home/randy/Workspace/REPOS/nikola/build/test_hilbert_scanner"
 Directory: /home/randy/Workspace/REPOS/nikola/build
-"HilbertScanner" start time: Feb 21 01:29 EST
+"HilbertScanner" start time: Feb 21 02:52 EST
 Output:
 ----------------------------------------------------------
-Randomness seeded to: 3959279072
+Randomness seeded to: 1762367212
 ===============================================================================
 All tests passed (1036 assertions in 9 test cases)
 
@@ -34,18 +34,18 @@ All tests passed (1036 assertions in 9 test cases)
 Test time =   0.03 sec
 ----------------------------------------------------------
 Test Passed.
-"HilbertScanner" end time: Feb 21 01:29 EST
+"HilbertScanner" end time: Feb 21 02:52 EST
 "HilbertScanner" time elapsed: 00:00:00
 ----------------------------------------------------------
 
-3/11 Testing: Vector9D
-3/11 Test: Vector9D
+3/20 Testing: Vector9D
+3/20 Test: Vector9D
 Command: "/home/randy/Workspace/REPOS/nikola/build/test_vector9d"
 Directory: /home/randy/Workspace/REPOS/nikola/build
-"Vector9D" start time: Feb 21 01:29 EST
+"Vector9D" start time: Feb 21 02:52 EST
 Output:
 ----------------------------------------------------------
-Randomness seeded to: 91761526
+Randomness seeded to: 2801717306
 ===============================================================================
 All tests passed (66 assertions in 8 test cases)
 
@@ -53,94 +53,94 @@ All tests passed (66 assertions in 8 test cases)
 Test time =   0.01 sec
 ----------------------------------------------------------
 Test Passed.
-"Vector9D" end time: Feb 21 01:29 EST
+"Vector9D" end time: Feb 21 02:52 EST
 "Vector9D" time elapsed: 00:00:00
 ----------------------------------------------------------
 
-4/11 Testing: PhysicsCore
-4/11 Test: PhysicsCore
+4/20 Testing: PhysicsCore
+4/20 Test: PhysicsCore
 Command: "/home/randy/Workspace/REPOS/nikola/build/test_physics_core"
 Directory: /home/randy/Workspace/REPOS/nikola/build
-"PhysicsCore" start time: Feb 21 01:29 EST
+"PhysicsCore" start time: Feb 21 02:52 EST
 Output:
 ----------------------------------------------------------
-Randomness seeded to: 3177194828
+Randomness seeded to: 1000137151
 ===============================================================================
 All tests passed (1268 assertions in 13 test cases)
 
 <end of output>
-Test time =   1.12 sec
+Test time =   1.13 sec
 ----------------------------------------------------------
 Test Passed.
-"PhysicsCore" end time: Feb 21 01:29 EST
+"PhysicsCore" end time: Feb 21 02:52 EST
 "PhysicsCore" time elapsed: 00:00:01
 ----------------------------------------------------------
 
-5/11 Testing: Phase2GeometryMemory
-5/11 Test: Phase2GeometryMemory
+5/20 Testing: Phase2GeometryMemory
+5/20 Test: Phase2GeometryMemory
 Command: "/home/randy/Workspace/REPOS/nikola/build/test_phase2_geometry_memory"
 Directory: /home/randy/Workspace/REPOS/nikola/build
-"Phase2GeometryMemory" start time: Feb 21 01:29 EST
+"Phase2GeometryMemory" start time: Feb 21 02:52 EST
 Output:
 ----------------------------------------------------------
-Randomness seeded to: 3012795314
+Randomness seeded to: 3391233470
 ===============================================================================
 All tests passed (1158 assertions in 42 test cases)
 
 <end of output>
-Test time =   0.02 sec
+Test time =   0.03 sec
 ----------------------------------------------------------
 Test Passed.
-"Phase2GeometryMemory" end time: Feb 21 01:29 EST
+"Phase2GeometryMemory" end time: Feb 21 02:52 EST
 "Phase2GeometryMemory" time elapsed: 00:00:00
 ----------------------------------------------------------
 
-6/11 Testing: Phase3Cognitive
-6/11 Test: Phase3Cognitive
+6/20 Testing: Phase3Cognitive
+6/20 Test: Phase3Cognitive
 Command: "/home/randy/Workspace/REPOS/nikola/build/test_phase3_cognitive"
 Directory: /home/randy/Workspace/REPOS/nikola/build
-"Phase3Cognitive" start time: Feb 21 01:29 EST
+"Phase3Cognitive" start time: Feb 21 02:52 EST
 Output:
 ----------------------------------------------------------
-Randomness seeded to: 2194058303
+Randomness seeded to: 816383479
 ===============================================================================
 All tests passed (4932 assertions in 54 test cases)
-
-<end of output>
-Test time =   0.05 sec
-----------------------------------------------------------
-Test Passed.
-"Phase3Cognitive" end time: Feb 21 01:29 EST
-"Phase3Cognitive" time elapsed: 00:00:00
-----------------------------------------------------------
-
-7/11 Testing: Phase4Infrastructure
-7/11 Test: Phase4Infrastructure
-Command: "/home/randy/Workspace/REPOS/nikola/build/test_phase4_infrastructure"
-Directory: /home/randy/Workspace/REPOS/nikola/build
-"Phase4Infrastructure" start time: Feb 21 01:29 EST
-Output:
-----------------------------------------------------------
-Randomness seeded to: 1367417643
-===============================================================================
-All tests passed (177 assertions in 55 test cases)
 
 <end of output>
 Test time =   0.04 sec
 ----------------------------------------------------------
 Test Passed.
-"Phase4Infrastructure" end time: Feb 21 01:29 EST
+"Phase3Cognitive" end time: Feb 21 02:52 EST
+"Phase3Cognitive" time elapsed: 00:00:00
+----------------------------------------------------------
+
+7/20 Testing: Phase4Infrastructure
+7/20 Test: Phase4Infrastructure
+Command: "/home/randy/Workspace/REPOS/nikola/build/test_phase4_infrastructure"
+Directory: /home/randy/Workspace/REPOS/nikola/build
+"Phase4Infrastructure" start time: Feb 21 02:52 EST
+Output:
+----------------------------------------------------------
+Randomness seeded to: 2268117083
+===============================================================================
+All tests passed (177 assertions in 55 test cases)
+
+<end of output>
+Test time =   0.05 sec
+----------------------------------------------------------
+Test Passed.
+"Phase4Infrastructure" end time: Feb 21 02:52 EST
 "Phase4Infrastructure" time elapsed: 00:00:00
 ----------------------------------------------------------
 
-8/11 Testing: Phase5Autonomous
-8/11 Test: Phase5Autonomous
+8/20 Testing: Phase5Autonomous
+8/20 Test: Phase5Autonomous
 Command: "/home/randy/Workspace/REPOS/nikola/build/test_phase5_autonomous"
 Directory: /home/randy/Workspace/REPOS/nikola/build
-"Phase5Autonomous" start time: Feb 21 01:29 EST
+"Phase5Autonomous" start time: Feb 21 02:52 EST
 Output:
 ----------------------------------------------------------
-Randomness seeded to: 825226589
+Randomness seeded to: 2564913910
 ===============================================================================
 All tests passed (94 assertions in 45 test cases)
 
@@ -148,65 +148,257 @@ All tests passed (94 assertions in 45 test cases)
 Test time =   0.01 sec
 ----------------------------------------------------------
 Test Passed.
-"Phase5Autonomous" end time: Feb 21 01:29 EST
+"Phase5Autonomous" end time: Feb 21 02:52 EST
 "Phase5Autonomous" time elapsed: 00:00:00
 ----------------------------------------------------------
 
-9/11 Testing: Phase6Multimodal
-9/11 Test: Phase6Multimodal
+9/20 Testing: Phase6Multimodal
+9/20 Test: Phase6Multimodal
 Command: "/home/randy/Workspace/REPOS/nikola/build/test_phase6_multimodal"
 Directory: /home/randy/Workspace/REPOS/nikola/build
-"Phase6Multimodal" start time: Feb 21 01:29 EST
+"Phase6Multimodal" start time: Feb 21 02:52 EST
 Output:
 ----------------------------------------------------------
-Randomness seeded to: 894316849
+Randomness seeded to: 779249490
 ===============================================================================
 All tests passed (21322 assertions in 44 test cases)
 
 <end of output>
-Test time =   0.01 sec
+Test time =   0.03 sec
 ----------------------------------------------------------
 Test Passed.
-"Phase6Multimodal" end time: Feb 21 01:29 EST
+"Phase6Multimodal" end time: Feb 21 02:52 EST
 "Phase6Multimodal" time elapsed: 00:00:00
 ----------------------------------------------------------
 
-10/11 Testing: Phase7Security
-10/11 Test: Phase7Security
+10/20 Testing: Phase7Security
+10/20 Test: Phase7Security
 Command: "/home/randy/Workspace/REPOS/nikola/build/test_phase7_security"
 Directory: /home/randy/Workspace/REPOS/nikola/build
-"Phase7Security" start time: Feb 21 01:29 EST
+"Phase7Security" start time: Feb 21 02:52 EST
 Output:
 ----------------------------------------------------------
-Randomness seeded to: 3764791780
+Randomness seeded to: 3216527089
 ===============================================================================
 All tests passed (91 assertions in 54 test cases)
 
 <end of output>
-Test time =   0.02 sec
+Test time =   0.03 sec
 ----------------------------------------------------------
 Test Passed.
-"Phase7Security" end time: Feb 21 01:29 EST
+"Phase7Security" end time: Feb 21 02:52 EST
 "Phase7Security" time elapsed: 00:00:00
 ----------------------------------------------------------
 
-11/11 Testing: Phase8Foundations
-11/11 Test: Phase8Foundations
+11/20 Testing: Phase8Foundations
+11/20 Test: Phase8Foundations
 Command: "/home/randy/Workspace/REPOS/nikola/build/test_phase8_foundations"
 Directory: /home/randy/Workspace/REPOS/nikola/build
-"Phase8Foundations" start time: Feb 21 01:29 EST
+"Phase8Foundations" start time: Feb 21 02:52 EST
 Output:
 ----------------------------------------------------------
-Randomness seeded to: 156292409
+Randomness seeded to: 1563419108
 ===============================================================================
-All tests passed (407 assertions in 43 test cases)
+All tests passed (466 assertions in 54 test cases)
 
 <end of output>
 Test time =   0.01 sec
 ----------------------------------------------------------
 Test Passed.
-"Phase8Foundations" end time: Feb 21 01:29 EST
+"Phase8Foundations" end time: Feb 21 02:52 EST
 "Phase8Foundations" time elapsed: 00:00:00
 ----------------------------------------------------------
 
-End testing: Feb 21 01:29 EST
+12/20 Testing: Phase9Bootstrap
+12/20 Test: Phase9Bootstrap
+Command: "/home/randy/Workspace/REPOS/nikola/build/test_phase9_bootstrap"
+Directory: /home/randy/Workspace/REPOS/nikola/build
+"Phase9Bootstrap" start time: Feb 21 02:52 EST
+Output:
+----------------------------------------------------------
+[NIKOLA] STABILIZING  | nodes=512  t=0.0000s  H=+1.230000e+00  drift=0.000000%  tick=1
+[NIKOLA] *** TEST_EVENT ***
+[NIKOLA] *** TEST_EVENT: some detail ***
+[NIKOLA] READY        | nodes=512  t=3.3333s  H=+1.882153e+03  drift=0.000000%  tick=1
+[NIKOLA] READY        | nodes=512  t=1.6667s  H=+2.088063e+03  drift=0.000000%  tick=1
+[NIKOLA] READY        | nodes=512  t=1.6667s  H=+2.088063e+03  drift=0.000000%  tick=1
+[NIKOLA] READY        | nodes=512  t=1.6667s  H=+2.088063e+03  drift=0.000000%  tick=1
+[NIKOLA] READY        | nodes=512  t=1.6667s  H=+2.088063e+03  drift=0.000000%  tick=1
+[NIKOLA] READY        | nodes=512  t=1.6667s  H=+2.088063e+03  drift=0.000000%  tick=1
+[NIKOLA] READY        | nodes=512  t=0.8333s  H=+1.684175e+03  drift=0.000000%  tick=1
+[NIKOLA] READY        | nodes=512  t=0.8333s  H=+1.684175e+03  drift=0.000000%  tick=1
+[NIKOLA] READY        | nodes=512  t=0.8333s  H=+1.684175e+03  drift=0.000000%  tick=1
+[NIKOLA] READY        | nodes=512  t=0.8333s  H=+1.684175e+03  drift=0.000000%  tick=2
+[NIKOLA] *** FAULT: Thermal bath yielded zero velocity — Entropy Shock risk ***
+[NIKOLA] *** FAULT: Thermal bath yielded zero velocity — Entropy Shock risk ***
+[NIKOLA] READY        | nodes=512  t=1.6667s  H=+2.088063e+03  drift=0.000000%  tick=1
+Randomness seeded to: 2189386671
+===============================================================================
+All tests passed (75 assertions in 21 test cases)
+
+<end of output>
+Test time =   0.07 sec
+----------------------------------------------------------
+Test Passed.
+"Phase9Bootstrap" end time: Feb 21 02:52 EST
+"Phase9Bootstrap" time elapsed: 00:00:00
+----------------------------------------------------------
+
+13/20 Testing: Phase10Holographic
+13/20 Test: Phase10Holographic
+Command: "/home/randy/Workspace/REPOS/nikola/build/test_phase10_holographic"
+Directory: /home/randy/Workspace/REPOS/nikola/build
+"Phase10Holographic" start time: Feb 21 02:52 EST
+Output:
+----------------------------------------------------------
+Randomness seeded to: 1442827021
+===============================================================================
+All tests passed (94 assertions in 31 test cases)
+
+<end of output>
+Test time =   0.01 sec
+----------------------------------------------------------
+Test Passed.
+"Phase10Holographic" end time: Feb 21 02:52 EST
+"Phase10Holographic" time elapsed: 00:00:00
+----------------------------------------------------------
+
+14/20 Testing: Phase11CognitiveGen
+14/20 Test: Phase11CognitiveGen
+Command: "/home/randy/Workspace/REPOS/nikola/build/test_phase11_cognitive_gen"
+Directory: /home/randy/Workspace/REPOS/nikola/build
+"Phase11CognitiveGen" start time: Feb 21 02:52 EST
+Output:
+----------------------------------------------------------
+Randomness seeded to: 395294553
+===============================================================================
+All tests passed (52 assertions in 23 test cases)
+
+<end of output>
+Test time =   0.01 sec
+----------------------------------------------------------
+Test Passed.
+"Phase11CognitiveGen" end time: Feb 21 02:52 EST
+"Phase11CognitiveGen" time elapsed: 00:00:00
+----------------------------------------------------------
+
+15/20 Testing: Phase12AcasBridge
+15/20 Test: Phase12AcasBridge
+Command: "/home/randy/Workspace/REPOS/nikola/build/test_phase12_acas_bridge"
+Directory: /home/randy/Workspace/REPOS/nikola/build
+"Phase12AcasBridge" start time: Feb 21 02:52 EST
+Output:
+----------------------------------------------------------
+Randomness seeded to: 410210786
+===============================================================================
+All tests passed (34 assertions in 16 test cases)
+
+<end of output>
+Test time =  10.72 sec
+----------------------------------------------------------
+Test Passed.
+"Phase12AcasBridge" end time: Feb 21 02:53 EST
+"Phase12AcasBridge" time elapsed: 00:00:10
+----------------------------------------------------------
+
+16/20 Testing: Phase13TaskDispatcher
+16/20 Test: Phase13TaskDispatcher
+Command: "/home/randy/Workspace/REPOS/nikola/build/test_phase13_task_dispatcher"
+Directory: /home/randy/Workspace/REPOS/nikola/build
+"Phase13TaskDispatcher" start time: Feb 21 02:53 EST
+Output:
+----------------------------------------------------------
+Randomness seeded to: 1416025133
+===============================================================================
+All tests passed (63 assertions in 27 test cases)
+
+<end of output>
+Test time =   0.01 sec
+----------------------------------------------------------
+Test Passed.
+"Phase13TaskDispatcher" end time: Feb 21 02:53 EST
+"Phase13TaskDispatcher" time elapsed: 00:00:00
+----------------------------------------------------------
+
+17/20 Testing: Phase14AsyncCheckpoint
+17/20 Test: Phase14AsyncCheckpoint
+Command: "/home/randy/Workspace/REPOS/nikola/build/test_phase14_async_checkpoint"
+Directory: /home/randy/Workspace/REPOS/nikola/build
+"Phase14AsyncCheckpoint" start time: Feb 21 02:53 EST
+Output:
+----------------------------------------------------------
+Randomness seeded to: 3067688878
+===============================================================================
+All tests passed (27 assertions in 20 test cases)
+
+<end of output>
+Test time =   0.04 sec
+----------------------------------------------------------
+Test Passed.
+"Phase14AsyncCheckpoint" end time: Feb 21 02:53 EST
+"Phase14AsyncCheckpoint" time elapsed: 00:00:00
+----------------------------------------------------------
+
+18/20 Testing: Phase15HamiltonianValue
+18/20 Test: Phase15HamiltonianValue
+Command: "/home/randy/Workspace/REPOS/nikola/build/test_phase15_hamiltonian_value"
+Directory: /home/randy/Workspace/REPOS/nikola/build
+"Phase15HamiltonianValue" start time: Feb 21 02:53 EST
+Output:
+----------------------------------------------------------
+Randomness seeded to: 2752030899
+===============================================================================
+All tests passed (66 assertions in 22 test cases)
+
+<end of output>
+Test time =   0.01 sec
+----------------------------------------------------------
+Test Passed.
+"Phase15HamiltonianValue" end time: Feb 21 02:53 EST
+"Phase15HamiltonianValue" time elapsed: 00:00:00
+----------------------------------------------------------
+
+19/20 Testing: Phase16CoordSerializer
+19/20 Test: Phase16CoordSerializer
+Command: "/home/randy/Workspace/REPOS/nikola/build/test_phase16_coord_serializer"
+Directory: /home/randy/Workspace/REPOS/nikola/build
+"Phase16CoordSerializer" start time: Feb 21 02:53 EST
+Output:
+----------------------------------------------------------
+Randomness seeded to: 2725675290
+===============================================================================
+All tests passed (139 assertions in 34 test cases)
+
+<end of output>
+Test time =   0.01 sec
+----------------------------------------------------------
+Test Passed.
+"Phase16CoordSerializer" end time: Feb 21 02:53 EST
+"Phase16CoordSerializer" time elapsed: 00:00:00
+----------------------------------------------------------
+
+20/20 Testing: Phase17BootstrapManager
+20/20 Test: Phase17BootstrapManager
+Command: "/home/randy/Workspace/REPOS/nikola/build/test_phase17_bootstrap_manager"
+Directory: /home/randy/Workspace/REPOS/nikola/build
+"Phase17BootstrapManager" start time: Feb 21 02:53 EST
+Output:
+----------------------------------------------------------
+Randomness seeded to: 81140339
+[BootstrapManager] Token loaded from env var (SCRUBBED)
+[BootstrapManager] Token loaded from env var (SCRUBBED)
+[BootstrapManager] Token loaded from file: /tmp/nikola_test_bootstrap_token
+[BootstrapManager] Token loaded from file: /tmp/nikola_test_token_whitespace
+[BootstrapManager] Token loaded from file: /tmp/nikola_test_bootstrap_token
+===============================================================================
+All tests passed (40 assertions in 22 test cases)
+
+<end of output>
+Test time =   0.01 sec
+----------------------------------------------------------
+Test Passed.
+"Phase17BootstrapManager" end time: Feb 21 02:53 EST
+"Phase17BootstrapManager" time elapsed: 00:00:00
+----------------------------------------------------------
+
+End testing: Feb 21 02:53 EST

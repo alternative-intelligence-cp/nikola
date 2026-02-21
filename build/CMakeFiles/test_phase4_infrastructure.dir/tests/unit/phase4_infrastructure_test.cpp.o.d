@@ -399,7 +399,13 @@ CMakeFiles/test_phase4_infrastructure.dir/tests/unit/phase4_infrastructure_test.
   /usr/bin/../lib/gcc/x86_64-linux-gnu/13/../../../../include/c++/13/bits/ranges_uninitialized.h \
   /usr/bin/../lib/gcc/x86_64-linux-gnu/13/../../../../include/c++/13/pstl/glue_memory_defs.h \
   /home/randy/Workspace/REPOS/nikola/include/nikola/infrastructure/orchestrator.hpp \
+  /home/randy/Workspace/REPOS/nikola/include/nikola/infrastructure/task_dispatcher.hpp \
   /usr/bin/../lib/gcc/x86_64-linux-gnu/13/../../../../include/c++/13/mutex \
   /usr/bin/../lib/gcc/x86_64-linux-gnu/13/../../../../include/c++/13/bits/unique_lock.h \
+  /usr/bin/../lib/gcc/x86_64-linux-gnu/13/../../../../include/c++/13/queue \
+  /usr/bin/../lib/gcc/x86_64-linux-gnu/13/../../../../include/c++/13/deque \
+  /usr/bin/../lib/gcc/x86_64-linux-gnu/13/../../../../include/c++/13/bits/stl_deque.h \
+  /usr/bin/../lib/gcc/x86_64-linux-gnu/13/../../../../include/c++/13/bits/deque.tcc \
+  /usr/bin/../lib/gcc/x86_64-linux-gnu/13/../../../../include/c++/13/bits/stl_queue.h \
   /home/randy/Workspace/REPOS/nikola/include/nikola/infrastructure/llm_bridge.hpp \
   /home/randy/Workspace/REPOS/nikola/include/nikola/infrastructure/tool_executor.hpp
