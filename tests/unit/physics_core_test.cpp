@@ -495,7 +495,13 @@ TEST_CASE("Performance: physics step on 3^9 grid", "[physics][performance]") {
     const double ms_per_step = std::chrono::duration<double, std::milli>(t1 - t0).count() / 10.0;
 
     INFO("Physics step time on 3^9 grid: " << ms_per_step << " ms (limit: 5ms)");
-    REQUIRE(ms_per_step < 5.0);  // Target: < 5ms (spec says < 1ms for GPU; CPU Phase 1 target is 5ms)
+#ifdef NDEBUG
+    // Release: hard gate at 5ms (CPU Phase 1 target; GPU target is <1ms)
+    REQUIRE(ms_per_step < 5.0);
+#else
+    // Debug: no inlining / no optimisation — allow up to 30ms
+    REQUIRE(ms_per_step < 30.0);
+#endif
 }
 
 // ============================================================================

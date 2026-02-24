@@ -34,6 +34,17 @@ inline constexpr float DOPAMINE_LEARNING_RATE = 0.01f;
 /// Decay time constant τ (seconds) — exponential drift back to baseline.
 inline constexpr float DOPAMINE_TAU_SEC       = 2.0f;
 
+// ── Phase 29: Neural habituation constants ─────────────────────────────────
+
+/// EMA smoothing factor α for familiar_td_ (slow adaptation).
+inline constexpr float NOVELTY_EMA_ALPHA    = 0.03f;
+/// TD deviation below which a signal is considered "familiar".
+inline constexpr float NOVELTY_THRESHOLD    = 0.03f;
+/// Per-update multiplicative decay of novelty_factor_ on familiar signals.
+inline constexpr float NOVELTY_DECAY        = 0.985f;
+/// Per-update additive recovery rate of novelty_factor_ on surprising signals.
+inline constexpr float NOVELTY_RECOVERY     = 0.15f;
+
 // ── Reward signal ─────────────────────────────────────────────────────────────
 
 /**
@@ -81,11 +92,32 @@ public:
         current_value_ = total_energy;
 
         // δ_t = R_t + γ·V(S_{t+1}) - V(S_t)
-        float r = static_cast<float>(static_cast<int8_t>(reward));
-        float td_error = r + DOPAMINE_GAMMA * current_value_ - prev_value_;
+        const float r      = static_cast<float>(static_cast<int8_t>(reward));
+        const float td_raw = r + DOPAMINE_GAMMA * current_value_ - prev_value_;
 
-        // Dopamine encodes the prediction error, clamped to [0, 1]
-        dopamine_ = std::clamp(DOPAMINE_BASELINE + td_error, 0.0f, 1.0f);
+        // Phase 29: neural habituation ─────────────────────────────────────
+        // Update familiar_td_ (EMA of raw td_error).
+        familiar_td_ = (1.0f - NOVELTY_EMA_ALPHA) * familiar_td_
+                     + NOVELTY_EMA_ALPHA * td_raw;
+
+        // Reward/punishment signals always fire at full strength.
+        // Only neutral field fluctuations are habituatable.
+        if (reward == Reward::NEUTRAL) {
+            const float surprise = std::abs(td_raw - familiar_td_);
+            if (surprise < NOVELTY_THRESHOLD) {
+                novelty_factor_ *= NOVELTY_DECAY;          // habituate
+            } else {
+                novelty_factor_ += (1.0f - novelty_factor_) * NOVELTY_RECOVERY; // recover
+            }
+            novelty_factor_ = std::clamp(novelty_factor_, 0.0f, 1.0f);
+        }
+
+        // Effective TD: attenuated by habituation for neutral signals.
+        const float nf        = (reward == Reward::NEUTRAL) ? novelty_factor_ : 1.0f;
+        const float td_effective = td_raw * nf;
+
+        // Dopamine encodes the (possibly habituated) prediction error, clamped to [0, 1]
+        dopamine_ = std::clamp(DOPAMINE_BASELINE + td_effective, 0.0f, 1.0f);
 
         prev_value_ = current_value_;
     }
@@ -100,6 +132,19 @@ public:
         dopamine_ = std::clamp(dopamine_, 0.0f, 1.0f);
     }
 
+    /**
+     * @brief Additive nudge from external coupling (GAP-005 cross-coupling matrix).
+     *
+     * Applies a signed delta directly to the dopamine level and clamps to [0, 1].
+     * Unlike update(), this bypasses TD error computation — it is only for
+     * inter-neurochemical coupling terms (M·N cross-coupling step).
+     *
+     * @param delta  Signed change in dopamine (may be positive or negative).
+     */
+    void adjust(float delta) noexcept {
+        dopamine_ = std::clamp(dopamine_ + delta, 0.0f, 1.0f);
+    }
+
     // ── observers ────────────────────────────────────────────────────────────
 
     /// Current dopamine level ∈ [0, 1].
@@ -111,22 +156,32 @@ public:
     /// True when dopamine is below baseline (punishment surprise).
     [[nodiscard]] bool  is_dipping() const noexcept { return dopamine_ < DOPAMINE_BASELINE; }
 
-    /// Most recent TD error (for telemetry).
+    /// Most recent (habituated) TD error (for telemetry).
     [[nodiscard]] float last_td_error() const noexcept {
         return dopamine_ - DOPAMINE_BASELINE;
     }
 
+    /// Current novelty attenuation scalar ∈ [0, 1].  1 = fully novel, ~0 = habituated.
+    [[nodiscard]] float novelty_factor() const noexcept { return novelty_factor_; }
+
+    /// EMA of recent raw TD errors — the "familiar" baseline.
+    [[nodiscard]] float familiar_td() const noexcept { return familiar_td_; }
+
     /// Reset to factory state.
     void reset() noexcept {
-        dopamine_      = DOPAMINE_BASELINE;
-        prev_value_    = 0.0f;
-        current_value_ = 0.0f;
+        dopamine_       = DOPAMINE_BASELINE;
+        prev_value_     = 0.0f;
+        current_value_  = 0.0f;
+        familiar_td_    = 0.0f;
+        novelty_factor_ = 1.0f;
     }
 
 private:
-    float dopamine_      = DOPAMINE_BASELINE;
-    float prev_value_    = 0.0f;
-    float current_value_ = 0.0f;
+    float dopamine_       = DOPAMINE_BASELINE;
+    float prev_value_     = 0.0f;
+    float current_value_  = 0.0f;
+    float familiar_td_    = 0.0f;    ///< Phase 29: EMA of raw td_errors
+    float novelty_factor_ = 1.0f;   ///< Phase 29: habituation scalar ∈ [0, 1]
 };
 
 } // namespace nikola::autonomy

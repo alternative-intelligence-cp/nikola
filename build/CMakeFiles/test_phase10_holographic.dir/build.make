@@ -96,6 +96,7 @@ test_phase10_holographic: libnikola_core.a
 test_phase10_holographic: /usr/lib/libCatch2Main.a
 test_phase10_holographic: /usr/lib/x86_64-linux-gnu/libprotobuf.so
 test_phase10_holographic: /usr/lib/x86_64-linux-gnu/libzmq.so
+test_phase10_holographic: /home/randy/Workspace/SYSTEM/onnxruntime/cpp/lib/libonnxruntime.so
 test_phase10_holographic: /usr/lib/libCatch2.a
 test_phase10_holographic: CMakeFiles/test_phase10_holographic.dir/link.txt
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --bold --progress-dir=/home/randy/Workspace/REPOS/nikola/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_2) "Linking CXX executable test_phase10_holographic"

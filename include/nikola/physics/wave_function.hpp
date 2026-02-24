@@ -22,6 +22,7 @@
 
 #include <memory>
 #include <cmath>
+#include <cstring>
 #include <random>
 #include <cassert>
 #include <stdexcept>
@@ -240,6 +241,155 @@ public:
             vr[i] *= gamma;
             vi[i] *= gamma;
         }
+    }
+
+    /**
+     * @brief Add a scaled copy of another WaveFunction's ψ-field into this one.
+     *
+     * Computes:  this->psi[i] += alpha * other.psi[i]  for all i.
+     * The two grids must have the same number of active nodes; if they differ
+     * this is a silent no-op (grids of different sizes represent distinct
+     * physical systems and mixing them is undefined).
+     * Used by NPT and RECALL_MEMORY to blend candidate fields into the live torus.
+     *
+     * @param other  Source WaveFunction (read-only).
+     * @param alpha  Blend weight (e.g. top_head_score × 0.3).
+     */
+    void add_scaled(const WaveFunction& other, float alpha) noexcept
+    {
+        const size_t N = grid_->num_active_nodes();
+        const size_t M = other.grid_->num_active_nodes();
+        if (N != M) return;  // size mismatch → silent no-op
+        float*       pr  = grid_->psi_real();
+        float*       pi  = grid_->psi_imag();
+        const float* opr = other.grid_->psi_real();
+        const float* opi = other.grid_->psi_imag();
+        for (size_t i = 0; i < N; ++i) {
+            pr[i] += alpha * opr[i];
+            pi[i] += alpha * opi[i];
+        }
+    }
+
+    /**
+     * @brief Real part of the ψ-field inner product ⟨this|other⟩.
+     *
+     * Computes Σᵢ (psi_real[i] · other.psi_real[i] + psi_imag[i] · other.psi_imag[i]).
+     * This is the wave-correlation kernel used by NPT attention heads.
+     *
+     * Returns 0.0 immediately when the two grids have different node counts:
+     * grids of different sizes represent physically distinct systems and
+     * their overlap is undefined.
+     *
+     * @param other  Key WaveFunction.
+     * @return Σᵢ Re(Ψᵢ* · Kᵢ), or 0.0 when num_nodes() != other.num_nodes().
+     */
+    [[nodiscard]]
+    double inner_product_re(const WaveFunction& other) const noexcept
+    {
+        const size_t N = grid_->num_active_nodes();
+        const size_t M = other.grid_->num_active_nodes();
+        if (N != M) return 0.0;  // size mismatch → undefined overlap
+        const float* pr  = grid_->psi_real();
+        const float* pi  = grid_->psi_imag();
+        const float* opr = other.grid_->psi_real();
+        const float* opi = other.grid_->psi_imag();
+        double sum = 0.0;
+        for (size_t i = 0; i < N; ++i)
+            sum += static_cast<double>(pr[i] * opr[i] + pi[i] * opi[i]);
+        return sum;
+    }
+
+    /**
+     * @brief Scale the ψ-field by a real scalar in-place.
+     *
+     * Computes: psi[i] *= alpha  for all i.
+     * Used by the NPT heterodyne aggregation step (output = Σᵢ score[i] · V[i]).
+     *
+     * @param alpha  Scaling factor.
+     */
+    void scale_by(float alpha) noexcept
+    {
+        const size_t N = grid_->num_active_nodes();
+        float* pr = grid_->psi_real();
+        float* pi = grid_->psi_imag();
+        for (size_t i = 0; i < N; ++i) {
+            pr[i] *= alpha;
+            pi[i] *= alpha;
+        }
+    }
+
+    /**
+     * @brief Rotate every ψᵢ by a global phase θ in-place.
+     *
+     * Computes: ψᵢ ← ψᵢ · e^{i·θ} = (ψ_r cosθ − ψ_i sinθ) + i(ψ_r sinθ + ψ_i cosθ).
+     * Used by NPT head projection (V_i = torus_wf · e^{i·2π·f_i·t}).
+     *
+     * @param theta  Phase angle in radians.
+     */
+    void phase_rotate_psi(float theta) noexcept
+    {
+        const float c = std::cos(theta);
+        const float s = std::sin(theta);
+        const size_t N = grid_->num_active_nodes();
+        float* pr = grid_->psi_real();
+        float* pi = grid_->psi_imag();
+        for (size_t i = 0; i < N; ++i) {
+            const float r = pr[i];
+            const float im = pi[i];
+            pr[i] = r * c - im * s;
+            pi[i] = r * s + im * c;
+        }
+    }
+
+    /**
+     * @brief Riemannian curvature proxy: mean plasticity = mean(1 − resonance[i]).
+     *
+     * The resonance field r[i] ∈ [0, 1] encodes neural plasticity:
+     *   r = 0  → fully plastic  (maximum curvature, R̄ = 1)
+     *   r = 1  → fully frozen   (zero curvature,    R̄ = 0)
+     *
+     * Mean curvature R̄ = (1/N) Σᵢ (1 − r[i])
+     *
+     * After seed_manifold() all nodes have resonance = 0.5 → R̄ = 0.5.
+     * Used by NPT curvature bias to weight attention heads.
+     *
+     * @return Non-negative curvature proxy ∈ [0, 1].
+     */
+    [[nodiscard]]
+    double mean_curvature() const noexcept
+    {
+        const size_t N = grid_->num_active_nodes();
+        if (N == 0) return 0.0;
+        const float* r = grid_->resonance();
+        double sum = 0.0;
+        for (size_t i = 0; i < N; ++i)
+            sum += static_cast<double>(1.0f - r[i]);
+        return sum / static_cast<double>(N);
+    }
+
+    /**
+     * @brief Return a deep copy of this WaveFunction (explicit clone).
+     *
+     * Allocates a fresh grid with the same topology as this one, then
+     * blast-copies psi and vel arrays.  The cloned time_ is preserved.
+     * Used by NPT project_heads() to create per-head V fields.
+     *
+     * @return A new WaveFunction owning a copy of this one's field data.
+     */
+    [[nodiscard]]
+    WaveFunction clone() const
+    {
+        const int n = grid_->grid_n();
+        WaveFunction result;
+        result.seed_manifold(n, 0, 1, 0.f, 0);  // allocates n^9 nodes (vacuuum)
+        const size_t N = grid_->num_active_nodes();
+        // Blast-copy psi and vel arrays.
+        std::memcpy(result.grid_->psi_real(), grid_->psi_real(), N * sizeof(float));
+        std::memcpy(result.grid_->psi_imag(), grid_->psi_imag(), N * sizeof(float));
+        std::memcpy(result.grid_->vel_real(), grid_->vel_real(), N * sizeof(float));
+        std::memcpy(result.grid_->vel_imag(), grid_->vel_imag(), N * sizeof(float));
+        result.time_ = time_;
+        return result;
     }
 
     /**

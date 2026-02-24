@@ -113,10 +113,38 @@ CMakeFiles/nikola_core.dir/src/autonomy/metabolic_lock.cpp.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/nikola_core.dir/src/autonomy/metabolic_lock.cpp.s"
 	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/randy/Workspace/REPOS/nikola/src/autonomy/metabolic_lock.cpp -o CMakeFiles/nikola_core.dir/src/autonomy/metabolic_lock.cpp.s
 
+CMakeFiles/nikola_core.dir/src/autonomy/autonomy_engine_impl.cpp.o: CMakeFiles/nikola_core.dir/flags.make
+CMakeFiles/nikola_core.dir/src/autonomy/autonomy_engine_impl.cpp.o: /home/randy/Workspace/REPOS/nikola/src/autonomy/autonomy_engine_impl.cpp
+CMakeFiles/nikola_core.dir/src/autonomy/autonomy_engine_impl.cpp.o: CMakeFiles/nikola_core.dir/compiler_depend.ts
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/home/randy/Workspace/REPOS/nikola/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_5) "Building CXX object CMakeFiles/nikola_core.dir/src/autonomy/autonomy_engine_impl.cpp.o"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/nikola_core.dir/src/autonomy/autonomy_engine_impl.cpp.o -MF CMakeFiles/nikola_core.dir/src/autonomy/autonomy_engine_impl.cpp.o.d -o CMakeFiles/nikola_core.dir/src/autonomy/autonomy_engine_impl.cpp.o -c /home/randy/Workspace/REPOS/nikola/src/autonomy/autonomy_engine_impl.cpp
+
+CMakeFiles/nikola_core.dir/src/autonomy/autonomy_engine_impl.cpp.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CXX source to CMakeFiles/nikola_core.dir/src/autonomy/autonomy_engine_impl.cpp.i"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/randy/Workspace/REPOS/nikola/src/autonomy/autonomy_engine_impl.cpp > CMakeFiles/nikola_core.dir/src/autonomy/autonomy_engine_impl.cpp.i
+
+CMakeFiles/nikola_core.dir/src/autonomy/autonomy_engine_impl.cpp.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/nikola_core.dir/src/autonomy/autonomy_engine_impl.cpp.s"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/randy/Workspace/REPOS/nikola/src/autonomy/autonomy_engine_impl.cpp -o CMakeFiles/nikola_core.dir/src/autonomy/autonomy_engine_impl.cpp.s
+
+CMakeFiles/nikola_core.dir/src/autonomy/decision_loop.cpp.o: CMakeFiles/nikola_core.dir/flags.make
+CMakeFiles/nikola_core.dir/src/autonomy/decision_loop.cpp.o: /home/randy/Workspace/REPOS/nikola/src/autonomy/decision_loop.cpp
+CMakeFiles/nikola_core.dir/src/autonomy/decision_loop.cpp.o: CMakeFiles/nikola_core.dir/compiler_depend.ts
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/home/randy/Workspace/REPOS/nikola/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_6) "Building CXX object CMakeFiles/nikola_core.dir/src/autonomy/decision_loop.cpp.o"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/nikola_core.dir/src/autonomy/decision_loop.cpp.o -MF CMakeFiles/nikola_core.dir/src/autonomy/decision_loop.cpp.o.d -o CMakeFiles/nikola_core.dir/src/autonomy/decision_loop.cpp.o -c /home/randy/Workspace/REPOS/nikola/src/autonomy/decision_loop.cpp
+
+CMakeFiles/nikola_core.dir/src/autonomy/decision_loop.cpp.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CXX source to CMakeFiles/nikola_core.dir/src/autonomy/decision_loop.cpp.i"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/randy/Workspace/REPOS/nikola/src/autonomy/decision_loop.cpp > CMakeFiles/nikola_core.dir/src/autonomy/decision_loop.cpp.i
+
+CMakeFiles/nikola_core.dir/src/autonomy/decision_loop.cpp.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/nikola_core.dir/src/autonomy/decision_loop.cpp.s"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/randy/Workspace/REPOS/nikola/src/autonomy/decision_loop.cpp -o CMakeFiles/nikola_core.dir/src/autonomy/decision_loop.cpp.s
+
 CMakeFiles/nikola_core.dir/src/spatial/hilbert_scanner.cpp.o: CMakeFiles/nikola_core.dir/flags.make
 CMakeFiles/nikola_core.dir/src/spatial/hilbert_scanner.cpp.o: /home/randy/Workspace/REPOS/nikola/src/spatial/hilbert_scanner.cpp
 CMakeFiles/nikola_core.dir/src/spatial/hilbert_scanner.cpp.o: CMakeFiles/nikola_core.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/home/randy/Workspace/REPOS/nikola/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_5) "Building CXX object CMakeFiles/nikola_core.dir/src/spatial/hilbert_scanner.cpp.o"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/home/randy/Workspace/REPOS/nikola/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_7) "Building CXX object CMakeFiles/nikola_core.dir/src/spatial/hilbert_scanner.cpp.o"
 	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/nikola_core.dir/src/spatial/hilbert_scanner.cpp.o -MF CMakeFiles/nikola_core.dir/src/spatial/hilbert_scanner.cpp.o.d -o CMakeFiles/nikola_core.dir/src/spatial/hilbert_scanner.cpp.o -c /home/randy/Workspace/REPOS/nikola/src/spatial/hilbert_scanner.cpp
 
 CMakeFiles/nikola_core.dir/src/spatial/hilbert_scanner.cpp.i: cmake_force
@@ -130,7 +158,7 @@ CMakeFiles/nikola_core.dir/src/spatial/hilbert_scanner.cpp.s: cmake_force
 CMakeFiles/nikola_core.dir/src/core/config.cpp.o: CMakeFiles/nikola_core.dir/flags.make
 CMakeFiles/nikola_core.dir/src/core/config.cpp.o: /home/randy/Workspace/REPOS/nikola/src/core/config.cpp
 CMakeFiles/nikola_core.dir/src/core/config.cpp.o: CMakeFiles/nikola_core.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/home/randy/Workspace/REPOS/nikola/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_6) "Building CXX object CMakeFiles/nikola_core.dir/src/core/config.cpp.o"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/home/randy/Workspace/REPOS/nikola/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_8) "Building CXX object CMakeFiles/nikola_core.dir/src/core/config.cpp.o"
 	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/nikola_core.dir/src/core/config.cpp.o -MF CMakeFiles/nikola_core.dir/src/core/config.cpp.o.d -o CMakeFiles/nikola_core.dir/src/core/config.cpp.o -c /home/randy/Workspace/REPOS/nikola/src/core/config.cpp
 
 CMakeFiles/nikola_core.dir/src/core/config.cpp.i: cmake_force
@@ -141,10 +169,66 @@ CMakeFiles/nikola_core.dir/src/core/config.cpp.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/nikola_core.dir/src/core/config.cpp.s"
 	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/randy/Workspace/REPOS/nikola/src/core/config.cpp -o CMakeFiles/nikola_core.dir/src/core/config.cpp.s
 
+CMakeFiles/nikola_core.dir/src/cognitive/attention_primer.cpp.o: CMakeFiles/nikola_core.dir/flags.make
+CMakeFiles/nikola_core.dir/src/cognitive/attention_primer.cpp.o: /home/randy/Workspace/REPOS/nikola/src/cognitive/attention_primer.cpp
+CMakeFiles/nikola_core.dir/src/cognitive/attention_primer.cpp.o: CMakeFiles/nikola_core.dir/compiler_depend.ts
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/home/randy/Workspace/REPOS/nikola/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_9) "Building CXX object CMakeFiles/nikola_core.dir/src/cognitive/attention_primer.cpp.o"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/nikola_core.dir/src/cognitive/attention_primer.cpp.o -MF CMakeFiles/nikola_core.dir/src/cognitive/attention_primer.cpp.o.d -o CMakeFiles/nikola_core.dir/src/cognitive/attention_primer.cpp.o -c /home/randy/Workspace/REPOS/nikola/src/cognitive/attention_primer.cpp
+
+CMakeFiles/nikola_core.dir/src/cognitive/attention_primer.cpp.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CXX source to CMakeFiles/nikola_core.dir/src/cognitive/attention_primer.cpp.i"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/randy/Workspace/REPOS/nikola/src/cognitive/attention_primer.cpp > CMakeFiles/nikola_core.dir/src/cognitive/attention_primer.cpp.i
+
+CMakeFiles/nikola_core.dir/src/cognitive/attention_primer.cpp.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/nikola_core.dir/src/cognitive/attention_primer.cpp.s"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/randy/Workspace/REPOS/nikola/src/cognitive/attention_primer.cpp -o CMakeFiles/nikola_core.dir/src/cognitive/attention_primer.cpp.s
+
+CMakeFiles/nikola_core.dir/src/cognitive/scratchpad.cpp.o: CMakeFiles/nikola_core.dir/flags.make
+CMakeFiles/nikola_core.dir/src/cognitive/scratchpad.cpp.o: /home/randy/Workspace/REPOS/nikola/src/cognitive/scratchpad.cpp
+CMakeFiles/nikola_core.dir/src/cognitive/scratchpad.cpp.o: CMakeFiles/nikola_core.dir/compiler_depend.ts
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/home/randy/Workspace/REPOS/nikola/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_10) "Building CXX object CMakeFiles/nikola_core.dir/src/cognitive/scratchpad.cpp.o"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/nikola_core.dir/src/cognitive/scratchpad.cpp.o -MF CMakeFiles/nikola_core.dir/src/cognitive/scratchpad.cpp.o.d -o CMakeFiles/nikola_core.dir/src/cognitive/scratchpad.cpp.o -c /home/randy/Workspace/REPOS/nikola/src/cognitive/scratchpad.cpp
+
+CMakeFiles/nikola_core.dir/src/cognitive/scratchpad.cpp.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CXX source to CMakeFiles/nikola_core.dir/src/cognitive/scratchpad.cpp.i"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/randy/Workspace/REPOS/nikola/src/cognitive/scratchpad.cpp > CMakeFiles/nikola_core.dir/src/cognitive/scratchpad.cpp.i
+
+CMakeFiles/nikola_core.dir/src/cognitive/scratchpad.cpp.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/nikola_core.dir/src/cognitive/scratchpad.cpp.s"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/randy/Workspace/REPOS/nikola/src/cognitive/scratchpad.cpp -o CMakeFiles/nikola_core.dir/src/cognitive/scratchpad.cpp.s
+
+CMakeFiles/nikola_core.dir/src/cognitive/spectral_filter.cpp.o: CMakeFiles/nikola_core.dir/flags.make
+CMakeFiles/nikola_core.dir/src/cognitive/spectral_filter.cpp.o: /home/randy/Workspace/REPOS/nikola/src/cognitive/spectral_filter.cpp
+CMakeFiles/nikola_core.dir/src/cognitive/spectral_filter.cpp.o: CMakeFiles/nikola_core.dir/compiler_depend.ts
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/home/randy/Workspace/REPOS/nikola/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_11) "Building CXX object CMakeFiles/nikola_core.dir/src/cognitive/spectral_filter.cpp.o"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/nikola_core.dir/src/cognitive/spectral_filter.cpp.o -MF CMakeFiles/nikola_core.dir/src/cognitive/spectral_filter.cpp.o.d -o CMakeFiles/nikola_core.dir/src/cognitive/spectral_filter.cpp.o -c /home/randy/Workspace/REPOS/nikola/src/cognitive/spectral_filter.cpp
+
+CMakeFiles/nikola_core.dir/src/cognitive/spectral_filter.cpp.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CXX source to CMakeFiles/nikola_core.dir/src/cognitive/spectral_filter.cpp.i"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/randy/Workspace/REPOS/nikola/src/cognitive/spectral_filter.cpp > CMakeFiles/nikola_core.dir/src/cognitive/spectral_filter.cpp.i
+
+CMakeFiles/nikola_core.dir/src/cognitive/spectral_filter.cpp.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/nikola_core.dir/src/cognitive/spectral_filter.cpp.s"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/randy/Workspace/REPOS/nikola/src/cognitive/spectral_filter.cpp -o CMakeFiles/nikola_core.dir/src/cognitive/spectral_filter.cpp.s
+
+CMakeFiles/nikola_core.dir/src/cognitive/thought_composer.cpp.o: CMakeFiles/nikola_core.dir/flags.make
+CMakeFiles/nikola_core.dir/src/cognitive/thought_composer.cpp.o: /home/randy/Workspace/REPOS/nikola/src/cognitive/thought_composer.cpp
+CMakeFiles/nikola_core.dir/src/cognitive/thought_composer.cpp.o: CMakeFiles/nikola_core.dir/compiler_depend.ts
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/home/randy/Workspace/REPOS/nikola/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_12) "Building CXX object CMakeFiles/nikola_core.dir/src/cognitive/thought_composer.cpp.o"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/nikola_core.dir/src/cognitive/thought_composer.cpp.o -MF CMakeFiles/nikola_core.dir/src/cognitive/thought_composer.cpp.o.d -o CMakeFiles/nikola_core.dir/src/cognitive/thought_composer.cpp.o -c /home/randy/Workspace/REPOS/nikola/src/cognitive/thought_composer.cpp
+
+CMakeFiles/nikola_core.dir/src/cognitive/thought_composer.cpp.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CXX source to CMakeFiles/nikola_core.dir/src/cognitive/thought_composer.cpp.i"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/randy/Workspace/REPOS/nikola/src/cognitive/thought_composer.cpp > CMakeFiles/nikola_core.dir/src/cognitive/thought_composer.cpp.i
+
+CMakeFiles/nikola_core.dir/src/cognitive/thought_composer.cpp.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/nikola_core.dir/src/cognitive/thought_composer.cpp.s"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/randy/Workspace/REPOS/nikola/src/cognitive/thought_composer.cpp -o CMakeFiles/nikola_core.dir/src/cognitive/thought_composer.cpp.s
+
 CMakeFiles/nikola_core.dir/nes.pb.cc.o: CMakeFiles/nikola_core.dir/flags.make
 CMakeFiles/nikola_core.dir/nes.pb.cc.o: nes.pb.cc
 CMakeFiles/nikola_core.dir/nes.pb.cc.o: CMakeFiles/nikola_core.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/home/randy/Workspace/REPOS/nikola/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_7) "Building CXX object CMakeFiles/nikola_core.dir/nes.pb.cc.o"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/home/randy/Workspace/REPOS/nikola/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_13) "Building CXX object CMakeFiles/nikola_core.dir/nes.pb.cc.o"
 	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/nikola_core.dir/nes.pb.cc.o -MF CMakeFiles/nikola_core.dir/nes.pb.cc.o.d -o CMakeFiles/nikola_core.dir/nes.pb.cc.o -c /home/randy/Workspace/REPOS/nikola/build/nes.pb.cc
 
 CMakeFiles/nikola_core.dir/nes.pb.cc.i: cmake_force
@@ -158,7 +242,7 @@ CMakeFiles/nikola_core.dir/nes.pb.cc.s: cmake_force
 CMakeFiles/nikola_core.dir/irsp.pb.cc.o: CMakeFiles/nikola_core.dir/flags.make
 CMakeFiles/nikola_core.dir/irsp.pb.cc.o: irsp.pb.cc
 CMakeFiles/nikola_core.dir/irsp.pb.cc.o: CMakeFiles/nikola_core.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/home/randy/Workspace/REPOS/nikola/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_8) "Building CXX object CMakeFiles/nikola_core.dir/irsp.pb.cc.o"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/home/randy/Workspace/REPOS/nikola/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_14) "Building CXX object CMakeFiles/nikola_core.dir/irsp.pb.cc.o"
 	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/nikola_core.dir/irsp.pb.cc.o -MF CMakeFiles/nikola_core.dir/irsp.pb.cc.o.d -o CMakeFiles/nikola_core.dir/irsp.pb.cc.o -c /home/randy/Workspace/REPOS/nikola/build/irsp.pb.cc
 
 CMakeFiles/nikola_core.dir/irsp.pb.cc.i: cmake_force
@@ -173,8 +257,14 @@ CMakeFiles/nikola_core.dir/irsp.pb.cc.s: cmake_force
 nikola_core_OBJECTS = \
 "CMakeFiles/nikola_core.dir/src/autonomy/metabolic_controller.cpp.o" \
 "CMakeFiles/nikola_core.dir/src/autonomy/metabolic_lock.cpp.o" \
+"CMakeFiles/nikola_core.dir/src/autonomy/autonomy_engine_impl.cpp.o" \
+"CMakeFiles/nikola_core.dir/src/autonomy/decision_loop.cpp.o" \
 "CMakeFiles/nikola_core.dir/src/spatial/hilbert_scanner.cpp.o" \
 "CMakeFiles/nikola_core.dir/src/core/config.cpp.o" \
+"CMakeFiles/nikola_core.dir/src/cognitive/attention_primer.cpp.o" \
+"CMakeFiles/nikola_core.dir/src/cognitive/scratchpad.cpp.o" \
+"CMakeFiles/nikola_core.dir/src/cognitive/spectral_filter.cpp.o" \
+"CMakeFiles/nikola_core.dir/src/cognitive/thought_composer.cpp.o" \
 "CMakeFiles/nikola_core.dir/nes.pb.cc.o" \
 "CMakeFiles/nikola_core.dir/irsp.pb.cc.o"
 
@@ -183,13 +273,19 @@ nikola_core_EXTERNAL_OBJECTS =
 
 libnikola_core.a: CMakeFiles/nikola_core.dir/src/autonomy/metabolic_controller.cpp.o
 libnikola_core.a: CMakeFiles/nikola_core.dir/src/autonomy/metabolic_lock.cpp.o
+libnikola_core.a: CMakeFiles/nikola_core.dir/src/autonomy/autonomy_engine_impl.cpp.o
+libnikola_core.a: CMakeFiles/nikola_core.dir/src/autonomy/decision_loop.cpp.o
 libnikola_core.a: CMakeFiles/nikola_core.dir/src/spatial/hilbert_scanner.cpp.o
 libnikola_core.a: CMakeFiles/nikola_core.dir/src/core/config.cpp.o
+libnikola_core.a: CMakeFiles/nikola_core.dir/src/cognitive/attention_primer.cpp.o
+libnikola_core.a: CMakeFiles/nikola_core.dir/src/cognitive/scratchpad.cpp.o
+libnikola_core.a: CMakeFiles/nikola_core.dir/src/cognitive/spectral_filter.cpp.o
+libnikola_core.a: CMakeFiles/nikola_core.dir/src/cognitive/thought_composer.cpp.o
 libnikola_core.a: CMakeFiles/nikola_core.dir/nes.pb.cc.o
 libnikola_core.a: CMakeFiles/nikola_core.dir/irsp.pb.cc.o
 libnikola_core.a: CMakeFiles/nikola_core.dir/build.make
 libnikola_core.a: CMakeFiles/nikola_core.dir/link.txt
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --bold --progress-dir=/home/randy/Workspace/REPOS/nikola/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_9) "Linking CXX static library libnikola_core.a"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --bold --progress-dir=/home/randy/Workspace/REPOS/nikola/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_15) "Linking CXX static library libnikola_core.a"
 	$(CMAKE_COMMAND) -P CMakeFiles/nikola_core.dir/cmake_clean_target.cmake
 	$(CMAKE_COMMAND) -E cmake_link_script CMakeFiles/nikola_core.dir/link.txt --verbose=$(VERBOSE)
 

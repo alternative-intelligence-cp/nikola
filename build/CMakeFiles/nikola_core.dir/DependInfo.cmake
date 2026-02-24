@@ -10,8 +10,14 @@ set(CMAKE_DEPENDS_LANGUAGES
 set(CMAKE_DEPENDS_DEPENDENCY_FILES
   "/home/randy/Workspace/REPOS/nikola/build/irsp.pb.cc" "CMakeFiles/nikola_core.dir/irsp.pb.cc.o" "gcc" "CMakeFiles/nikola_core.dir/irsp.pb.cc.o.d"
   "/home/randy/Workspace/REPOS/nikola/build/nes.pb.cc" "CMakeFiles/nikola_core.dir/nes.pb.cc.o" "gcc" "CMakeFiles/nikola_core.dir/nes.pb.cc.o.d"
+  "/home/randy/Workspace/REPOS/nikola/src/autonomy/autonomy_engine_impl.cpp" "CMakeFiles/nikola_core.dir/src/autonomy/autonomy_engine_impl.cpp.o" "gcc" "CMakeFiles/nikola_core.dir/src/autonomy/autonomy_engine_impl.cpp.o.d"
+  "/home/randy/Workspace/REPOS/nikola/src/autonomy/decision_loop.cpp" "CMakeFiles/nikola_core.dir/src/autonomy/decision_loop.cpp.o" "gcc" "CMakeFiles/nikola_core.dir/src/autonomy/decision_loop.cpp.o.d"
   "/home/randy/Workspace/REPOS/nikola/src/autonomy/metabolic_controller.cpp" "CMakeFiles/nikola_core.dir/src/autonomy/metabolic_controller.cpp.o" "gcc" "CMakeFiles/nikola_core.dir/src/autonomy/metabolic_controller.cpp.o.d"
   "/home/randy/Workspace/REPOS/nikola/src/autonomy/metabolic_lock.cpp" "CMakeFiles/nikola_core.dir/src/autonomy/metabolic_lock.cpp.o" "gcc" "CMakeFiles/nikola_core.dir/src/autonomy/metabolic_lock.cpp.o.d"
+  "/home/randy/Workspace/REPOS/nikola/src/cognitive/attention_primer.cpp" "CMakeFiles/nikola_core.dir/src/cognitive/attention_primer.cpp.o" "gcc" "CMakeFiles/nikola_core.dir/src/cognitive/attention_primer.cpp.o.d"
+  "/home/randy/Workspace/REPOS/nikola/src/cognitive/scratchpad.cpp" "CMakeFiles/nikola_core.dir/src/cognitive/scratchpad.cpp.o" "gcc" "CMakeFiles/nikola_core.dir/src/cognitive/scratchpad.cpp.o.d"
+  "/home/randy/Workspace/REPOS/nikola/src/cognitive/spectral_filter.cpp" "CMakeFiles/nikola_core.dir/src/cognitive/spectral_filter.cpp.o" "gcc" "CMakeFiles/nikola_core.dir/src/cognitive/spectral_filter.cpp.o.d"
+  "/home/randy/Workspace/REPOS/nikola/src/cognitive/thought_composer.cpp" "CMakeFiles/nikola_core.dir/src/cognitive/thought_composer.cpp.o" "gcc" "CMakeFiles/nikola_core.dir/src/cognitive/thought_composer.cpp.o.d"
   "/home/randy/Workspace/REPOS/nikola/src/core/config.cpp" "CMakeFiles/nikola_core.dir/src/core/config.cpp.o" "gcc" "CMakeFiles/nikola_core.dir/src/core/config.cpp.o.d"
   "/home/randy/Workspace/REPOS/nikola/src/spatial/hilbert_scanner.cpp" "CMakeFiles/nikola_core.dir/src/spatial/hilbert_scanner.cpp.o" "gcc" "CMakeFiles/nikola_core.dir/src/spatial/hilbert_scanner.cpp.o.d"
   )

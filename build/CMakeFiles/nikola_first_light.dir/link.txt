@@ -1,1 +1,1 @@
-/usr/bin/c++ -O3 -DNDEBUG CMakeFiles/nikola_first_light.dir/src/main.cpp.o -o nikola_first_light  libnikola_core.a /usr/lib/x86_64-linux-gnu/libprotobuf.so /usr/lib/x86_64-linux-gnu/libzmq.so 
+/usr/bin/c++ -g CMakeFiles/nikola_first_light.dir/src/main.cpp.o -o nikola_first_light  -Wl,-rpath,/home/randy/Workspace/SYSTEM/onnxruntime/cpp/lib libnikola_core.a /usr/lib/x86_64-linux-gnu/libprotobuf.so /usr/lib/x86_64-linux-gnu/libzmq.so /home/randy/Workspace/SYSTEM/onnxruntime/cpp/lib/libonnxruntime.so 

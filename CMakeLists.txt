@@ -25,6 +25,21 @@ find_package(Protobuf REQUIRED)
 find_package(Threads REQUIRED)
 find_package(cppzmq REQUIRED)  # Phase 4: ZMQ Spine
 
+# ORT (ONNX Runtime) — optional; enables BERT-based semantic embeddings
+set(ORT_ROOT "/home/randy/Workspace/SYSTEM/onnxruntime/cpp" CACHE PATH "Path to ONNX Runtime C++ SDK")
+if(EXISTS "${ORT_ROOT}/include/onnxruntime_cxx_api.h")
+    set(NIKOLA_HAS_ORT ON)
+    add_library(onnxruntime_imported SHARED IMPORTED)
+    set_target_properties(onnxruntime_imported PROPERTIES
+        IMPORTED_LOCATION "${ORT_ROOT}/lib/libonnxruntime.so"
+        INTERFACE_INCLUDE_DIRECTORIES "${ORT_ROOT}/include"
+    )
+    message(STATUS "ORT found at ${ORT_ROOT} — NIKOLA_HAS_ORT=ON")
+else()
+    set(NIKOLA_HAS_ORT OFF)
+    message(STATUS "ORT not found at ${ORT_ROOT} — NIKOLA_HAS_ORT=OFF (no BERT embeddings)")
+endif()
+
 # Testing framework (Catch2 v3)
 find_package(Catch2 3 QUIET)
 if(Catch2_FOUND)
@@ -53,6 +68,8 @@ protobuf_generate_cpp(PROTO_SRCS PROTO_HDRS ${PROTO_FILES})
 set(AUTONOMY_SOURCES
     src/autonomy/metabolic_controller.cpp
     src/autonomy/metabolic_lock.cpp
+    src/autonomy/autonomy_engine_impl.cpp
+    src/autonomy/decision_loop.cpp
 )
 
 set(SPATIAL_SOURCES
@@ -73,9 +90,10 @@ set(CORE_SOURCES
 
 # Genesis Module 1: Cognitive Resonance
 set(COGNITIVE_SOURCES
-    # src/cognitive/spectral_filter.cpp  # TODO: Phase 2
-    # src/cognitive/attention_primer.cpp
-    # src/cognitive/scratchpad.cpp
+    src/cognitive/attention_primer.cpp
+    src/cognitive/scratchpad.cpp
+    src/cognitive/spectral_filter.cpp
+    src/cognitive/thought_composer.cpp
 )
 
 # Genesis Module 2: Social Layer
@@ -145,6 +163,17 @@ target_link_libraries(nikola_core PUBLIC
     cppzmq
     Threads::Threads
 )
+
+# ORT wiring
+if(NIKOLA_HAS_ORT)
+    target_compile_definitions(nikola_core PUBLIC NIKOLA_HAS_ORT)
+    target_compile_definitions(nikola_core PUBLIC
+        NIKOLA_ORT_MODEL_PATH="/home/randy/Workspace/SYSTEM/onnxruntime/bert-tiny-onnx/model.onnx"
+        NIKOLA_ORT_TOKENIZER_PATH="/home/randy/Workspace/SYSTEM/onnxruntime/bert-tiny-onnx"
+    )
+    target_include_directories(nikola_core PUBLIC ${ORT_ROOT}/include)
+    target_link_libraries(nikola_core PUBLIC onnxruntime_imported)
+endif()
 
 # ============================================================================
 # TESTING (Catch2 v3)
@@ -253,6 +282,184 @@ if(NIKOLA_BUILD_TESTS)
     add_executable(test_phase17_bootstrap_manager tests/unit/phase17_bootstrap_manager_test.cpp)
     target_link_libraries(test_phase17_bootstrap_manager PRIVATE nikola_core Catch2::Catch2WithMain)
     add_test(NAME Phase17BootstrapManager COMMAND test_phase17_bootstrap_manager)
+
+    # Phase 18 Unit Tests: ScopeProfiler + performance introspection
+    add_executable(test_phase18_scope_profiler tests/unit/phase18_scope_profiler_test.cpp)
+    target_link_libraries(test_phase18_scope_profiler PRIVATE nikola_core Catch2::Catch2WithMain)
+    add_test(NAME Phase18ScopeProfiler COMMAND test_phase18_scope_profiler)
+
+    # Phase 19 Unit Tests: TelemetryDaemon + async event streaming
+    add_executable(test_phase19_telemetry_daemon tests/unit/phase19_telemetry_daemon_test.cpp)
+    target_link_libraries(test_phase19_telemetry_daemon PRIVATE nikola_core Catch2::Catch2WithMain)
+    add_test(NAME Phase19TelemetryDaemon COMMAND test_phase19_telemetry_daemon)
+
+    # Phase 20 Unit Tests: DebugAdapter + DAP protocol bridge
+    add_executable(test_phase20_debug_adapter tests/unit/phase20_debug_adapter_test.cpp)
+    target_link_libraries(test_phase20_debug_adapter PRIVATE nikola_core Catch2::Catch2WithMain)
+    add_test(NAME Phase20DebugAdapter COMMAND test_phase20_debug_adapter)
+
+    # Phase 21 Unit Tests: CognitivePipeline end-to-end
+    add_executable(test_phase21_cognitive_pipeline tests/unit/phase21_cognitive_pipeline_test.cpp)
+    target_link_libraries(test_phase21_cognitive_pipeline PRIVATE nikola_core Catch2::Catch2WithMain)
+    add_test(NAME Phase21CognitivePipeline COMMAND test_phase21_cognitive_pipeline)
+
+    # Phase 22 Unit Tests: CUDA GPU Propagator (performance: <1 ms/step)
+    if(NIKOLA_HAS_CUDA)
+        add_executable(test_phase22_cuda_propagator tests/unit/phase22_cuda_propagator_test.cpp)
+        target_link_libraries(test_phase22_cuda_propagator PRIVATE nikola_core nikola_cuda Catch2::Catch2WithMain)
+        add_test(NAME Phase22CudaPropagator COMMAND test_phase22_cuda_propagator)
+    endif()
+    # (Phase 22 test skipped when CUDA is unavailable)
+
+    # Phase 23 Unit Tests: DecisionLoop — autonomous action scoring + tick cycle
+    add_executable(test_phase23_decision_loop tests/unit/phase23_decision_loop_test.cpp)
+    target_link_libraries(test_phase23_decision_loop PRIVATE nikola_core Catch2::Catch2WithMain)
+    add_test(NAME Phase23DecisionLoop COMMAND test_phase23_decision_loop)
+
+    # Phase 24 Unit Tests: ThoughtComposer — template-driven output generation
+    add_executable(test_phase24_thought_composer tests/unit/phase24_thought_composer_test.cpp)
+    target_link_libraries(test_phase24_thought_composer PRIVATE nikola_core Catch2::Catch2WithMain)
+    add_test(NAME Phase24ThoughtComposer COMMAND test_phase24_thought_composer)
+
+    # Phase 25 Unit Tests: FieldPersistence — wave-field checkpoint I/O
+    add_executable(test_phase25_field_persistence tests/unit/phase25_field_persistence_test.cpp)
+    target_link_libraries(test_phase25_field_persistence PRIVATE nikola_core Catch2::Catch2WithMain)
+    add_test(NAME Phase25FieldPersistence COMMAND test_phase25_field_persistence)
+
+    # Phase 26 Unit Tests: SeededExploration — boredom-driven novelty injection
+    add_executable(test_phase26_seeded_exploration tests/unit/phase26_seeded_exploration_test.cpp)
+    target_link_libraries(test_phase26_seeded_exploration PRIVATE nikola_core Catch2::Catch2WithMain)
+    add_test(NAME Phase26SeededExploration COMMAND test_phase26_seeded_exploration)
+
+    # Phase 27 Unit Tests: CrossInjection — analytic cross-injection calibration
+    add_executable(test_phase27_cross_injection tests/unit/phase27_cross_injection_test.cpp)
+    target_link_libraries(test_phase27_cross_injection PRIVATE nikola_core Catch2::Catch2WithMain)
+    add_test(NAME Phase27CrossInjection COMMAND test_phase27_cross_injection)
+
+    # Phase 28 Unit Tests: AnalyticDecode — time-correct warm decode via analytic signatures
+    add_executable(test_phase28_analytic_decode tests/unit/phase28_analytic_decode_test.cpp)
+    target_link_libraries(test_phase28_analytic_decode PRIVATE nikola_core Catch2::Catch2WithMain)
+    add_test(NAME Phase28AnalyticDecode COMMAND test_phase28_analytic_decode)
+
+    # Phase 29 Unit Tests: NoveltyDecay — habituation curve for REFUSE
+    add_executable(test_phase29_novelty_decay tests/unit/phase29_novelty_decay_test.cpp)
+    target_link_libraries(test_phase29_novelty_decay PRIVATE nikola_core Catch2::Catch2WithMain)
+    add_test(NAME Phase29NoveltyDecay COMMAND test_phase29_novelty_decay)
+
+    # Phase 30 Unit Tests: ZmqSpine — message bus integration
+    add_executable(test_phase30_zmq_spine tests/unit/phase30_zmq_spine_test.cpp)
+    target_link_libraries(test_phase30_zmq_spine PRIVATE nikola_core Catch2::Catch2WithMain)
+    add_test(NAME Phase30ZmqSpine COMMAND test_phase30_zmq_spine)
+
+    # Phase 31 Unit Tests: LookupAgent — semantic DB query pipeline
+    add_executable(test_phase31_lookup_agent tests/unit/phase31_lookup_agent_test.cpp)
+    target_link_libraries(test_phase31_lookup_agent PRIVATE nikola_core Catch2::Catch2WithMain)
+    add_test(NAME Phase31LookupAgent COMMAND test_phase31_lookup_agent)
+
+    # Phase 32 Unit Tests: EscalationAgent — tamper-evident harm evidence
+    add_executable(test_phase32_escalation tests/unit/phase32_escalation_test.cpp)
+    target_link_libraries(test_phase32_escalation PRIVATE nikola_core Catch2::Catch2WithMain)
+    add_test(NAME Phase32Escalation COMMAND test_phase32_escalation)
+
+    # Phase 33 Unit Tests: SemanticMemory persistence — wave-field LTM store
+    add_executable(test_phase33_memory_persistence tests/unit/phase33_memory_persistence_test.cpp)
+    target_link_libraries(test_phase33_memory_persistence PRIVATE nikola_core Catch2::Catch2WithMain)
+    add_test(NAME Phase33MemoryPersistence COMMAND test_phase33_memory_persistence)
+
+    # Phase 34 Unit Tests: MemoryRecall — cosine-resonance retrieval
+    add_executable(test_phase34_recall tests/unit/phase34_recall_test.cpp)
+    target_link_libraries(test_phase34_recall PRIVATE nikola_core Catch2::Catch2WithMain)
+    add_test(NAME Phase34Recall COMMAND test_phase34_recall)
+
+    # Phase 35 Unit Tests: RelevanceGate — dual-path salience filter
+    add_executable(test_phase35_relevance_gate tests/unit/phase35_relevance_gate_test.cpp)
+    target_link_libraries(test_phase35_relevance_gate PRIVATE nikola_core Catch2::Catch2WithMain)
+    add_test(NAME Phase35RelevanceGate COMMAND test_phase35_relevance_gate)
+
+    # Phase 36 Unit Tests: GatedInjection — RelevanceGate wired into CognitiveTorus
+    add_executable(test_phase36_gated_injection tests/unit/phase36_gated_injection_test.cpp)
+    target_link_libraries(test_phase36_gated_injection PRIVATE nikola_core Catch2::Catch2WithMain)
+    add_test(NAME Phase36GatedInjection COMMAND test_phase36_gated_injection)
+
+    # Phase 37 Unit Tests: NPT data structures — WaveCorrelationHead + AttentionResult
+    add_executable(test_phase37_npt_structure tests/unit/phase37_npt_structure_test.cpp)
+    target_link_libraries(test_phase37_npt_structure PRIVATE nikola_core Catch2::Catch2WithMain)
+    add_test(NAME Phase37NptStructure COMMAND test_phase37_npt_structure)
+
+    # Phase 38 Unit Tests: Wave correlation kernel — inner_product_re, wave_correlation, softmax
+    add_executable(test_phase38_wave_correlation tests/unit/phase38_wave_correlation_test.cpp)
+    target_link_libraries(test_phase38_wave_correlation PRIVATE nikola_core Catch2::Catch2WithMain)
+    add_test(NAME Phase38WaveCorrelation COMMAND test_phase38_wave_correlation)
+
+    # Phase 39 Unit Tests: Riemannian curvature bias
+    add_executable(test_phase39_curvature_bias tests/unit/phase39_curvature_bias_test.cpp)
+    target_link_libraries(test_phase39_curvature_bias PRIVATE nikola_core Catch2::Catch2WithMain)
+    add_test(NAME Phase39CurvatureBias COMMAND test_phase39_curvature_bias)
+
+    # Phase 40 Unit Tests: Heterodyne value aggregation — clone, scale_by, add_scaled, output WF
+    add_executable(test_phase40_heterodyne tests/unit/phase40_heterodyne_test.cpp)
+    target_link_libraries(test_phase40_heterodyne PRIVATE nikola_core Catch2::Catch2WithMain)
+    add_test(NAME Phase40Heterodyne COMMAND test_phase40_heterodyne)
+
+    # Phase 41 Unit Tests: Multi-head merge — phase_rotate_psi, project_heads, per-head V aggregation
+    add_executable(test_phase41_multihead_merge tests/unit/phase41_multihead_merge_test.cpp)
+    target_link_libraries(test_phase41_multihead_merge PRIVATE nikola_core Catch2::Catch2WithMain)
+    add_test(NAME Phase41MultiheadMerge COMMAND test_phase41_multihead_merge)
+
+    # Phase 42 Unit Tests: NPT wired into DecisionLoop (REASON action)
+    add_executable(test_phase42_npt_reason tests/unit/phase42_npt_reason_test.cpp)
+    target_link_libraries(test_phase42_npt_reason PRIVATE nikola_core Catch2::Catch2WithMain)
+    add_test(NAME Phase42NptReason COMMAND test_phase42_npt_reason)
+
+    # Phase 43 Unit Tests: Hebbian-Riemannian metric update via NPT output
+    add_executable(test_phase43_hebbian_update tests/unit/phase43_hebbian_update_test.cpp)
+    target_link_libraries(test_phase43_hebbian_update PRIVATE nikola_core Catch2::Catch2WithMain)
+    add_test(NAME Phase43HebbianUpdate COMMAND test_phase43_hebbian_update)
+
+    # Phase 44 Unit Tests: K-head differentiation via score-weighted input tracking
+    add_executable(test_phase44_k_differentiation tests/unit/phase44_k_differentiation_test.cpp)
+    target_link_libraries(test_phase44_k_differentiation PRIVATE nikola_core Catch2::Catch2WithMain)
+    add_test(NAME Phase44KDifferentiation COMMAND test_phase44_k_differentiation)
+
+    # Phase 45 Unit Tests: Dopamine-modulated Hebbian learning rate
+    add_executable(test_phase45_dopamine_lr tests/unit/phase45_dopamine_lr_test.cpp)
+    target_link_libraries(test_phase45_dopamine_lr PRIVATE nikola_core Catch2::Catch2WithMain)
+    add_test(NAME Phase45DopamineLR COMMAND test_phase45_dopamine_lr)
+
+    # Phase 46 Unit Tests: Serotonin-modulated metric elasticity
+    add_executable(test_phase46_serotonin_elasticity tests/unit/phase46_serotonin_elasticity_test.cpp)
+    target_link_libraries(test_phase46_serotonin_elasticity PRIVATE nikola_core Catch2::Catch2WithMain)
+    add_test(NAME Phase46SerotoninElasticity COMMAND test_phase46_serotonin_elasticity)
+
+    # Phase 47 Unit Tests: Norepinephrine arousal modulation
+    add_executable(test_phase47_norepinephrine_arousal tests/unit/phase47_norepinephrine_arousal_test.cpp)
+    target_link_libraries(test_phase47_norepinephrine_arousal PRIVATE nikola_core Catch2::Catch2WithMain)
+    add_test(NAME Phase47NorepinephrineArousal COMMAND test_phase47_norepinephrine_arousal)
+
+    # Phase 48 Unit Tests: NE-modulated Dream-Weave experience replay pool
+    add_executable(test_phase48_dream_replay tests/unit/phase48_dream_replay_test.cpp)
+    target_link_libraries(test_phase48_dream_replay PRIVATE nikola_core Catch2::Catch2WithMain)
+    add_test(NAME Phase48DreamReplay COMMAND test_phase48_dream_replay)
+
+    # Phase 49 Unit Tests: AUTO-04 Boredom Singularity Fix (sigmoidal accumulation)
+    add_executable(test_phase49_boredom_singularity_fix tests/unit/phase49_boredom_singularity_fix_test.cpp)
+    target_link_libraries(test_phase49_boredom_singularity_fix PRIVATE nikola_core Catch2::Catch2WithMain)
+    add_test(NAME Phase49BoredomSingularityFix COMMAND test_phase49_boredom_singularity_fix)
+
+    # Phase 50 Unit Tests: CuriosityGoal + query gate (spec §8.3)
+    add_executable(test_phase50_curiosity_goal_query_gate tests/unit/phase50_curiosity_goal_query_gate_test.cpp)
+    target_link_libraries(test_phase50_curiosity_goal_query_gate PRIVATE nikola_core Catch2::Catch2WithMain)
+    add_test(NAME Phase50CuriosityGoalQueryGate COMMAND test_phase50_curiosity_goal_query_gate)
+
+    # Phase 51 Unit Tests: Failure Mode Guards — Anhedonia Trap + Mania Loop (spec §9)
+    add_executable(test_phase51_failure_mode_guards tests/unit/phase51_failure_mode_guards_test.cpp)
+    target_link_libraries(test_phase51_failure_mode_guards PRIVATE nikola_core Catch2::Catch2WithMain)
+    add_test(NAME Phase51FailureModeGuards COMMAND test_phase51_failure_mode_guards)
+
+    # Phase 52 Unit Tests: GAP-005 Cross-Coupling Matrix (spec §GAP-005)
+    add_executable(test_phase52_cross_coupling_matrix tests/unit/phase52_cross_coupling_matrix_test.cpp)
+    target_link_libraries(test_phase52_cross_coupling_matrix PRIVATE nikola_core Catch2::Catch2WithMain)
+    add_test(NAME Phase52CrossCouplingMatrix COMMAND test_phase52_cross_coupling_matrix)
 
     message(STATUS "Tests configured - run with: make test")
 endif()

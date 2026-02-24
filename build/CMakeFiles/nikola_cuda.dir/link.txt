@@ -1,0 +1,2 @@
+/usr/bin/ar qc libnikola_cuda.a CMakeFiles/nikola_cuda.dir/src/physics/propagator.cu.o
+/usr/bin/ranlib libnikola_cuda.a

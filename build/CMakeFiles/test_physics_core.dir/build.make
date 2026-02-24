@@ -96,6 +96,7 @@ test_physics_core: libnikola_core.a
 test_physics_core: /usr/lib/libCatch2Main.a
 test_physics_core: /usr/lib/x86_64-linux-gnu/libprotobuf.so
 test_physics_core: /usr/lib/x86_64-linux-gnu/libzmq.so
+test_physics_core: /home/randy/Workspace/SYSTEM/onnxruntime/cpp/lib/libonnxruntime.so
 test_physics_core: /usr/lib/libCatch2.a
 test_physics_core: CMakeFiles/test_physics_core.dir/link.txt
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --bold --progress-dir=/home/randy/Workspace/REPOS/nikola/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_2) "Linking CXX executable test_physics_core"

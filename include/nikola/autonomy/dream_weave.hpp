@@ -11,6 +11,20 @@
  * adjusting the metric tensor toward stable low-energy configurations, and
  * pruning weak connections (low-amplitude nodes).
  *
+ * Phase 48: NE-modulated experience replay sampling.
+ *   An experience pool stores snapshots of (psi_real, psi_imag) along with
+ *   per-experience priority and diversity scores.  When the engine selects
+ *   which experience to consolidate next it uses the NE-modulated composite:
+ *
+ *     composite_i = β(N_t) · priority_i  +  (1 − β) · diversity_i
+ *
+ *   where β(N_t) = clamp(N_t, 0, 1)
+ *
+ *   High NE (hyper-vigilance): β → 1.0  — exploit high-priority (important,
+ *     recent) memories.  Efficient rehearsal under stress.
+ *   Low NE  (deep calm):       β → 0.0  — explore high-diversity (novel,
+ *     orthogonal) memories.  Creative association, paradigm shifting.
+ *
  * Designed to be called from NapController::on_nap_tick.
  * Owns no physics resources; accepts a stepper callback so it adapts
  * to both the real Propagator and lightweight test doubles.
@@ -18,6 +32,7 @@
 
 #pragma once
 
+#include <algorithm>
 #include <cmath>       // std::sqrt
 #include <cstdint>
 #include <functional>
@@ -40,6 +55,31 @@ struct DreamResult {
     bool  converged   = false;
     int   iterations  = 0;
     float final_delta = 0.0f;   ///< ||ΔΨ||_F at termination
+};
+
+// ── DreamExperience (Phase 48) ─────────────────────────────────────────────────
+
+/**
+ * @brief One replay experience stored in the DreamWeaveEngine pool.
+ *
+ * Each experience is a snapshot of the wavefunction at the time it was
+ * captured, tagged with two orthogonal salience scores:
+ *
+ *   priority  — exploitation weight:  how important/recent this memory is.
+ *               High priority → should be rehearsed when under pressure.
+ *
+ *   diversity — exploration weight:   how novel/orthogonal this memory is
+ *               relative to the current repertoire.
+ *               High diversity → should be rehearsed to broaden associations.
+ *
+ * The NE-modulated composite score β·priority + (1-β)·diversity determines
+ * which experience the engine selects next via sample_experience().
+ */
+struct DreamExperience {
+    std::vector<float> psi_real;   ///< Wavefunction real part snapshot
+    std::vector<float> psi_imag;   ///< Wavefunction imaginary part snapshot
+    float priority  = 0.0f;        ///< Exploitation salience [0, 1]
+    float diversity = 0.0f;        ///< Exploration salience  [0, 1]
 };
 
 // ── DreamWeaveEngine ──────────────────────────────────────────────────────────
@@ -157,10 +197,83 @@ public:
 
     void reset_counters() noexcept { convergence_count_ = 0; no_convergence_count_ = 0; }
 
+    // ── Phase 48: NE-modulated experience replay pool ─────────────────────────
+
+    /**
+     * @brief Add a wavefunction snapshot to the replay pool.
+     *
+     * @param psi_r     Real part of the wavefunction snapshot.
+     * @param psi_i     Imaginary part of the wavefunction snapshot.
+     * @param priority  Exploitation salience ∈ [0, 1].  0 = unimportant.
+     * @param diversity Exploration salience ∈ [0, 1].  0 = already familiar.
+     */
+    void add_experience(std::vector<float> psi_r,
+                        std::vector<float> psi_i,
+                        float priority,
+                        float diversity) {
+        experiences_.push_back({std::move(psi_r), std::move(psi_i),
+                                 std::clamp(priority,  0.0f, 1.0f),
+                                 std::clamp(diversity, 0.0f, 1.0f)});
+    }
+
+    /**
+     * @brief Select the highest-scoring experience under NE-modulated β.
+     *
+     * Implements spec §8.1:
+     *   composite_i = β(N_t) · priority_i  +  (1 − β) · diversity_i
+     *   β(N_t) = clamp(N_t, 0, 1)
+     *
+     * Returns a pointer into the internal pool (valid until the pool is
+     * cleared or a new experience is added that triggers reallocation).
+     * Returns nullptr if the pool is empty.
+     *
+     * The last_beta() telemetry is updated regardless of pool state.
+     *
+     * @param norepinephrine  Current NE level ∈ [0, 1].
+     *   N = 1.0 → β = 1.0 → pure priority (exploit high-value memories)
+     *   N = 0.5 → β = 0.5 → balanced
+     *   N = 0.0 → β = 0.0 → pure diversity (explore novel memories)
+     * @return Pointer to best-scoring DreamExperience, or nullptr.
+     */
+    [[nodiscard]]
+    const DreamExperience* sample_experience(float norepinephrine) noexcept {
+        const float beta = std::clamp(norepinephrine, 0.0f, 1.0f);
+        last_beta_       = beta;
+
+        if (experiences_.empty()) return nullptr;
+
+        // Greedy argmax of NE-modulated composite score.
+        // Proportional (roulette-wheel) sampling is a future extension.
+        std::size_t best_idx  = 0;
+        float       best_score = beta * experiences_[0].priority
+                                + (1.0f - beta) * experiences_[0].diversity;
+        for (std::size_t i = 1; i < experiences_.size(); ++i) {
+            const float s = beta * experiences_[i].priority
+                          + (1.0f - beta) * experiences_[i].diversity;
+            if (s > best_score) {
+                best_score = s;
+                best_idx   = i;
+            }
+        }
+        return &experiences_[best_idx];
+    }
+
+    /// Number of experiences currently in the pool.
+    [[nodiscard]] std::size_t experience_count() const noexcept { return experiences_.size(); }
+
+    /// Last computed β = clamp(N_t, 0, 1) from the most recent sample_experience() call.
+    /// Phase 48 telemetry: 1.0 = pure priority (exploit); 0.0 = pure diversity (explore).
+    [[nodiscard]] float last_beta() const noexcept { return last_beta_; }
+
+    /// Clear all stored experiences.
+    void clear_experiences() noexcept { experiences_.clear(); }
+
 private:
-    std::vector<float> prev_r_, prev_i_;   // snapshot buffers (reused across calls)
-    uint32_t convergence_count_    = 0u;
-    uint32_t no_convergence_count_ = 0u;
+    std::vector<float>          prev_r_, prev_i_;   // snapshot buffers (reused across calls)
+    uint32_t                    convergence_count_    = 0u;
+    uint32_t                    no_convergence_count_ = 0u;
+    std::vector<DreamExperience> experiences_;        ///< Phase 48: replay pool
+    float                       last_beta_            = 0.5f; ///< Phase 48 telemetry
 };
 
 } // namespace nikola::autonomy

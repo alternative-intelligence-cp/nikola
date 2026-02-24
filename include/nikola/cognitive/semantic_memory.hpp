@@ -32,6 +32,9 @@
 #include <cmath>
 #include <cstdint>
 #include <limits>
+#include <fstream>
+#include <stdexcept>
+#include <string>
 
 namespace nikola::cognitive {
 
@@ -93,6 +96,17 @@ public:
     static constexpr float LTP_BOOST          = 1.25f;
     /// Maximum strength (cap after LTP boost).
     static constexpr float MAX_STRENGTH       = 1.f;
+
+    // ------------------------------------------------------------------ RecallHit
+
+    /**
+     * @brief A single resonance search result returned by recall().
+     */
+    struct RecallHit {
+        MemoryKey           key{0};       ///< Hilbert key of the matching record.
+        float               score{0.f};   ///< Cosine similarity ∈ [0, 1] (only positive retained).
+        const MemoryRecord* record{nullptr}; ///< Pointer into records_ map (valid until next store/consolidate).
+    };
 
     // ------------------------------------------------------------------ construction
 
@@ -277,6 +291,190 @@ public:
         keys.reserve(records_.size());
         for (const auto& [k, _] : records_) keys.push_back(k);
         return keys;
+    }
+
+    /// True when no records are stored.
+    [[nodiscard]] bool empty() const noexcept { return records_.empty(); }
+
+    // ------------------------------------------------------------------ recall
+
+    /**
+     * @brief Find the top-k records most resonant with a query WaveFunction.
+     *
+     * Resonance is measured as cosine similarity between the stored ψ-field
+     * vector and the current query ψ-field vector (real and imaginary parts
+     * concatenated into one flat vector).  Only positive similarities are
+     * returned; records with zero or negative dot product are discarded.
+     *
+     * Complexity: O(N_records × N_nodes).
+     *
+     * @param wf  Query WaveFunction (read-only).
+     * @param k   Maximum number of hits to return (default: 1).
+     * @return    Up to k RecallHit structs sorted by score descending.
+     */
+    [[nodiscard]]
+    std::vector<RecallHit> recall(const physics::WaveFunction& wf, size_t k = 1) const
+    {
+        const foundation::TorusGrid& grid = wf.grid();
+        const size_t N_wf = grid.num_active_nodes();
+        const float* pr   = grid.psi_real();
+        const float* pi   = grid.psi_imag();
+
+        // Compute L2 norm of query.
+        double qnorm2 = 0.0;
+        for (size_t i = 0; i < N_wf; ++i)
+            qnorm2 += static_cast<double>(pr[i]*pr[i] + pi[i]*pi[i]);
+        const float qnorm = static_cast<float>(std::sqrt(qnorm2));
+        if (qnorm < 1e-10f) return {};
+
+        std::vector<RecallHit> results;
+        results.reserve(records_.size());
+
+        for (const auto& [key, rec] : records_) {
+            const size_t N_rec = rec.psi_real.size();
+            const size_t N_min = std::min(N_wf, N_rec);
+
+            // Dot product and record norm.
+            double dot   = 0.0;
+            double rnorm2 = 0.0;
+            for (size_t i = 0; i < N_min; ++i) {
+                dot    += static_cast<double>(pr[i] * rec.psi_real[i] +
+                                              pi[i] * rec.psi_imag[i]);
+                rnorm2 += static_cast<double>(rec.psi_real[i]*rec.psi_real[i] +
+                                              rec.psi_imag[i]*rec.psi_imag[i]);
+            }
+            const float rnorm = static_cast<float>(std::sqrt(rnorm2));
+            if (rnorm < 1e-10f) continue;
+
+            const float cosine = static_cast<float>(dot) / (qnorm * rnorm);
+            if (cosine > 0.f) {
+                // Weight by stored memory strength.
+                results.push_back({key, cosine * rec.strength, &rec});
+            }
+        }
+
+        // Sort descending by score.
+        std::sort(results.begin(), results.end(),
+                  [](const RecallHit& a, const RecallHit& b){ return a.score > b.score; });
+        if (results.size() > k) results.resize(k);
+        return results;
+    }
+
+    // ------------------------------------------------------------------ superpose
+
+    /**
+     * @brief Blend a stored ψ-field additively into a live WaveFunction.
+     *
+     * Computes:  wf.psi[i] += alpha * rec.psi[i]  for all overlapping nodes.
+     * Triggers a strength boost on the recalled record (same as load()).
+     *
+     * @param key    Hilbert key of the stored record.
+     * @param alpha  Blend weight.
+     * @param wf     Target WaveFunction (modified in place).
+     * @return       true if key exists and superposition applied.
+     */
+    bool superpose(MemoryKey key, float alpha, physics::WaveFunction& wf)
+    {
+        auto it = records_.find(key);
+        if (it == records_.end()) return false;
+
+        MemoryRecord& rec = it->second;
+        foundation::TorusGrid& grid = wf.grid();
+        const size_t N_wf  = grid.num_active_nodes();
+        const size_t N_rec = rec.psi_real.size();
+        const size_t N_min = std::min(N_wf, N_rec);
+
+        float* pr = grid.psi_real();
+        float* pi = grid.psi_imag();
+        for (size_t i = 0; i < N_min; ++i) {
+            pr[i] += alpha * rec.psi_real[i];
+            pi[i] += alpha * rec.psi_imag[i];
+        }
+
+        ++rec.access_count;
+        rec.strength = std::min(MAX_STRENGTH, rec.strength + 0.03f);
+        return true;
+    }
+
+    // ------------------------------------------------------------------ persistence (Phase 33)
+
+    /**
+     * @brief Save all records to a binary file.
+     *
+     * Format (little-endian):
+     *   [uint64_t n_records]
+     *   for each record:
+     *     [uint64_t key]
+     *     [uint32_t n_nodes]
+     *     [float × n_nodes  psi_real]
+     *     [float × n_nodes  psi_imag]
+     *     [float strength]
+     *     [float age_seconds]
+     *     [uint32_t access_count]
+     *
+     * @throws std::runtime_error on I/O failure.
+     */
+    void save(const std::string& path) const
+    {
+        std::ofstream f(path, std::ios::binary | std::ios::trunc);
+        if (!f) throw std::runtime_error("SemanticMemory::save: cannot open " + path);
+
+        const uint64_t n = static_cast<uint64_t>(records_.size());
+        f.write(reinterpret_cast<const char*>(&n), sizeof(n));
+
+        for (const auto& [key, rec] : records_) {
+            f.write(reinterpret_cast<const char*>(&key), sizeof(key));
+            const uint32_t nn = static_cast<uint32_t>(rec.psi_real.size());
+            f.write(reinterpret_cast<const char*>(&nn), sizeof(nn));
+            f.write(reinterpret_cast<const char*>(rec.psi_real.data()), nn * sizeof(float));
+            f.write(reinterpret_cast<const char*>(rec.psi_imag.data()), nn * sizeof(float));
+            f.write(reinterpret_cast<const char*>(&rec.strength),     sizeof(float));
+            f.write(reinterpret_cast<const char*>(&rec.age_seconds),  sizeof(float));
+            f.write(reinterpret_cast<const char*>(&rec.access_count), sizeof(uint32_t));
+        }
+        if (!f) throw std::runtime_error("SemanticMemory::save: write error on " + path);
+    }
+
+    /**
+     * @brief Load records from a binary file previously written by save().
+     *
+     * Existing records are retained; stored records are merged (overwrite on
+     * key collision). Returns the number of records successfully loaded.
+     *
+     * @throws std::runtime_error on I/O or format error.
+     */
+    size_t load(const std::string& path)
+    {
+        std::ifstream f(path, std::ios::binary);
+        if (!f) return 0;  // file does not exist or is unreadable — best-effort; not an error
+
+        uint64_t n = 0;
+        f.read(reinterpret_cast<char*>(&n), sizeof(n));
+        if (!f) return 0;  // truncated or empty file — silently ignore
+
+        size_t loaded = 0;
+        for (uint64_t i = 0; i < n; ++i) {
+            MemoryKey key = 0;
+            f.read(reinterpret_cast<char*>(&key), sizeof(key));
+            uint32_t nn = 0;
+            f.read(reinterpret_cast<char*>(&nn), sizeof(nn));
+            if (!f || nn > (1u << 20)) break;  // sanity: max 1M nodes
+
+            MemoryRecord rec{};
+            rec.key = key;
+            rec.psi_real.resize(nn);
+            rec.psi_imag.resize(nn);
+            f.read(reinterpret_cast<char*>(rec.psi_real.data()), nn * sizeof(float));
+            f.read(reinterpret_cast<char*>(rec.psi_imag.data()), nn * sizeof(float));
+            f.read(reinterpret_cast<char*>(&rec.strength),     sizeof(float));
+            f.read(reinterpret_cast<char*>(&rec.age_seconds),  sizeof(float));
+            f.read(reinterpret_cast<char*>(&rec.access_count), sizeof(uint32_t));
+            if (!f) break;
+
+            records_[key] = std::move(rec);
+            ++loaded;
+        }
+        return loaded;
     }
 
     /// Underlying Hilbert scanner (for external use by QueryEngine).

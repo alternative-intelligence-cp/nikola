@@ -96,6 +96,7 @@ test_phase2_geometry_memory: libnikola_core.a
 test_phase2_geometry_memory: /usr/lib/libCatch2Main.a
 test_phase2_geometry_memory: /usr/lib/x86_64-linux-gnu/libprotobuf.so
 test_phase2_geometry_memory: /usr/lib/x86_64-linux-gnu/libzmq.so
+test_phase2_geometry_memory: /home/randy/Workspace/SYSTEM/onnxruntime/cpp/lib/libonnxruntime.so
 test_phase2_geometry_memory: /usr/lib/libCatch2.a
 test_phase2_geometry_memory: CMakeFiles/test_phase2_geometry_memory.dir/link.txt
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --bold --progress-dir=/home/randy/Workspace/REPOS/nikola/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_2) "Linking CXX executable test_phase2_geometry_memory"

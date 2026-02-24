@@ -95,6 +95,7 @@ nikola_first_light: CMakeFiles/nikola_first_light.dir/build.make
 nikola_first_light: libnikola_core.a
 nikola_first_light: /usr/lib/x86_64-linux-gnu/libprotobuf.so
 nikola_first_light: /usr/lib/x86_64-linux-gnu/libzmq.so
+nikola_first_light: /home/randy/Workspace/SYSTEM/onnxruntime/cpp/lib/libonnxruntime.so
 nikola_first_light: CMakeFiles/nikola_first_light.dir/link.txt
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --bold --progress-dir=/home/randy/Workspace/REPOS/nikola/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_2) "Linking CXX executable nikola_first_light"
 	$(CMAKE_COMMAND) -E cmake_link_script CMakeFiles/nikola_first_light.dir/link.txt --verbose=$(VERBOSE)

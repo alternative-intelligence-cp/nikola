@@ -1,0 +1,1 @@
+-I/home/randy/Workspace/REPOS/nikola/include -I/home/randy/Workspace/REPOS/nikola/build -I/home/randy/Workspace/SYSTEM/onnxruntime/cpp/include -isystem /usr/include/eigen3

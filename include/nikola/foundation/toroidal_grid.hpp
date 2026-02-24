@@ -391,6 +391,31 @@ public:
     /// Const grid configuration.
     const GridConfig& config() const noexcept { return config_; }
 
+    /**
+     * @brief Nodes-per-dimension for a uniform grid (resolution[0]).
+     *
+     * Assumes all 9 dimensions have the same resolution.  Valid after any
+     * call to seed_manifold(n, ...) or GridConfig::uniform(n).
+     */
+    [[nodiscard]] int grid_n() const noexcept { return config_.resolution[0]; }
+
+    /**
+     * @brief Add a small complex perturbation to the ψ-field at node @p idx.
+     *
+     * Used by HolographicInjector to apply chord-wave energy to the grid.
+     * The perturbation is NOT clamped here — callers must ensure it is safe.
+     *
+     * @param idx  Node index (must be < num_active_nodes()).
+     * @param dr   Real increment to add to psi_real[idx].
+     * @param di   Imaginary increment to add to psi_imag[idx].
+     */
+    void perturb_wavefunction(size_t idx, float dr, float di) noexcept {
+        const size_t N = num_active_nodes();
+        if (idx >= N) return;  // bounds-safe: silently ignore out-of-range
+        soa_psi_real_[idx] += dr;
+        soa_psi_imag_[idx] += di;
+    }
+
     // ------------------------------------------------------------------ coordinate utilities
 
     /**

@@ -96,6 +96,7 @@ test_hilbert_scanner: libnikola_core.a
 test_hilbert_scanner: /usr/lib/libCatch2Main.a
 test_hilbert_scanner: /usr/lib/x86_64-linux-gnu/libprotobuf.so
 test_hilbert_scanner: /usr/lib/x86_64-linux-gnu/libzmq.so
+test_hilbert_scanner: /home/randy/Workspace/SYSTEM/onnxruntime/cpp/lib/libonnxruntime.so
 test_hilbert_scanner: /usr/lib/libCatch2.a
 test_hilbert_scanner: CMakeFiles/test_hilbert_scanner.dir/link.txt
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --bold --progress-dir=/home/randy/Workspace/REPOS/nikola/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_2) "Linking CXX executable test_hilbert_scanner"

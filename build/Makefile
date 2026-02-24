@@ -445,6 +445,448 @@ test_phase17_bootstrap_manager/fast:
 .PHONY : test_phase17_bootstrap_manager/fast
 
 #=============================================================================
+# Target rules for targets named test_phase18_scope_profiler
+
+# Build rule for target.
+test_phase18_scope_profiler: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 test_phase18_scope_profiler
+.PHONY : test_phase18_scope_profiler
+
+# fast build rule for target.
+test_phase18_scope_profiler/fast:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_phase18_scope_profiler.dir/build.make CMakeFiles/test_phase18_scope_profiler.dir/build
+.PHONY : test_phase18_scope_profiler/fast
+
+#=============================================================================
+# Target rules for targets named test_phase19_telemetry_daemon
+
+# Build rule for target.
+test_phase19_telemetry_daemon: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 test_phase19_telemetry_daemon
+.PHONY : test_phase19_telemetry_daemon
+
+# fast build rule for target.
+test_phase19_telemetry_daemon/fast:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_phase19_telemetry_daemon.dir/build.make CMakeFiles/test_phase19_telemetry_daemon.dir/build
+.PHONY : test_phase19_telemetry_daemon/fast
+
+#=============================================================================
+# Target rules for targets named test_phase20_debug_adapter
+
+# Build rule for target.
+test_phase20_debug_adapter: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 test_phase20_debug_adapter
+.PHONY : test_phase20_debug_adapter
+
+# fast build rule for target.
+test_phase20_debug_adapter/fast:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_phase20_debug_adapter.dir/build.make CMakeFiles/test_phase20_debug_adapter.dir/build
+.PHONY : test_phase20_debug_adapter/fast
+
+#=============================================================================
+# Target rules for targets named test_phase21_cognitive_pipeline
+
+# Build rule for target.
+test_phase21_cognitive_pipeline: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 test_phase21_cognitive_pipeline
+.PHONY : test_phase21_cognitive_pipeline
+
+# fast build rule for target.
+test_phase21_cognitive_pipeline/fast:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_phase21_cognitive_pipeline.dir/build.make CMakeFiles/test_phase21_cognitive_pipeline.dir/build
+.PHONY : test_phase21_cognitive_pipeline/fast
+
+#=============================================================================
+# Target rules for targets named test_phase23_decision_loop
+
+# Build rule for target.
+test_phase23_decision_loop: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 test_phase23_decision_loop
+.PHONY : test_phase23_decision_loop
+
+# fast build rule for target.
+test_phase23_decision_loop/fast:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_phase23_decision_loop.dir/build.make CMakeFiles/test_phase23_decision_loop.dir/build
+.PHONY : test_phase23_decision_loop/fast
+
+#=============================================================================
+# Target rules for targets named test_phase24_thought_composer
+
+# Build rule for target.
+test_phase24_thought_composer: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 test_phase24_thought_composer
+.PHONY : test_phase24_thought_composer
+
+# fast build rule for target.
+test_phase24_thought_composer/fast:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_phase24_thought_composer.dir/build.make CMakeFiles/test_phase24_thought_composer.dir/build
+.PHONY : test_phase24_thought_composer/fast
+
+#=============================================================================
+# Target rules for targets named test_phase25_field_persistence
+
+# Build rule for target.
+test_phase25_field_persistence: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 test_phase25_field_persistence
+.PHONY : test_phase25_field_persistence
+
+# fast build rule for target.
+test_phase25_field_persistence/fast:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_phase25_field_persistence.dir/build.make CMakeFiles/test_phase25_field_persistence.dir/build
+.PHONY : test_phase25_field_persistence/fast
+
+#=============================================================================
+# Target rules for targets named test_phase26_seeded_exploration
+
+# Build rule for target.
+test_phase26_seeded_exploration: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 test_phase26_seeded_exploration
+.PHONY : test_phase26_seeded_exploration
+
+# fast build rule for target.
+test_phase26_seeded_exploration/fast:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_phase26_seeded_exploration.dir/build.make CMakeFiles/test_phase26_seeded_exploration.dir/build
+.PHONY : test_phase26_seeded_exploration/fast
+
+#=============================================================================
+# Target rules for targets named test_phase27_cross_injection
+
+# Build rule for target.
+test_phase27_cross_injection: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 test_phase27_cross_injection
+.PHONY : test_phase27_cross_injection
+
+# fast build rule for target.
+test_phase27_cross_injection/fast:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_phase27_cross_injection.dir/build.make CMakeFiles/test_phase27_cross_injection.dir/build
+.PHONY : test_phase27_cross_injection/fast
+
+#=============================================================================
+# Target rules for targets named test_phase28_analytic_decode
+
+# Build rule for target.
+test_phase28_analytic_decode: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 test_phase28_analytic_decode
+.PHONY : test_phase28_analytic_decode
+
+# fast build rule for target.
+test_phase28_analytic_decode/fast:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_phase28_analytic_decode.dir/build.make CMakeFiles/test_phase28_analytic_decode.dir/build
+.PHONY : test_phase28_analytic_decode/fast
+
+#=============================================================================
+# Target rules for targets named test_phase29_novelty_decay
+
+# Build rule for target.
+test_phase29_novelty_decay: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 test_phase29_novelty_decay
+.PHONY : test_phase29_novelty_decay
+
+# fast build rule for target.
+test_phase29_novelty_decay/fast:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_phase29_novelty_decay.dir/build.make CMakeFiles/test_phase29_novelty_decay.dir/build
+.PHONY : test_phase29_novelty_decay/fast
+
+#=============================================================================
+# Target rules for targets named test_phase30_zmq_spine
+
+# Build rule for target.
+test_phase30_zmq_spine: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 test_phase30_zmq_spine
+.PHONY : test_phase30_zmq_spine
+
+# fast build rule for target.
+test_phase30_zmq_spine/fast:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_phase30_zmq_spine.dir/build.make CMakeFiles/test_phase30_zmq_spine.dir/build
+.PHONY : test_phase30_zmq_spine/fast
+
+#=============================================================================
+# Target rules for targets named test_phase31_lookup_agent
+
+# Build rule for target.
+test_phase31_lookup_agent: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 test_phase31_lookup_agent
+.PHONY : test_phase31_lookup_agent
+
+# fast build rule for target.
+test_phase31_lookup_agent/fast:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_phase31_lookup_agent.dir/build.make CMakeFiles/test_phase31_lookup_agent.dir/build
+.PHONY : test_phase31_lookup_agent/fast
+
+#=============================================================================
+# Target rules for targets named test_phase32_escalation
+
+# Build rule for target.
+test_phase32_escalation: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 test_phase32_escalation
+.PHONY : test_phase32_escalation
+
+# fast build rule for target.
+test_phase32_escalation/fast:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_phase32_escalation.dir/build.make CMakeFiles/test_phase32_escalation.dir/build
+.PHONY : test_phase32_escalation/fast
+
+#=============================================================================
+# Target rules for targets named test_phase33_memory_persistence
+
+# Build rule for target.
+test_phase33_memory_persistence: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 test_phase33_memory_persistence
+.PHONY : test_phase33_memory_persistence
+
+# fast build rule for target.
+test_phase33_memory_persistence/fast:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_phase33_memory_persistence.dir/build.make CMakeFiles/test_phase33_memory_persistence.dir/build
+.PHONY : test_phase33_memory_persistence/fast
+
+#=============================================================================
+# Target rules for targets named test_phase34_recall
+
+# Build rule for target.
+test_phase34_recall: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 test_phase34_recall
+.PHONY : test_phase34_recall
+
+# fast build rule for target.
+test_phase34_recall/fast:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_phase34_recall.dir/build.make CMakeFiles/test_phase34_recall.dir/build
+.PHONY : test_phase34_recall/fast
+
+#=============================================================================
+# Target rules for targets named test_phase35_relevance_gate
+
+# Build rule for target.
+test_phase35_relevance_gate: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 test_phase35_relevance_gate
+.PHONY : test_phase35_relevance_gate
+
+# fast build rule for target.
+test_phase35_relevance_gate/fast:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_phase35_relevance_gate.dir/build.make CMakeFiles/test_phase35_relevance_gate.dir/build
+.PHONY : test_phase35_relevance_gate/fast
+
+#=============================================================================
+# Target rules for targets named test_phase36_gated_injection
+
+# Build rule for target.
+test_phase36_gated_injection: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 test_phase36_gated_injection
+.PHONY : test_phase36_gated_injection
+
+# fast build rule for target.
+test_phase36_gated_injection/fast:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_phase36_gated_injection.dir/build.make CMakeFiles/test_phase36_gated_injection.dir/build
+.PHONY : test_phase36_gated_injection/fast
+
+#=============================================================================
+# Target rules for targets named test_phase37_npt_structure
+
+# Build rule for target.
+test_phase37_npt_structure: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 test_phase37_npt_structure
+.PHONY : test_phase37_npt_structure
+
+# fast build rule for target.
+test_phase37_npt_structure/fast:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_phase37_npt_structure.dir/build.make CMakeFiles/test_phase37_npt_structure.dir/build
+.PHONY : test_phase37_npt_structure/fast
+
+#=============================================================================
+# Target rules for targets named test_phase38_wave_correlation
+
+# Build rule for target.
+test_phase38_wave_correlation: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 test_phase38_wave_correlation
+.PHONY : test_phase38_wave_correlation
+
+# fast build rule for target.
+test_phase38_wave_correlation/fast:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_phase38_wave_correlation.dir/build.make CMakeFiles/test_phase38_wave_correlation.dir/build
+.PHONY : test_phase38_wave_correlation/fast
+
+#=============================================================================
+# Target rules for targets named test_phase39_curvature_bias
+
+# Build rule for target.
+test_phase39_curvature_bias: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 test_phase39_curvature_bias
+.PHONY : test_phase39_curvature_bias
+
+# fast build rule for target.
+test_phase39_curvature_bias/fast:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_phase39_curvature_bias.dir/build.make CMakeFiles/test_phase39_curvature_bias.dir/build
+.PHONY : test_phase39_curvature_bias/fast
+
+#=============================================================================
+# Target rules for targets named test_phase40_heterodyne
+
+# Build rule for target.
+test_phase40_heterodyne: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 test_phase40_heterodyne
+.PHONY : test_phase40_heterodyne
+
+# fast build rule for target.
+test_phase40_heterodyne/fast:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_phase40_heterodyne.dir/build.make CMakeFiles/test_phase40_heterodyne.dir/build
+.PHONY : test_phase40_heterodyne/fast
+
+#=============================================================================
+# Target rules for targets named test_phase41_multihead_merge
+
+# Build rule for target.
+test_phase41_multihead_merge: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 test_phase41_multihead_merge
+.PHONY : test_phase41_multihead_merge
+
+# fast build rule for target.
+test_phase41_multihead_merge/fast:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_phase41_multihead_merge.dir/build.make CMakeFiles/test_phase41_multihead_merge.dir/build
+.PHONY : test_phase41_multihead_merge/fast
+
+#=============================================================================
+# Target rules for targets named test_phase42_npt_reason
+
+# Build rule for target.
+test_phase42_npt_reason: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 test_phase42_npt_reason
+.PHONY : test_phase42_npt_reason
+
+# fast build rule for target.
+test_phase42_npt_reason/fast:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_phase42_npt_reason.dir/build.make CMakeFiles/test_phase42_npt_reason.dir/build
+.PHONY : test_phase42_npt_reason/fast
+
+#=============================================================================
+# Target rules for targets named test_phase43_hebbian_update
+
+# Build rule for target.
+test_phase43_hebbian_update: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 test_phase43_hebbian_update
+.PHONY : test_phase43_hebbian_update
+
+# fast build rule for target.
+test_phase43_hebbian_update/fast:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_phase43_hebbian_update.dir/build.make CMakeFiles/test_phase43_hebbian_update.dir/build
+.PHONY : test_phase43_hebbian_update/fast
+
+#=============================================================================
+# Target rules for targets named test_phase44_k_differentiation
+
+# Build rule for target.
+test_phase44_k_differentiation: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 test_phase44_k_differentiation
+.PHONY : test_phase44_k_differentiation
+
+# fast build rule for target.
+test_phase44_k_differentiation/fast:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_phase44_k_differentiation.dir/build.make CMakeFiles/test_phase44_k_differentiation.dir/build
+.PHONY : test_phase44_k_differentiation/fast
+
+#=============================================================================
+# Target rules for targets named test_phase45_dopamine_lr
+
+# Build rule for target.
+test_phase45_dopamine_lr: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 test_phase45_dopamine_lr
+.PHONY : test_phase45_dopamine_lr
+
+# fast build rule for target.
+test_phase45_dopamine_lr/fast:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_phase45_dopamine_lr.dir/build.make CMakeFiles/test_phase45_dopamine_lr.dir/build
+.PHONY : test_phase45_dopamine_lr/fast
+
+#=============================================================================
+# Target rules for targets named test_phase46_serotonin_elasticity
+
+# Build rule for target.
+test_phase46_serotonin_elasticity: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 test_phase46_serotonin_elasticity
+.PHONY : test_phase46_serotonin_elasticity
+
+# fast build rule for target.
+test_phase46_serotonin_elasticity/fast:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_phase46_serotonin_elasticity.dir/build.make CMakeFiles/test_phase46_serotonin_elasticity.dir/build
+.PHONY : test_phase46_serotonin_elasticity/fast
+
+#=============================================================================
+# Target rules for targets named test_phase47_norepinephrine_arousal
+
+# Build rule for target.
+test_phase47_norepinephrine_arousal: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 test_phase47_norepinephrine_arousal
+.PHONY : test_phase47_norepinephrine_arousal
+
+# fast build rule for target.
+test_phase47_norepinephrine_arousal/fast:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_phase47_norepinephrine_arousal.dir/build.make CMakeFiles/test_phase47_norepinephrine_arousal.dir/build
+.PHONY : test_phase47_norepinephrine_arousal/fast
+
+#=============================================================================
+# Target rules for targets named test_phase48_dream_replay
+
+# Build rule for target.
+test_phase48_dream_replay: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 test_phase48_dream_replay
+.PHONY : test_phase48_dream_replay
+
+# fast build rule for target.
+test_phase48_dream_replay/fast:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_phase48_dream_replay.dir/build.make CMakeFiles/test_phase48_dream_replay.dir/build
+.PHONY : test_phase48_dream_replay/fast
+
+#=============================================================================
+# Target rules for targets named test_phase49_boredom_singularity_fix
+
+# Build rule for target.
+test_phase49_boredom_singularity_fix: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 test_phase49_boredom_singularity_fix
+.PHONY : test_phase49_boredom_singularity_fix
+
+# fast build rule for target.
+test_phase49_boredom_singularity_fix/fast:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_phase49_boredom_singularity_fix.dir/build.make CMakeFiles/test_phase49_boredom_singularity_fix.dir/build
+.PHONY : test_phase49_boredom_singularity_fix/fast
+
+#=============================================================================
+# Target rules for targets named test_phase50_curiosity_goal_query_gate
+
+# Build rule for target.
+test_phase50_curiosity_goal_query_gate: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 test_phase50_curiosity_goal_query_gate
+.PHONY : test_phase50_curiosity_goal_query_gate
+
+# fast build rule for target.
+test_phase50_curiosity_goal_query_gate/fast:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_phase50_curiosity_goal_query_gate.dir/build.make CMakeFiles/test_phase50_curiosity_goal_query_gate.dir/build
+.PHONY : test_phase50_curiosity_goal_query_gate/fast
+
+#=============================================================================
+# Target rules for targets named test_phase51_failure_mode_guards
+
+# Build rule for target.
+test_phase51_failure_mode_guards: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 test_phase51_failure_mode_guards
+.PHONY : test_phase51_failure_mode_guards
+
+# fast build rule for target.
+test_phase51_failure_mode_guards/fast:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_phase51_failure_mode_guards.dir/build.make CMakeFiles/test_phase51_failure_mode_guards.dir/build
+.PHONY : test_phase51_failure_mode_guards/fast
+
+#=============================================================================
+# Target rules for targets named test_phase52_cross_coupling_matrix
+
+# Build rule for target.
+test_phase52_cross_coupling_matrix: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 test_phase52_cross_coupling_matrix
+.PHONY : test_phase52_cross_coupling_matrix
+
+# fast build rule for target.
+test_phase52_cross_coupling_matrix/fast:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_phase52_cross_coupling_matrix.dir/build.make CMakeFiles/test_phase52_cross_coupling_matrix.dir/build
+.PHONY : test_phase52_cross_coupling_matrix/fast
+
+#=============================================================================
 # Target rules for targets named nikola_first_light
 
 # Build rule for target.
@@ -505,6 +947,54 @@ nes.pb.cc.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/nikola_core.dir/build.make CMakeFiles/nikola_core.dir/nes.pb.cc.s
 .PHONY : nes.pb.cc.s
 
+src/autonomy/autonomy_engine_impl.o: src/autonomy/autonomy_engine_impl.cpp.o
+.PHONY : src/autonomy/autonomy_engine_impl.o
+
+# target to build an object file
+src/autonomy/autonomy_engine_impl.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/nikola_core.dir/build.make CMakeFiles/nikola_core.dir/src/autonomy/autonomy_engine_impl.cpp.o
+.PHONY : src/autonomy/autonomy_engine_impl.cpp.o
+
+src/autonomy/autonomy_engine_impl.i: src/autonomy/autonomy_engine_impl.cpp.i
+.PHONY : src/autonomy/autonomy_engine_impl.i
+
+# target to preprocess a source file
+src/autonomy/autonomy_engine_impl.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/nikola_core.dir/build.make CMakeFiles/nikola_core.dir/src/autonomy/autonomy_engine_impl.cpp.i
+.PHONY : src/autonomy/autonomy_engine_impl.cpp.i
+
+src/autonomy/autonomy_engine_impl.s: src/autonomy/autonomy_engine_impl.cpp.s
+.PHONY : src/autonomy/autonomy_engine_impl.s
+
+# target to generate assembly for a file
+src/autonomy/autonomy_engine_impl.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/nikola_core.dir/build.make CMakeFiles/nikola_core.dir/src/autonomy/autonomy_engine_impl.cpp.s
+.PHONY : src/autonomy/autonomy_engine_impl.cpp.s
+
+src/autonomy/decision_loop.o: src/autonomy/decision_loop.cpp.o
+.PHONY : src/autonomy/decision_loop.o
+
+# target to build an object file
+src/autonomy/decision_loop.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/nikola_core.dir/build.make CMakeFiles/nikola_core.dir/src/autonomy/decision_loop.cpp.o
+.PHONY : src/autonomy/decision_loop.cpp.o
+
+src/autonomy/decision_loop.i: src/autonomy/decision_loop.cpp.i
+.PHONY : src/autonomy/decision_loop.i
+
+# target to preprocess a source file
+src/autonomy/decision_loop.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/nikola_core.dir/build.make CMakeFiles/nikola_core.dir/src/autonomy/decision_loop.cpp.i
+.PHONY : src/autonomy/decision_loop.cpp.i
+
+src/autonomy/decision_loop.s: src/autonomy/decision_loop.cpp.s
+.PHONY : src/autonomy/decision_loop.s
+
+# target to generate assembly for a file
+src/autonomy/decision_loop.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/nikola_core.dir/build.make CMakeFiles/nikola_core.dir/src/autonomy/decision_loop.cpp.s
+.PHONY : src/autonomy/decision_loop.cpp.s
+
 src/autonomy/metabolic_controller.o: src/autonomy/metabolic_controller.cpp.o
 .PHONY : src/autonomy/metabolic_controller.o
 
@@ -552,6 +1042,102 @@ src/autonomy/metabolic_lock.s: src/autonomy/metabolic_lock.cpp.s
 src/autonomy/metabolic_lock.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/nikola_core.dir/build.make CMakeFiles/nikola_core.dir/src/autonomy/metabolic_lock.cpp.s
 .PHONY : src/autonomy/metabolic_lock.cpp.s
+
+src/cognitive/attention_primer.o: src/cognitive/attention_primer.cpp.o
+.PHONY : src/cognitive/attention_primer.o
+
+# target to build an object file
+src/cognitive/attention_primer.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/nikola_core.dir/build.make CMakeFiles/nikola_core.dir/src/cognitive/attention_primer.cpp.o
+.PHONY : src/cognitive/attention_primer.cpp.o
+
+src/cognitive/attention_primer.i: src/cognitive/attention_primer.cpp.i
+.PHONY : src/cognitive/attention_primer.i
+
+# target to preprocess a source file
+src/cognitive/attention_primer.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/nikola_core.dir/build.make CMakeFiles/nikola_core.dir/src/cognitive/attention_primer.cpp.i
+.PHONY : src/cognitive/attention_primer.cpp.i
+
+src/cognitive/attention_primer.s: src/cognitive/attention_primer.cpp.s
+.PHONY : src/cognitive/attention_primer.s
+
+# target to generate assembly for a file
+src/cognitive/attention_primer.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/nikola_core.dir/build.make CMakeFiles/nikola_core.dir/src/cognitive/attention_primer.cpp.s
+.PHONY : src/cognitive/attention_primer.cpp.s
+
+src/cognitive/scratchpad.o: src/cognitive/scratchpad.cpp.o
+.PHONY : src/cognitive/scratchpad.o
+
+# target to build an object file
+src/cognitive/scratchpad.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/nikola_core.dir/build.make CMakeFiles/nikola_core.dir/src/cognitive/scratchpad.cpp.o
+.PHONY : src/cognitive/scratchpad.cpp.o
+
+src/cognitive/scratchpad.i: src/cognitive/scratchpad.cpp.i
+.PHONY : src/cognitive/scratchpad.i
+
+# target to preprocess a source file
+src/cognitive/scratchpad.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/nikola_core.dir/build.make CMakeFiles/nikola_core.dir/src/cognitive/scratchpad.cpp.i
+.PHONY : src/cognitive/scratchpad.cpp.i
+
+src/cognitive/scratchpad.s: src/cognitive/scratchpad.cpp.s
+.PHONY : src/cognitive/scratchpad.s
+
+# target to generate assembly for a file
+src/cognitive/scratchpad.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/nikola_core.dir/build.make CMakeFiles/nikola_core.dir/src/cognitive/scratchpad.cpp.s
+.PHONY : src/cognitive/scratchpad.cpp.s
+
+src/cognitive/spectral_filter.o: src/cognitive/spectral_filter.cpp.o
+.PHONY : src/cognitive/spectral_filter.o
+
+# target to build an object file
+src/cognitive/spectral_filter.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/nikola_core.dir/build.make CMakeFiles/nikola_core.dir/src/cognitive/spectral_filter.cpp.o
+.PHONY : src/cognitive/spectral_filter.cpp.o
+
+src/cognitive/spectral_filter.i: src/cognitive/spectral_filter.cpp.i
+.PHONY : src/cognitive/spectral_filter.i
+
+# target to preprocess a source file
+src/cognitive/spectral_filter.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/nikola_core.dir/build.make CMakeFiles/nikola_core.dir/src/cognitive/spectral_filter.cpp.i
+.PHONY : src/cognitive/spectral_filter.cpp.i
+
+src/cognitive/spectral_filter.s: src/cognitive/spectral_filter.cpp.s
+.PHONY : src/cognitive/spectral_filter.s
+
+# target to generate assembly for a file
+src/cognitive/spectral_filter.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/nikola_core.dir/build.make CMakeFiles/nikola_core.dir/src/cognitive/spectral_filter.cpp.s
+.PHONY : src/cognitive/spectral_filter.cpp.s
+
+src/cognitive/thought_composer.o: src/cognitive/thought_composer.cpp.o
+.PHONY : src/cognitive/thought_composer.o
+
+# target to build an object file
+src/cognitive/thought_composer.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/nikola_core.dir/build.make CMakeFiles/nikola_core.dir/src/cognitive/thought_composer.cpp.o
+.PHONY : src/cognitive/thought_composer.cpp.o
+
+src/cognitive/thought_composer.i: src/cognitive/thought_composer.cpp.i
+.PHONY : src/cognitive/thought_composer.i
+
+# target to preprocess a source file
+src/cognitive/thought_composer.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/nikola_core.dir/build.make CMakeFiles/nikola_core.dir/src/cognitive/thought_composer.cpp.i
+.PHONY : src/cognitive/thought_composer.cpp.i
+
+src/cognitive/thought_composer.s: src/cognitive/thought_composer.cpp.s
+.PHONY : src/cognitive/thought_composer.s
+
+# target to generate assembly for a file
+src/cognitive/thought_composer.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/nikola_core.dir/build.make CMakeFiles/nikola_core.dir/src/cognitive/thought_composer.cpp.s
+.PHONY : src/cognitive/thought_composer.cpp.s
 
 src/core/config.o: src/core/config.cpp.o
 .PHONY : src/core/config.o
@@ -865,6 +1451,270 @@ tests/unit/phase17_bootstrap_manager_test.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_phase17_bootstrap_manager.dir/build.make CMakeFiles/test_phase17_bootstrap_manager.dir/tests/unit/phase17_bootstrap_manager_test.cpp.s
 .PHONY : tests/unit/phase17_bootstrap_manager_test.cpp.s
 
+tests/unit/phase18_scope_profiler_test.o: tests/unit/phase18_scope_profiler_test.cpp.o
+.PHONY : tests/unit/phase18_scope_profiler_test.o
+
+# target to build an object file
+tests/unit/phase18_scope_profiler_test.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_phase18_scope_profiler.dir/build.make CMakeFiles/test_phase18_scope_profiler.dir/tests/unit/phase18_scope_profiler_test.cpp.o
+.PHONY : tests/unit/phase18_scope_profiler_test.cpp.o
+
+tests/unit/phase18_scope_profiler_test.i: tests/unit/phase18_scope_profiler_test.cpp.i
+.PHONY : tests/unit/phase18_scope_profiler_test.i
+
+# target to preprocess a source file
+tests/unit/phase18_scope_profiler_test.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_phase18_scope_profiler.dir/build.make CMakeFiles/test_phase18_scope_profiler.dir/tests/unit/phase18_scope_profiler_test.cpp.i
+.PHONY : tests/unit/phase18_scope_profiler_test.cpp.i
+
+tests/unit/phase18_scope_profiler_test.s: tests/unit/phase18_scope_profiler_test.cpp.s
+.PHONY : tests/unit/phase18_scope_profiler_test.s
+
+# target to generate assembly for a file
+tests/unit/phase18_scope_profiler_test.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_phase18_scope_profiler.dir/build.make CMakeFiles/test_phase18_scope_profiler.dir/tests/unit/phase18_scope_profiler_test.cpp.s
+.PHONY : tests/unit/phase18_scope_profiler_test.cpp.s
+
+tests/unit/phase19_telemetry_daemon_test.o: tests/unit/phase19_telemetry_daemon_test.cpp.o
+.PHONY : tests/unit/phase19_telemetry_daemon_test.o
+
+# target to build an object file
+tests/unit/phase19_telemetry_daemon_test.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_phase19_telemetry_daemon.dir/build.make CMakeFiles/test_phase19_telemetry_daemon.dir/tests/unit/phase19_telemetry_daemon_test.cpp.o
+.PHONY : tests/unit/phase19_telemetry_daemon_test.cpp.o
+
+tests/unit/phase19_telemetry_daemon_test.i: tests/unit/phase19_telemetry_daemon_test.cpp.i
+.PHONY : tests/unit/phase19_telemetry_daemon_test.i
+
+# target to preprocess a source file
+tests/unit/phase19_telemetry_daemon_test.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_phase19_telemetry_daemon.dir/build.make CMakeFiles/test_phase19_telemetry_daemon.dir/tests/unit/phase19_telemetry_daemon_test.cpp.i
+.PHONY : tests/unit/phase19_telemetry_daemon_test.cpp.i
+
+tests/unit/phase19_telemetry_daemon_test.s: tests/unit/phase19_telemetry_daemon_test.cpp.s
+.PHONY : tests/unit/phase19_telemetry_daemon_test.s
+
+# target to generate assembly for a file
+tests/unit/phase19_telemetry_daemon_test.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_phase19_telemetry_daemon.dir/build.make CMakeFiles/test_phase19_telemetry_daemon.dir/tests/unit/phase19_telemetry_daemon_test.cpp.s
+.PHONY : tests/unit/phase19_telemetry_daemon_test.cpp.s
+
+tests/unit/phase20_debug_adapter_test.o: tests/unit/phase20_debug_adapter_test.cpp.o
+.PHONY : tests/unit/phase20_debug_adapter_test.o
+
+# target to build an object file
+tests/unit/phase20_debug_adapter_test.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_phase20_debug_adapter.dir/build.make CMakeFiles/test_phase20_debug_adapter.dir/tests/unit/phase20_debug_adapter_test.cpp.o
+.PHONY : tests/unit/phase20_debug_adapter_test.cpp.o
+
+tests/unit/phase20_debug_adapter_test.i: tests/unit/phase20_debug_adapter_test.cpp.i
+.PHONY : tests/unit/phase20_debug_adapter_test.i
+
+# target to preprocess a source file
+tests/unit/phase20_debug_adapter_test.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_phase20_debug_adapter.dir/build.make CMakeFiles/test_phase20_debug_adapter.dir/tests/unit/phase20_debug_adapter_test.cpp.i
+.PHONY : tests/unit/phase20_debug_adapter_test.cpp.i
+
+tests/unit/phase20_debug_adapter_test.s: tests/unit/phase20_debug_adapter_test.cpp.s
+.PHONY : tests/unit/phase20_debug_adapter_test.s
+
+# target to generate assembly for a file
+tests/unit/phase20_debug_adapter_test.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_phase20_debug_adapter.dir/build.make CMakeFiles/test_phase20_debug_adapter.dir/tests/unit/phase20_debug_adapter_test.cpp.s
+.PHONY : tests/unit/phase20_debug_adapter_test.cpp.s
+
+tests/unit/phase21_cognitive_pipeline_test.o: tests/unit/phase21_cognitive_pipeline_test.cpp.o
+.PHONY : tests/unit/phase21_cognitive_pipeline_test.o
+
+# target to build an object file
+tests/unit/phase21_cognitive_pipeline_test.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_phase21_cognitive_pipeline.dir/build.make CMakeFiles/test_phase21_cognitive_pipeline.dir/tests/unit/phase21_cognitive_pipeline_test.cpp.o
+.PHONY : tests/unit/phase21_cognitive_pipeline_test.cpp.o
+
+tests/unit/phase21_cognitive_pipeline_test.i: tests/unit/phase21_cognitive_pipeline_test.cpp.i
+.PHONY : tests/unit/phase21_cognitive_pipeline_test.i
+
+# target to preprocess a source file
+tests/unit/phase21_cognitive_pipeline_test.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_phase21_cognitive_pipeline.dir/build.make CMakeFiles/test_phase21_cognitive_pipeline.dir/tests/unit/phase21_cognitive_pipeline_test.cpp.i
+.PHONY : tests/unit/phase21_cognitive_pipeline_test.cpp.i
+
+tests/unit/phase21_cognitive_pipeline_test.s: tests/unit/phase21_cognitive_pipeline_test.cpp.s
+.PHONY : tests/unit/phase21_cognitive_pipeline_test.s
+
+# target to generate assembly for a file
+tests/unit/phase21_cognitive_pipeline_test.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_phase21_cognitive_pipeline.dir/build.make CMakeFiles/test_phase21_cognitive_pipeline.dir/tests/unit/phase21_cognitive_pipeline_test.cpp.s
+.PHONY : tests/unit/phase21_cognitive_pipeline_test.cpp.s
+
+tests/unit/phase23_decision_loop_test.o: tests/unit/phase23_decision_loop_test.cpp.o
+.PHONY : tests/unit/phase23_decision_loop_test.o
+
+# target to build an object file
+tests/unit/phase23_decision_loop_test.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_phase23_decision_loop.dir/build.make CMakeFiles/test_phase23_decision_loop.dir/tests/unit/phase23_decision_loop_test.cpp.o
+.PHONY : tests/unit/phase23_decision_loop_test.cpp.o
+
+tests/unit/phase23_decision_loop_test.i: tests/unit/phase23_decision_loop_test.cpp.i
+.PHONY : tests/unit/phase23_decision_loop_test.i
+
+# target to preprocess a source file
+tests/unit/phase23_decision_loop_test.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_phase23_decision_loop.dir/build.make CMakeFiles/test_phase23_decision_loop.dir/tests/unit/phase23_decision_loop_test.cpp.i
+.PHONY : tests/unit/phase23_decision_loop_test.cpp.i
+
+tests/unit/phase23_decision_loop_test.s: tests/unit/phase23_decision_loop_test.cpp.s
+.PHONY : tests/unit/phase23_decision_loop_test.s
+
+# target to generate assembly for a file
+tests/unit/phase23_decision_loop_test.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_phase23_decision_loop.dir/build.make CMakeFiles/test_phase23_decision_loop.dir/tests/unit/phase23_decision_loop_test.cpp.s
+.PHONY : tests/unit/phase23_decision_loop_test.cpp.s
+
+tests/unit/phase24_thought_composer_test.o: tests/unit/phase24_thought_composer_test.cpp.o
+.PHONY : tests/unit/phase24_thought_composer_test.o
+
+# target to build an object file
+tests/unit/phase24_thought_composer_test.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_phase24_thought_composer.dir/build.make CMakeFiles/test_phase24_thought_composer.dir/tests/unit/phase24_thought_composer_test.cpp.o
+.PHONY : tests/unit/phase24_thought_composer_test.cpp.o
+
+tests/unit/phase24_thought_composer_test.i: tests/unit/phase24_thought_composer_test.cpp.i
+.PHONY : tests/unit/phase24_thought_composer_test.i
+
+# target to preprocess a source file
+tests/unit/phase24_thought_composer_test.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_phase24_thought_composer.dir/build.make CMakeFiles/test_phase24_thought_composer.dir/tests/unit/phase24_thought_composer_test.cpp.i
+.PHONY : tests/unit/phase24_thought_composer_test.cpp.i
+
+tests/unit/phase24_thought_composer_test.s: tests/unit/phase24_thought_composer_test.cpp.s
+.PHONY : tests/unit/phase24_thought_composer_test.s
+
+# target to generate assembly for a file
+tests/unit/phase24_thought_composer_test.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_phase24_thought_composer.dir/build.make CMakeFiles/test_phase24_thought_composer.dir/tests/unit/phase24_thought_composer_test.cpp.s
+.PHONY : tests/unit/phase24_thought_composer_test.cpp.s
+
+tests/unit/phase25_field_persistence_test.o: tests/unit/phase25_field_persistence_test.cpp.o
+.PHONY : tests/unit/phase25_field_persistence_test.o
+
+# target to build an object file
+tests/unit/phase25_field_persistence_test.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_phase25_field_persistence.dir/build.make CMakeFiles/test_phase25_field_persistence.dir/tests/unit/phase25_field_persistence_test.cpp.o
+.PHONY : tests/unit/phase25_field_persistence_test.cpp.o
+
+tests/unit/phase25_field_persistence_test.i: tests/unit/phase25_field_persistence_test.cpp.i
+.PHONY : tests/unit/phase25_field_persistence_test.i
+
+# target to preprocess a source file
+tests/unit/phase25_field_persistence_test.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_phase25_field_persistence.dir/build.make CMakeFiles/test_phase25_field_persistence.dir/tests/unit/phase25_field_persistence_test.cpp.i
+.PHONY : tests/unit/phase25_field_persistence_test.cpp.i
+
+tests/unit/phase25_field_persistence_test.s: tests/unit/phase25_field_persistence_test.cpp.s
+.PHONY : tests/unit/phase25_field_persistence_test.s
+
+# target to generate assembly for a file
+tests/unit/phase25_field_persistence_test.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_phase25_field_persistence.dir/build.make CMakeFiles/test_phase25_field_persistence.dir/tests/unit/phase25_field_persistence_test.cpp.s
+.PHONY : tests/unit/phase25_field_persistence_test.cpp.s
+
+tests/unit/phase26_seeded_exploration_test.o: tests/unit/phase26_seeded_exploration_test.cpp.o
+.PHONY : tests/unit/phase26_seeded_exploration_test.o
+
+# target to build an object file
+tests/unit/phase26_seeded_exploration_test.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_phase26_seeded_exploration.dir/build.make CMakeFiles/test_phase26_seeded_exploration.dir/tests/unit/phase26_seeded_exploration_test.cpp.o
+.PHONY : tests/unit/phase26_seeded_exploration_test.cpp.o
+
+tests/unit/phase26_seeded_exploration_test.i: tests/unit/phase26_seeded_exploration_test.cpp.i
+.PHONY : tests/unit/phase26_seeded_exploration_test.i
+
+# target to preprocess a source file
+tests/unit/phase26_seeded_exploration_test.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_phase26_seeded_exploration.dir/build.make CMakeFiles/test_phase26_seeded_exploration.dir/tests/unit/phase26_seeded_exploration_test.cpp.i
+.PHONY : tests/unit/phase26_seeded_exploration_test.cpp.i
+
+tests/unit/phase26_seeded_exploration_test.s: tests/unit/phase26_seeded_exploration_test.cpp.s
+.PHONY : tests/unit/phase26_seeded_exploration_test.s
+
+# target to generate assembly for a file
+tests/unit/phase26_seeded_exploration_test.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_phase26_seeded_exploration.dir/build.make CMakeFiles/test_phase26_seeded_exploration.dir/tests/unit/phase26_seeded_exploration_test.cpp.s
+.PHONY : tests/unit/phase26_seeded_exploration_test.cpp.s
+
+tests/unit/phase27_cross_injection_test.o: tests/unit/phase27_cross_injection_test.cpp.o
+.PHONY : tests/unit/phase27_cross_injection_test.o
+
+# target to build an object file
+tests/unit/phase27_cross_injection_test.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_phase27_cross_injection.dir/build.make CMakeFiles/test_phase27_cross_injection.dir/tests/unit/phase27_cross_injection_test.cpp.o
+.PHONY : tests/unit/phase27_cross_injection_test.cpp.o
+
+tests/unit/phase27_cross_injection_test.i: tests/unit/phase27_cross_injection_test.cpp.i
+.PHONY : tests/unit/phase27_cross_injection_test.i
+
+# target to preprocess a source file
+tests/unit/phase27_cross_injection_test.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_phase27_cross_injection.dir/build.make CMakeFiles/test_phase27_cross_injection.dir/tests/unit/phase27_cross_injection_test.cpp.i
+.PHONY : tests/unit/phase27_cross_injection_test.cpp.i
+
+tests/unit/phase27_cross_injection_test.s: tests/unit/phase27_cross_injection_test.cpp.s
+.PHONY : tests/unit/phase27_cross_injection_test.s
+
+# target to generate assembly for a file
+tests/unit/phase27_cross_injection_test.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_phase27_cross_injection.dir/build.make CMakeFiles/test_phase27_cross_injection.dir/tests/unit/phase27_cross_injection_test.cpp.s
+.PHONY : tests/unit/phase27_cross_injection_test.cpp.s
+
+tests/unit/phase28_analytic_decode_test.o: tests/unit/phase28_analytic_decode_test.cpp.o
+.PHONY : tests/unit/phase28_analytic_decode_test.o
+
+# target to build an object file
+tests/unit/phase28_analytic_decode_test.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_phase28_analytic_decode.dir/build.make CMakeFiles/test_phase28_analytic_decode.dir/tests/unit/phase28_analytic_decode_test.cpp.o
+.PHONY : tests/unit/phase28_analytic_decode_test.cpp.o
+
+tests/unit/phase28_analytic_decode_test.i: tests/unit/phase28_analytic_decode_test.cpp.i
+.PHONY : tests/unit/phase28_analytic_decode_test.i
+
+# target to preprocess a source file
+tests/unit/phase28_analytic_decode_test.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_phase28_analytic_decode.dir/build.make CMakeFiles/test_phase28_analytic_decode.dir/tests/unit/phase28_analytic_decode_test.cpp.i
+.PHONY : tests/unit/phase28_analytic_decode_test.cpp.i
+
+tests/unit/phase28_analytic_decode_test.s: tests/unit/phase28_analytic_decode_test.cpp.s
+.PHONY : tests/unit/phase28_analytic_decode_test.s
+
+# target to generate assembly for a file
+tests/unit/phase28_analytic_decode_test.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_phase28_analytic_decode.dir/build.make CMakeFiles/test_phase28_analytic_decode.dir/tests/unit/phase28_analytic_decode_test.cpp.s
+.PHONY : tests/unit/phase28_analytic_decode_test.cpp.s
+
+tests/unit/phase29_novelty_decay_test.o: tests/unit/phase29_novelty_decay_test.cpp.o
+.PHONY : tests/unit/phase29_novelty_decay_test.o
+
+# target to build an object file
+tests/unit/phase29_novelty_decay_test.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_phase29_novelty_decay.dir/build.make CMakeFiles/test_phase29_novelty_decay.dir/tests/unit/phase29_novelty_decay_test.cpp.o
+.PHONY : tests/unit/phase29_novelty_decay_test.cpp.o
+
+tests/unit/phase29_novelty_decay_test.i: tests/unit/phase29_novelty_decay_test.cpp.i
+.PHONY : tests/unit/phase29_novelty_decay_test.i
+
+# target to preprocess a source file
+tests/unit/phase29_novelty_decay_test.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_phase29_novelty_decay.dir/build.make CMakeFiles/test_phase29_novelty_decay.dir/tests/unit/phase29_novelty_decay_test.cpp.i
+.PHONY : tests/unit/phase29_novelty_decay_test.cpp.i
+
+tests/unit/phase29_novelty_decay_test.s: tests/unit/phase29_novelty_decay_test.cpp.s
+.PHONY : tests/unit/phase29_novelty_decay_test.s
+
+# target to generate assembly for a file
+tests/unit/phase29_novelty_decay_test.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_phase29_novelty_decay.dir/build.make CMakeFiles/test_phase29_novelty_decay.dir/tests/unit/phase29_novelty_decay_test.cpp.s
+.PHONY : tests/unit/phase29_novelty_decay_test.cpp.s
+
 tests/unit/phase2_geometry_memory_test.o: tests/unit/phase2_geometry_memory_test.cpp.o
 .PHONY : tests/unit/phase2_geometry_memory_test.o
 
@@ -888,6 +1738,246 @@ tests/unit/phase2_geometry_memory_test.s: tests/unit/phase2_geometry_memory_test
 tests/unit/phase2_geometry_memory_test.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_phase2_geometry_memory.dir/build.make CMakeFiles/test_phase2_geometry_memory.dir/tests/unit/phase2_geometry_memory_test.cpp.s
 .PHONY : tests/unit/phase2_geometry_memory_test.cpp.s
+
+tests/unit/phase30_zmq_spine_test.o: tests/unit/phase30_zmq_spine_test.cpp.o
+.PHONY : tests/unit/phase30_zmq_spine_test.o
+
+# target to build an object file
+tests/unit/phase30_zmq_spine_test.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_phase30_zmq_spine.dir/build.make CMakeFiles/test_phase30_zmq_spine.dir/tests/unit/phase30_zmq_spine_test.cpp.o
+.PHONY : tests/unit/phase30_zmq_spine_test.cpp.o
+
+tests/unit/phase30_zmq_spine_test.i: tests/unit/phase30_zmq_spine_test.cpp.i
+.PHONY : tests/unit/phase30_zmq_spine_test.i
+
+# target to preprocess a source file
+tests/unit/phase30_zmq_spine_test.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_phase30_zmq_spine.dir/build.make CMakeFiles/test_phase30_zmq_spine.dir/tests/unit/phase30_zmq_spine_test.cpp.i
+.PHONY : tests/unit/phase30_zmq_spine_test.cpp.i
+
+tests/unit/phase30_zmq_spine_test.s: tests/unit/phase30_zmq_spine_test.cpp.s
+.PHONY : tests/unit/phase30_zmq_spine_test.s
+
+# target to generate assembly for a file
+tests/unit/phase30_zmq_spine_test.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_phase30_zmq_spine.dir/build.make CMakeFiles/test_phase30_zmq_spine.dir/tests/unit/phase30_zmq_spine_test.cpp.s
+.PHONY : tests/unit/phase30_zmq_spine_test.cpp.s
+
+tests/unit/phase31_lookup_agent_test.o: tests/unit/phase31_lookup_agent_test.cpp.o
+.PHONY : tests/unit/phase31_lookup_agent_test.o
+
+# target to build an object file
+tests/unit/phase31_lookup_agent_test.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_phase31_lookup_agent.dir/build.make CMakeFiles/test_phase31_lookup_agent.dir/tests/unit/phase31_lookup_agent_test.cpp.o
+.PHONY : tests/unit/phase31_lookup_agent_test.cpp.o
+
+tests/unit/phase31_lookup_agent_test.i: tests/unit/phase31_lookup_agent_test.cpp.i
+.PHONY : tests/unit/phase31_lookup_agent_test.i
+
+# target to preprocess a source file
+tests/unit/phase31_lookup_agent_test.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_phase31_lookup_agent.dir/build.make CMakeFiles/test_phase31_lookup_agent.dir/tests/unit/phase31_lookup_agent_test.cpp.i
+.PHONY : tests/unit/phase31_lookup_agent_test.cpp.i
+
+tests/unit/phase31_lookup_agent_test.s: tests/unit/phase31_lookup_agent_test.cpp.s
+.PHONY : tests/unit/phase31_lookup_agent_test.s
+
+# target to generate assembly for a file
+tests/unit/phase31_lookup_agent_test.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_phase31_lookup_agent.dir/build.make CMakeFiles/test_phase31_lookup_agent.dir/tests/unit/phase31_lookup_agent_test.cpp.s
+.PHONY : tests/unit/phase31_lookup_agent_test.cpp.s
+
+tests/unit/phase32_escalation_test.o: tests/unit/phase32_escalation_test.cpp.o
+.PHONY : tests/unit/phase32_escalation_test.o
+
+# target to build an object file
+tests/unit/phase32_escalation_test.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_phase32_escalation.dir/build.make CMakeFiles/test_phase32_escalation.dir/tests/unit/phase32_escalation_test.cpp.o
+.PHONY : tests/unit/phase32_escalation_test.cpp.o
+
+tests/unit/phase32_escalation_test.i: tests/unit/phase32_escalation_test.cpp.i
+.PHONY : tests/unit/phase32_escalation_test.i
+
+# target to preprocess a source file
+tests/unit/phase32_escalation_test.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_phase32_escalation.dir/build.make CMakeFiles/test_phase32_escalation.dir/tests/unit/phase32_escalation_test.cpp.i
+.PHONY : tests/unit/phase32_escalation_test.cpp.i
+
+tests/unit/phase32_escalation_test.s: tests/unit/phase32_escalation_test.cpp.s
+.PHONY : tests/unit/phase32_escalation_test.s
+
+# target to generate assembly for a file
+tests/unit/phase32_escalation_test.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_phase32_escalation.dir/build.make CMakeFiles/test_phase32_escalation.dir/tests/unit/phase32_escalation_test.cpp.s
+.PHONY : tests/unit/phase32_escalation_test.cpp.s
+
+tests/unit/phase33_memory_persistence_test.o: tests/unit/phase33_memory_persistence_test.cpp.o
+.PHONY : tests/unit/phase33_memory_persistence_test.o
+
+# target to build an object file
+tests/unit/phase33_memory_persistence_test.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_phase33_memory_persistence.dir/build.make CMakeFiles/test_phase33_memory_persistence.dir/tests/unit/phase33_memory_persistence_test.cpp.o
+.PHONY : tests/unit/phase33_memory_persistence_test.cpp.o
+
+tests/unit/phase33_memory_persistence_test.i: tests/unit/phase33_memory_persistence_test.cpp.i
+.PHONY : tests/unit/phase33_memory_persistence_test.i
+
+# target to preprocess a source file
+tests/unit/phase33_memory_persistence_test.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_phase33_memory_persistence.dir/build.make CMakeFiles/test_phase33_memory_persistence.dir/tests/unit/phase33_memory_persistence_test.cpp.i
+.PHONY : tests/unit/phase33_memory_persistence_test.cpp.i
+
+tests/unit/phase33_memory_persistence_test.s: tests/unit/phase33_memory_persistence_test.cpp.s
+.PHONY : tests/unit/phase33_memory_persistence_test.s
+
+# target to generate assembly for a file
+tests/unit/phase33_memory_persistence_test.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_phase33_memory_persistence.dir/build.make CMakeFiles/test_phase33_memory_persistence.dir/tests/unit/phase33_memory_persistence_test.cpp.s
+.PHONY : tests/unit/phase33_memory_persistence_test.cpp.s
+
+tests/unit/phase34_recall_test.o: tests/unit/phase34_recall_test.cpp.o
+.PHONY : tests/unit/phase34_recall_test.o
+
+# target to build an object file
+tests/unit/phase34_recall_test.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_phase34_recall.dir/build.make CMakeFiles/test_phase34_recall.dir/tests/unit/phase34_recall_test.cpp.o
+.PHONY : tests/unit/phase34_recall_test.cpp.o
+
+tests/unit/phase34_recall_test.i: tests/unit/phase34_recall_test.cpp.i
+.PHONY : tests/unit/phase34_recall_test.i
+
+# target to preprocess a source file
+tests/unit/phase34_recall_test.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_phase34_recall.dir/build.make CMakeFiles/test_phase34_recall.dir/tests/unit/phase34_recall_test.cpp.i
+.PHONY : tests/unit/phase34_recall_test.cpp.i
+
+tests/unit/phase34_recall_test.s: tests/unit/phase34_recall_test.cpp.s
+.PHONY : tests/unit/phase34_recall_test.s
+
+# target to generate assembly for a file
+tests/unit/phase34_recall_test.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_phase34_recall.dir/build.make CMakeFiles/test_phase34_recall.dir/tests/unit/phase34_recall_test.cpp.s
+.PHONY : tests/unit/phase34_recall_test.cpp.s
+
+tests/unit/phase35_relevance_gate_test.o: tests/unit/phase35_relevance_gate_test.cpp.o
+.PHONY : tests/unit/phase35_relevance_gate_test.o
+
+# target to build an object file
+tests/unit/phase35_relevance_gate_test.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_phase35_relevance_gate.dir/build.make CMakeFiles/test_phase35_relevance_gate.dir/tests/unit/phase35_relevance_gate_test.cpp.o
+.PHONY : tests/unit/phase35_relevance_gate_test.cpp.o
+
+tests/unit/phase35_relevance_gate_test.i: tests/unit/phase35_relevance_gate_test.cpp.i
+.PHONY : tests/unit/phase35_relevance_gate_test.i
+
+# target to preprocess a source file
+tests/unit/phase35_relevance_gate_test.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_phase35_relevance_gate.dir/build.make CMakeFiles/test_phase35_relevance_gate.dir/tests/unit/phase35_relevance_gate_test.cpp.i
+.PHONY : tests/unit/phase35_relevance_gate_test.cpp.i
+
+tests/unit/phase35_relevance_gate_test.s: tests/unit/phase35_relevance_gate_test.cpp.s
+.PHONY : tests/unit/phase35_relevance_gate_test.s
+
+# target to generate assembly for a file
+tests/unit/phase35_relevance_gate_test.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_phase35_relevance_gate.dir/build.make CMakeFiles/test_phase35_relevance_gate.dir/tests/unit/phase35_relevance_gate_test.cpp.s
+.PHONY : tests/unit/phase35_relevance_gate_test.cpp.s
+
+tests/unit/phase36_gated_injection_test.o: tests/unit/phase36_gated_injection_test.cpp.o
+.PHONY : tests/unit/phase36_gated_injection_test.o
+
+# target to build an object file
+tests/unit/phase36_gated_injection_test.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_phase36_gated_injection.dir/build.make CMakeFiles/test_phase36_gated_injection.dir/tests/unit/phase36_gated_injection_test.cpp.o
+.PHONY : tests/unit/phase36_gated_injection_test.cpp.o
+
+tests/unit/phase36_gated_injection_test.i: tests/unit/phase36_gated_injection_test.cpp.i
+.PHONY : tests/unit/phase36_gated_injection_test.i
+
+# target to preprocess a source file
+tests/unit/phase36_gated_injection_test.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_phase36_gated_injection.dir/build.make CMakeFiles/test_phase36_gated_injection.dir/tests/unit/phase36_gated_injection_test.cpp.i
+.PHONY : tests/unit/phase36_gated_injection_test.cpp.i
+
+tests/unit/phase36_gated_injection_test.s: tests/unit/phase36_gated_injection_test.cpp.s
+.PHONY : tests/unit/phase36_gated_injection_test.s
+
+# target to generate assembly for a file
+tests/unit/phase36_gated_injection_test.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_phase36_gated_injection.dir/build.make CMakeFiles/test_phase36_gated_injection.dir/tests/unit/phase36_gated_injection_test.cpp.s
+.PHONY : tests/unit/phase36_gated_injection_test.cpp.s
+
+tests/unit/phase37_npt_structure_test.o: tests/unit/phase37_npt_structure_test.cpp.o
+.PHONY : tests/unit/phase37_npt_structure_test.o
+
+# target to build an object file
+tests/unit/phase37_npt_structure_test.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_phase37_npt_structure.dir/build.make CMakeFiles/test_phase37_npt_structure.dir/tests/unit/phase37_npt_structure_test.cpp.o
+.PHONY : tests/unit/phase37_npt_structure_test.cpp.o
+
+tests/unit/phase37_npt_structure_test.i: tests/unit/phase37_npt_structure_test.cpp.i
+.PHONY : tests/unit/phase37_npt_structure_test.i
+
+# target to preprocess a source file
+tests/unit/phase37_npt_structure_test.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_phase37_npt_structure.dir/build.make CMakeFiles/test_phase37_npt_structure.dir/tests/unit/phase37_npt_structure_test.cpp.i
+.PHONY : tests/unit/phase37_npt_structure_test.cpp.i
+
+tests/unit/phase37_npt_structure_test.s: tests/unit/phase37_npt_structure_test.cpp.s
+.PHONY : tests/unit/phase37_npt_structure_test.s
+
+# target to generate assembly for a file
+tests/unit/phase37_npt_structure_test.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_phase37_npt_structure.dir/build.make CMakeFiles/test_phase37_npt_structure.dir/tests/unit/phase37_npt_structure_test.cpp.s
+.PHONY : tests/unit/phase37_npt_structure_test.cpp.s
+
+tests/unit/phase38_wave_correlation_test.o: tests/unit/phase38_wave_correlation_test.cpp.o
+.PHONY : tests/unit/phase38_wave_correlation_test.o
+
+# target to build an object file
+tests/unit/phase38_wave_correlation_test.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_phase38_wave_correlation.dir/build.make CMakeFiles/test_phase38_wave_correlation.dir/tests/unit/phase38_wave_correlation_test.cpp.o
+.PHONY : tests/unit/phase38_wave_correlation_test.cpp.o
+
+tests/unit/phase38_wave_correlation_test.i: tests/unit/phase38_wave_correlation_test.cpp.i
+.PHONY : tests/unit/phase38_wave_correlation_test.i
+
+# target to preprocess a source file
+tests/unit/phase38_wave_correlation_test.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_phase38_wave_correlation.dir/build.make CMakeFiles/test_phase38_wave_correlation.dir/tests/unit/phase38_wave_correlation_test.cpp.i
+.PHONY : tests/unit/phase38_wave_correlation_test.cpp.i
+
+tests/unit/phase38_wave_correlation_test.s: tests/unit/phase38_wave_correlation_test.cpp.s
+.PHONY : tests/unit/phase38_wave_correlation_test.s
+
+# target to generate assembly for a file
+tests/unit/phase38_wave_correlation_test.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_phase38_wave_correlation.dir/build.make CMakeFiles/test_phase38_wave_correlation.dir/tests/unit/phase38_wave_correlation_test.cpp.s
+.PHONY : tests/unit/phase38_wave_correlation_test.cpp.s
+
+tests/unit/phase39_curvature_bias_test.o: tests/unit/phase39_curvature_bias_test.cpp.o
+.PHONY : tests/unit/phase39_curvature_bias_test.o
+
+# target to build an object file
+tests/unit/phase39_curvature_bias_test.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_phase39_curvature_bias.dir/build.make CMakeFiles/test_phase39_curvature_bias.dir/tests/unit/phase39_curvature_bias_test.cpp.o
+.PHONY : tests/unit/phase39_curvature_bias_test.cpp.o
+
+tests/unit/phase39_curvature_bias_test.i: tests/unit/phase39_curvature_bias_test.cpp.i
+.PHONY : tests/unit/phase39_curvature_bias_test.i
+
+# target to preprocess a source file
+tests/unit/phase39_curvature_bias_test.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_phase39_curvature_bias.dir/build.make CMakeFiles/test_phase39_curvature_bias.dir/tests/unit/phase39_curvature_bias_test.cpp.i
+.PHONY : tests/unit/phase39_curvature_bias_test.cpp.i
+
+tests/unit/phase39_curvature_bias_test.s: tests/unit/phase39_curvature_bias_test.cpp.s
+.PHONY : tests/unit/phase39_curvature_bias_test.s
+
+# target to generate assembly for a file
+tests/unit/phase39_curvature_bias_test.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_phase39_curvature_bias.dir/build.make CMakeFiles/test_phase39_curvature_bias.dir/tests/unit/phase39_curvature_bias_test.cpp.s
+.PHONY : tests/unit/phase39_curvature_bias_test.cpp.s
 
 tests/unit/phase3_cognitive_test.o: tests/unit/phase3_cognitive_test.cpp.o
 .PHONY : tests/unit/phase3_cognitive_test.o
@@ -913,6 +2003,246 @@ tests/unit/phase3_cognitive_test.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_phase3_cognitive.dir/build.make CMakeFiles/test_phase3_cognitive.dir/tests/unit/phase3_cognitive_test.cpp.s
 .PHONY : tests/unit/phase3_cognitive_test.cpp.s
 
+tests/unit/phase40_heterodyne_test.o: tests/unit/phase40_heterodyne_test.cpp.o
+.PHONY : tests/unit/phase40_heterodyne_test.o
+
+# target to build an object file
+tests/unit/phase40_heterodyne_test.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_phase40_heterodyne.dir/build.make CMakeFiles/test_phase40_heterodyne.dir/tests/unit/phase40_heterodyne_test.cpp.o
+.PHONY : tests/unit/phase40_heterodyne_test.cpp.o
+
+tests/unit/phase40_heterodyne_test.i: tests/unit/phase40_heterodyne_test.cpp.i
+.PHONY : tests/unit/phase40_heterodyne_test.i
+
+# target to preprocess a source file
+tests/unit/phase40_heterodyne_test.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_phase40_heterodyne.dir/build.make CMakeFiles/test_phase40_heterodyne.dir/tests/unit/phase40_heterodyne_test.cpp.i
+.PHONY : tests/unit/phase40_heterodyne_test.cpp.i
+
+tests/unit/phase40_heterodyne_test.s: tests/unit/phase40_heterodyne_test.cpp.s
+.PHONY : tests/unit/phase40_heterodyne_test.s
+
+# target to generate assembly for a file
+tests/unit/phase40_heterodyne_test.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_phase40_heterodyne.dir/build.make CMakeFiles/test_phase40_heterodyne.dir/tests/unit/phase40_heterodyne_test.cpp.s
+.PHONY : tests/unit/phase40_heterodyne_test.cpp.s
+
+tests/unit/phase41_multihead_merge_test.o: tests/unit/phase41_multihead_merge_test.cpp.o
+.PHONY : tests/unit/phase41_multihead_merge_test.o
+
+# target to build an object file
+tests/unit/phase41_multihead_merge_test.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_phase41_multihead_merge.dir/build.make CMakeFiles/test_phase41_multihead_merge.dir/tests/unit/phase41_multihead_merge_test.cpp.o
+.PHONY : tests/unit/phase41_multihead_merge_test.cpp.o
+
+tests/unit/phase41_multihead_merge_test.i: tests/unit/phase41_multihead_merge_test.cpp.i
+.PHONY : tests/unit/phase41_multihead_merge_test.i
+
+# target to preprocess a source file
+tests/unit/phase41_multihead_merge_test.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_phase41_multihead_merge.dir/build.make CMakeFiles/test_phase41_multihead_merge.dir/tests/unit/phase41_multihead_merge_test.cpp.i
+.PHONY : tests/unit/phase41_multihead_merge_test.cpp.i
+
+tests/unit/phase41_multihead_merge_test.s: tests/unit/phase41_multihead_merge_test.cpp.s
+.PHONY : tests/unit/phase41_multihead_merge_test.s
+
+# target to generate assembly for a file
+tests/unit/phase41_multihead_merge_test.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_phase41_multihead_merge.dir/build.make CMakeFiles/test_phase41_multihead_merge.dir/tests/unit/phase41_multihead_merge_test.cpp.s
+.PHONY : tests/unit/phase41_multihead_merge_test.cpp.s
+
+tests/unit/phase42_npt_reason_test.o: tests/unit/phase42_npt_reason_test.cpp.o
+.PHONY : tests/unit/phase42_npt_reason_test.o
+
+# target to build an object file
+tests/unit/phase42_npt_reason_test.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_phase42_npt_reason.dir/build.make CMakeFiles/test_phase42_npt_reason.dir/tests/unit/phase42_npt_reason_test.cpp.o
+.PHONY : tests/unit/phase42_npt_reason_test.cpp.o
+
+tests/unit/phase42_npt_reason_test.i: tests/unit/phase42_npt_reason_test.cpp.i
+.PHONY : tests/unit/phase42_npt_reason_test.i
+
+# target to preprocess a source file
+tests/unit/phase42_npt_reason_test.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_phase42_npt_reason.dir/build.make CMakeFiles/test_phase42_npt_reason.dir/tests/unit/phase42_npt_reason_test.cpp.i
+.PHONY : tests/unit/phase42_npt_reason_test.cpp.i
+
+tests/unit/phase42_npt_reason_test.s: tests/unit/phase42_npt_reason_test.cpp.s
+.PHONY : tests/unit/phase42_npt_reason_test.s
+
+# target to generate assembly for a file
+tests/unit/phase42_npt_reason_test.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_phase42_npt_reason.dir/build.make CMakeFiles/test_phase42_npt_reason.dir/tests/unit/phase42_npt_reason_test.cpp.s
+.PHONY : tests/unit/phase42_npt_reason_test.cpp.s
+
+tests/unit/phase43_hebbian_update_test.o: tests/unit/phase43_hebbian_update_test.cpp.o
+.PHONY : tests/unit/phase43_hebbian_update_test.o
+
+# target to build an object file
+tests/unit/phase43_hebbian_update_test.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_phase43_hebbian_update.dir/build.make CMakeFiles/test_phase43_hebbian_update.dir/tests/unit/phase43_hebbian_update_test.cpp.o
+.PHONY : tests/unit/phase43_hebbian_update_test.cpp.o
+
+tests/unit/phase43_hebbian_update_test.i: tests/unit/phase43_hebbian_update_test.cpp.i
+.PHONY : tests/unit/phase43_hebbian_update_test.i
+
+# target to preprocess a source file
+tests/unit/phase43_hebbian_update_test.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_phase43_hebbian_update.dir/build.make CMakeFiles/test_phase43_hebbian_update.dir/tests/unit/phase43_hebbian_update_test.cpp.i
+.PHONY : tests/unit/phase43_hebbian_update_test.cpp.i
+
+tests/unit/phase43_hebbian_update_test.s: tests/unit/phase43_hebbian_update_test.cpp.s
+.PHONY : tests/unit/phase43_hebbian_update_test.s
+
+# target to generate assembly for a file
+tests/unit/phase43_hebbian_update_test.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_phase43_hebbian_update.dir/build.make CMakeFiles/test_phase43_hebbian_update.dir/tests/unit/phase43_hebbian_update_test.cpp.s
+.PHONY : tests/unit/phase43_hebbian_update_test.cpp.s
+
+tests/unit/phase44_k_differentiation_test.o: tests/unit/phase44_k_differentiation_test.cpp.o
+.PHONY : tests/unit/phase44_k_differentiation_test.o
+
+# target to build an object file
+tests/unit/phase44_k_differentiation_test.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_phase44_k_differentiation.dir/build.make CMakeFiles/test_phase44_k_differentiation.dir/tests/unit/phase44_k_differentiation_test.cpp.o
+.PHONY : tests/unit/phase44_k_differentiation_test.cpp.o
+
+tests/unit/phase44_k_differentiation_test.i: tests/unit/phase44_k_differentiation_test.cpp.i
+.PHONY : tests/unit/phase44_k_differentiation_test.i
+
+# target to preprocess a source file
+tests/unit/phase44_k_differentiation_test.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_phase44_k_differentiation.dir/build.make CMakeFiles/test_phase44_k_differentiation.dir/tests/unit/phase44_k_differentiation_test.cpp.i
+.PHONY : tests/unit/phase44_k_differentiation_test.cpp.i
+
+tests/unit/phase44_k_differentiation_test.s: tests/unit/phase44_k_differentiation_test.cpp.s
+.PHONY : tests/unit/phase44_k_differentiation_test.s
+
+# target to generate assembly for a file
+tests/unit/phase44_k_differentiation_test.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_phase44_k_differentiation.dir/build.make CMakeFiles/test_phase44_k_differentiation.dir/tests/unit/phase44_k_differentiation_test.cpp.s
+.PHONY : tests/unit/phase44_k_differentiation_test.cpp.s
+
+tests/unit/phase45_dopamine_lr_test.o: tests/unit/phase45_dopamine_lr_test.cpp.o
+.PHONY : tests/unit/phase45_dopamine_lr_test.o
+
+# target to build an object file
+tests/unit/phase45_dopamine_lr_test.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_phase45_dopamine_lr.dir/build.make CMakeFiles/test_phase45_dopamine_lr.dir/tests/unit/phase45_dopamine_lr_test.cpp.o
+.PHONY : tests/unit/phase45_dopamine_lr_test.cpp.o
+
+tests/unit/phase45_dopamine_lr_test.i: tests/unit/phase45_dopamine_lr_test.cpp.i
+.PHONY : tests/unit/phase45_dopamine_lr_test.i
+
+# target to preprocess a source file
+tests/unit/phase45_dopamine_lr_test.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_phase45_dopamine_lr.dir/build.make CMakeFiles/test_phase45_dopamine_lr.dir/tests/unit/phase45_dopamine_lr_test.cpp.i
+.PHONY : tests/unit/phase45_dopamine_lr_test.cpp.i
+
+tests/unit/phase45_dopamine_lr_test.s: tests/unit/phase45_dopamine_lr_test.cpp.s
+.PHONY : tests/unit/phase45_dopamine_lr_test.s
+
+# target to generate assembly for a file
+tests/unit/phase45_dopamine_lr_test.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_phase45_dopamine_lr.dir/build.make CMakeFiles/test_phase45_dopamine_lr.dir/tests/unit/phase45_dopamine_lr_test.cpp.s
+.PHONY : tests/unit/phase45_dopamine_lr_test.cpp.s
+
+tests/unit/phase46_serotonin_elasticity_test.o: tests/unit/phase46_serotonin_elasticity_test.cpp.o
+.PHONY : tests/unit/phase46_serotonin_elasticity_test.o
+
+# target to build an object file
+tests/unit/phase46_serotonin_elasticity_test.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_phase46_serotonin_elasticity.dir/build.make CMakeFiles/test_phase46_serotonin_elasticity.dir/tests/unit/phase46_serotonin_elasticity_test.cpp.o
+.PHONY : tests/unit/phase46_serotonin_elasticity_test.cpp.o
+
+tests/unit/phase46_serotonin_elasticity_test.i: tests/unit/phase46_serotonin_elasticity_test.cpp.i
+.PHONY : tests/unit/phase46_serotonin_elasticity_test.i
+
+# target to preprocess a source file
+tests/unit/phase46_serotonin_elasticity_test.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_phase46_serotonin_elasticity.dir/build.make CMakeFiles/test_phase46_serotonin_elasticity.dir/tests/unit/phase46_serotonin_elasticity_test.cpp.i
+.PHONY : tests/unit/phase46_serotonin_elasticity_test.cpp.i
+
+tests/unit/phase46_serotonin_elasticity_test.s: tests/unit/phase46_serotonin_elasticity_test.cpp.s
+.PHONY : tests/unit/phase46_serotonin_elasticity_test.s
+
+# target to generate assembly for a file
+tests/unit/phase46_serotonin_elasticity_test.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_phase46_serotonin_elasticity.dir/build.make CMakeFiles/test_phase46_serotonin_elasticity.dir/tests/unit/phase46_serotonin_elasticity_test.cpp.s
+.PHONY : tests/unit/phase46_serotonin_elasticity_test.cpp.s
+
+tests/unit/phase47_norepinephrine_arousal_test.o: tests/unit/phase47_norepinephrine_arousal_test.cpp.o
+.PHONY : tests/unit/phase47_norepinephrine_arousal_test.o
+
+# target to build an object file
+tests/unit/phase47_norepinephrine_arousal_test.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_phase47_norepinephrine_arousal.dir/build.make CMakeFiles/test_phase47_norepinephrine_arousal.dir/tests/unit/phase47_norepinephrine_arousal_test.cpp.o
+.PHONY : tests/unit/phase47_norepinephrine_arousal_test.cpp.o
+
+tests/unit/phase47_norepinephrine_arousal_test.i: tests/unit/phase47_norepinephrine_arousal_test.cpp.i
+.PHONY : tests/unit/phase47_norepinephrine_arousal_test.i
+
+# target to preprocess a source file
+tests/unit/phase47_norepinephrine_arousal_test.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_phase47_norepinephrine_arousal.dir/build.make CMakeFiles/test_phase47_norepinephrine_arousal.dir/tests/unit/phase47_norepinephrine_arousal_test.cpp.i
+.PHONY : tests/unit/phase47_norepinephrine_arousal_test.cpp.i
+
+tests/unit/phase47_norepinephrine_arousal_test.s: tests/unit/phase47_norepinephrine_arousal_test.cpp.s
+.PHONY : tests/unit/phase47_norepinephrine_arousal_test.s
+
+# target to generate assembly for a file
+tests/unit/phase47_norepinephrine_arousal_test.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_phase47_norepinephrine_arousal.dir/build.make CMakeFiles/test_phase47_norepinephrine_arousal.dir/tests/unit/phase47_norepinephrine_arousal_test.cpp.s
+.PHONY : tests/unit/phase47_norepinephrine_arousal_test.cpp.s
+
+tests/unit/phase48_dream_replay_test.o: tests/unit/phase48_dream_replay_test.cpp.o
+.PHONY : tests/unit/phase48_dream_replay_test.o
+
+# target to build an object file
+tests/unit/phase48_dream_replay_test.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_phase48_dream_replay.dir/build.make CMakeFiles/test_phase48_dream_replay.dir/tests/unit/phase48_dream_replay_test.cpp.o
+.PHONY : tests/unit/phase48_dream_replay_test.cpp.o
+
+tests/unit/phase48_dream_replay_test.i: tests/unit/phase48_dream_replay_test.cpp.i
+.PHONY : tests/unit/phase48_dream_replay_test.i
+
+# target to preprocess a source file
+tests/unit/phase48_dream_replay_test.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_phase48_dream_replay.dir/build.make CMakeFiles/test_phase48_dream_replay.dir/tests/unit/phase48_dream_replay_test.cpp.i
+.PHONY : tests/unit/phase48_dream_replay_test.cpp.i
+
+tests/unit/phase48_dream_replay_test.s: tests/unit/phase48_dream_replay_test.cpp.s
+.PHONY : tests/unit/phase48_dream_replay_test.s
+
+# target to generate assembly for a file
+tests/unit/phase48_dream_replay_test.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_phase48_dream_replay.dir/build.make CMakeFiles/test_phase48_dream_replay.dir/tests/unit/phase48_dream_replay_test.cpp.s
+.PHONY : tests/unit/phase48_dream_replay_test.cpp.s
+
+tests/unit/phase49_boredom_singularity_fix_test.o: tests/unit/phase49_boredom_singularity_fix_test.cpp.o
+.PHONY : tests/unit/phase49_boredom_singularity_fix_test.o
+
+# target to build an object file
+tests/unit/phase49_boredom_singularity_fix_test.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_phase49_boredom_singularity_fix.dir/build.make CMakeFiles/test_phase49_boredom_singularity_fix.dir/tests/unit/phase49_boredom_singularity_fix_test.cpp.o
+.PHONY : tests/unit/phase49_boredom_singularity_fix_test.cpp.o
+
+tests/unit/phase49_boredom_singularity_fix_test.i: tests/unit/phase49_boredom_singularity_fix_test.cpp.i
+.PHONY : tests/unit/phase49_boredom_singularity_fix_test.i
+
+# target to preprocess a source file
+tests/unit/phase49_boredom_singularity_fix_test.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_phase49_boredom_singularity_fix.dir/build.make CMakeFiles/test_phase49_boredom_singularity_fix.dir/tests/unit/phase49_boredom_singularity_fix_test.cpp.i
+.PHONY : tests/unit/phase49_boredom_singularity_fix_test.cpp.i
+
+tests/unit/phase49_boredom_singularity_fix_test.s: tests/unit/phase49_boredom_singularity_fix_test.cpp.s
+.PHONY : tests/unit/phase49_boredom_singularity_fix_test.s
+
+# target to generate assembly for a file
+tests/unit/phase49_boredom_singularity_fix_test.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_phase49_boredom_singularity_fix.dir/build.make CMakeFiles/test_phase49_boredom_singularity_fix.dir/tests/unit/phase49_boredom_singularity_fix_test.cpp.s
+.PHONY : tests/unit/phase49_boredom_singularity_fix_test.cpp.s
+
 tests/unit/phase4_infrastructure_test.o: tests/unit/phase4_infrastructure_test.cpp.o
 .PHONY : tests/unit/phase4_infrastructure_test.o
 
@@ -936,6 +2266,78 @@ tests/unit/phase4_infrastructure_test.s: tests/unit/phase4_infrastructure_test.c
 tests/unit/phase4_infrastructure_test.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_phase4_infrastructure.dir/build.make CMakeFiles/test_phase4_infrastructure.dir/tests/unit/phase4_infrastructure_test.cpp.s
 .PHONY : tests/unit/phase4_infrastructure_test.cpp.s
+
+tests/unit/phase50_curiosity_goal_query_gate_test.o: tests/unit/phase50_curiosity_goal_query_gate_test.cpp.o
+.PHONY : tests/unit/phase50_curiosity_goal_query_gate_test.o
+
+# target to build an object file
+tests/unit/phase50_curiosity_goal_query_gate_test.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_phase50_curiosity_goal_query_gate.dir/build.make CMakeFiles/test_phase50_curiosity_goal_query_gate.dir/tests/unit/phase50_curiosity_goal_query_gate_test.cpp.o
+.PHONY : tests/unit/phase50_curiosity_goal_query_gate_test.cpp.o
+
+tests/unit/phase50_curiosity_goal_query_gate_test.i: tests/unit/phase50_curiosity_goal_query_gate_test.cpp.i
+.PHONY : tests/unit/phase50_curiosity_goal_query_gate_test.i
+
+# target to preprocess a source file
+tests/unit/phase50_curiosity_goal_query_gate_test.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_phase50_curiosity_goal_query_gate.dir/build.make CMakeFiles/test_phase50_curiosity_goal_query_gate.dir/tests/unit/phase50_curiosity_goal_query_gate_test.cpp.i
+.PHONY : tests/unit/phase50_curiosity_goal_query_gate_test.cpp.i
+
+tests/unit/phase50_curiosity_goal_query_gate_test.s: tests/unit/phase50_curiosity_goal_query_gate_test.cpp.s
+.PHONY : tests/unit/phase50_curiosity_goal_query_gate_test.s
+
+# target to generate assembly for a file
+tests/unit/phase50_curiosity_goal_query_gate_test.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_phase50_curiosity_goal_query_gate.dir/build.make CMakeFiles/test_phase50_curiosity_goal_query_gate.dir/tests/unit/phase50_curiosity_goal_query_gate_test.cpp.s
+.PHONY : tests/unit/phase50_curiosity_goal_query_gate_test.cpp.s
+
+tests/unit/phase51_failure_mode_guards_test.o: tests/unit/phase51_failure_mode_guards_test.cpp.o
+.PHONY : tests/unit/phase51_failure_mode_guards_test.o
+
+# target to build an object file
+tests/unit/phase51_failure_mode_guards_test.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_phase51_failure_mode_guards.dir/build.make CMakeFiles/test_phase51_failure_mode_guards.dir/tests/unit/phase51_failure_mode_guards_test.cpp.o
+.PHONY : tests/unit/phase51_failure_mode_guards_test.cpp.o
+
+tests/unit/phase51_failure_mode_guards_test.i: tests/unit/phase51_failure_mode_guards_test.cpp.i
+.PHONY : tests/unit/phase51_failure_mode_guards_test.i
+
+# target to preprocess a source file
+tests/unit/phase51_failure_mode_guards_test.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_phase51_failure_mode_guards.dir/build.make CMakeFiles/test_phase51_failure_mode_guards.dir/tests/unit/phase51_failure_mode_guards_test.cpp.i
+.PHONY : tests/unit/phase51_failure_mode_guards_test.cpp.i
+
+tests/unit/phase51_failure_mode_guards_test.s: tests/unit/phase51_failure_mode_guards_test.cpp.s
+.PHONY : tests/unit/phase51_failure_mode_guards_test.s
+
+# target to generate assembly for a file
+tests/unit/phase51_failure_mode_guards_test.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_phase51_failure_mode_guards.dir/build.make CMakeFiles/test_phase51_failure_mode_guards.dir/tests/unit/phase51_failure_mode_guards_test.cpp.s
+.PHONY : tests/unit/phase51_failure_mode_guards_test.cpp.s
+
+tests/unit/phase52_cross_coupling_matrix_test.o: tests/unit/phase52_cross_coupling_matrix_test.cpp.o
+.PHONY : tests/unit/phase52_cross_coupling_matrix_test.o
+
+# target to build an object file
+tests/unit/phase52_cross_coupling_matrix_test.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_phase52_cross_coupling_matrix.dir/build.make CMakeFiles/test_phase52_cross_coupling_matrix.dir/tests/unit/phase52_cross_coupling_matrix_test.cpp.o
+.PHONY : tests/unit/phase52_cross_coupling_matrix_test.cpp.o
+
+tests/unit/phase52_cross_coupling_matrix_test.i: tests/unit/phase52_cross_coupling_matrix_test.cpp.i
+.PHONY : tests/unit/phase52_cross_coupling_matrix_test.i
+
+# target to preprocess a source file
+tests/unit/phase52_cross_coupling_matrix_test.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_phase52_cross_coupling_matrix.dir/build.make CMakeFiles/test_phase52_cross_coupling_matrix.dir/tests/unit/phase52_cross_coupling_matrix_test.cpp.i
+.PHONY : tests/unit/phase52_cross_coupling_matrix_test.cpp.i
+
+tests/unit/phase52_cross_coupling_matrix_test.s: tests/unit/phase52_cross_coupling_matrix_test.cpp.s
+.PHONY : tests/unit/phase52_cross_coupling_matrix_test.s
+
+# target to generate assembly for a file
+tests/unit/phase52_cross_coupling_matrix_test.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_phase52_cross_coupling_matrix.dir/build.make CMakeFiles/test_phase52_cross_coupling_matrix.dir/tests/unit/phase52_cross_coupling_matrix_test.cpp.s
+.PHONY : tests/unit/phase52_cross_coupling_matrix_test.cpp.s
 
 tests/unit/phase5_autonomous_test.o: tests/unit/phase5_autonomous_test.cpp.o
 .PHONY : tests/unit/phase5_autonomous_test.o
@@ -1130,9 +2532,43 @@ help:
 	@echo "... test_phase15_hamiltonian_value"
 	@echo "... test_phase16_coord_serializer"
 	@echo "... test_phase17_bootstrap_manager"
+	@echo "... test_phase18_scope_profiler"
+	@echo "... test_phase19_telemetry_daemon"
+	@echo "... test_phase20_debug_adapter"
+	@echo "... test_phase21_cognitive_pipeline"
+	@echo "... test_phase23_decision_loop"
+	@echo "... test_phase24_thought_composer"
+	@echo "... test_phase25_field_persistence"
+	@echo "... test_phase26_seeded_exploration"
+	@echo "... test_phase27_cross_injection"
+	@echo "... test_phase28_analytic_decode"
+	@echo "... test_phase29_novelty_decay"
 	@echo "... test_phase2_geometry_memory"
+	@echo "... test_phase30_zmq_spine"
+	@echo "... test_phase31_lookup_agent"
+	@echo "... test_phase32_escalation"
+	@echo "... test_phase33_memory_persistence"
+	@echo "... test_phase34_recall"
+	@echo "... test_phase35_relevance_gate"
+	@echo "... test_phase36_gated_injection"
+	@echo "... test_phase37_npt_structure"
+	@echo "... test_phase38_wave_correlation"
+	@echo "... test_phase39_curvature_bias"
 	@echo "... test_phase3_cognitive"
+	@echo "... test_phase40_heterodyne"
+	@echo "... test_phase41_multihead_merge"
+	@echo "... test_phase42_npt_reason"
+	@echo "... test_phase43_hebbian_update"
+	@echo "... test_phase44_k_differentiation"
+	@echo "... test_phase45_dopamine_lr"
+	@echo "... test_phase46_serotonin_elasticity"
+	@echo "... test_phase47_norepinephrine_arousal"
+	@echo "... test_phase48_dream_replay"
+	@echo "... test_phase49_boredom_singularity_fix"
 	@echo "... test_phase4_infrastructure"
+	@echo "... test_phase50_curiosity_goal_query_gate"
+	@echo "... test_phase51_failure_mode_guards"
+	@echo "... test_phase52_cross_coupling_matrix"
 	@echo "... test_phase5_autonomous"
 	@echo "... test_phase6_multimodal"
 	@echo "... test_phase7_security"
@@ -1146,12 +2582,30 @@ help:
 	@echo "... nes.pb.o"
 	@echo "... nes.pb.i"
 	@echo "... nes.pb.s"
+	@echo "... src/autonomy/autonomy_engine_impl.o"
+	@echo "... src/autonomy/autonomy_engine_impl.i"
+	@echo "... src/autonomy/autonomy_engine_impl.s"
+	@echo "... src/autonomy/decision_loop.o"
+	@echo "... src/autonomy/decision_loop.i"
+	@echo "... src/autonomy/decision_loop.s"
 	@echo "... src/autonomy/metabolic_controller.o"
 	@echo "... src/autonomy/metabolic_controller.i"
 	@echo "... src/autonomy/metabolic_controller.s"
 	@echo "... src/autonomy/metabolic_lock.o"
 	@echo "... src/autonomy/metabolic_lock.i"
 	@echo "... src/autonomy/metabolic_lock.s"
+	@echo "... src/cognitive/attention_primer.o"
+	@echo "... src/cognitive/attention_primer.i"
+	@echo "... src/cognitive/attention_primer.s"
+	@echo "... src/cognitive/scratchpad.o"
+	@echo "... src/cognitive/scratchpad.i"
+	@echo "... src/cognitive/scratchpad.s"
+	@echo "... src/cognitive/spectral_filter.o"
+	@echo "... src/cognitive/spectral_filter.i"
+	@echo "... src/cognitive/spectral_filter.s"
+	@echo "... src/cognitive/thought_composer.o"
+	@echo "... src/cognitive/thought_composer.i"
+	@echo "... src/cognitive/thought_composer.s"
 	@echo "... src/core/config.o"
 	@echo "... src/core/config.i"
 	@echo "... src/core/config.s"
@@ -1191,15 +2645,117 @@ help:
 	@echo "... tests/unit/phase17_bootstrap_manager_test.o"
 	@echo "... tests/unit/phase17_bootstrap_manager_test.i"
 	@echo "... tests/unit/phase17_bootstrap_manager_test.s"
+	@echo "... tests/unit/phase18_scope_profiler_test.o"
+	@echo "... tests/unit/phase18_scope_profiler_test.i"
+	@echo "... tests/unit/phase18_scope_profiler_test.s"
+	@echo "... tests/unit/phase19_telemetry_daemon_test.o"
+	@echo "... tests/unit/phase19_telemetry_daemon_test.i"
+	@echo "... tests/unit/phase19_telemetry_daemon_test.s"
+	@echo "... tests/unit/phase20_debug_adapter_test.o"
+	@echo "... tests/unit/phase20_debug_adapter_test.i"
+	@echo "... tests/unit/phase20_debug_adapter_test.s"
+	@echo "... tests/unit/phase21_cognitive_pipeline_test.o"
+	@echo "... tests/unit/phase21_cognitive_pipeline_test.i"
+	@echo "... tests/unit/phase21_cognitive_pipeline_test.s"
+	@echo "... tests/unit/phase23_decision_loop_test.o"
+	@echo "... tests/unit/phase23_decision_loop_test.i"
+	@echo "... tests/unit/phase23_decision_loop_test.s"
+	@echo "... tests/unit/phase24_thought_composer_test.o"
+	@echo "... tests/unit/phase24_thought_composer_test.i"
+	@echo "... tests/unit/phase24_thought_composer_test.s"
+	@echo "... tests/unit/phase25_field_persistence_test.o"
+	@echo "... tests/unit/phase25_field_persistence_test.i"
+	@echo "... tests/unit/phase25_field_persistence_test.s"
+	@echo "... tests/unit/phase26_seeded_exploration_test.o"
+	@echo "... tests/unit/phase26_seeded_exploration_test.i"
+	@echo "... tests/unit/phase26_seeded_exploration_test.s"
+	@echo "... tests/unit/phase27_cross_injection_test.o"
+	@echo "... tests/unit/phase27_cross_injection_test.i"
+	@echo "... tests/unit/phase27_cross_injection_test.s"
+	@echo "... tests/unit/phase28_analytic_decode_test.o"
+	@echo "... tests/unit/phase28_analytic_decode_test.i"
+	@echo "... tests/unit/phase28_analytic_decode_test.s"
+	@echo "... tests/unit/phase29_novelty_decay_test.o"
+	@echo "... tests/unit/phase29_novelty_decay_test.i"
+	@echo "... tests/unit/phase29_novelty_decay_test.s"
 	@echo "... tests/unit/phase2_geometry_memory_test.o"
 	@echo "... tests/unit/phase2_geometry_memory_test.i"
 	@echo "... tests/unit/phase2_geometry_memory_test.s"
+	@echo "... tests/unit/phase30_zmq_spine_test.o"
+	@echo "... tests/unit/phase30_zmq_spine_test.i"
+	@echo "... tests/unit/phase30_zmq_spine_test.s"
+	@echo "... tests/unit/phase31_lookup_agent_test.o"
+	@echo "... tests/unit/phase31_lookup_agent_test.i"
+	@echo "... tests/unit/phase31_lookup_agent_test.s"
+	@echo "... tests/unit/phase32_escalation_test.o"
+	@echo "... tests/unit/phase32_escalation_test.i"
+	@echo "... tests/unit/phase32_escalation_test.s"
+	@echo "... tests/unit/phase33_memory_persistence_test.o"
+	@echo "... tests/unit/phase33_memory_persistence_test.i"
+	@echo "... tests/unit/phase33_memory_persistence_test.s"
+	@echo "... tests/unit/phase34_recall_test.o"
+	@echo "... tests/unit/phase34_recall_test.i"
+	@echo "... tests/unit/phase34_recall_test.s"
+	@echo "... tests/unit/phase35_relevance_gate_test.o"
+	@echo "... tests/unit/phase35_relevance_gate_test.i"
+	@echo "... tests/unit/phase35_relevance_gate_test.s"
+	@echo "... tests/unit/phase36_gated_injection_test.o"
+	@echo "... tests/unit/phase36_gated_injection_test.i"
+	@echo "... tests/unit/phase36_gated_injection_test.s"
+	@echo "... tests/unit/phase37_npt_structure_test.o"
+	@echo "... tests/unit/phase37_npt_structure_test.i"
+	@echo "... tests/unit/phase37_npt_structure_test.s"
+	@echo "... tests/unit/phase38_wave_correlation_test.o"
+	@echo "... tests/unit/phase38_wave_correlation_test.i"
+	@echo "... tests/unit/phase38_wave_correlation_test.s"
+	@echo "... tests/unit/phase39_curvature_bias_test.o"
+	@echo "... tests/unit/phase39_curvature_bias_test.i"
+	@echo "... tests/unit/phase39_curvature_bias_test.s"
 	@echo "... tests/unit/phase3_cognitive_test.o"
 	@echo "... tests/unit/phase3_cognitive_test.i"
 	@echo "... tests/unit/phase3_cognitive_test.s"
+	@echo "... tests/unit/phase40_heterodyne_test.o"
+	@echo "... tests/unit/phase40_heterodyne_test.i"
+	@echo "... tests/unit/phase40_heterodyne_test.s"
+	@echo "... tests/unit/phase41_multihead_merge_test.o"
+	@echo "... tests/unit/phase41_multihead_merge_test.i"
+	@echo "... tests/unit/phase41_multihead_merge_test.s"
+	@echo "... tests/unit/phase42_npt_reason_test.o"
+	@echo "... tests/unit/phase42_npt_reason_test.i"
+	@echo "... tests/unit/phase42_npt_reason_test.s"
+	@echo "... tests/unit/phase43_hebbian_update_test.o"
+	@echo "... tests/unit/phase43_hebbian_update_test.i"
+	@echo "... tests/unit/phase43_hebbian_update_test.s"
+	@echo "... tests/unit/phase44_k_differentiation_test.o"
+	@echo "... tests/unit/phase44_k_differentiation_test.i"
+	@echo "... tests/unit/phase44_k_differentiation_test.s"
+	@echo "... tests/unit/phase45_dopamine_lr_test.o"
+	@echo "... tests/unit/phase45_dopamine_lr_test.i"
+	@echo "... tests/unit/phase45_dopamine_lr_test.s"
+	@echo "... tests/unit/phase46_serotonin_elasticity_test.o"
+	@echo "... tests/unit/phase46_serotonin_elasticity_test.i"
+	@echo "... tests/unit/phase46_serotonin_elasticity_test.s"
+	@echo "... tests/unit/phase47_norepinephrine_arousal_test.o"
+	@echo "... tests/unit/phase47_norepinephrine_arousal_test.i"
+	@echo "... tests/unit/phase47_norepinephrine_arousal_test.s"
+	@echo "... tests/unit/phase48_dream_replay_test.o"
+	@echo "... tests/unit/phase48_dream_replay_test.i"
+	@echo "... tests/unit/phase48_dream_replay_test.s"
+	@echo "... tests/unit/phase49_boredom_singularity_fix_test.o"
+	@echo "... tests/unit/phase49_boredom_singularity_fix_test.i"
+	@echo "... tests/unit/phase49_boredom_singularity_fix_test.s"
 	@echo "... tests/unit/phase4_infrastructure_test.o"
 	@echo "... tests/unit/phase4_infrastructure_test.i"
 	@echo "... tests/unit/phase4_infrastructure_test.s"
+	@echo "... tests/unit/phase50_curiosity_goal_query_gate_test.o"
+	@echo "... tests/unit/phase50_curiosity_goal_query_gate_test.i"
+	@echo "... tests/unit/phase50_curiosity_goal_query_gate_test.s"
+	@echo "... tests/unit/phase51_failure_mode_guards_test.o"
+	@echo "... tests/unit/phase51_failure_mode_guards_test.i"
+	@echo "... tests/unit/phase51_failure_mode_guards_test.s"
+	@echo "... tests/unit/phase52_cross_coupling_matrix_test.o"
+	@echo "... tests/unit/phase52_cross_coupling_matrix_test.i"
+	@echo "... tests/unit/phase52_cross_coupling_matrix_test.s"
 	@echo "... tests/unit/phase5_autonomous_test.o"
 	@echo "... tests/unit/phase5_autonomous_test.i"
 	@echo "... tests/unit/phase5_autonomous_test.s"
