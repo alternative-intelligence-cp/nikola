@@ -17,6 +17,9 @@
 //No help, variable specified on the command line.
 BUILD_TESTING:UNINITIALIZED=ON
 
+//No help, variable specified on the command line.
+BUILD_TESTS:UNINITIALIZED=ON
+
 //Path to a program.
 CMAKE_ADDR2LINE:FILEPATH=/usr/bin/addr2line
 

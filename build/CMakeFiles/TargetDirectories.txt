@@ -54,6 +54,15 @@
 /home/randy/Workspace/REPOS/nikola/build/CMakeFiles/test_phase51_failure_mode_guards.dir
 /home/randy/Workspace/REPOS/nikola/build/CMakeFiles/test_phase52_cross_coupling_matrix.dir
 /home/randy/Workspace/REPOS/nikola/build/CMakeFiles/test_phase53_boredom_gap036_calibration.dir
+/home/randy/Workspace/REPOS/nikola/build/CMakeFiles/test_phase54_seff_quadratic_correction.dir
+/home/randy/Workspace/REPOS/nikola/build/CMakeFiles/test_phase55_feedback_loop_latency.dir
+/home/randy/Workspace/REPOS/nikola/build/CMakeFiles/test_phase56_neuropsychometric_profile.dir
+/home/randy/Workspace/REPOS/nikola/build/CMakeFiles/test_phase57_metabolic_calibrator.dir
+/home/randy/Workspace/REPOS/nikola/build/CMakeFiles/test_phase58_latency_budget.dir
+/home/randy/Workspace/REPOS/nikola/build/CMakeFiles/test_phase59_physics_oracle.dir
+/home/randy/Workspace/REPOS/nikola/build/CMakeFiles/test_phase60_soa_layout.dir
+/home/randy/Workspace/REPOS/nikola/build/CMakeFiles/test_phase61_torus_geometry.dir
+/home/randy/Workspace/REPOS/nikola/build/CMakeFiles/test_phase62_temporal_decoherence.dir
 /home/randy/Workspace/REPOS/nikola/build/CMakeFiles/nikola_first_light.dir
 /home/randy/Workspace/REPOS/nikola/build/CMakeFiles/test.dir
 /home/randy/Workspace/REPOS/nikola/build/CMakeFiles/edit_cache.dir

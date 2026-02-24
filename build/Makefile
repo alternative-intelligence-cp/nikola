@@ -900,6 +900,123 @@ test_phase53_boredom_gap036_calibration/fast:
 .PHONY : test_phase53_boredom_gap036_calibration/fast
 
 #=============================================================================
+# Target rules for targets named test_phase54_seff_quadratic_correction
+
+# Build rule for target.
+test_phase54_seff_quadratic_correction: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 test_phase54_seff_quadratic_correction
+.PHONY : test_phase54_seff_quadratic_correction
+
+# fast build rule for target.
+test_phase54_seff_quadratic_correction/fast:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_phase54_seff_quadratic_correction.dir/build.make CMakeFiles/test_phase54_seff_quadratic_correction.dir/build
+.PHONY : test_phase54_seff_quadratic_correction/fast
+
+#=============================================================================
+# Target rules for targets named test_phase55_feedback_loop_latency
+
+# Build rule for target.
+test_phase55_feedback_loop_latency: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 test_phase55_feedback_loop_latency
+.PHONY : test_phase55_feedback_loop_latency
+
+# fast build rule for target.
+test_phase55_feedback_loop_latency/fast:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_phase55_feedback_loop_latency.dir/build.make CMakeFiles/test_phase55_feedback_loop_latency.dir/build
+.PHONY : test_phase55_feedback_loop_latency/fast
+
+#=============================================================================
+# Target rules for targets named test_phase56_neuropsychometric_profile
+
+# Build rule for target.
+test_phase56_neuropsychometric_profile: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 test_phase56_neuropsychometric_profile
+.PHONY : test_phase56_neuropsychometric_profile
+
+# fast build rule for target.
+test_phase56_neuropsychometric_profile/fast:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_phase56_neuropsychometric_profile.dir/build.make CMakeFiles/test_phase56_neuropsychometric_profile.dir/build
+.PHONY : test_phase56_neuropsychometric_profile/fast
+
+#=============================================================================
+# Target rules for targets named test_phase57_metabolic_calibrator
+
+# Build rule for target.
+test_phase57_metabolic_calibrator: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 test_phase57_metabolic_calibrator
+.PHONY : test_phase57_metabolic_calibrator
+
+# fast build rule for target.
+test_phase57_metabolic_calibrator/fast:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_phase57_metabolic_calibrator.dir/build.make CMakeFiles/test_phase57_metabolic_calibrator.dir/build
+.PHONY : test_phase57_metabolic_calibrator/fast
+
+#=============================================================================
+# Target rules for targets named test_phase58_latency_budget
+
+# Build rule for target.
+test_phase58_latency_budget: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 test_phase58_latency_budget
+.PHONY : test_phase58_latency_budget
+
+# fast build rule for target.
+test_phase58_latency_budget/fast:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_phase58_latency_budget.dir/build.make CMakeFiles/test_phase58_latency_budget.dir/build
+.PHONY : test_phase58_latency_budget/fast
+
+#=============================================================================
+# Target rules for targets named test_phase59_physics_oracle
+
+# Build rule for target.
+test_phase59_physics_oracle: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 test_phase59_physics_oracle
+.PHONY : test_phase59_physics_oracle
+
+# fast build rule for target.
+test_phase59_physics_oracle/fast:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_phase59_physics_oracle.dir/build.make CMakeFiles/test_phase59_physics_oracle.dir/build
+.PHONY : test_phase59_physics_oracle/fast
+
+#=============================================================================
+# Target rules for targets named test_phase60_soa_layout
+
+# Build rule for target.
+test_phase60_soa_layout: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 test_phase60_soa_layout
+.PHONY : test_phase60_soa_layout
+
+# fast build rule for target.
+test_phase60_soa_layout/fast:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_phase60_soa_layout.dir/build.make CMakeFiles/test_phase60_soa_layout.dir/build
+.PHONY : test_phase60_soa_layout/fast
+
+#=============================================================================
+# Target rules for targets named test_phase61_torus_geometry
+
+# Build rule for target.
+test_phase61_torus_geometry: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 test_phase61_torus_geometry
+.PHONY : test_phase61_torus_geometry
+
+# fast build rule for target.
+test_phase61_torus_geometry/fast:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_phase61_torus_geometry.dir/build.make CMakeFiles/test_phase61_torus_geometry.dir/build
+.PHONY : test_phase61_torus_geometry/fast
+
+#=============================================================================
+# Target rules for targets named test_phase62_temporal_decoherence
+
+# Build rule for target.
+test_phase62_temporal_decoherence: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 test_phase62_temporal_decoherence
+.PHONY : test_phase62_temporal_decoherence
+
+# fast build rule for target.
+test_phase62_temporal_decoherence/fast:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_phase62_temporal_decoherence.dir/build.make CMakeFiles/test_phase62_temporal_decoherence.dir/build
+.PHONY : test_phase62_temporal_decoherence/fast
+
+#=============================================================================
 # Target rules for targets named nikola_first_light
 
 # Build rule for target.
@@ -2376,6 +2493,150 @@ tests/unit/phase53_boredom_gap036_calibration_test.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_phase53_boredom_gap036_calibration.dir/build.make CMakeFiles/test_phase53_boredom_gap036_calibration.dir/tests/unit/phase53_boredom_gap036_calibration_test.cpp.s
 .PHONY : tests/unit/phase53_boredom_gap036_calibration_test.cpp.s
 
+tests/unit/phase54_seff_quadratic_correction_test.o: tests/unit/phase54_seff_quadratic_correction_test.cpp.o
+.PHONY : tests/unit/phase54_seff_quadratic_correction_test.o
+
+# target to build an object file
+tests/unit/phase54_seff_quadratic_correction_test.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_phase54_seff_quadratic_correction.dir/build.make CMakeFiles/test_phase54_seff_quadratic_correction.dir/tests/unit/phase54_seff_quadratic_correction_test.cpp.o
+.PHONY : tests/unit/phase54_seff_quadratic_correction_test.cpp.o
+
+tests/unit/phase54_seff_quadratic_correction_test.i: tests/unit/phase54_seff_quadratic_correction_test.cpp.i
+.PHONY : tests/unit/phase54_seff_quadratic_correction_test.i
+
+# target to preprocess a source file
+tests/unit/phase54_seff_quadratic_correction_test.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_phase54_seff_quadratic_correction.dir/build.make CMakeFiles/test_phase54_seff_quadratic_correction.dir/tests/unit/phase54_seff_quadratic_correction_test.cpp.i
+.PHONY : tests/unit/phase54_seff_quadratic_correction_test.cpp.i
+
+tests/unit/phase54_seff_quadratic_correction_test.s: tests/unit/phase54_seff_quadratic_correction_test.cpp.s
+.PHONY : tests/unit/phase54_seff_quadratic_correction_test.s
+
+# target to generate assembly for a file
+tests/unit/phase54_seff_quadratic_correction_test.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_phase54_seff_quadratic_correction.dir/build.make CMakeFiles/test_phase54_seff_quadratic_correction.dir/tests/unit/phase54_seff_quadratic_correction_test.cpp.s
+.PHONY : tests/unit/phase54_seff_quadratic_correction_test.cpp.s
+
+tests/unit/phase55_feedback_loop_latency_test.o: tests/unit/phase55_feedback_loop_latency_test.cpp.o
+.PHONY : tests/unit/phase55_feedback_loop_latency_test.o
+
+# target to build an object file
+tests/unit/phase55_feedback_loop_latency_test.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_phase55_feedback_loop_latency.dir/build.make CMakeFiles/test_phase55_feedback_loop_latency.dir/tests/unit/phase55_feedback_loop_latency_test.cpp.o
+.PHONY : tests/unit/phase55_feedback_loop_latency_test.cpp.o
+
+tests/unit/phase55_feedback_loop_latency_test.i: tests/unit/phase55_feedback_loop_latency_test.cpp.i
+.PHONY : tests/unit/phase55_feedback_loop_latency_test.i
+
+# target to preprocess a source file
+tests/unit/phase55_feedback_loop_latency_test.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_phase55_feedback_loop_latency.dir/build.make CMakeFiles/test_phase55_feedback_loop_latency.dir/tests/unit/phase55_feedback_loop_latency_test.cpp.i
+.PHONY : tests/unit/phase55_feedback_loop_latency_test.cpp.i
+
+tests/unit/phase55_feedback_loop_latency_test.s: tests/unit/phase55_feedback_loop_latency_test.cpp.s
+.PHONY : tests/unit/phase55_feedback_loop_latency_test.s
+
+# target to generate assembly for a file
+tests/unit/phase55_feedback_loop_latency_test.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_phase55_feedback_loop_latency.dir/build.make CMakeFiles/test_phase55_feedback_loop_latency.dir/tests/unit/phase55_feedback_loop_latency_test.cpp.s
+.PHONY : tests/unit/phase55_feedback_loop_latency_test.cpp.s
+
+tests/unit/phase56_neuropsychometric_profile_test.o: tests/unit/phase56_neuropsychometric_profile_test.cpp.o
+.PHONY : tests/unit/phase56_neuropsychometric_profile_test.o
+
+# target to build an object file
+tests/unit/phase56_neuropsychometric_profile_test.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_phase56_neuropsychometric_profile.dir/build.make CMakeFiles/test_phase56_neuropsychometric_profile.dir/tests/unit/phase56_neuropsychometric_profile_test.cpp.o
+.PHONY : tests/unit/phase56_neuropsychometric_profile_test.cpp.o
+
+tests/unit/phase56_neuropsychometric_profile_test.i: tests/unit/phase56_neuropsychometric_profile_test.cpp.i
+.PHONY : tests/unit/phase56_neuropsychometric_profile_test.i
+
+# target to preprocess a source file
+tests/unit/phase56_neuropsychometric_profile_test.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_phase56_neuropsychometric_profile.dir/build.make CMakeFiles/test_phase56_neuropsychometric_profile.dir/tests/unit/phase56_neuropsychometric_profile_test.cpp.i
+.PHONY : tests/unit/phase56_neuropsychometric_profile_test.cpp.i
+
+tests/unit/phase56_neuropsychometric_profile_test.s: tests/unit/phase56_neuropsychometric_profile_test.cpp.s
+.PHONY : tests/unit/phase56_neuropsychometric_profile_test.s
+
+# target to generate assembly for a file
+tests/unit/phase56_neuropsychometric_profile_test.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_phase56_neuropsychometric_profile.dir/build.make CMakeFiles/test_phase56_neuropsychometric_profile.dir/tests/unit/phase56_neuropsychometric_profile_test.cpp.s
+.PHONY : tests/unit/phase56_neuropsychometric_profile_test.cpp.s
+
+tests/unit/phase57_metabolic_calibrator_test.o: tests/unit/phase57_metabolic_calibrator_test.cpp.o
+.PHONY : tests/unit/phase57_metabolic_calibrator_test.o
+
+# target to build an object file
+tests/unit/phase57_metabolic_calibrator_test.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_phase57_metabolic_calibrator.dir/build.make CMakeFiles/test_phase57_metabolic_calibrator.dir/tests/unit/phase57_metabolic_calibrator_test.cpp.o
+.PHONY : tests/unit/phase57_metabolic_calibrator_test.cpp.o
+
+tests/unit/phase57_metabolic_calibrator_test.i: tests/unit/phase57_metabolic_calibrator_test.cpp.i
+.PHONY : tests/unit/phase57_metabolic_calibrator_test.i
+
+# target to preprocess a source file
+tests/unit/phase57_metabolic_calibrator_test.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_phase57_metabolic_calibrator.dir/build.make CMakeFiles/test_phase57_metabolic_calibrator.dir/tests/unit/phase57_metabolic_calibrator_test.cpp.i
+.PHONY : tests/unit/phase57_metabolic_calibrator_test.cpp.i
+
+tests/unit/phase57_metabolic_calibrator_test.s: tests/unit/phase57_metabolic_calibrator_test.cpp.s
+.PHONY : tests/unit/phase57_metabolic_calibrator_test.s
+
+# target to generate assembly for a file
+tests/unit/phase57_metabolic_calibrator_test.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_phase57_metabolic_calibrator.dir/build.make CMakeFiles/test_phase57_metabolic_calibrator.dir/tests/unit/phase57_metabolic_calibrator_test.cpp.s
+.PHONY : tests/unit/phase57_metabolic_calibrator_test.cpp.s
+
+tests/unit/phase58_latency_budget_test.o: tests/unit/phase58_latency_budget_test.cpp.o
+.PHONY : tests/unit/phase58_latency_budget_test.o
+
+# target to build an object file
+tests/unit/phase58_latency_budget_test.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_phase58_latency_budget.dir/build.make CMakeFiles/test_phase58_latency_budget.dir/tests/unit/phase58_latency_budget_test.cpp.o
+.PHONY : tests/unit/phase58_latency_budget_test.cpp.o
+
+tests/unit/phase58_latency_budget_test.i: tests/unit/phase58_latency_budget_test.cpp.i
+.PHONY : tests/unit/phase58_latency_budget_test.i
+
+# target to preprocess a source file
+tests/unit/phase58_latency_budget_test.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_phase58_latency_budget.dir/build.make CMakeFiles/test_phase58_latency_budget.dir/tests/unit/phase58_latency_budget_test.cpp.i
+.PHONY : tests/unit/phase58_latency_budget_test.cpp.i
+
+tests/unit/phase58_latency_budget_test.s: tests/unit/phase58_latency_budget_test.cpp.s
+.PHONY : tests/unit/phase58_latency_budget_test.s
+
+# target to generate assembly for a file
+tests/unit/phase58_latency_budget_test.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_phase58_latency_budget.dir/build.make CMakeFiles/test_phase58_latency_budget.dir/tests/unit/phase58_latency_budget_test.cpp.s
+.PHONY : tests/unit/phase58_latency_budget_test.cpp.s
+
+tests/unit/phase59_physics_oracle_test.o: tests/unit/phase59_physics_oracle_test.cpp.o
+.PHONY : tests/unit/phase59_physics_oracle_test.o
+
+# target to build an object file
+tests/unit/phase59_physics_oracle_test.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_phase59_physics_oracle.dir/build.make CMakeFiles/test_phase59_physics_oracle.dir/tests/unit/phase59_physics_oracle_test.cpp.o
+.PHONY : tests/unit/phase59_physics_oracle_test.cpp.o
+
+tests/unit/phase59_physics_oracle_test.i: tests/unit/phase59_physics_oracle_test.cpp.i
+.PHONY : tests/unit/phase59_physics_oracle_test.i
+
+# target to preprocess a source file
+tests/unit/phase59_physics_oracle_test.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_phase59_physics_oracle.dir/build.make CMakeFiles/test_phase59_physics_oracle.dir/tests/unit/phase59_physics_oracle_test.cpp.i
+.PHONY : tests/unit/phase59_physics_oracle_test.cpp.i
+
+tests/unit/phase59_physics_oracle_test.s: tests/unit/phase59_physics_oracle_test.cpp.s
+.PHONY : tests/unit/phase59_physics_oracle_test.s
+
+# target to generate assembly for a file
+tests/unit/phase59_physics_oracle_test.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_phase59_physics_oracle.dir/build.make CMakeFiles/test_phase59_physics_oracle.dir/tests/unit/phase59_physics_oracle_test.cpp.s
+.PHONY : tests/unit/phase59_physics_oracle_test.cpp.s
+
 tests/unit/phase5_autonomous_test.o: tests/unit/phase5_autonomous_test.cpp.o
 .PHONY : tests/unit/phase5_autonomous_test.o
 
@@ -2399,6 +2660,78 @@ tests/unit/phase5_autonomous_test.s: tests/unit/phase5_autonomous_test.cpp.s
 tests/unit/phase5_autonomous_test.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_phase5_autonomous.dir/build.make CMakeFiles/test_phase5_autonomous.dir/tests/unit/phase5_autonomous_test.cpp.s
 .PHONY : tests/unit/phase5_autonomous_test.cpp.s
+
+tests/unit/phase60_soa_layout_test.o: tests/unit/phase60_soa_layout_test.cpp.o
+.PHONY : tests/unit/phase60_soa_layout_test.o
+
+# target to build an object file
+tests/unit/phase60_soa_layout_test.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_phase60_soa_layout.dir/build.make CMakeFiles/test_phase60_soa_layout.dir/tests/unit/phase60_soa_layout_test.cpp.o
+.PHONY : tests/unit/phase60_soa_layout_test.cpp.o
+
+tests/unit/phase60_soa_layout_test.i: tests/unit/phase60_soa_layout_test.cpp.i
+.PHONY : tests/unit/phase60_soa_layout_test.i
+
+# target to preprocess a source file
+tests/unit/phase60_soa_layout_test.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_phase60_soa_layout.dir/build.make CMakeFiles/test_phase60_soa_layout.dir/tests/unit/phase60_soa_layout_test.cpp.i
+.PHONY : tests/unit/phase60_soa_layout_test.cpp.i
+
+tests/unit/phase60_soa_layout_test.s: tests/unit/phase60_soa_layout_test.cpp.s
+.PHONY : tests/unit/phase60_soa_layout_test.s
+
+# target to generate assembly for a file
+tests/unit/phase60_soa_layout_test.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_phase60_soa_layout.dir/build.make CMakeFiles/test_phase60_soa_layout.dir/tests/unit/phase60_soa_layout_test.cpp.s
+.PHONY : tests/unit/phase60_soa_layout_test.cpp.s
+
+tests/unit/phase61_torus_geometry_test.o: tests/unit/phase61_torus_geometry_test.cpp.o
+.PHONY : tests/unit/phase61_torus_geometry_test.o
+
+# target to build an object file
+tests/unit/phase61_torus_geometry_test.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_phase61_torus_geometry.dir/build.make CMakeFiles/test_phase61_torus_geometry.dir/tests/unit/phase61_torus_geometry_test.cpp.o
+.PHONY : tests/unit/phase61_torus_geometry_test.cpp.o
+
+tests/unit/phase61_torus_geometry_test.i: tests/unit/phase61_torus_geometry_test.cpp.i
+.PHONY : tests/unit/phase61_torus_geometry_test.i
+
+# target to preprocess a source file
+tests/unit/phase61_torus_geometry_test.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_phase61_torus_geometry.dir/build.make CMakeFiles/test_phase61_torus_geometry.dir/tests/unit/phase61_torus_geometry_test.cpp.i
+.PHONY : tests/unit/phase61_torus_geometry_test.cpp.i
+
+tests/unit/phase61_torus_geometry_test.s: tests/unit/phase61_torus_geometry_test.cpp.s
+.PHONY : tests/unit/phase61_torus_geometry_test.s
+
+# target to generate assembly for a file
+tests/unit/phase61_torus_geometry_test.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_phase61_torus_geometry.dir/build.make CMakeFiles/test_phase61_torus_geometry.dir/tests/unit/phase61_torus_geometry_test.cpp.s
+.PHONY : tests/unit/phase61_torus_geometry_test.cpp.s
+
+tests/unit/phase62_temporal_decoherence_test.o: tests/unit/phase62_temporal_decoherence_test.cpp.o
+.PHONY : tests/unit/phase62_temporal_decoherence_test.o
+
+# target to build an object file
+tests/unit/phase62_temporal_decoherence_test.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_phase62_temporal_decoherence.dir/build.make CMakeFiles/test_phase62_temporal_decoherence.dir/tests/unit/phase62_temporal_decoherence_test.cpp.o
+.PHONY : tests/unit/phase62_temporal_decoherence_test.cpp.o
+
+tests/unit/phase62_temporal_decoherence_test.i: tests/unit/phase62_temporal_decoherence_test.cpp.i
+.PHONY : tests/unit/phase62_temporal_decoherence_test.i
+
+# target to preprocess a source file
+tests/unit/phase62_temporal_decoherence_test.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_phase62_temporal_decoherence.dir/build.make CMakeFiles/test_phase62_temporal_decoherence.dir/tests/unit/phase62_temporal_decoherence_test.cpp.i
+.PHONY : tests/unit/phase62_temporal_decoherence_test.cpp.i
+
+tests/unit/phase62_temporal_decoherence_test.s: tests/unit/phase62_temporal_decoherence_test.cpp.s
+.PHONY : tests/unit/phase62_temporal_decoherence_test.s
+
+# target to generate assembly for a file
+tests/unit/phase62_temporal_decoherence_test.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_phase62_temporal_decoherence.dir/build.make CMakeFiles/test_phase62_temporal_decoherence.dir/tests/unit/phase62_temporal_decoherence_test.cpp.s
+.PHONY : tests/unit/phase62_temporal_decoherence_test.cpp.s
 
 tests/unit/phase6_multimodal_test.o: tests/unit/phase6_multimodal_test.cpp.o
 .PHONY : tests/unit/phase6_multimodal_test.o
@@ -2607,7 +2940,16 @@ help:
 	@echo "... test_phase51_failure_mode_guards"
 	@echo "... test_phase52_cross_coupling_matrix"
 	@echo "... test_phase53_boredom_gap036_calibration"
+	@echo "... test_phase54_seff_quadratic_correction"
+	@echo "... test_phase55_feedback_loop_latency"
+	@echo "... test_phase56_neuropsychometric_profile"
+	@echo "... test_phase57_metabolic_calibrator"
+	@echo "... test_phase58_latency_budget"
+	@echo "... test_phase59_physics_oracle"
 	@echo "... test_phase5_autonomous"
+	@echo "... test_phase60_soa_layout"
+	@echo "... test_phase61_torus_geometry"
+	@echo "... test_phase62_temporal_decoherence"
 	@echo "... test_phase6_multimodal"
 	@echo "... test_phase7_security"
 	@echo "... test_phase8_foundations"
@@ -2797,9 +3139,36 @@ help:
 	@echo "... tests/unit/phase53_boredom_gap036_calibration_test.o"
 	@echo "... tests/unit/phase53_boredom_gap036_calibration_test.i"
 	@echo "... tests/unit/phase53_boredom_gap036_calibration_test.s"
+	@echo "... tests/unit/phase54_seff_quadratic_correction_test.o"
+	@echo "... tests/unit/phase54_seff_quadratic_correction_test.i"
+	@echo "... tests/unit/phase54_seff_quadratic_correction_test.s"
+	@echo "... tests/unit/phase55_feedback_loop_latency_test.o"
+	@echo "... tests/unit/phase55_feedback_loop_latency_test.i"
+	@echo "... tests/unit/phase55_feedback_loop_latency_test.s"
+	@echo "... tests/unit/phase56_neuropsychometric_profile_test.o"
+	@echo "... tests/unit/phase56_neuropsychometric_profile_test.i"
+	@echo "... tests/unit/phase56_neuropsychometric_profile_test.s"
+	@echo "... tests/unit/phase57_metabolic_calibrator_test.o"
+	@echo "... tests/unit/phase57_metabolic_calibrator_test.i"
+	@echo "... tests/unit/phase57_metabolic_calibrator_test.s"
+	@echo "... tests/unit/phase58_latency_budget_test.o"
+	@echo "... tests/unit/phase58_latency_budget_test.i"
+	@echo "... tests/unit/phase58_latency_budget_test.s"
+	@echo "... tests/unit/phase59_physics_oracle_test.o"
+	@echo "... tests/unit/phase59_physics_oracle_test.i"
+	@echo "... tests/unit/phase59_physics_oracle_test.s"
 	@echo "... tests/unit/phase5_autonomous_test.o"
 	@echo "... tests/unit/phase5_autonomous_test.i"
 	@echo "... tests/unit/phase5_autonomous_test.s"
+	@echo "... tests/unit/phase60_soa_layout_test.o"
+	@echo "... tests/unit/phase60_soa_layout_test.i"
+	@echo "... tests/unit/phase60_soa_layout_test.s"
+	@echo "... tests/unit/phase61_torus_geometry_test.o"
+	@echo "... tests/unit/phase61_torus_geometry_test.i"
+	@echo "... tests/unit/phase61_torus_geometry_test.s"
+	@echo "... tests/unit/phase62_temporal_decoherence_test.o"
+	@echo "... tests/unit/phase62_temporal_decoherence_test.i"
+	@echo "... tests/unit/phase62_temporal_decoherence_test.s"
 	@echo "... tests/unit/phase6_multimodal_test.o"
 	@echo "... tests/unit/phase6_multimodal_test.i"
 	@echo "... tests/unit/phase6_multimodal_test.s"

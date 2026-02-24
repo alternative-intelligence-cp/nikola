@@ -466,6 +466,51 @@ if(NIKOLA_BUILD_TESTS)
     target_link_libraries(test_phase53_boredom_gap036_calibration PRIVATE nikola_core Catch2::Catch2WithMain)
     add_test(NAME Phase53BoredomGAP036Calibration COMMAND test_phase53_boredom_gap036_calibration)
 
+    # Phase 54 Unit Tests: s_eff(N) = s_local/(1+N²) quadratic spec correction (spec §"Non-Linear Interaction Terms")
+    add_executable(test_phase54_seff_quadratic_correction tests/unit/phase54_seff_quadratic_correction_test.cpp)
+    target_link_libraries(test_phase54_seff_quadratic_correction PRIVATE nikola_core Catch2::Catch2WithMain)
+    add_test(NAME Phase54SeffQuadraticCorrection COMMAND test_phase54_seff_quadratic_correction)
+
+    # Phase 55 Unit Tests: GAP-022 ENGS→Physics feedback loop latency (τ_max ≤ 10ms, double-buffered atomic swap)
+    add_executable(test_phase55_feedback_loop_latency tests/unit/phase55_feedback_loop_latency_test.cpp)
+    target_link_libraries(test_phase55_feedback_loop_latency PRIVATE nikola_core Catch2::Catch2WithMain atomic)
+    add_test(NAME Phase55FeedbackLoopLatency COMMAND test_phase55_feedback_loop_latency)
+
+    # Phase 56 Unit Tests: GAP-029 Neurochemistry Cross-Validation Metrics (Pearson r, ablation pathology, Yerkes-Dodson)
+    add_executable(test_phase56_neuropsychometric_profile tests/unit/phase56_neuropsychometric_profile_test.cpp)
+    target_link_libraries(test_phase56_neuropsychometric_profile PRIVATE nikola_core Catch2::Catch2WithMain)
+    add_test(NAME Phase56NeuropsychometricProfile COMMAND test_phase56_neuropsychometric_profile)
+
+    # Phase 57 Unit Tests: GAP-012 Metabolic Cost Calibration via Hardware Benchmarking (NMU derivation, thermal, neurochemical)
+    add_executable(test_phase57_metabolic_calibrator tests/unit/phase57_metabolic_calibrator_test.cpp)
+    target_link_libraries(test_phase57_metabolic_calibrator PRIVATE nikola_core Catch2::Catch2WithMain)
+    add_test(NAME Phase57MetabolicCalibrator COMMAND test_phase57_metabolic_calibrator)
+
+    # Phase 58 Unit Tests: GAP-025 End-to-End Latency Budget Allocation (1000 Hz tick, component budgets, alerting, Drop-or-Degrade)
+    add_executable(test_phase58_latency_budget tests/unit/phase58_latency_budget_test.cpp)
+    target_link_libraries(test_phase58_latency_budget PRIVATE nikola_core Catch2::Catch2WithMain)
+    add_test(NAME Phase58LatencyBudget COMMAND test_phase58_latency_budget)
+
+    # Phase 59 Unit Tests: GAP-030 Physics Oracle Calibration Suite (Standard Candle, Viscosity Trap, Resonance Attack, Reversibility, runtime SCRAM)
+    add_executable(test_phase59_physics_oracle tests/unit/phase59_physics_oracle_test.cpp)
+    target_link_libraries(test_phase59_physics_oracle PRIVATE nikola_core Catch2::Catch2WithMain)
+    add_test(NAME Phase59PhysicsOracle COMMAND test_phase59_physics_oracle)
+
+    # Phase 60 Unit Tests: GAP-021 TorusGridSoA Memory Alignment Guarantees (AlignedAllocator, AlignedVec, TorusBlock, SoaAlignmentGuard, Copy-on-Load, GGUF mmap)
+    add_executable(test_phase60_soa_layout tests/unit/phase60_soa_layout_test.cpp)
+    target_link_libraries(test_phase60_soa_layout PRIVATE nikola_core Catch2::Catch2WithMain)
+    add_test(NAME Phase60SoaLayout COMMAND test_phase60_soa_layout)
+
+    # Phase 61 Unit Tests: GAP-024 Metric Tensor Consolidation Scheduler + GAP-041 9D Coordinate Semantics
+    add_executable(test_phase61_torus_geometry tests/unit/phase61_torus_geometry_test.cpp)
+    target_link_libraries(test_phase61_torus_geometry PRIVATE nikola_core Catch2::Catch2WithMain)
+    add_test(NAME Phase61TorusGeometry COMMAND test_phase61_torus_geometry)
+
+    # Phase 62 Unit Tests: GAP-020 Temporal Decoherence Detection Thresholds (golden-ratio harmonics, phase budget, adaptive latency table, PTP clock sync state machine)
+    add_executable(test_phase62_temporal_decoherence tests/unit/phase62_temporal_decoherence_test.cpp)
+    target_link_libraries(test_phase62_temporal_decoherence PRIVATE nikola_core Catch2::Catch2WithMain)
+    add_test(NAME Phase62TemporalDecoherence COMMAND test_phase62_temporal_decoherence)
+
     message(STATUS "Tests configured - run with: make test")
 endif()
 

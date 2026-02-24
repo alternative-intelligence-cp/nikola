@@ -70,9 +70,11 @@ static NeuroplasticTransformer make_npt(int grid_n = 2, float temperature = 1.0f
 }
 
 /// Expected τ_eff for a given norepinephrine level and base temperature.
+/// Phase 54 corrected: spec §"Non-Linear Interaction Terms" defines s_eff = s_local/(1+N²),
+/// so τ_eff = τ / (1 + N²).  At N=0 → τ; N=0.5 → τ/1.25; N=1.0 → τ/2.
 static float expected_tau_eff(float ne, float tau_base = 1.0f) {
     const float ne_clamped = std::clamp(ne, 0.0f, 1.0f);
-    return tau_base / (1.0f + ne_clamped);
+    return tau_base / (1.0f + ne_clamped * ne_clamped);
 }
 
 /// Sum of all head scores (should be ≈1.0).
@@ -124,16 +126,17 @@ TEST_CASE("Phase47 §3 — N=1.0 panic gives τ_eff = τ/2",
 }
 
 // ---------------------------------------------------------------------------
-// §4  N=0.5 baseline → τ_eff = τ/1.5
+// §4  N=0.5 baseline → τ_eff = τ/1.25  (Phase 54: quadratic N² gives 1+0.25=1.25)
 // ---------------------------------------------------------------------------
-TEST_CASE("Phase47 §4 — N=0.5 baseline gives τ_eff = τ/1.5",
+TEST_CASE("Phase47 §4 — N=0.5 baseline gives τ_eff = τ/1.25 (quadratic N²)",
           "[phase47]")
 {
     const float tau = 0.8f;
     auto npt   = make_npt(2, tau);
     auto torus = make_active_wf();
     (void)npt.forward(torus, 0.5f, 0.5f, 0.5f);
-    REQUIRE(npt.last_tau_eff() == Catch::Approx(tau / 1.5f).epsilon(1e-5f));
+    // Phase 54: N²=0.25 → denominator=1.25 → τ_eff = τ/1.25 (not τ/1.5 as in Phase 47 linear)
+    REQUIRE(npt.last_tau_eff() == Catch::Approx(tau / 1.25f).epsilon(1e-5f));
 }
 
 // ---------------------------------------------------------------------------
@@ -274,9 +277,9 @@ TEST_CASE("Phase47 §12 — norepinephrine is clamped to [0,1]; N=2.0 → τ_eff
 }
 
 // ---------------------------------------------------------------------------
-// §13  τ_eff formula τ/(1+N) matches expected math across 5 NE levels
+// §13  τ_eff formula τ/(1+N²) matches expected math across 5 NE levels  [Phase 54 corrected]
 // ---------------------------------------------------------------------------
-TEST_CASE("Phase47 §13 — τ_eff = τ/(1+N) matches formula across all NE levels",
+TEST_CASE("Phase47 §13 — τ_eff = τ/(1+N²) matches formula across all NE levels",
           "[phase47]")
 {
     const float tau = 1.2f;

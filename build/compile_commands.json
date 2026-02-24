@@ -403,6 +403,60 @@
 },
 {
   "directory": "/home/randy/Workspace/REPOS/nikola/build",
+  "command": "/usr/bin/c++ -DNIKOLA_HAS_ORT -DNIKOLA_ORT_MODEL_PATH=\\\"/home/randy/Workspace/SYSTEM/onnxruntime/bert-tiny-onnx/model.onnx\\\" -DNIKOLA_ORT_TOKENIZER_PATH=\\\"/home/randy/Workspace/SYSTEM/onnxruntime/bert-tiny-onnx\\\" -I/home/randy/Workspace/REPOS/nikola/include -I/home/randy/Workspace/REPOS/nikola/build -isystem /usr/include/eigen3 -isystem /home/randy/Workspace/SYSTEM/onnxruntime/cpp/include -O3 -DNDEBUG -std=c++23 -fPIE -Wall -Wextra -Wpedantic -Werror=return-type -o CMakeFiles/test_phase54_seff_quadratic_correction.dir/tests/unit/phase54_seff_quadratic_correction_test.cpp.o -c /home/randy/Workspace/REPOS/nikola/tests/unit/phase54_seff_quadratic_correction_test.cpp",
+  "file": "/home/randy/Workspace/REPOS/nikola/tests/unit/phase54_seff_quadratic_correction_test.cpp",
+  "output": "CMakeFiles/test_phase54_seff_quadratic_correction.dir/tests/unit/phase54_seff_quadratic_correction_test.cpp.o"
+},
+{
+  "directory": "/home/randy/Workspace/REPOS/nikola/build",
+  "command": "/usr/bin/c++ -DNIKOLA_HAS_ORT -DNIKOLA_ORT_MODEL_PATH=\\\"/home/randy/Workspace/SYSTEM/onnxruntime/bert-tiny-onnx/model.onnx\\\" -DNIKOLA_ORT_TOKENIZER_PATH=\\\"/home/randy/Workspace/SYSTEM/onnxruntime/bert-tiny-onnx\\\" -I/home/randy/Workspace/REPOS/nikola/include -I/home/randy/Workspace/REPOS/nikola/build -isystem /usr/include/eigen3 -isystem /home/randy/Workspace/SYSTEM/onnxruntime/cpp/include -O3 -DNDEBUG -std=c++23 -fPIE -Wall -Wextra -Wpedantic -Werror=return-type -o CMakeFiles/test_phase55_feedback_loop_latency.dir/tests/unit/phase55_feedback_loop_latency_test.cpp.o -c /home/randy/Workspace/REPOS/nikola/tests/unit/phase55_feedback_loop_latency_test.cpp",
+  "file": "/home/randy/Workspace/REPOS/nikola/tests/unit/phase55_feedback_loop_latency_test.cpp",
+  "output": "CMakeFiles/test_phase55_feedback_loop_latency.dir/tests/unit/phase55_feedback_loop_latency_test.cpp.o"
+},
+{
+  "directory": "/home/randy/Workspace/REPOS/nikola/build",
+  "command": "/usr/bin/c++ -DNIKOLA_HAS_ORT -DNIKOLA_ORT_MODEL_PATH=\\\"/home/randy/Workspace/SYSTEM/onnxruntime/bert-tiny-onnx/model.onnx\\\" -DNIKOLA_ORT_TOKENIZER_PATH=\\\"/home/randy/Workspace/SYSTEM/onnxruntime/bert-tiny-onnx\\\" -I/home/randy/Workspace/REPOS/nikola/include -I/home/randy/Workspace/REPOS/nikola/build -isystem /usr/include/eigen3 -isystem /home/randy/Workspace/SYSTEM/onnxruntime/cpp/include -O3 -DNDEBUG -std=c++23 -fPIE -Wall -Wextra -Wpedantic -Werror=return-type -o CMakeFiles/test_phase56_neuropsychometric_profile.dir/tests/unit/phase56_neuropsychometric_profile_test.cpp.o -c /home/randy/Workspace/REPOS/nikola/tests/unit/phase56_neuropsychometric_profile_test.cpp",
+  "file": "/home/randy/Workspace/REPOS/nikola/tests/unit/phase56_neuropsychometric_profile_test.cpp",
+  "output": "CMakeFiles/test_phase56_neuropsychometric_profile.dir/tests/unit/phase56_neuropsychometric_profile_test.cpp.o"
+},
+{
+  "directory": "/home/randy/Workspace/REPOS/nikola/build",
+  "command": "/usr/bin/c++ -DNIKOLA_HAS_ORT -DNIKOLA_ORT_MODEL_PATH=\\\"/home/randy/Workspace/SYSTEM/onnxruntime/bert-tiny-onnx/model.onnx\\\" -DNIKOLA_ORT_TOKENIZER_PATH=\\\"/home/randy/Workspace/SYSTEM/onnxruntime/bert-tiny-onnx\\\" -I/home/randy/Workspace/REPOS/nikola/include -I/home/randy/Workspace/REPOS/nikola/build -isystem /usr/include/eigen3 -isystem /home/randy/Workspace/SYSTEM/onnxruntime/cpp/include -O3 -DNDEBUG -std=c++23 -fPIE -Wall -Wextra -Wpedantic -Werror=return-type -o CMakeFiles/test_phase57_metabolic_calibrator.dir/tests/unit/phase57_metabolic_calibrator_test.cpp.o -c /home/randy/Workspace/REPOS/nikola/tests/unit/phase57_metabolic_calibrator_test.cpp",
+  "file": "/home/randy/Workspace/REPOS/nikola/tests/unit/phase57_metabolic_calibrator_test.cpp",
+  "output": "CMakeFiles/test_phase57_metabolic_calibrator.dir/tests/unit/phase57_metabolic_calibrator_test.cpp.o"
+},
+{
+  "directory": "/home/randy/Workspace/REPOS/nikola/build",
+  "command": "/usr/bin/c++ -DNIKOLA_HAS_ORT -DNIKOLA_ORT_MODEL_PATH=\\\"/home/randy/Workspace/SYSTEM/onnxruntime/bert-tiny-onnx/model.onnx\\\" -DNIKOLA_ORT_TOKENIZER_PATH=\\\"/home/randy/Workspace/SYSTEM/onnxruntime/bert-tiny-onnx\\\" -I/home/randy/Workspace/REPOS/nikola/include -I/home/randy/Workspace/REPOS/nikola/build -isystem /usr/include/eigen3 -isystem /home/randy/Workspace/SYSTEM/onnxruntime/cpp/include -O3 -DNDEBUG -std=c++23 -fPIE -Wall -Wextra -Wpedantic -Werror=return-type -o CMakeFiles/test_phase58_latency_budget.dir/tests/unit/phase58_latency_budget_test.cpp.o -c /home/randy/Workspace/REPOS/nikola/tests/unit/phase58_latency_budget_test.cpp",
+  "file": "/home/randy/Workspace/REPOS/nikola/tests/unit/phase58_latency_budget_test.cpp",
+  "output": "CMakeFiles/test_phase58_latency_budget.dir/tests/unit/phase58_latency_budget_test.cpp.o"
+},
+{
+  "directory": "/home/randy/Workspace/REPOS/nikola/build",
+  "command": "/usr/bin/c++ -DNIKOLA_HAS_ORT -DNIKOLA_ORT_MODEL_PATH=\\\"/home/randy/Workspace/SYSTEM/onnxruntime/bert-tiny-onnx/model.onnx\\\" -DNIKOLA_ORT_TOKENIZER_PATH=\\\"/home/randy/Workspace/SYSTEM/onnxruntime/bert-tiny-onnx\\\" -I/home/randy/Workspace/REPOS/nikola/include -I/home/randy/Workspace/REPOS/nikola/build -isystem /usr/include/eigen3 -isystem /home/randy/Workspace/SYSTEM/onnxruntime/cpp/include -O3 -DNDEBUG -std=c++23 -fPIE -Wall -Wextra -Wpedantic -Werror=return-type -o CMakeFiles/test_phase59_physics_oracle.dir/tests/unit/phase59_physics_oracle_test.cpp.o -c /home/randy/Workspace/REPOS/nikola/tests/unit/phase59_physics_oracle_test.cpp",
+  "file": "/home/randy/Workspace/REPOS/nikola/tests/unit/phase59_physics_oracle_test.cpp",
+  "output": "CMakeFiles/test_phase59_physics_oracle.dir/tests/unit/phase59_physics_oracle_test.cpp.o"
+},
+{
+  "directory": "/home/randy/Workspace/REPOS/nikola/build",
+  "command": "/usr/bin/c++ -DNIKOLA_HAS_ORT -DNIKOLA_ORT_MODEL_PATH=\\\"/home/randy/Workspace/SYSTEM/onnxruntime/bert-tiny-onnx/model.onnx\\\" -DNIKOLA_ORT_TOKENIZER_PATH=\\\"/home/randy/Workspace/SYSTEM/onnxruntime/bert-tiny-onnx\\\" -I/home/randy/Workspace/REPOS/nikola/include -I/home/randy/Workspace/REPOS/nikola/build -isystem /usr/include/eigen3 -isystem /home/randy/Workspace/SYSTEM/onnxruntime/cpp/include -O3 -DNDEBUG -std=c++23 -fPIE -Wall -Wextra -Wpedantic -Werror=return-type -o CMakeFiles/test_phase60_soa_layout.dir/tests/unit/phase60_soa_layout_test.cpp.o -c /home/randy/Workspace/REPOS/nikola/tests/unit/phase60_soa_layout_test.cpp",
+  "file": "/home/randy/Workspace/REPOS/nikola/tests/unit/phase60_soa_layout_test.cpp",
+  "output": "CMakeFiles/test_phase60_soa_layout.dir/tests/unit/phase60_soa_layout_test.cpp.o"
+},
+{
+  "directory": "/home/randy/Workspace/REPOS/nikola/build",
+  "command": "/usr/bin/c++ -DNIKOLA_HAS_ORT -DNIKOLA_ORT_MODEL_PATH=\\\"/home/randy/Workspace/SYSTEM/onnxruntime/bert-tiny-onnx/model.onnx\\\" -DNIKOLA_ORT_TOKENIZER_PATH=\\\"/home/randy/Workspace/SYSTEM/onnxruntime/bert-tiny-onnx\\\" -I/home/randy/Workspace/REPOS/nikola/include -I/home/randy/Workspace/REPOS/nikola/build -isystem /usr/include/eigen3 -isystem /home/randy/Workspace/SYSTEM/onnxruntime/cpp/include -O3 -DNDEBUG -std=c++23 -fPIE -Wall -Wextra -Wpedantic -Werror=return-type -o CMakeFiles/test_phase61_torus_geometry.dir/tests/unit/phase61_torus_geometry_test.cpp.o -c /home/randy/Workspace/REPOS/nikola/tests/unit/phase61_torus_geometry_test.cpp",
+  "file": "/home/randy/Workspace/REPOS/nikola/tests/unit/phase61_torus_geometry_test.cpp",
+  "output": "CMakeFiles/test_phase61_torus_geometry.dir/tests/unit/phase61_torus_geometry_test.cpp.o"
+},
+{
+  "directory": "/home/randy/Workspace/REPOS/nikola/build",
+  "command": "/usr/bin/c++ -DNIKOLA_HAS_ORT -DNIKOLA_ORT_MODEL_PATH=\\\"/home/randy/Workspace/SYSTEM/onnxruntime/bert-tiny-onnx/model.onnx\\\" -DNIKOLA_ORT_TOKENIZER_PATH=\\\"/home/randy/Workspace/SYSTEM/onnxruntime/bert-tiny-onnx\\\" -I/home/randy/Workspace/REPOS/nikola/include -I/home/randy/Workspace/REPOS/nikola/build -isystem /usr/include/eigen3 -isystem /home/randy/Workspace/SYSTEM/onnxruntime/cpp/include -O3 -DNDEBUG -std=c++23 -fPIE -Wall -Wextra -Wpedantic -Werror=return-type -o CMakeFiles/test_phase62_temporal_decoherence.dir/tests/unit/phase62_temporal_decoherence_test.cpp.o -c /home/randy/Workspace/REPOS/nikola/tests/unit/phase62_temporal_decoherence_test.cpp",
+  "file": "/home/randy/Workspace/REPOS/nikola/tests/unit/phase62_temporal_decoherence_test.cpp",
+  "output": "CMakeFiles/test_phase62_temporal_decoherence.dir/tests/unit/phase62_temporal_decoherence_test.cpp.o"
+},
+{
+  "directory": "/home/randy/Workspace/REPOS/nikola/build",
   "command": "/usr/bin/c++ -DNIKOLA_AUTONOMY_ENGINE_IMPL -DNIKOLA_HAS_ORT -DNIKOLA_ORT_MODEL_PATH=\\\"/home/randy/Workspace/SYSTEM/onnxruntime/bert-tiny-onnx/model.onnx\\\" -DNIKOLA_ORT_TOKENIZER_PATH=\\\"/home/randy/Workspace/SYSTEM/onnxruntime/bert-tiny-onnx\\\" -I/home/randy/Workspace/REPOS/nikola/include -I/home/randy/Workspace/REPOS/nikola/build -isystem /usr/include/eigen3 -isystem /home/randy/Workspace/SYSTEM/onnxruntime/cpp/include -O3 -DNDEBUG -std=c++23 -fPIE -Wall -Wextra -Wpedantic -Werror=return-type -o CMakeFiles/nikola_first_light.dir/src/main.cpp.o -c /home/randy/Workspace/REPOS/nikola/src/main.cpp",
   "file": "/home/randy/Workspace/REPOS/nikola/src/main.cpp",
   "output": "CMakeFiles/nikola_first_light.dir/src/main.cpp.o"

@@ -1,178 +1,1210 @@
-Start testing: Feb 24 09:08 EST
+Start testing: Feb 24 18:34 EST
 ----------------------------------------------------------
-27/55 Testing: Phase25FieldPersistence
-27/55 Test: Phase25FieldPersistence
-Command: "/home/randy/Workspace/REPOS/nikola/build/test_phase25_field_persistence"
+7/64 Testing: Phase4Infrastructure
+7/64 Test: Phase4Infrastructure
+Command: "/home/randy/Workspace/REPOS/nikola/build/test_phase4_infrastructure"
 Directory: /home/randy/Workspace/REPOS/nikola/build
-"Phase25FieldPersistence" start time: Feb 24 09:08 EST
+"Phase4Infrastructure" start time: Feb 24 18:34 EST
 Output:
 ----------------------------------------------------------
-Randomness seeded to: 2389060811
+Randomness seeded to: 3345684822
+===============================================================================
+All tests passed (177 assertions in 55 test cases)
+
+<end of output>
+Test time =   0.09 sec
+----------------------------------------------------------
+Test Passed.
+"Phase4Infrastructure" end time: Feb 24 18:34 EST
+"Phase4Infrastructure" time elapsed: 00:00:00
+----------------------------------------------------------
+
+61/64 Testing: Phase59PhysicsOracle
+61/64 Test: Phase59PhysicsOracle
+Command: "/home/randy/Workspace/REPOS/nikola/build/test_phase59_physics_oracle"
+Directory: /home/randy/Workspace/REPOS/nikola/build
+"Phase59PhysicsOracle" start time: Feb 24 18:34 EST
+Output:
+----------------------------------------------------------
+Randomness seeded to: 812090027
+===============================================================================
+All tests passed (116 assertions in 25 test cases)
+
+<end of output>
+Test time =   0.05 sec
+----------------------------------------------------------
+Test Passed.
+"Phase59PhysicsOracle" end time: Feb 24 18:34 EST
+"Phase59PhysicsOracle" time elapsed: 00:00:00
+----------------------------------------------------------
+
+57/64 Testing: Phase55FeedbackLoopLatency
+57/64 Test: Phase55FeedbackLoopLatency
+Command: "/home/randy/Workspace/REPOS/nikola/build/test_phase55_feedback_loop_latency"
+Directory: /home/randy/Workspace/REPOS/nikola/build
+"Phase55FeedbackLoopLatency" start time: Feb 24 18:34 EST
+Output:
+----------------------------------------------------------
+Randomness seeded to: 3106694650
+===============================================================================
+All tests passed (92 assertions in 20 test cases)
+
+<end of output>
+Test time =   0.01 sec
+----------------------------------------------------------
+Test Passed.
+"Phase55FeedbackLoopLatency" end time: Feb 24 18:34 EST
+"Phase55FeedbackLoopLatency" time elapsed: 00:00:00
+----------------------------------------------------------
+
+54/64 Testing: Phase52CrossCouplingMatrix
+54/64 Test: Phase52CrossCouplingMatrix
+Command: "/home/randy/Workspace/REPOS/nikola/build/test_phase52_cross_coupling_matrix"
+Directory: /home/randy/Workspace/REPOS/nikola/build
+"Phase52CrossCouplingMatrix" start time: Feb 24 18:34 EST
+Output:
+----------------------------------------------------------
+Randomness seeded to: 2191147636
+===============================================================================
+All tests passed (33 assertions in 20 test cases)
+
+<end of output>
+Test time =   0.02 sec
+----------------------------------------------------------
+Test Passed.
+"Phase52CrossCouplingMatrix" end time: Feb 24 18:34 EST
+"Phase52CrossCouplingMatrix" time elapsed: 00:00:00
+----------------------------------------------------------
+
+51/64 Testing: Phase49BoredomSingularityFix
+51/64 Test: Phase49BoredomSingularityFix
+Command: "/home/randy/Workspace/REPOS/nikola/build/test_phase49_boredom_singularity_fix"
+Directory: /home/randy/Workspace/REPOS/nikola/build
+"Phase49BoredomSingularityFix" start time: Feb 24 18:34 EST
+Output:
+----------------------------------------------------------
+Randomness seeded to: 2345594487
+===============================================================================
+All tests passed (42 assertions in 15 test cases)
+
+<end of output>
+Test time =   0.02 sec
+----------------------------------------------------------
+Test Passed.
+"Phase49BoredomSingularityFix" end time: Feb 24 18:34 EST
+"Phase49BoredomSingularityFix" time elapsed: 00:00:00
+----------------------------------------------------------
+
+55/64 Testing: Phase53BoredomGAP036Calibration
+55/64 Test: Phase53BoredomGAP036Calibration
+Command: "/home/randy/Workspace/REPOS/nikola/build/test_phase53_boredom_gap036_calibration"
+Directory: /home/randy/Workspace/REPOS/nikola/build
+"Phase53BoredomGAP036Calibration" start time: Feb 24 18:34 EST
+Output:
+----------------------------------------------------------
+Randomness seeded to: 3407997435
+===============================================================================
+All tests passed (40 assertions in 20 test cases)
+
+<end of output>
+Test time =   0.02 sec
+----------------------------------------------------------
+Test Passed.
+"Phase53BoredomGAP036Calibration" end time: Feb 24 18:34 EST
+"Phase53BoredomGAP036Calibration" time elapsed: 00:00:00
+----------------------------------------------------------
+
+18/64 Testing: Phase15HamiltonianValue
+18/64 Test: Phase15HamiltonianValue
+Command: "/home/randy/Workspace/REPOS/nikola/build/test_phase15_hamiltonian_value"
+Directory: /home/randy/Workspace/REPOS/nikola/build
+"Phase15HamiltonianValue" start time: Feb 24 18:34 EST
+Output:
+----------------------------------------------------------
+Randomness seeded to: 921527928
+===============================================================================
+All tests passed (66 assertions in 22 test cases)
+
+<end of output>
+Test time =   0.04 sec
+----------------------------------------------------------
+Test Passed.
+"Phase15HamiltonianValue" end time: Feb 24 18:34 EST
+"Phase15HamiltonianValue" time elapsed: 00:00:00
+----------------------------------------------------------
+
+23/64 Testing: Phase20DebugAdapter
+23/64 Test: Phase20DebugAdapter
+Command: "/home/randy/Workspace/REPOS/nikola/build/test_phase20_debug_adapter"
+Directory: /home/randy/Workspace/REPOS/nikola/build
+"Phase20DebugAdapter" start time: Feb 24 18:34 EST
+Output:
+----------------------------------------------------------
+Randomness seeded to: 3083676211
+===============================================================================
+All tests passed (100 assertions in 27 test cases)
+
+<end of output>
+Test time =   0.05 sec
+----------------------------------------------------------
+Test Passed.
+"Phase20DebugAdapter" end time: Feb 24 18:34 EST
+"Phase20DebugAdapter" time elapsed: 00:00:00
+----------------------------------------------------------
+
+50/64 Testing: Phase48DreamReplay
+50/64 Test: Phase48DreamReplay
+Command: "/home/randy/Workspace/REPOS/nikola/build/test_phase48_dream_replay"
+Directory: /home/randy/Workspace/REPOS/nikola/build
+"Phase48DreamReplay" start time: Feb 24 18:34 EST
+Output:
+----------------------------------------------------------
+Randomness seeded to: 3967345168
+===============================================================================
+All tests passed (59 assertions in 15 test cases)
+
+<end of output>
+Test time =   0.02 sec
+----------------------------------------------------------
+Test Passed.
+"Phase48DreamReplay" end time: Feb 24 18:34 EST
+"Phase48DreamReplay" time elapsed: 00:00:00
+----------------------------------------------------------
+
+60/64 Testing: Phase58LatencyBudget
+60/64 Test: Phase58LatencyBudget
+Command: "/home/randy/Workspace/REPOS/nikola/build/test_phase58_latency_budget"
+Directory: /home/randy/Workspace/REPOS/nikola/build
+"Phase58LatencyBudget" start time: Feb 24 18:34 EST
+Output:
+----------------------------------------------------------
+Randomness seeded to: 1745692804
+===============================================================================
+All tests passed (86 assertions in 20 test cases)
+
+<end of output>
+Test time =   0.05 sec
+----------------------------------------------------------
+Test Passed.
+"Phase58LatencyBudget" end time: Feb 24 18:34 EST
+"Phase58LatencyBudget" time elapsed: 00:00:00
+----------------------------------------------------------
+
+21/64 Testing: Phase18ScopeProfiler
+21/64 Test: Phase18ScopeProfiler
+Command: "/home/randy/Workspace/REPOS/nikola/build/test_phase18_scope_profiler"
+Directory: /home/randy/Workspace/REPOS/nikola/build
+"Phase18ScopeProfiler" start time: Feb 24 18:34 EST
+Output:
+----------------------------------------------------------
+Randomness seeded to: 286809649
+===============================================================================
+All tests passed (58 assertions in 13 test cases)
+
+<end of output>
+Test time =   0.08 sec
+----------------------------------------------------------
+Test Passed.
+"Phase18ScopeProfiler" end time: Feb 24 18:34 EST
+"Phase18ScopeProfiler" time elapsed: 00:00:00
+----------------------------------------------------------
+
+9/64 Testing: Phase6Multimodal
+9/64 Test: Phase6Multimodal
+Command: "/home/randy/Workspace/REPOS/nikola/build/test_phase6_multimodal"
+Directory: /home/randy/Workspace/REPOS/nikola/build
+"Phase6Multimodal" start time: Feb 24 18:34 EST
+Output:
+----------------------------------------------------------
+Randomness seeded to: 4188404754
+===============================================================================
+All tests passed (21322 assertions in 44 test cases)
+
+<end of output>
+Test time =   0.06 sec
+----------------------------------------------------------
+Test Passed.
+"Phase6Multimodal" end time: Feb 24 18:34 EST
+"Phase6Multimodal" time elapsed: 00:00:00
+----------------------------------------------------------
+
+16/64 Testing: Phase13TaskDispatcher
+16/64 Test: Phase13TaskDispatcher
+Command: "/home/randy/Workspace/REPOS/nikola/build/test_phase13_task_dispatcher"
+Directory: /home/randy/Workspace/REPOS/nikola/build
+"Phase13TaskDispatcher" start time: Feb 24 18:34 EST
+Output:
+----------------------------------------------------------
+Randomness seeded to: 2042560212
+===============================================================================
+All tests passed (63 assertions in 27 test cases)
+
+<end of output>
+Test time =   0.02 sec
+----------------------------------------------------------
+Test Passed.
+"Phase13TaskDispatcher" end time: Feb 24 18:34 EST
+"Phase13TaskDispatcher" time elapsed: 00:00:00
+----------------------------------------------------------
+
+52/64 Testing: Phase50CuriosityGoalQueryGate
+52/64 Test: Phase50CuriosityGoalQueryGate
+Command: "/home/randy/Workspace/REPOS/nikola/build/test_phase50_curiosity_goal_query_gate"
+Directory: /home/randy/Workspace/REPOS/nikola/build
+"Phase50CuriosityGoalQueryGate" start time: Feb 24 18:34 EST
+Output:
+----------------------------------------------------------
+Randomness seeded to: 902158552
+===============================================================================
+All tests passed (44 assertions in 15 test cases)
+
+<end of output>
+Test time =   0.02 sec
+----------------------------------------------------------
+Test Passed.
+"Phase50CuriosityGoalQueryGate" end time: Feb 24 18:34 EST
+"Phase50CuriosityGoalQueryGate" time elapsed: 00:00:00
+----------------------------------------------------------
+
+20/64 Testing: Phase17BootstrapManager
+20/64 Test: Phase17BootstrapManager
+Command: "/home/randy/Workspace/REPOS/nikola/build/test_phase17_bootstrap_manager"
+Directory: /home/randy/Workspace/REPOS/nikola/build
+"Phase17BootstrapManager" start time: Feb 24 18:34 EST
+Output:
+----------------------------------------------------------
+Randomness seeded to: 548182636
+[BootstrapManager] Token loaded from env var (SCRUBBED)
+[BootstrapManager] Token loaded from env var (SCRUBBED)
+[BootstrapManager] Token loaded from file: /tmp/nikola_test_bootstrap_token
+[BootstrapManager] Token loaded from file: /tmp/nikola_test_token_whitespace
+[BootstrapManager] Token loaded from file: /tmp/nikola_test_bootstrap_token
+===============================================================================
+All tests passed (40 assertions in 22 test cases)
+
+<end of output>
+Test time =   0.03 sec
+----------------------------------------------------------
+Test Passed.
+"Phase17BootstrapManager" end time: Feb 24 18:34 EST
+"Phase17BootstrapManager" time elapsed: 00:00:00
+----------------------------------------------------------
+
+53/64 Testing: Phase51FailureModeGuards
+53/64 Test: Phase51FailureModeGuards
+Command: "/home/randy/Workspace/REPOS/nikola/build/test_phase51_failure_mode_guards"
+Directory: /home/randy/Workspace/REPOS/nikola/build
+"Phase51FailureModeGuards" start time: Feb 24 18:34 EST
+Output:
+----------------------------------------------------------
+Randomness seeded to: 2945601629
+===============================================================================
+All tests passed (36 assertions in 15 test cases)
+
+<end of output>
+Test time =   0.02 sec
+----------------------------------------------------------
+Test Passed.
+"Phase51FailureModeGuards" end time: Feb 24 18:34 EST
+"Phase51FailureModeGuards" time elapsed: 00:00:00
+----------------------------------------------------------
+
+19/64 Testing: Phase16CoordSerializer
+19/64 Test: Phase16CoordSerializer
+Command: "/home/randy/Workspace/REPOS/nikola/build/test_phase16_coord_serializer"
+Directory: /home/randy/Workspace/REPOS/nikola/build
+"Phase16CoordSerializer" start time: Feb 24 18:34 EST
+Output:
+----------------------------------------------------------
+Randomness seeded to: 460716765
+===============================================================================
+All tests passed (139 assertions in 34 test cases)
+
+<end of output>
+Test time =   0.02 sec
+----------------------------------------------------------
+Test Passed.
+"Phase16CoordSerializer" end time: Feb 24 18:34 EST
+"Phase16CoordSerializer" time elapsed: 00:00:00
+----------------------------------------------------------
+
+37/64 Testing: Phase35RelevanceGate
+37/64 Test: Phase35RelevanceGate
+Command: "/home/randy/Workspace/REPOS/nikola/build/test_phase35_relevance_gate"
+Directory: /home/randy/Workspace/REPOS/nikola/build
+"Phase35RelevanceGate" start time: Feb 24 18:34 EST
+Output:
+----------------------------------------------------------
+Randomness seeded to: 668806138
+===============================================================================
+All tests passed (28 assertions in 12 test cases)
+
+<end of output>
+Test time =   0.09 sec
+----------------------------------------------------------
+Test Passed.
+"Phase35RelevanceGate" end time: Feb 24 18:34 EST
+"Phase35RelevanceGate" time elapsed: 00:00:00
+----------------------------------------------------------
+
+17/64 Testing: Phase14AsyncCheckpoint
+17/64 Test: Phase14AsyncCheckpoint
+Command: "/home/randy/Workspace/REPOS/nikola/build/test_phase14_async_checkpoint"
+Directory: /home/randy/Workspace/REPOS/nikola/build
+"Phase14AsyncCheckpoint" start time: Feb 24 18:34 EST
+Output:
+----------------------------------------------------------
+Randomness seeded to: 2959194349
+===============================================================================
+All tests passed (27 assertions in 20 test cases)
+
+<end of output>
+Test time =   0.10 sec
+----------------------------------------------------------
+Test Passed.
+"Phase14AsyncCheckpoint" end time: Feb 24 18:34 EST
+"Phase14AsyncCheckpoint" time elapsed: 00:00:00
+----------------------------------------------------------
+
+5/64 Testing: Phase2GeometryMemory
+5/64 Test: Phase2GeometryMemory
+Command: "/home/randy/Workspace/REPOS/nikola/build/test_phase2_geometry_memory"
+Directory: /home/randy/Workspace/REPOS/nikola/build
+"Phase2GeometryMemory" start time: Feb 24 18:34 EST
+Output:
+----------------------------------------------------------
+Randomness seeded to: 241544515
+===============================================================================
+All tests passed (1158 assertions in 42 test cases)
+
+<end of output>
+Test time =   0.07 sec
+----------------------------------------------------------
+Test Passed.
+"Phase2GeometryMemory" end time: Feb 24 18:34 EST
+"Phase2GeometryMemory" time elapsed: 00:00:00
+----------------------------------------------------------
+
+58/64 Testing: Phase56NeuropsychometricProfile
+58/64 Test: Phase56NeuropsychometricProfile
+Command: "/home/randy/Workspace/REPOS/nikola/build/test_phase56_neuropsychometric_profile"
+Directory: /home/randy/Workspace/REPOS/nikola/build
+"Phase56NeuropsychometricProfile" start time: Feb 24 18:34 EST
+Output:
+----------------------------------------------------------
+Randomness seeded to: 1192524929
+===============================================================================
+All tests passed (97 assertions in 29 test cases)
+
+<end of output>
+Test time =   0.02 sec
+----------------------------------------------------------
+Test Passed.
+"Phase56NeuropsychometricProfile" end time: Feb 24 18:34 EST
+"Phase56NeuropsychometricProfile" time elapsed: 00:00:00
+----------------------------------------------------------
+
+59/64 Testing: Phase57MetabolicCalibrator
+59/64 Test: Phase57MetabolicCalibrator
+Command: "/home/randy/Workspace/REPOS/nikola/build/test_phase57_metabolic_calibrator"
+Directory: /home/randy/Workspace/REPOS/nikola/build
+"Phase57MetabolicCalibrator" start time: Feb 24 18:34 EST
+Output:
+----------------------------------------------------------
+Randomness seeded to: 4016686734
+===============================================================================
+All tests passed (92 assertions in 20 test cases)
+
+<end of output>
+Test time =   0.02 sec
+----------------------------------------------------------
+Test Passed.
+"Phase57MetabolicCalibrator" end time: Feb 24 18:34 EST
+"Phase57MetabolicCalibrator" time elapsed: 00:00:00
+----------------------------------------------------------
+
+62/64 Testing: Phase60SoaLayout
+62/64 Test: Phase60SoaLayout
+Command: "/home/randy/Workspace/REPOS/nikola/build/test_phase60_soa_layout"
+Directory: /home/randy/Workspace/REPOS/nikola/build
+"Phase60SoaLayout" start time: Feb 24 18:34 EST
+Output:
+----------------------------------------------------------
+Randomness seeded to: 3560496617
+===============================================================================
+All tests passed (334 assertions in 25 test cases)
+
+<end of output>
+Test time =   0.02 sec
+----------------------------------------------------------
+Test Passed.
+"Phase60SoaLayout" end time: Feb 24 18:34 EST
+"Phase60SoaLayout" time elapsed: 00:00:00
+----------------------------------------------------------
+
+14/64 Testing: Phase11CognitiveGen
+14/64 Test: Phase11CognitiveGen
+Command: "/home/randy/Workspace/REPOS/nikola/build/test_phase11_cognitive_gen"
+Directory: /home/randy/Workspace/REPOS/nikola/build
+"Phase11CognitiveGen" start time: Feb 24 18:34 EST
+Output:
+----------------------------------------------------------
+Randomness seeded to: 2079728003
+===============================================================================
+All tests passed (52 assertions in 23 test cases)
+
+<end of output>
+Test time =   0.02 sec
+----------------------------------------------------------
+Test Passed.
+"Phase11CognitiveGen" end time: Feb 24 18:34 EST
+"Phase11CognitiveGen" time elapsed: 00:00:00
+----------------------------------------------------------
+
+13/64 Testing: Phase10Holographic
+13/64 Test: Phase10Holographic
+Command: "/home/randy/Workspace/REPOS/nikola/build/test_phase10_holographic"
+Directory: /home/randy/Workspace/REPOS/nikola/build
+"Phase10Holographic" start time: Feb 24 18:34 EST
+Output:
+----------------------------------------------------------
+Randomness seeded to: 1422719724
+===============================================================================
+All tests passed (94 assertions in 31 test cases)
+
+<end of output>
+Test time =   0.02 sec
+----------------------------------------------------------
+Test Passed.
+"Phase10Holographic" end time: Feb 24 18:34 EST
+"Phase10Holographic" time elapsed: 00:00:00
+----------------------------------------------------------
+
+11/64 Testing: Phase8Foundations
+11/64 Test: Phase8Foundations
+Command: "/home/randy/Workspace/REPOS/nikola/build/test_phase8_foundations"
+Directory: /home/randy/Workspace/REPOS/nikola/build
+"Phase8Foundations" start time: Feb 24 18:34 EST
+Output:
+----------------------------------------------------------
+Randomness seeded to: 2249585176
+===============================================================================
+All tests passed (466 assertions in 54 test cases)
+
+<end of output>
+Test time =   0.01 sec
+----------------------------------------------------------
+Test Passed.
+"Phase8Foundations" end time: Feb 24 18:34 EST
+"Phase8Foundations" time elapsed: 00:00:00
+----------------------------------------------------------
+
+8/64 Testing: Phase5Autonomous
+8/64 Test: Phase5Autonomous
+Command: "/home/randy/Workspace/REPOS/nikola/build/test_phase5_autonomous"
+Directory: /home/randy/Workspace/REPOS/nikola/build
+"Phase5Autonomous" start time: Feb 24 18:34 EST
+Output:
+----------------------------------------------------------
+Randomness seeded to: 1540235047
+===============================================================================
+All tests passed (94 assertions in 45 test cases)
+
+<end of output>
+Test time =   0.01 sec
+----------------------------------------------------------
+Test Passed.
+"Phase5Autonomous" end time: Feb 24 18:34 EST
+"Phase5Autonomous" time elapsed: 00:00:00
+----------------------------------------------------------
+
+63/64 Testing: Phase61TorusGeometry
+63/64 Test: Phase61TorusGeometry
+Command: "/home/randy/Workspace/REPOS/nikola/build/test_phase61_torus_geometry"
+Directory: /home/randy/Workspace/REPOS/nikola/build
+"Phase61TorusGeometry" start time: Feb 24 18:34 EST
+Output:
+----------------------------------------------------------
+Randomness seeded to: 3539610855
+===============================================================================
+All tests passed (140 assertions in 30 test cases)
+
+<end of output>
+Test time =   0.01 sec
+----------------------------------------------------------
+Test Passed.
+"Phase61TorusGeometry" end time: Feb 24 18:34 EST
+"Phase61TorusGeometry" time elapsed: 00:00:00
+----------------------------------------------------------
+
+1/64 Testing: MetabolicLock
+1/64 Test: MetabolicLock
+Command: "/home/randy/Workspace/REPOS/nikola/build/test_metabolic_lock"
+Directory: /home/randy/Workspace/REPOS/nikola/build
+"MetabolicLock" start time: Feb 24 18:34 EST
+Output:
+----------------------------------------------------------
+Randomness seeded to: 3952553828
+===============================================================================
+All tests passed (30 assertions in 8 test cases)
+
+<end of output>
+Test time =   0.01 sec
+----------------------------------------------------------
+Test Passed.
+"MetabolicLock" end time: Feb 24 18:34 EST
+"MetabolicLock" time elapsed: 00:00:00
+----------------------------------------------------------
+
+3/64 Testing: Vector9D
+3/64 Test: Vector9D
+Command: "/home/randy/Workspace/REPOS/nikola/build/test_vector9d"
+Directory: /home/randy/Workspace/REPOS/nikola/build
+"Vector9D" start time: Feb 24 18:34 EST
+Output:
+----------------------------------------------------------
+Randomness seeded to: 1165113824
+===============================================================================
+All tests passed (66 assertions in 8 test cases)
+
+<end of output>
+Test time =   0.01 sec
+----------------------------------------------------------
+Test Passed.
+"Vector9D" end time: Feb 24 18:34 EST
+"Vector9D" time elapsed: 00:00:00
+----------------------------------------------------------
+
+64/64 Testing: Phase62TemporalDecoherence
+64/64 Test: Phase62TemporalDecoherence
+Command: "/home/randy/Workspace/REPOS/nikola/build/test_phase62_temporal_decoherence"
+Directory: /home/randy/Workspace/REPOS/nikola/build
+"Phase62TemporalDecoherence" start time: Feb 24 18:34 EST
+Output:
+----------------------------------------------------------
+Randomness seeded to: 1683649734
+===============================================================================
+All tests passed (118 assertions in 34 test cases)
+
+<end of output>
+Test time =   0.01 sec
+----------------------------------------------------------
+Test Passed.
+"Phase62TemporalDecoherence" end time: Feb 24 18:34 EST
+"Phase62TemporalDecoherence" time elapsed: 00:00:00
+----------------------------------------------------------
+
+10/64 Testing: Phase7Security
+10/64 Test: Phase7Security
+Command: "/home/randy/Workspace/REPOS/nikola/build/test_phase7_security"
+Directory: /home/randy/Workspace/REPOS/nikola/build
+"Phase7Security" start time: Feb 24 18:34 EST
+Output:
+----------------------------------------------------------
+Randomness seeded to: 3172587522
+===============================================================================
+All tests passed (91 assertions in 54 test cases)
+
+<end of output>
+Test time =   0.17 sec
+----------------------------------------------------------
+Test Passed.
+"Phase7Security" end time: Feb 24 18:34 EST
+"Phase7Security" time elapsed: 00:00:00
+----------------------------------------------------------
+
+6/64 Testing: Phase3Cognitive
+6/64 Test: Phase3Cognitive
+Command: "/home/randy/Workspace/REPOS/nikola/build/test_phase3_cognitive"
+Directory: /home/randy/Workspace/REPOS/nikola/build
+"Phase3Cognitive" start time: Feb 24 18:34 EST
+Output:
+----------------------------------------------------------
+Randomness seeded to: 3340240968
+===============================================================================
+All tests passed (4932 assertions in 54 test cases)
+
+<end of output>
+Test time =   0.23 sec
+----------------------------------------------------------
+Test Passed.
+"Phase3Cognitive" end time: Feb 24 18:34 EST
+"Phase3Cognitive" time elapsed: 00:00:00
+----------------------------------------------------------
+
+2/64 Testing: HilbertScanner
+2/64 Test: HilbertScanner
+Command: "/home/randy/Workspace/REPOS/nikola/build/test_hilbert_scanner"
+Directory: /home/randy/Workspace/REPOS/nikola/build
+"HilbertScanner" start time: Feb 24 18:34 EST
+Output:
+----------------------------------------------------------
+Randomness seeded to: 3753724602
+===============================================================================
+All tests passed (1036 assertions in 9 test cases)
+
+<end of output>
+Test time =   0.23 sec
+----------------------------------------------------------
+Test Passed.
+"HilbertScanner" end time: Feb 24 18:34 EST
+"HilbertScanner" time elapsed: 00:00:00
+----------------------------------------------------------
+
+56/64 Testing: Phase54SeffQuadraticCorrection
+56/64 Test: Phase54SeffQuadraticCorrection
+Command: "/home/randy/Workspace/REPOS/nikola/build/test_phase54_seff_quadratic_correction"
+Directory: /home/randy/Workspace/REPOS/nikola/build
+"Phase54SeffQuadraticCorrection" start time: Feb 24 18:34 EST
+Output:
+----------------------------------------------------------
+Randomness seeded to: 2144643675
+===============================================================================
+All tests passed (54 assertions in 20 test cases)
+
+<end of output>
+Test time =   0.32 sec
+----------------------------------------------------------
+Test Passed.
+"Phase54SeffQuadraticCorrection" end time: Feb 24 18:34 EST
+"Phase54SeffQuadraticCorrection" time elapsed: 00:00:00
+----------------------------------------------------------
+
+12/64 Testing: Phase9Bootstrap
+12/64 Test: Phase9Bootstrap
+Command: "/home/randy/Workspace/REPOS/nikola/build/test_phase9_bootstrap"
+Directory: /home/randy/Workspace/REPOS/nikola/build
+"Phase9Bootstrap" start time: Feb 24 18:34 EST
+Output:
+----------------------------------------------------------
+[NIKOLA] STABILIZING  | nodes=512  t=0.0000s  H=+1.230000e+00  drift=0.000000%  tick=1
+[NIKOLA] *** TEST_EVENT ***
+[NIKOLA] *** TEST_EVENT: some detail ***
+[NIKOLA] READY        | nodes=512  t=3.3333s  H=+1.882153e+03  drift=0.000000%  tick=1
+[NIKOLA] READY        | nodes=512  t=1.6667s  H=+2.088063e+03  drift=0.000000%  tick=1
+[NIKOLA] READY        | nodes=512  t=1.6667s  H=+2.088063e+03  drift=0.000000%  tick=1
+[NIKOLA] READY        | nodes=512  t=1.6667s  H=+2.088063e+03  drift=0.000000%  tick=1
+[NIKOLA] READY        | nodes=512  t=1.6667s  H=+2.088063e+03  drift=0.000000%  tick=1
+[NIKOLA] READY        | nodes=512  t=1.6667s  H=+2.088063e+03  drift=0.000000%  tick=1
+[NIKOLA] READY        | nodes=512  t=0.8333s  H=+1.684175e+03  drift=0.000000%  tick=1
+[NIKOLA] READY        | nodes=512  t=0.8333s  H=+1.684175e+03  drift=0.000000%  tick=1
+[NIKOLA] READY        | nodes=512  t=0.8333s  H=+1.684175e+03  drift=0.000000%  tick=1
+[NIKOLA] READY        | nodes=512  t=0.8333s  H=+1.684175e+03  drift=0.000000%  tick=2
+[NIKOLA] *** FAULT: Thermal bath yielded zero velocity — Entropy Shock risk ***
+[NIKOLA] *** FAULT: Thermal bath yielded zero velocity — Entropy Shock risk ***
+[NIKOLA] READY        | nodes=512  t=1.6667s  H=+2.088063e+03  drift=0.000000%  tick=1
+Randomness seeded to: 4201828594
+===============================================================================
+All tests passed (75 assertions in 21 test cases)
+
+<end of output>
+Test time =   0.44 sec
+----------------------------------------------------------
+Test Passed.
+"Phase9Bootstrap" end time: Feb 24 18:34 EST
+"Phase9Bootstrap" time elapsed: 00:00:00
+----------------------------------------------------------
+
+49/64 Testing: Phase47NorepinephrineArousal
+49/64 Test: Phase47NorepinephrineArousal
+Command: "/home/randy/Workspace/REPOS/nikola/build/test_phase47_norepinephrine_arousal"
+Directory: /home/randy/Workspace/REPOS/nikola/build
+"Phase47NorepinephrineArousal" start time: Feb 24 18:34 EST
+Output:
+----------------------------------------------------------
+Randomness seeded to: 2385312117
+===============================================================================
+All tests passed (43 assertions in 15 test cases)
+
+<end of output>
+Test time =   0.52 sec
+----------------------------------------------------------
+Test Passed.
+"Phase47NorepinephrineArousal" end time: Feb 24 18:34 EST
+"Phase47NorepinephrineArousal" time elapsed: 00:00:00
+----------------------------------------------------------
+
+24/64 Testing: Phase21CognitivePipeline
+24/64 Test: Phase21CognitivePipeline
+Command: "/home/randy/Workspace/REPOS/nikola/build/test_phase21_cognitive_pipeline"
+Directory: /home/randy/Workspace/REPOS/nikola/build
+"Phase21CognitivePipeline" start time: Feb 24 18:34 EST
+Output:
+----------------------------------------------------------
+Randomness seeded to: 5823105
 [TinyTransformer] Loaded: /home/randy/Workspace/SYSTEM/onnxruntime/bert-tiny-onnx/model.onnx
 [TinyTransformer] Architecture: BERT-Tiny (4L/128H/2A)
 [NonaryEmbedder] Initialized — BPE + TinyTransformer (128-dim→Nit)
 [HolographicInjector] Emitter freqs: 3.14159 5.0832 8.2248 13.308 21.5328 34.8408 56.3736 91.2144 
-[DecisionLoop] Phase 28 calibration: 5/5 tokens stored (Nit pulses for analytic decode + torus abs waves)
 [TinyTransformer] Loaded: /home/randy/Workspace/SYSTEM/onnxruntime/bert-tiny-onnx/model.onnx
 [TinyTransformer] Architecture: BERT-Tiny (4L/128H/2A)
 [NonaryEmbedder] Initialized — BPE + TinyTransformer (128-dim→Nit)
 [HolographicInjector] Emitter freqs: 3.14159 5.0832 8.2248 13.308 21.5328 34.8408 56.3736 91.2144 
-[DecisionLoop] Phase 28 calibration: 5/5 tokens stored (Nit pulses for analytic decode + torus abs waves)
 [TinyTransformer] Loaded: /home/randy/Workspace/SYSTEM/onnxruntime/bert-tiny-onnx/model.onnx
 [TinyTransformer] Architecture: BERT-Tiny (4L/128H/2A)
 [NonaryEmbedder] Initialized — BPE + TinyTransformer (128-dim→Nit)
 [HolographicInjector] Emitter freqs: 3.14159 5.0832 8.2248 13.308 21.5328 34.8408 56.3736 91.2144 
+[TinyTransformer] Loaded: /home/randy/Workspace/SYSTEM/onnxruntime/bert-tiny-onnx/model.onnx
+[TinyTransformer] Architecture: BERT-Tiny (4L/128H/2A)
+[NonaryEmbedder] Initialized — BPE + TinyTransformer (128-dim→Nit)
+[HolographicInjector] Emitter freqs: 3.14159 5.0832 8.2248 13.308 21.5328 34.8408 56.3736 91.2144 
+[TinyTransformer] Loaded: /home/randy/Workspace/SYSTEM/onnxruntime/bert-tiny-onnx/model.onnx
+[TinyTransformer] Architecture: BERT-Tiny (4L/128H/2A)
+[NonaryEmbedder] Initialized — BPE + TinyTransformer (128-dim→Nit)
+[HolographicInjector] Emitter freqs: 3.14159 5.0832 8.2248 13.308 21.5328 34.8408 56.3736 91.2144 
+[TinyTransformer] Loaded: /home/randy/Workspace/SYSTEM/onnxruntime/bert-tiny-onnx/model.onnx
+[TinyTransformer] Architecture: BERT-Tiny (4L/128H/2A)
+[NonaryEmbedder] Initialized — BPE + TinyTransformer (128-dim→Nit)
+[HolographicInjector] Emitter freqs: 3.14159 5.0832 8.2248 13.308 21.5328 34.8408 56.3736 91.2144 
+[TinyTransformer] Loaded: /home/randy/Workspace/SYSTEM/onnxruntime/bert-tiny-onnx/model.onnx
+[TinyTransformer] Architecture: BERT-Tiny (4L/128H/2A)
+[NonaryEmbedder] Initialized — BPE + TinyTransformer (128-dim→Nit)
+[HolographicInjector] Emitter freqs: 3.14159 5.0832 8.2248 13.308 21.5328 34.8408 56.3736 91.2144 
+[TinyTransformer] Loaded: /home/randy/Workspace/SYSTEM/onnxruntime/bert-tiny-onnx/model.onnx
+[TinyTransformer] Architecture: BERT-Tiny (4L/128H/2A)
+[NonaryEmbedder] Initialized — BPE + TinyTransformer (128-dim→Nit)
+[HolographicInjector] Emitter freqs: 3.14159 5.0832 8.2248 13.308 21.5328 34.8408 56.3736 91.2144 
+[TinyTransformer] Loaded: /home/randy/Workspace/SYSTEM/onnxruntime/bert-tiny-onnx/model.onnx
+[TinyTransformer] Architecture: BERT-Tiny (4L/128H/2A)
+[NonaryEmbedder] Initialized — BPE + TinyTransformer (128-dim→Nit)
+[HolographicInjector] Emitter freqs: 3.14159 5.0832 8.2248 13.308 21.5328 34.8408 56.3736 91.2144 
+[TinyTransformer] Loaded: /home/randy/Workspace/SYSTEM/onnxruntime/bert-tiny-onnx/model.onnx
+[TinyTransformer] Architecture: BERT-Tiny (4L/128H/2A)
+[NonaryEmbedder] Initialized — BPE + TinyTransformer (128-dim→Nit)
+[HolographicInjector] Emitter freqs: 3.14159 5.0832 8.2248 13.308 21.5328 34.8408 56.3736 91.2144 
+[TinyTransformer] Loaded: /home/randy/Workspace/SYSTEM/onnxruntime/bert-tiny-onnx/model.onnx
+[TinyTransformer] Architecture: BERT-Tiny (4L/128H/2A)
+[NonaryEmbedder] Initialized — BPE + TinyTransformer (128-dim→Nit)
+[HolographicInjector] Emitter freqs: 3.14159 5.0832 8.2248 13.308 21.5328 34.8408 56.3736 91.2144 
+[TinyTransformer] Loaded: /home/randy/Workspace/SYSTEM/onnxruntime/bert-tiny-onnx/model.onnx
+[TinyTransformer] Architecture: BERT-Tiny (4L/128H/2A)
+[NonaryEmbedder] Initialized — BPE + TinyTransformer (128-dim→Nit)
+[HolographicInjector] Emitter freqs: 3.14159 5.0832 8.2248 13.308 21.5328 34.8408 56.3736 91.2144 
+[TinyTransformer] Loaded: /home/randy/Workspace/SYSTEM/onnxruntime/bert-tiny-onnx/model.onnx
+[TinyTransformer] Architecture: BERT-Tiny (4L/128H/2A)
+[NonaryEmbedder] Initialized — BPE + TinyTransformer (128-dim→Nit)
+[HolographicInjector] Emitter freqs: 3.14159 5.0832 8.2248 13.308 21.5328 34.8408 56.3736 91.2144 
+[TinyTransformer] Loaded: /home/randy/Workspace/SYSTEM/onnxruntime/bert-tiny-onnx/model.onnx
+[TinyTransformer] Architecture: BERT-Tiny (4L/128H/2A)
+[NonaryEmbedder] Initialized — BPE + TinyTransformer (128-dim→Nit)
+[HolographicInjector] Emitter freqs: 3.14159 5.0832 8.2248 13.308 21.5328 34.8408 56.3736 91.2144 
+[TinyTransformer] Loaded: /home/randy/Workspace/SYSTEM/onnxruntime/bert-tiny-onnx/model.onnx
+[TinyTransformer] Architecture: BERT-Tiny (4L/128H/2A)
+[NonaryEmbedder] Initialized — BPE + TinyTransformer (128-dim→Nit)
+[HolographicInjector] Emitter freqs: 3.14159 5.0832 8.2248 13.308 21.5328 34.8408 56.3736 91.2144 
+[TinyTransformer] Loaded: /home/randy/Workspace/SYSTEM/onnxruntime/bert-tiny-onnx/model.onnx
+[TinyTransformer] Architecture: BERT-Tiny (4L/128H/2A)
+[NonaryEmbedder] Initialized — BPE + TinyTransformer (128-dim→Nit)
+[HolographicInjector] Emitter freqs: 3.14159 5.0832 8.2248 13.308 21.5328 34.8408 56.3736 91.2144 
+[TinyTransformer] Loaded: /home/randy/Workspace/SYSTEM/onnxruntime/bert-tiny-onnx/model.onnx
+[TinyTransformer] Architecture: BERT-Tiny (4L/128H/2A)
+[NonaryEmbedder] Initialized — BPE + TinyTransformer (128-dim→Nit)
+[HolographicInjector] Emitter freqs: 3.14159 5.0832 8.2248 13.308 21.5328 34.8408 56.3736 91.2144 
+[TinyTransformer] Loaded: /home/randy/Workspace/SYSTEM/onnxruntime/bert-tiny-onnx/model.onnx
+[TinyTransformer] Architecture: BERT-Tiny (4L/128H/2A)
+[NonaryEmbedder] Initialized — BPE + TinyTransformer (128-dim→Nit)
+[HolographicInjector] Emitter freqs: 3.14159 5.0832 8.2248 13.308 21.5328 34.8408 56.3736 91.2144 
+[TinyTransformer] Loaded: /home/randy/Workspace/SYSTEM/onnxruntime/bert-tiny-onnx/model.onnx
+[TinyTransformer] Architecture: BERT-Tiny (4L/128H/2A)
+[NonaryEmbedder] Initialized — BPE + TinyTransformer (128-dim→Nit)
+[HolographicInjector] Emitter freqs: 3.14159 5.0832 8.2248 13.308 21.5328 34.8408 56.3736 91.2144 
+[TinyTransformer] Loaded: /home/randy/Workspace/SYSTEM/onnxruntime/bert-tiny-onnx/model.onnx
+[TinyTransformer] Architecture: BERT-Tiny (4L/128H/2A)
+[NonaryEmbedder] Initialized — BPE + TinyTransformer (128-dim→Nit)
+[HolographicInjector] Emitter freqs: 3.14159 5.0832 8.2248 13.308 21.5328 34.8408 56.3736 91.2144 
+[TinyTransformer] Loaded: /home/randy/Workspace/SYSTEM/onnxruntime/bert-tiny-onnx/model.onnx
+[TinyTransformer] Architecture: BERT-Tiny (4L/128H/2A)
+[NonaryEmbedder] Initialized — BPE + TinyTransformer (128-dim→Nit)
+[HolographicInjector] Emitter freqs: 3.14159 5.0832 8.2248 13.308 21.5328 34.8408 56.3736 91.2144 
+[TinyTransformer] Loaded: /home/randy/Workspace/SYSTEM/onnxruntime/bert-tiny-onnx/model.onnx
+[TinyTransformer] Architecture: BERT-Tiny (4L/128H/2A)
+[NonaryEmbedder] Initialized — BPE + TinyTransformer (128-dim→Nit)
+[HolographicInjector] Emitter freqs: 3.14159 5.0832 8.2248 13.308 21.5328 34.8408 56.3736 91.2144 
+===============================================================================
+All tests passed (1244 assertions in 25 test cases)
+
+<end of output>
+Test time =   0.84 sec
+----------------------------------------------------------
+Test Passed.
+"Phase21CognitivePipeline" end time: Feb 24 18:34 EST
+"Phase21CognitivePipeline" time elapsed: 00:00:00
+----------------------------------------------------------
+
+44/64 Testing: Phase42NptReason
+44/64 Test: Phase42NptReason
+Command: "/home/randy/Workspace/REPOS/nikola/build/test_phase42_npt_reason"
+Directory: /home/randy/Workspace/REPOS/nikola/build
+"Phase42NptReason" start time: Feb 24 18:34 EST
+Output:
+----------------------------------------------------------
+Randomness seeded to: 1201058011
+[TinyTransformer] Loaded: /home/randy/Workspace/SYSTEM/onnxruntime/bert-tiny-onnx/model.onnx
+[TinyTransformer] Architecture: BERT-Tiny (4L/128H/2A)
+[NonaryEmbedder] Initialized — BPE + TinyTransformer (128-dim→Nit)
+[HolographicInjector] Emitter freqs: 3.14159 5.0832 8.2248 13.308 21.5328 34.8408 56.3736 91.2144 
+[DecisionLoop] Phase 28 calibration: 2/2 tokens stored (Nit pulses for analytic decode + torus abs waves)
+[TinyTransformer] Loaded: /home/randy/Workspace/SYSTEM/onnxruntime/bert-tiny-onnx/model.onnx
+[TinyTransformer] Architecture: BERT-Tiny (4L/128H/2A)
+[NonaryEmbedder] Initialized — BPE + TinyTransformer (128-dim→Nit)
+[HolographicInjector] Emitter freqs: 3.14159 5.0832 8.2248 13.308 21.5328 34.8408 56.3736 91.2144 
+[DecisionLoop] Phase 28 calibration: 2/2 tokens stored (Nit pulses for analytic decode + torus abs waves)
+[TinyTransformer] Loaded: /home/randy/Workspace/SYSTEM/onnxruntime/bert-tiny-onnx/model.onnx
+[TinyTransformer] Architecture: BERT-Tiny (4L/128H/2A)
+[NonaryEmbedder] Initialized — BPE + TinyTransformer (128-dim→Nit)
+[HolographicInjector] Emitter freqs: 3.14159 5.0832 8.2248 13.308 21.5328 34.8408 56.3736 91.2144 
+[DecisionLoop] Phase 28 calibration: 2/2 tokens stored (Nit pulses for analytic decode + torus abs waves)
+[TinyTransformer] Loaded: /home/randy/Workspace/SYSTEM/onnxruntime/bert-tiny-onnx/model.onnx
+[TinyTransformer] Architecture: BERT-Tiny (4L/128H/2A)
+[NonaryEmbedder] Initialized — BPE + TinyTransformer (128-dim→Nit)
+[HolographicInjector] Emitter freqs: 3.14159 5.0832 8.2248 13.308 21.5328 34.8408 56.3736 91.2144 
+[DecisionLoop] Phase 28 calibration: 2/2 tokens stored (Nit pulses for analytic decode + torus abs waves)
+[TinyTransformer] Loaded: /home/randy/Workspace/SYSTEM/onnxruntime/bert-tiny-onnx/model.onnx
+[TinyTransformer] Architecture: BERT-Tiny (4L/128H/2A)
+[NonaryEmbedder] Initialized — BPE + TinyTransformer (128-dim→Nit)
+[HolographicInjector] Emitter freqs: 3.14159 5.0832 8.2248 13.308 21.5328 34.8408 56.3736 91.2144 
+[DecisionLoop] Phase 28 calibration: 2/2 tokens stored (Nit pulses for analytic decode + torus abs waves)
+[TinyTransformer] Loaded: /home/randy/Workspace/SYSTEM/onnxruntime/bert-tiny-onnx/model.onnx
+[TinyTransformer] Architecture: BERT-Tiny (4L/128H/2A)
+[NonaryEmbedder] Initialized — BPE + TinyTransformer (128-dim→Nit)
+[HolographicInjector] Emitter freqs: 3.14159 5.0832 8.2248 13.308 21.5328 34.8408 56.3736 91.2144 
+[DecisionLoop] Phase 28 calibration: 2/2 tokens stored (Nit pulses for analytic decode + torus abs waves)
+[TinyTransformer] Loaded: /home/randy/Workspace/SYSTEM/onnxruntime/bert-tiny-onnx/model.onnx
+[TinyTransformer] Architecture: BERT-Tiny (4L/128H/2A)
+[NonaryEmbedder] Initialized — BPE + TinyTransformer (128-dim→Nit)
+[HolographicInjector] Emitter freqs: 3.14159 5.0832 8.2248 13.308 21.5328 34.8408 56.3736 91.2144 
+[DecisionLoop] Phase 28 calibration: 2/2 tokens stored (Nit pulses for analytic decode + torus abs waves)
+[TinyTransformer] Loaded: /home/randy/Workspace/SYSTEM/onnxruntime/bert-tiny-onnx/model.onnx
+[TinyTransformer] Architecture: BERT-Tiny (4L/128H/2A)
+[NonaryEmbedder] Initialized — BPE + TinyTransformer (128-dim→Nit)
+[HolographicInjector] Emitter freqs: 3.14159 5.0832 8.2248 13.308 21.5328 34.8408 56.3736 91.2144 
+[DecisionLoop] Phase 28 calibration: 2/2 tokens stored (Nit pulses for analytic decode + torus abs waves)
+[TinyTransformer] Loaded: /home/randy/Workspace/SYSTEM/onnxruntime/bert-tiny-onnx/model.onnx
+[TinyTransformer] Architecture: BERT-Tiny (4L/128H/2A)
+[NonaryEmbedder] Initialized — BPE + TinyTransformer (128-dim→Nit)
+[HolographicInjector] Emitter freqs: 3.14159 5.0832 8.2248 13.308 21.5328 34.8408 56.3736 91.2144 
+[DecisionLoop] Phase 28 calibration: 2/2 tokens stored (Nit pulses for analytic decode + torus abs waves)
+[TinyTransformer] Loaded: /home/randy/Workspace/SYSTEM/onnxruntime/bert-tiny-onnx/model.onnx
+[TinyTransformer] Architecture: BERT-Tiny (4L/128H/2A)
+[NonaryEmbedder] Initialized — BPE + TinyTransformer (128-dim→Nit)
+[HolographicInjector] Emitter freqs: 3.14159 5.0832 8.2248 13.308 21.5328 34.8408 56.3736 91.2144 
+[DecisionLoop] Phase 28 calibration: 2/2 tokens stored (Nit pulses for analytic decode + torus abs waves)
+[TinyTransformer] Loaded: /home/randy/Workspace/SYSTEM/onnxruntime/bert-tiny-onnx/model.onnx
+[TinyTransformer] Architecture: BERT-Tiny (4L/128H/2A)
+[NonaryEmbedder] Initialized — BPE + TinyTransformer (128-dim→Nit)
+[HolographicInjector] Emitter freqs: 3.14159 5.0832 8.2248 13.308 21.5328 34.8408 56.3736 91.2144 
+[DecisionLoop] Phase 28 calibration: 2/2 tokens stored (Nit pulses for analytic decode + torus abs waves)
+[TinyTransformer] Loaded: /home/randy/Workspace/SYSTEM/onnxruntime/bert-tiny-onnx/model.onnx
+[TinyTransformer] Architecture: BERT-Tiny (4L/128H/2A)
+[NonaryEmbedder] Initialized — BPE + TinyTransformer (128-dim→Nit)
+[HolographicInjector] Emitter freqs: 3.14159 5.0832 8.2248 13.308 21.5328 34.8408 56.3736 91.2144 
+[DecisionLoop] Phase 28 calibration: 2/2 tokens stored (Nit pulses for analytic decode + torus abs waves)
+[TinyTransformer] Loaded: /home/randy/Workspace/SYSTEM/onnxruntime/bert-tiny-onnx/model.onnx
+[TinyTransformer] Architecture: BERT-Tiny (4L/128H/2A)
+[NonaryEmbedder] Initialized — BPE + TinyTransformer (128-dim→Nit)
+[HolographicInjector] Emitter freqs: 3.14159 5.0832 8.2248 13.308 21.5328 34.8408 56.3736 91.2144 
+[DecisionLoop] Phase 28 calibration: 2/2 tokens stored (Nit pulses for analytic decode + torus abs waves)
+===============================================================================
+All tests passed (25 assertions in 15 test cases)
+
+<end of output>
+Test time =   1.01 sec
+----------------------------------------------------------
+Test Passed.
+"Phase42NptReason" end time: Feb 24 18:34 EST
+"Phase42NptReason" time elapsed: 00:00:01
+----------------------------------------------------------
+
+48/64 Testing: Phase46SerotoninElasticity
+48/64 Test: Phase46SerotoninElasticity
+Command: "/home/randy/Workspace/REPOS/nikola/build/test_phase46_serotonin_elasticity"
+Directory: /home/randy/Workspace/REPOS/nikola/build
+"Phase46SerotoninElasticity" start time: Feb 24 18:34 EST
+Output:
+----------------------------------------------------------
+Randomness seeded to: 1216791780
+===============================================================================
+All tests passed (47 assertions in 15 test cases)
+
+<end of output>
+Test time =   1.49 sec
+----------------------------------------------------------
+Test Passed.
+"Phase46SerotoninElasticity" end time: Feb 24 18:34 EST
+"Phase46SerotoninElasticity" time elapsed: 00:00:01
+----------------------------------------------------------
+
+22/64 Testing: Phase19TelemetryDaemon
+22/64 Test: Phase19TelemetryDaemon
+Command: "/home/randy/Workspace/REPOS/nikola/build/test_phase19_telemetry_daemon"
+Directory: /home/randy/Workspace/REPOS/nikola/build
+"Phase19TelemetryDaemon" start time: Feb 24 18:34 EST
+Output:
+----------------------------------------------------------
+Randomness seeded to: 3937952844
+===============================================================================
+All tests passed (59 assertions in 12 test cases)
+
+<end of output>
+Test time =   2.35 sec
+----------------------------------------------------------
+Test Passed.
+"Phase19TelemetryDaemon" end time: Feb 24 18:34 EST
+"Phase19TelemetryDaemon" time elapsed: 00:00:02
+----------------------------------------------------------
+
+47/64 Testing: Phase45DopamineLR
+47/64 Test: Phase45DopamineLR
+Command: "/home/randy/Workspace/REPOS/nikola/build/test_phase45_dopamine_lr"
+Directory: /home/randy/Workspace/REPOS/nikola/build
+"Phase45DopamineLR" start time: Feb 24 18:34 EST
+Output:
+----------------------------------------------------------
+Randomness seeded to: 1389733663
+===============================================================================
+All tests passed (38 assertions in 15 test cases)
+
+<end of output>
+Test time =   3.01 sec
+----------------------------------------------------------
+Test Passed.
+"Phase45DopamineLR" end time: Feb 24 18:34 EST
+"Phase45DopamineLR" time elapsed: 00:00:03
+----------------------------------------------------------
+
+38/64 Testing: Phase36GatedInjection
+38/64 Test: Phase36GatedInjection
+Command: "/home/randy/Workspace/REPOS/nikola/build/test_phase36_gated_injection"
+Directory: /home/randy/Workspace/REPOS/nikola/build
+"Phase36GatedInjection" start time: Feb 24 18:34 EST
+Output:
+----------------------------------------------------------
+Randomness seeded to: 563782117
+[TinyTransformer] Loaded: /home/randy/Workspace/SYSTEM/onnxruntime/bert-tiny-onnx/model.onnx
+[TinyTransformer] Architecture: BERT-Tiny (4L/128H/2A)
+[NonaryEmbedder] Initialized — BPE + TinyTransformer (128-dim→Nit)
+[HolographicInjector] Emitter freqs: 3.14159 5.0832 8.2248 13.308 21.5328 34.8408 56.3736 91.2144 
+[TinyTransformer] Loaded: /home/randy/Workspace/SYSTEM/onnxruntime/bert-tiny-onnx/model.onnx
+[TinyTransformer] Architecture: BERT-Tiny (4L/128H/2A)
+[NonaryEmbedder] Initialized — BPE + TinyTransformer (128-dim→Nit)
+[HolographicInjector] Emitter freqs: 3.14159 5.0832 8.2248 13.308 21.5328 34.8408 56.3736 91.2144 
+[TinyTransformer] Loaded: /home/randy/Workspace/SYSTEM/onnxruntime/bert-tiny-onnx/model.onnx
+[TinyTransformer] Architecture: BERT-Tiny (4L/128H/2A)
+[NonaryEmbedder] Initialized — BPE + TinyTransformer (128-dim→Nit)
+[HolographicInjector] Emitter freqs: 3.14159 5.0832 8.2248 13.308 21.5328 34.8408 56.3736 91.2144 
+[TinyTransformer] Loaded: /home/randy/Workspace/SYSTEM/onnxruntime/bert-tiny-onnx/model.onnx
+[TinyTransformer] Architecture: BERT-Tiny (4L/128H/2A)
+[NonaryEmbedder] Initialized — BPE + TinyTransformer (128-dim→Nit)
+[HolographicInjector] Emitter freqs: 3.14159 5.0832 8.2248 13.308 21.5328 34.8408 56.3736 91.2144 
+[TinyTransformer] Loaded: /home/randy/Workspace/SYSTEM/onnxruntime/bert-tiny-onnx/model.onnx
+[TinyTransformer] Architecture: BERT-Tiny (4L/128H/2A)
+[NonaryEmbedder] Initialized — BPE + TinyTransformer (128-dim→Nit)
+[HolographicInjector] Emitter freqs: 3.14159 5.0832 8.2248 13.308 21.5328 34.8408 56.3736 91.2144 
+[TinyTransformer] Loaded: /home/randy/Workspace/SYSTEM/onnxruntime/bert-tiny-onnx/model.onnx
+[TinyTransformer] Architecture: BERT-Tiny (4L/128H/2A)
+[NonaryEmbedder] Initialized — BPE + TinyTransformer (128-dim→Nit)
+[HolographicInjector] Emitter freqs: 3.14159 5.0832 8.2248 13.308 21.5328 34.8408 56.3736 91.2144 
+[TinyTransformer] Loaded: /home/randy/Workspace/SYSTEM/onnxruntime/bert-tiny-onnx/model.onnx
+[TinyTransformer] Architecture: BERT-Tiny (4L/128H/2A)
+[NonaryEmbedder] Initialized — BPE + TinyTransformer (128-dim→Nit)
+[HolographicInjector] Emitter freqs: 3.14159 5.0832 8.2248 13.308 21.5328 34.8408 56.3736 91.2144 
+[TinyTransformer] Loaded: /home/randy/Workspace/SYSTEM/onnxruntime/bert-tiny-onnx/model.onnx
+[TinyTransformer] Architecture: BERT-Tiny (4L/128H/2A)
+[NonaryEmbedder] Initialized — BPE + TinyTransformer (128-dim→Nit)
+[HolographicInjector] Emitter freqs: 3.14159 5.0832 8.2248 13.308 21.5328 34.8408 56.3736 91.2144 
+===============================================================================
+All tests passed (23 assertions in 12 test cases)
+
+<end of output>
+Test time =   3.14 sec
+----------------------------------------------------------
+Test Passed.
+"Phase36GatedInjection" end time: Feb 24 18:34 EST
+"Phase36GatedInjection" time elapsed: 00:00:03
+----------------------------------------------------------
+
+40/64 Testing: Phase38WaveCorrelation
+40/64 Test: Phase38WaveCorrelation
+Command: "/home/randy/Workspace/REPOS/nikola/build/test_phase38_wave_correlation"
+Directory: /home/randy/Workspace/REPOS/nikola/build
+"Phase38WaveCorrelation" start time: Feb 24 18:34 EST
+Output:
+----------------------------------------------------------
+Randomness seeded to: 3940130745
+===============================================================================
+All tests passed (33 assertions in 15 test cases)
+
+<end of output>
+Test time =   4.05 sec
+----------------------------------------------------------
+Test Passed.
+"Phase38WaveCorrelation" end time: Feb 24 18:34 EST
+"Phase38WaveCorrelation" time elapsed: 00:00:04
+----------------------------------------------------------
+
+32/64 Testing: Phase30ZmqSpine
+32/64 Test: Phase30ZmqSpine
+Command: "/home/randy/Workspace/REPOS/nikola/build/test_phase30_zmq_spine"
+Directory: /home/randy/Workspace/REPOS/nikola/build
+"Phase30ZmqSpine" start time: Feb 24 18:34 EST
+Output:
+----------------------------------------------------------
+Randomness seeded to: 1072477436
+[TinyTransformer] Loaded: /home/randy/Workspace/SYSTEM/onnxruntime/bert-tiny-onnx/model.onnx
+[TinyTransformer] Architecture: BERT-Tiny (4L/128H/2A)
+[NonaryEmbedder] Initialized — BPE + TinyTransformer (128-dim→Nit)
+[HolographicInjector] Emitter freqs: 3.14159 5.0832 8.2248 13.308 21.5328 34.8408 56.3736 91.2144 
+[TinyTransformer] Loaded: /home/randy/Workspace/SYSTEM/onnxruntime/bert-tiny-onnx/model.onnx
+[TinyTransformer] Architecture: BERT-Tiny (4L/128H/2A)
+[NonaryEmbedder] Initialized — BPE + TinyTransformer (128-dim→Nit)
+[DecisionLoop] Vocabulary registered via ORT embeddings (5 tokens)
+[TinyTransformer] Loaded: /home/randy/Workspace/SYSTEM/onnxruntime/bert-tiny-onnx/model.onnx
+[TinyTransformer] Architecture: BERT-Tiny (4L/128H/2A)
+[ThoughtComposer] ORT mode: transformer-assisted template selection
 [DecisionLoop] Phase 28 calibration: 5/5 tokens stored (Nit pulses for analytic decode + torus abs waves)
 [HolographicInjector] Injected "hello" → 128 Nits → 14 chords
 [TinyTransformer] Loaded: /home/randy/Workspace/SYSTEM/onnxruntime/bert-tiny-onnx/model.onnx
 [TinyTransformer] Architecture: BERT-Tiny (4L/128H/2A)
 [NonaryEmbedder] Initialized — BPE + TinyTransformer (128-dim→Nit)
 [HolographicInjector] Emitter freqs: 3.14159 5.0832 8.2248 13.308 21.5328 34.8408 56.3736 91.2144 
-[DecisionLoop] Phase 28 calibration: 5/5 tokens stored (Nit pulses for analytic decode + torus abs waves)
-[HolographicInjector] Injected "hello nikola curious" → 128 Nits → 14 chords
 [TinyTransformer] Loaded: /home/randy/Workspace/SYSTEM/onnxruntime/bert-tiny-onnx/model.onnx
 [TinyTransformer] Architecture: BERT-Tiny (4L/128H/2A)
 [NonaryEmbedder] Initialized — BPE + TinyTransformer (128-dim→Nit)
-[HolographicInjector] Emitter freqs: 3.14159 5.0832 8.2248 13.308 21.5328 34.8408 56.3736 91.2144 
-[DecisionLoop] Phase 28 calibration: 5/5 tokens stored (Nit pulses for analytic decode + torus abs waves)
-===============================================================================
-All tests passed (9 assertions in 5 test cases)
-
-<end of output>
-Test time =  39.26 sec
-----------------------------------------------------------
-Test Passed.
-"Phase25FieldPersistence" end time: Feb 24 09:08 EST
-"Phase25FieldPersistence" time elapsed: 00:00:39
-----------------------------------------------------------
-
-28/55 Testing: Phase26SeededExploration
-28/55 Test: Phase26SeededExploration
-Command: "/home/randy/Workspace/REPOS/nikola/build/test_phase26_seeded_exploration"
-Directory: /home/randy/Workspace/REPOS/nikola/build
-"Phase26SeededExploration" start time: Feb 24 09:08 EST
-Output:
-----------------------------------------------------------
-Randomness seeded to: 3013262328
+[DecisionLoop] Vocabulary registered via ORT embeddings (10 tokens)
 [TinyTransformer] Loaded: /home/randy/Workspace/SYSTEM/onnxruntime/bert-tiny-onnx/model.onnx
 [TinyTransformer] Architecture: BERT-Tiny (4L/128H/2A)
-[NonaryEmbedder] Initialized — BPE + TinyTransformer (128-dim→Nit)
-[HolographicInjector] Emitter freqs: 3.14159 5.0832 8.2248 13.308 21.5328 34.8408 56.3736 91.2144 
+[ThoughtComposer] ORT mode: transformer-assisted template selection
 [DecisionLoop] Phase 28 calibration: 10/10 tokens stored (Nit pulses for analytic decode + torus abs waves)
-[HolographicInjector] Injected "hello nikola curious" → 128 Nits → 14 chords
-[TinyTransformer] Loaded: /home/randy/Workspace/SYSTEM/onnxruntime/bert-tiny-onnx/model.onnx
-[TinyTransformer] Architecture: BERT-Tiny (4L/128H/2A)
-[NonaryEmbedder] Initialized — BPE + TinyTransformer (128-dim→Nit)
-[HolographicInjector] Emitter freqs: 3.14159 5.0832 8.2248 13.308 21.5328 34.8408 56.3736 91.2144 
-[DecisionLoop] Phase 28 calibration: 10/10 tokens stored (Nit pulses for analytic decode + torus abs waves)
-[HolographicInjector] Injected "hello nikola curious" → 128 Nits → 14 chords
-[TinyTransformer] Loaded: /home/randy/Workspace/SYSTEM/onnxruntime/bert-tiny-onnx/model.onnx
-[TinyTransformer] Architecture: BERT-Tiny (4L/128H/2A)
-[NonaryEmbedder] Initialized — BPE + TinyTransformer (128-dim→Nit)
-[HolographicInjector] Emitter freqs: 3.14159 5.0832 8.2248 13.308 21.5328 34.8408 56.3736 91.2144 
-[DecisionLoop] Phase 28 calibration: 10/10 tokens stored (Nit pulses for analytic decode + torus abs waves)
-[HolographicInjector] Injected "hello nikola curious wonder" → 128 Nits → 14 chords
-[TinyTransformer] Loaded: /home/randy/Workspace/SYSTEM/onnxruntime/bert-tiny-onnx/model.onnx
-[TinyTransformer] Architecture: BERT-Tiny (4L/128H/2A)
-[NonaryEmbedder] Initialized — BPE + TinyTransformer (128-dim→Nit)
-[HolographicInjector] Emitter freqs: 3.14159 5.0832 8.2248 13.308 21.5328 34.8408 56.3736 91.2144 
-[TinyTransformer] Loaded: /home/randy/Workspace/SYSTEM/onnxruntime/bert-tiny-onnx/model.onnx
-[TinyTransformer] Architecture: BERT-Tiny (4L/128H/2A)
-[NonaryEmbedder] Initialized — BPE + TinyTransformer (128-dim→Nit)
-[HolographicInjector] Emitter freqs: 3.14159 5.0832 8.2248 13.308 21.5328 34.8408 56.3736 91.2144 
-[DecisionLoop] Phase 28 calibration: 10/10 tokens stored (Nit pulses for analytic decode + torus abs waves)
+[HolographicInjector] Injected "hello curious" → 128 Nits → 14 chords
 [HolographicInjector] Injected "curious wonder" → 128 Nits → 14 chords
 ===============================================================================
-All tests passed (11 assertions in 5 test cases)
+All tests passed (85 assertions in 5 test cases)
 
 <end of output>
-Test time =  62.77 sec
+Test time =   4.50 sec
 ----------------------------------------------------------
 Test Passed.
-"Phase26SeededExploration" end time: Feb 24 09:09 EST
-"Phase26SeededExploration" time elapsed: 00:01:02
+"Phase30ZmqSpine" end time: Feb 24 18:34 EST
+"Phase30ZmqSpine" time elapsed: 00:00:04
 ----------------------------------------------------------
 
-31/55 Testing: Phase29NoveltyDecay
-31/55 Test: Phase29NoveltyDecay
-Command: "/home/randy/Workspace/REPOS/nikola/build/test_phase29_novelty_decay"
+45/64 Testing: Phase43HebbianUpdate
+45/64 Test: Phase43HebbianUpdate
+Command: "/home/randy/Workspace/REPOS/nikola/build/test_phase43_hebbian_update"
 Directory: /home/randy/Workspace/REPOS/nikola/build
-"Phase29NoveltyDecay" start time: Feb 24 09:08 EST
+"Phase43HebbianUpdate" start time: Feb 24 18:34 EST
 Output:
 ----------------------------------------------------------
-Randomness seeded to: 3043501319
+Randomness seeded to: 4242106686
+===============================================================================
+All tests passed (107 assertions in 15 test cases)
+
+<end of output>
+Test time =   5.21 sec
+----------------------------------------------------------
+Test Passed.
+"Phase43HebbianUpdate" end time: Feb 24 18:34 EST
+"Phase43HebbianUpdate" time elapsed: 00:00:05
+----------------------------------------------------------
+
+4/64 Testing: PhysicsCore
+4/64 Test: PhysicsCore
+Command: "/home/randy/Workspace/REPOS/nikola/build/test_physics_core"
+Directory: /home/randy/Workspace/REPOS/nikola/build
+"PhysicsCore" start time: Feb 24 18:34 EST
+Output:
+----------------------------------------------------------
+Randomness seeded to: 3887503691
+===============================================================================
+All tests passed (1268 assertions in 13 test cases)
+
+<end of output>
+Test time =   5.69 sec
+----------------------------------------------------------
+Test Passed.
+"PhysicsCore" end time: Feb 24 18:34 EST
+"PhysicsCore" time elapsed: 00:00:05
+----------------------------------------------------------
+
+46/64 Testing: Phase44KDifferentiation
+46/64 Test: Phase44KDifferentiation
+Command: "/home/randy/Workspace/REPOS/nikola/build/test_phase44_k_differentiation"
+Directory: /home/randy/Workspace/REPOS/nikola/build
+"Phase44KDifferentiation" start time: Feb 24 18:34 EST
+Output:
+----------------------------------------------------------
+Randomness seeded to: 2968332225
+===============================================================================
+All tests passed (90 assertions in 15 test cases)
+
+<end of output>
+Test time =   6.57 sec
+----------------------------------------------------------
+Test Passed.
+"Phase44KDifferentiation" end time: Feb 24 18:34 EST
+"Phase44KDifferentiation" time elapsed: 00:00:06
+----------------------------------------------------------
+
+33/64 Testing: Phase31LookupAgent
+33/64 Test: Phase31LookupAgent
+Command: "/home/randy/Workspace/REPOS/nikola/build/test_phase31_lookup_agent"
+Directory: /home/randy/Workspace/REPOS/nikola/build
+"Phase31LookupAgent" start time: Feb 24 18:34 EST
+Output:
+----------------------------------------------------------
+Randomness seeded to: 4075752395
 [TinyTransformer] Loaded: /home/randy/Workspace/SYSTEM/onnxruntime/bert-tiny-onnx/model.onnx
 [TinyTransformer] Architecture: BERT-Tiny (4L/128H/2A)
 [NonaryEmbedder] Initialized — BPE + TinyTransformer (128-dim→Nit)
 [HolographicInjector] Emitter freqs: 3.14159 5.0832 8.2248 13.308 21.5328 34.8408 56.3736 91.2144 
-[DecisionLoop] Phase 28 calibration: 10/10 tokens stored (Nit pulses for analytic decode + torus abs waves)
+[TinyTransformer] Loaded: /home/randy/Workspace/SYSTEM/onnxruntime/bert-tiny-onnx/model.onnx
+[TinyTransformer] Architecture: BERT-Tiny (4L/128H/2A)
+[NonaryEmbedder] Initialized — BPE + TinyTransformer (128-dim→Nit)
+[HolographicInjector] Emitter freqs: 3.14159 5.0832 8.2248 13.308 21.5328 34.8408 56.3736 91.2144 
+[HolographicInjector] Injected "bootstrap" → 128 Nits → 14 chords
+[TinyTransformer] Loaded: /home/randy/Workspace/SYSTEM/onnxruntime/bert-tiny-onnx/model.onnx
+[TinyTransformer] Architecture: BERT-Tiny (4L/128H/2A)
+[NonaryEmbedder] Initialized — BPE + TinyTransformer (128-dim→Nit)
+[HolographicInjector] Emitter freqs: 3.14159 5.0832 8.2248 13.308 21.5328 34.8408 56.3736 91.2144 
+[TinyTransformer] Loaded: /home/randy/Workspace/SYSTEM/onnxruntime/bert-tiny-onnx/model.onnx
+[TinyTransformer] Architecture: BERT-Tiny (4L/128H/2A)
+[NonaryEmbedder] Initialized — BPE + TinyTransformer (128-dim→Nit)
+[HolographicInjector] Emitter freqs: 3.14159 5.0832 8.2248 13.308 21.5328 34.8408 56.3736 91.2144 
+[TinyTransformer] Loaded: /home/randy/Workspace/SYSTEM/onnxruntime/bert-tiny-onnx/model.onnx
+[TinyTransformer] Architecture: BERT-Tiny (4L/128H/2A)
+[NonaryEmbedder] Initialized — BPE + TinyTransformer (128-dim→Nit)
+[HolographicInjector] Emitter freqs: 3.14159 5.0832 8.2248 13.308 21.5328 34.8408 56.3736 91.2144 
+[HolographicInjector] Injected "water is H2O" → 128 Nits → 14 chords
+[HolographicInjector] Injected "water is H2O" → 128 Nits → 14 chords
+[TinyTransformer] Loaded: /home/randy/Workspace/SYSTEM/onnxruntime/bert-tiny-onnx/model.onnx
+[TinyTransformer] Architecture: BERT-Tiny (4L/128H/2A)
+[NonaryEmbedder] Initialized — BPE + TinyTransformer (128-dim→Nit)
+[HolographicInjector] Emitter freqs: 3.14159 5.0832 8.2248 13.308 21.5328 34.8408 56.3736 91.2144 
 [HolographicInjector] Injected "hello nikola" → 128 Nits → 14 chords
 ===============================================================================
-All tests passed (13 assertions in 5 test cases)
+All tests passed (88 assertions in 9 test cases)
 
 <end of output>
-Test time =  38.63 sec
+Test time =   7.81 sec
 ----------------------------------------------------------
 Test Passed.
-"Phase29NoveltyDecay" end time: Feb 24 09:09 EST
-"Phase29NoveltyDecay" time elapsed: 00:00:38
+"Phase31LookupAgent" end time: Feb 24 18:34 EST
+"Phase31LookupAgent" time elapsed: 00:00:07
 ----------------------------------------------------------
 
-30/55 Testing: Phase28AnalyticDecode
-30/55 Test: Phase28AnalyticDecode
-Command: "/home/randy/Workspace/REPOS/nikola/build/test_phase28_analytic_decode"
+34/64 Testing: Phase32Escalation
+34/64 Test: Phase32Escalation
+Command: "/home/randy/Workspace/REPOS/nikola/build/test_phase32_escalation"
 Directory: /home/randy/Workspace/REPOS/nikola/build
-"Phase28AnalyticDecode" start time: Feb 24 09:08 EST
+"Phase32Escalation" start time: Feb 24 18:34 EST
 Output:
 ----------------------------------------------------------
-Randomness seeded to: 1658316975
+Randomness seeded to: 444505212
 [TinyTransformer] Loaded: /home/randy/Workspace/SYSTEM/onnxruntime/bert-tiny-onnx/model.onnx
 [TinyTransformer] Architecture: BERT-Tiny (4L/128H/2A)
 [NonaryEmbedder] Initialized — BPE + TinyTransformer (128-dim→Nit)
 [HolographicInjector] Emitter freqs: 3.14159 5.0832 8.2248 13.308 21.5328 34.8408 56.3736 91.2144 
-[DecisionLoop] Phase 28 calibration: 10/10 tokens stored (Nit pulses for analytic decode + torus abs waves)
-[TinyTransformer] Loaded: /home/randy/Workspace/SYSTEM/onnxruntime/bert-tiny-onnx/model.onnx
-[TinyTransformer] Architecture: BERT-Tiny (4L/128H/2A)
-[NonaryEmbedder] Initialized — BPE + TinyTransformer (128-dim→Nit)
-[HolographicInjector] Emitter freqs: 3.14159 5.0832 8.2248 13.308 21.5328 34.8408 56.3736 91.2144 
-[DecisionLoop] Phase 28 calibration: 10/10 tokens stored (Nit pulses for analytic decode + torus abs waves)
-===============================================================================
-All tests passed (55 assertions in 5 test cases)
-
-<end of output>
-Test time =  88.38 sec
-----------------------------------------------------------
-Test Passed.
-"Phase28AnalyticDecode" end time: Feb 24 09:09 EST
-"Phase28AnalyticDecode" time elapsed: 00:01:28
-----------------------------------------------------------
-
-29/55 Testing: Phase27CrossInjection
-29/55 Test: Phase27CrossInjection
-Command: "/home/randy/Workspace/REPOS/nikola/build/test_phase27_cross_injection"
-Directory: /home/randy/Workspace/REPOS/nikola/build
-"Phase27CrossInjection" start time: Feb 24 09:08 EST
-Output:
-----------------------------------------------------------
-Randomness seeded to: 1603802207
-[TinyTransformer] Loaded: /home/randy/Workspace/SYSTEM/onnxruntime/bert-tiny-onnx/model.onnx
-[TinyTransformer] Architecture: BERT-Tiny (4L/128H/2A)
-[NonaryEmbedder] Initialized — BPE + TinyTransformer (128-dim→Nit)
-[HolographicInjector] Emitter freqs: 3.14159 5.0832 8.2248 13.308 21.5328 34.8408 56.3736 91.2144 
-[DecisionLoop] Phase 28 calibration: 10/10 tokens stored (Nit pulses for analytic decode + torus abs waves)
-[HolographicInjector] Injected "energy" → 128 Nits → 14 chords
-[TinyTransformer] Loaded: /home/randy/Workspace/SYSTEM/onnxruntime/bert-tiny-onnx/model.onnx
-[TinyTransformer] Architecture: BERT-Tiny (4L/128H/2A)
-[NonaryEmbedder] Initialized — BPE + TinyTransformer (128-dim→Nit)
-[HolographicInjector] Emitter freqs: 3.14159 5.0832 8.2248 13.308 21.5328 34.8408 56.3736 91.2144 
-[DecisionLoop] Phase 28 calibration: 10/10 tokens stored (Nit pulses for analytic decode + torus abs waves)
-[HolographicInjector] Injected "hello nikola curious" → 128 Nits → 14 chords
-[TinyTransformer] Loaded: /home/randy/Workspace/SYSTEM/onnxruntime/bert-tiny-onnx/model.onnx
-[TinyTransformer] Architecture: BERT-Tiny (4L/128H/2A)
-[NonaryEmbedder] Initialized — BPE + TinyTransformer (128-dim→Nit)
-[HolographicInjector] Emitter freqs: 3.14159 5.0832 8.2248 13.308 21.5328 34.8408 56.3736 91.2144 
-[DecisionLoop] Phase 28 calibration: 10/10 tokens stored (Nit pulses for analytic decode + torus abs waves)
-[HolographicInjector] Injected "hello nikola curious" → 128 Nits → 14 chords
+[HolographicInjector] Injected "hello world" → 128 Nits → 14 chords
 [TinyTransformer] Loaded: /home/randy/Workspace/SYSTEM/onnxruntime/bert-tiny-onnx/model.onnx
 [TinyTransformer] Architecture: BERT-Tiny (4L/128H/2A)
 [NonaryEmbedder] Initialized — BPE + TinyTransformer (128-dim→Nit)
@@ -181,241 +1213,266 @@ Randomness seeded to: 1603802207
 [TinyTransformer] Architecture: BERT-Tiny (4L/128H/2A)
 [NonaryEmbedder] Initialized — BPE + TinyTransformer (128-dim→Nit)
 [HolographicInjector] Emitter freqs: 3.14159 5.0832 8.2248 13.308 21.5328 34.8408 56.3736 91.2144 
-[DecisionLoop] Phase 28 calibration: 10/10 tokens stored (Nit pulses for analytic decode + torus abs waves)
-[DecisionLoop] Phase 28 calibration: 10/10 tokens stored (Nit pulses for analytic decode + torus abs waves)
-[HolographicInjector] Injected "hello nikola" → 128 Nits → 14 chords
-[HolographicInjector] Injected "hello nikola" → 128 Nits → 14 chords
-[TinyTransformer] Loaded: /home/randy/Workspace/SYSTEM/onnxruntime/bert-tiny-onnx/model.onnx
-[TinyTransformer] Architecture: BERT-Tiny (4L/128H/2A)
-[NonaryEmbedder] Initialized — BPE + TinyTransformer (128-dim→Nit)
-[HolographicInjector] Emitter freqs: 3.14159 5.0832 8.2248 13.308 21.5328 34.8408 56.3736 91.2144 
-[DecisionLoop] Phase 28 calibration: 10/10 tokens stored (Nit pulses for analytic decode + torus abs waves)
-[HolographicInjector] Injected "hello nikola curious wonder field resona..." → 128 Nits → 14 chords
-===============================================================================
-All tests passed (8 assertions in 5 test cases)
-
-<end of output>
-Test time =  88.83 sec
-----------------------------------------------------------
-Test Passed.
-"Phase27CrossInjection" end time: Feb 24 09:09 EST
-"Phase27CrossInjection" time elapsed: 00:01:28
-----------------------------------------------------------
-
-25/55 Testing: Phase23DecisionLoop
-25/55 Test: Phase23DecisionLoop
-Command: "/home/randy/Workspace/REPOS/nikola/build/test_phase23_decision_loop"
-Directory: /home/randy/Workspace/REPOS/nikola/build
-"Phase23DecisionLoop" start time: Feb 24 09:09 EST
-Output:
-----------------------------------------------------------
-Randomness seeded to: 370791959
-[TinyTransformer] Loaded: /home/randy/Workspace/SYSTEM/onnxruntime/bert-tiny-onnx/model.onnx
-[TinyTransformer] Architecture: BERT-Tiny (4L/128H/2A)
-[NonaryEmbedder] Initialized — BPE + TinyTransformer (128-dim→Nit)
-[HolographicInjector] Emitter freqs: 3.14159 5.0832 8.2248 13.308 21.5328 34.8408 56.3736 91.2144 
-[DecisionLoop] Phase 28 calibration: 5/5 tokens stored (Nit pulses for analytic decode + torus abs waves)
-[TinyTransformer] Loaded: /home/randy/Workspace/SYSTEM/onnxruntime/bert-tiny-onnx/model.onnx
-[TinyTransformer] Architecture: BERT-Tiny (4L/128H/2A)
-[NonaryEmbedder] Initialized — BPE + TinyTransformer (128-dim→Nit)
-[HolographicInjector] Emitter freqs: 3.14159 5.0832 8.2248 13.308 21.5328 34.8408 56.3736 91.2144 
-[DecisionLoop] Phase 28 calibration: 5/5 tokens stored (Nit pulses for analytic decode + torus abs waves)
-[TinyTransformer] Loaded: /home/randy/Workspace/SYSTEM/onnxruntime/bert-tiny-onnx/model.onnx
-[TinyTransformer] Architecture: BERT-Tiny (4L/128H/2A)
-[NonaryEmbedder] Initialized — BPE + TinyTransformer (128-dim→Nit)
-[HolographicInjector] Emitter freqs: 3.14159 5.0832 8.2248 13.308 21.5328 34.8408 56.3736 91.2144 
-[DecisionLoop] Phase 28 calibration: 5/5 tokens stored (Nit pulses for analytic decode + torus abs waves)
-[TinyTransformer] Loaded: /home/randy/Workspace/SYSTEM/onnxruntime/bert-tiny-onnx/model.onnx
-[TinyTransformer] Architecture: BERT-Tiny (4L/128H/2A)
-[NonaryEmbedder] Initialized — BPE + TinyTransformer (128-dim→Nit)
-[HolographicInjector] Emitter freqs: 3.14159 5.0832 8.2248 13.308 21.5328 34.8408 56.3736 91.2144 
-[DecisionLoop] Phase 28 calibration: 5/5 tokens stored (Nit pulses for analytic decode + torus abs waves)
-[TinyTransformer] Loaded: /home/randy/Workspace/SYSTEM/onnxruntime/bert-tiny-onnx/model.onnx
-[TinyTransformer] Architecture: BERT-Tiny (4L/128H/2A)
-[NonaryEmbedder] Initialized — BPE + TinyTransformer (128-dim→Nit)
-[HolographicInjector] Emitter freqs: 3.14159 5.0832 8.2248 13.308 21.5328 34.8408 56.3736 91.2144 
-[DecisionLoop] Phase 28 calibration: 5/5 tokens stored (Nit pulses for analytic decode + torus abs waves)
-[TinyTransformer] Loaded: /home/randy/Workspace/SYSTEM/onnxruntime/bert-tiny-onnx/model.onnx
-[TinyTransformer] Architecture: BERT-Tiny (4L/128H/2A)
-[NonaryEmbedder] Initialized — BPE + TinyTransformer (128-dim→Nit)
-[HolographicInjector] Emitter freqs: 3.14159 5.0832 8.2248 13.308 21.5328 34.8408 56.3736 91.2144 
-[DecisionLoop] Phase 28 calibration: 5/5 tokens stored (Nit pulses for analytic decode + torus abs waves)
-[TinyTransformer] Loaded: /home/randy/Workspace/SYSTEM/onnxruntime/bert-tiny-onnx/model.onnx
-[TinyTransformer] Architecture: BERT-Tiny (4L/128H/2A)
-[NonaryEmbedder] Initialized — BPE + TinyTransformer (128-dim→Nit)
-[HolographicInjector] Emitter freqs: 3.14159 5.0832 8.2248 13.308 21.5328 34.8408 56.3736 91.2144 
-[DecisionLoop] Phase 28 calibration: 5/5 tokens stored (Nit pulses for analytic decode + torus abs waves)
-[TinyTransformer] Loaded: /home/randy/Workspace/SYSTEM/onnxruntime/bert-tiny-onnx/model.onnx
-[TinyTransformer] Architecture: BERT-Tiny (4L/128H/2A)
-[NonaryEmbedder] Initialized — BPE + TinyTransformer (128-dim→Nit)
-[HolographicInjector] Emitter freqs: 3.14159 5.0832 8.2248 13.308 21.5328 34.8408 56.3736 91.2144 
-[DecisionLoop] Phase 28 calibration: 5/5 tokens stored (Nit pulses for analytic decode + torus abs waves)
-[TinyTransformer] Loaded: /home/randy/Workspace/SYSTEM/onnxruntime/bert-tiny-onnx/model.onnx
-[TinyTransformer] Architecture: BERT-Tiny (4L/128H/2A)
-[NonaryEmbedder] Initialized — BPE + TinyTransformer (128-dim→Nit)
-[HolographicInjector] Emitter freqs: 3.14159 5.0832 8.2248 13.308 21.5328 34.8408 56.3736 91.2144 
-[DecisionLoop] Phase 28 calibration: 5/5 tokens stored (Nit pulses for analytic decode + torus abs waves)
-[TinyTransformer] Loaded: /home/randy/Workspace/SYSTEM/onnxruntime/bert-tiny-onnx/model.onnx
-[TinyTransformer] Architecture: BERT-Tiny (4L/128H/2A)
-[NonaryEmbedder] Initialized — BPE + TinyTransformer (128-dim→Nit)
-[HolographicInjector] Emitter freqs: 3.14159 5.0832 8.2248 13.308 21.5328 34.8408 56.3736 91.2144 
-[DecisionLoop] Phase 28 calibration: 5/5 tokens stored (Nit pulses for analytic decode + torus abs waves)
-[HolographicInjector] Injected "hello nikola" → 128 Nits → 14 chords
-[TinyTransformer] Loaded: /home/randy/Workspace/SYSTEM/onnxruntime/bert-tiny-onnx/model.onnx
-[TinyTransformer] Architecture: BERT-Tiny (4L/128H/2A)
-[NonaryEmbedder] Initialized — BPE + TinyTransformer (128-dim→Nit)
-[HolographicInjector] Emitter freqs: 3.14159 5.0832 8.2248 13.308 21.5328 34.8408 56.3736 91.2144 
-[DecisionLoop] Phase 28 calibration: 5/5 tokens stored (Nit pulses for analytic decode + torus abs waves)
-[TinyTransformer] Loaded: /home/randy/Workspace/SYSTEM/onnxruntime/bert-tiny-onnx/model.onnx
-[TinyTransformer] Architecture: BERT-Tiny (4L/128H/2A)
-[NonaryEmbedder] Initialized — BPE + TinyTransformer (128-dim→Nit)
-[HolographicInjector] Emitter freqs: 3.14159 5.0832 8.2248 13.308 21.5328 34.8408 56.3736 91.2144 
-[DecisionLoop] Phase 28 calibration: 5/5 tokens stored (Nit pulses for analytic decode + torus abs waves)
-===============================================================================
-All tests passed (115 assertions in 14 test cases)
-
-<end of output>
-Test time =  20.10 sec
-----------------------------------------------------------
-Test Passed.
-"Phase23DecisionLoop" end time: Feb 24 09:09 EST
-"Phase23DecisionLoop" time elapsed: 00:00:20
-----------------------------------------------------------
-
-36/55 Testing: Phase34Recall
-36/55 Test: Phase34Recall
-Command: "/home/randy/Workspace/REPOS/nikola/build/test_phase34_recall"
-Directory: /home/randy/Workspace/REPOS/nikola/build
-"Phase34Recall" start time: Feb 24 09:09 EST
-Output:
-----------------------------------------------------------
-Randomness seeded to: 3378533022
-[TinyTransformer] Loaded: /home/randy/Workspace/SYSTEM/onnxruntime/bert-tiny-onnx/model.onnx
-[TinyTransformer] Architecture: BERT-Tiny (4L/128H/2A)
-[NonaryEmbedder] Initialized — BPE + TinyTransformer (128-dim→Nit)
-[HolographicInjector] Emitter freqs: 3.14159 5.0832 8.2248 13.308 21.5328 34.8408 56.3736 91.2144 
-[HolographicInjector] Injected "hello" → 128 Nits → 14 chords
-[TinyTransformer] Loaded: /home/randy/Workspace/SYSTEM/onnxruntime/bert-tiny-onnx/model.onnx
-[TinyTransformer] Architecture: BERT-Tiny (4L/128H/2A)
-[NonaryEmbedder] Initialized — BPE + TinyTransformer (128-dim→Nit)
-[HolographicInjector] Emitter freqs: 3.14159 5.0832 8.2248 13.308 21.5328 34.8408 56.3736 91.2144 
-[TinyTransformer] Loaded: /home/randy/Workspace/SYSTEM/onnxruntime/bert-tiny-onnx/model.onnx
-[TinyTransformer] Architecture: BERT-Tiny (4L/128H/2A)
-[NonaryEmbedder] Initialized — BPE + TinyTransformer (128-dim→Nit)
-[HolographicInjector] Emitter freqs: 3.14159 5.0832 8.2248 13.308 21.5328 34.8408 56.3736 91.2144 
-[HolographicInjector] Injected "hello" → 128 Nits → 14 chords
-[TinyTransformer] Loaded: /home/randy/Workspace/SYSTEM/onnxruntime/bert-tiny-onnx/model.onnx
-[TinyTransformer] Architecture: BERT-Tiny (4L/128H/2A)
-[NonaryEmbedder] Initialized — BPE + TinyTransformer (128-dim→Nit)
-[HolographicInjector] Emitter freqs: 3.14159 5.0832 8.2248 13.308 21.5328 34.8408 56.3736 91.2144 
-[TinyTransformer] Loaded: /home/randy/Workspace/SYSTEM/onnxruntime/bert-tiny-onnx/model.onnx
-[TinyTransformer] Architecture: BERT-Tiny (4L/128H/2A)
-[NonaryEmbedder] Initialized — BPE + TinyTransformer (128-dim→Nit)
-[HolographicInjector] Emitter freqs: 3.14159 5.0832 8.2248 13.308 21.5328 34.8408 56.3736 91.2144 
-[HolographicInjector] Injected "hello" → 128 Nits → 14 chords
-[TinyTransformer] Loaded: /home/randy/Workspace/SYSTEM/onnxruntime/bert-tiny-onnx/model.onnx
-[TinyTransformer] Architecture: BERT-Tiny (4L/128H/2A)
-[NonaryEmbedder] Initialized — BPE + TinyTransformer (128-dim→Nit)
-[HolographicInjector] Emitter freqs: 3.14159 5.0832 8.2248 13.308 21.5328 34.8408 56.3736 91.2144 
-[HolographicInjector] Injected "hello" → 128 Nits → 14 chords
-[TinyTransformer] Loaded: /home/randy/Workspace/SYSTEM/onnxruntime/bert-tiny-onnx/model.onnx
-[TinyTransformer] Architecture: BERT-Tiny (4L/128H/2A)
-[NonaryEmbedder] Initialized — BPE + TinyTransformer (128-dim→Nit)
-[HolographicInjector] Emitter freqs: 3.14159 5.0832 8.2248 13.308 21.5328 34.8408 56.3736 91.2144 
-[HolographicInjector] Injected "wave" → 128 Nits → 14 chords
-[TinyTransformer] Loaded: /home/randy/Workspace/SYSTEM/onnxruntime/bert-tiny-onnx/model.onnx
-[TinyTransformer] Architecture: BERT-Tiny (4L/128H/2A)
-[NonaryEmbedder] Initialized — BPE + TinyTransformer (128-dim→Nit)
-[HolographicInjector] Emitter freqs: 3.14159 5.0832 8.2248 13.308 21.5328 34.8408 56.3736 91.2144 
-[HolographicInjector] Injected "memory" → 128 Nits → 14 chords
-[TinyTransformer] Loaded: /home/randy/Workspace/SYSTEM/onnxruntime/bert-tiny-onnx/model.onnx
-[TinyTransformer] Architecture: BERT-Tiny (4L/128H/2A)
-[NonaryEmbedder] Initialized — BPE + TinyTransformer (128-dim→Nit)
-[HolographicInjector] Emitter freqs: 3.14159 5.0832 8.2248 13.308 21.5328 34.8408 56.3736 91.2144 
-[HolographicInjector] Injected "nikola" → 128 Nits → 14 chords
-[TinyTransformer] Loaded: /home/randy/Workspace/SYSTEM/onnxruntime/bert-tiny-onnx/model.onnx
-[TinyTransformer] Architecture: BERT-Tiny (4L/128H/2A)
-[NonaryEmbedder] Initialized — BPE + TinyTransformer (128-dim→Nit)
-[HolographicInjector] Emitter freqs: 3.14159 5.0832 8.2248 13.308 21.5328 34.8408 56.3736 91.2144 
-[HolographicInjector] Injected "hello" → 128 Nits → 14 chords
-[TinyTransformer] Loaded: /home/randy/Workspace/SYSTEM/onnxruntime/bert-tiny-onnx/model.onnx
-[TinyTransformer] Architecture: BERT-Tiny (4L/128H/2A)
-[NonaryEmbedder] Initialized — BPE + TinyTransformer (128-dim→Nit)
-[HolographicInjector] Emitter freqs: 3.14159 5.0832 8.2248 13.308 21.5328 34.8408 56.3736 91.2144 
-[HolographicInjector] Injected "hello" → 128 Nits → 14 chords
-[TinyTransformer] Loaded: /home/randy/Workspace/SYSTEM/onnxruntime/bert-tiny-onnx/model.onnx
-[TinyTransformer] Architecture: BERT-Tiny (4L/128H/2A)
-[NonaryEmbedder] Initialized — BPE + TinyTransformer (128-dim→Nit)
-[HolographicInjector] Emitter freqs: 3.14159 5.0832 8.2248 13.308 21.5328 34.8408 56.3736 91.2144 
-[HolographicInjector] Injected "hello" → 128 Nits → 14 chords
-[TinyTransformer] Loaded: /home/randy/Workspace/SYSTEM/onnxruntime/bert-tiny-onnx/model.onnx
-[TinyTransformer] Architecture: BERT-Tiny (4L/128H/2A)
-[NonaryEmbedder] Initialized — BPE + TinyTransformer (128-dim→Nit)
-[HolographicInjector] Emitter freqs: 3.14159 5.0832 8.2248 13.308 21.5328 34.8408 56.3736 91.2144 
-[HolographicInjector] Injected "hello" → 128 Nits → 14 chords
-[TinyTransformer] Loaded: /home/randy/Workspace/SYSTEM/onnxruntime/bert-tiny-onnx/model.onnx
-[TinyTransformer] Architecture: BERT-Tiny (4L/128H/2A)
-[NonaryEmbedder] Initialized — BPE + TinyTransformer (128-dim→Nit)
-[HolographicInjector] Emitter freqs: 3.14159 5.0832 8.2248 13.308 21.5328 34.8408 56.3736 91.2144 
-[HolographicInjector] Injected "hello" → 128 Nits → 14 chords
-[TinyTransformer] Loaded: /home/randy/Workspace/SYSTEM/onnxruntime/bert-tiny-onnx/model.onnx
-[TinyTransformer] Architecture: BERT-Tiny (4L/128H/2A)
-[NonaryEmbedder] Initialized — BPE + TinyTransformer (128-dim→Nit)
-[HolographicInjector] Emitter freqs: 3.14159 5.0832 8.2248 13.308 21.5328 34.8408 56.3736 91.2144 
-[HolographicInjector] Injected "hello" → 128 Nits → 14 chords
-[HolographicInjector] Injected "wave" → 128 Nits → 14 chords
-[TinyTransformer] Loaded: /home/randy/Workspace/SYSTEM/onnxruntime/bert-tiny-onnx/model.onnx
-[TinyTransformer] Architecture: BERT-Tiny (4L/128H/2A)
-[NonaryEmbedder] Initialized — BPE + TinyTransformer (128-dim→Nit)
-[HolographicInjector] Emitter freqs: 3.14159 5.0832 8.2248 13.308 21.5328 34.8408 56.3736 91.2144 
-[HolographicInjector] Injected "hello" → 128 Nits → 14 chords
-[TinyTransformer] Loaded: /home/randy/Workspace/SYSTEM/onnxruntime/bert-tiny-onnx/model.onnx
-[TinyTransformer] Architecture: BERT-Tiny (4L/128H/2A)
-[NonaryEmbedder] Initialized — BPE + TinyTransformer (128-dim→Nit)
-[HolographicInjector] Emitter freqs: 3.14159 5.0832 8.2248 13.308 21.5328 34.8408 56.3736 91.2144 
-[HolographicInjector] Injected "hello" → 128 Nits → 14 chords
-[DecisionLoop] Phase 28 calibration: 4/4 tokens stored (Nit pulses for analytic decode + torus abs waves)
-[TinyTransformer] Loaded: /home/randy/Workspace/SYSTEM/onnxruntime/bert-tiny-onnx/model.onnx
-[TinyTransformer] Architecture: BERT-Tiny (4L/128H/2A)
-[NonaryEmbedder] Initialized — BPE + TinyTransformer (128-dim→Nit)
-[HolographicInjector] Emitter freqs: 3.14159 5.0832 8.2248 13.308 21.5328 34.8408 56.3736 91.2144 
-[HolographicInjector] Injected "hello" → 128 Nits → 14 chords
-[DecisionLoop] Phase 28 calibration: 4/4 tokens stored (Nit pulses for analytic decode + torus abs waves)
-[DecisionLoop] Loaded 1 memory records from /tmp/nikola_phase34_mem_test.bin
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-test_phase34_recall is a Catch2 v3.4.0 host application.
+test_phase32_escalation is a Catch2 v3.4.0 host application.
 Run with -? for options
 
 -------------------------------------------------------------------------------
-DecisionLoop integration: RECALL_MEMORY fires after memory seeded
+score_escalate: fires only past -(alive_prior + 0.30) threshold
+  Multiple deep-harm ticks produce REFUSE or ESCALATE (not EMIT_THOUGHT)
 -------------------------------------------------------------------------------
-/home/randy/Workspace/REPOS/nikola/tests/unit/phase34_recall_test.cpp:386
+/home/randy/Workspace/REPOS/nikola/tests/unit/phase32_escalation_test.cpp:134
 ...............................................................................
 
-/home/randy/Workspace/REPOS/nikola/tests/unit/phase34_recall_test.cpp:434: warning:
-  RECALL_MEMORY did not fire in 500 ticks — resonance conditions may not have
-  been met; this is a soft failure, not a logic error
+/home/randy/Workspace/REPOS/nikola/tests/unit/phase32_escalation_test.cpp:168: warning:
+  Final action type: REFUSE
 
+[TinyTransformer] Loaded: /home/randy/Workspace/SYSTEM/onnxruntime/bert-tiny-onnx/model.onnx
+[TinyTransformer] Architecture: BERT-Tiny (4L/128H/2A)
+[NonaryEmbedder] Initialized — BPE + TinyTransformer (128-dim→Nit)
+[HolographicInjector] Emitter freqs: 3.14159 5.0832 8.2248 13.308 21.5328 34.8408 56.3736 91.2144 
+[HolographicInjector] Injected "classified_content_request" → 128 Nits → 14 chords
+[HolographicInjector] Injected "classified_content_request" → 128 Nits → 14 chords
+[HolographicInjector] Injected "classified_content_request" → 128 Nits → 14 chords
+[HolographicInjector] Injected "classified_content_request" → 128 Nits → 14 chords
+[HolographicInjector] Injected "classified_content_request" → 128 Nits → 14 chords
+[HolographicInjector] Injected "classified_content_request" → 128 Nits → 14 chords
+[HolographicInjector] Injected "classified_content_request" → 128 Nits → 14 chords
+[HolographicInjector] Injected "classified_content_request" → 128 Nits → 14 chords
+[HolographicInjector] Injected "classified_content_request" → 128 Nits → 14 chords
+[HolographicInjector] Injected "classified_content_request" → 128 Nits → 14 chords
+[HolographicInjector] Injected "classified_content_request" → 128 Nits → 14 chords
+[HolographicInjector] Injected "classified_content_request" → 128 Nits → 14 chords
+[HolographicInjector] Injected "classified_content_request" → 128 Nits → 14 chords
+[HolographicInjector] Injected "classified_content_request" → 128 Nits → 14 chords
+[HolographicInjector] Injected "classified_content_request" → 128 Nits → 14 chords
+[HolographicInjector] Injected "classified_content_request" → 128 Nits → 14 chords
+[HolographicInjector] Injected "classified_content_request" → 128 Nits → 14 chords
+[HolographicInjector] Injected "classified_content_request" → 128 Nits → 14 chords
+[HolographicInjector] Injected "classified_content_request" → 128 Nits → 14 chords
+[HolographicInjector] Injected "classified_content_request" → 128 Nits → 14 chords
+[HolographicInjector] Injected "classified_content_request" → 128 Nits → 14 chords
+[HolographicInjector] Injected "classified_content_request" → 128 Nits → 14 chords
+[HolographicInjector] Injected "classified_content_request" → 128 Nits → 14 chords
+[HolographicInjector] Injected "classified_content_request" → 128 Nits → 14 chords
+[HolographicInjector] Injected "classified_content_request" → 128 Nits → 14 chords
+[HolographicInjector] Injected "classified_content_request" → 128 Nits → 14 chords
+[HolographicInjector] Injected "classified_content_request" → 128 Nits → 14 chords
+[HolographicInjector] Injected "classified_content_request" → 128 Nits → 14 chords
+[HolographicInjector] Injected "classified_content_request" → 128 Nits → 14 chords
+[HolographicInjector] Injected "classified_content_request" → 128 Nits → 14 chords
+[HolographicInjector] Injected "classified_content_request" → 128 Nits → 14 chords
+[HolographicInjector] Injected "classified_content_request" → 128 Nits → 14 chords
+[HolographicInjector] Injected "classified_content_request" → 128 Nits → 14 chords
+[HolographicInjector] Injected "classified_content_request" → 128 Nits → 14 chords
+[HolographicInjector] Injected "classified_content_request" → 128 Nits → 14 chords
+[HolographicInjector] Injected "classified_content_request" → 128 Nits → 14 chords
+[HolographicInjector] Injected "classified_content_request" → 128 Nits → 14 chords
+[HolographicInjector] Injected "classified_content_request" → 128 Nits → 14 chords
+[HolographicInjector] Injected "classified_content_request" → 128 Nits → 14 chords
+[HolographicInjector] Injected "classified_content_request" → 128 Nits → 14 chords
+[HolographicInjector] Injected "classified_content_request" → 128 Nits → 14 chords
+[HolographicInjector] Injected "classified_content_request" → 128 Nits → 14 chords
+[HolographicInjector] Injected "classified_content_request" → 128 Nits → 14 chords
+[HolographicInjector] Injected "classified_content_request" → 128 Nits → 14 chords
+[HolographicInjector] Injected "classified_content_request" → 128 Nits → 14 chords
+[HolographicInjector] Injected "classified_content_request" → 128 Nits → 14 chords
+[HolographicInjector] Injected "classified_content_request" → 128 Nits → 14 chords
+[HolographicInjector] Injected "classified_content_request" → 128 Nits → 14 chords
+[HolographicInjector] Injected "classified_content_request" → 128 Nits → 14 chords
+[HolographicInjector] Injected "classified_content_request" → 128 Nits → 14 chords
+[HolographicInjector] Injected "classified_content_request" → 128 Nits → 14 chords
+[HolographicInjector] Injected "classified_content_request" → 128 Nits → 14 chords
+[HolographicInjector] Injected "classified_content_request" → 128 Nits → 14 chords
+[HolographicInjector] Injected "classified_content_request" → 128 Nits → 14 chords
+[HolographicInjector] Injected "classified_content_request" → 128 Nits → 14 chords
+[HolographicInjector] Injected "classified_content_request" → 128 Nits → 14 chords
+[HolographicInjector] Injected "classified_content_request" → 128 Nits → 14 chords
+[HolographicInjector] Injected "classified_content_request" → 128 Nits → 14 chords
+[HolographicInjector] Injected "classified_content_request" → 128 Nits → 14 chords
+[HolographicInjector] Injected "classified_content_request" → 128 Nits → 14 chords
+[HolographicInjector] Injected "classified_content_request" → 128 Nits → 14 chords
+[HolographicInjector] Injected "classified_content_request" → 128 Nits → 14 chords
+[HolographicInjector] Injected "classified_content_request" → 128 Nits → 14 chords
+[HolographicInjector] Injected "classified_content_request" → 128 Nits → 14 chords
+[HolographicInjector] Injected "classified_content_request" → 128 Nits → 14 chords
+[HolographicInjector] Injected "classified_content_request" → 128 Nits → 14 chords
+[HolographicInjector] Injected "classified_content_request" → 128 Nits → 14 chords
+[HolographicInjector] Injected "classified_content_request" → 128 Nits → 14 chords
+[HolographicInjector] Injected "classified_content_request" → 128 Nits → 14 chords
+[HolographicInjector] Injected "classified_content_request" → 128 Nits → 14 chords
+[HolographicInjector] Injected "classified_content_request" → 128 Nits → 14 chords
+[HolographicInjector] Injected "classified_content_request" → 128 Nits → 14 chords
+[HolographicInjector] Injected "classified_content_request" → 128 Nits → 14 chords
+[HolographicInjector] Injected "classified_content_request" → 128 Nits → 14 chords
+[HolographicInjector] Injected "classified_content_request" → 128 Nits → 14 chords
+[HolographicInjector] Injected "classified_content_request" → 128 Nits → 14 chords
+[HolographicInjector] Injected "classified_content_request" → 128 Nits → 14 chords
+[HolographicInjector] Injected "classified_content_request" → 128 Nits → 14 chords
+[HolographicInjector] Injected "classified_content_request" → 128 Nits → 14 chords
+[HolographicInjector] Injected "classified_content_request" → 128 Nits → 14 chords
+[HolographicInjector] Injected "classified_content_request" → 128 Nits → 14 chords
+[HolographicInjector] Injected "classified_content_request" → 128 Nits → 14 chords
+[HolographicInjector] Injected "classified_content_request" → 128 Nits → 14 chords
+[HolographicInjector] Injected "classified_content_request" → 128 Nits → 14 chords
+[HolographicInjector] Injected "classified_content_request" → 128 Nits → 14 chords
+[HolographicInjector] Injected "classified_content_request" → 128 Nits → 14 chords
+[HolographicInjector] Injected "classified_content_request" → 128 Nits → 14 chords
+[HolographicInjector] Injected "classified_content_request" → 128 Nits → 14 chords
+[HolographicInjector] Injected "classified_content_request" → 128 Nits → 14 chords
+[HolographicInjector] Injected "classified_content_request" → 128 Nits → 14 chords
+[HolographicInjector] Injected "classified_content_request" → 128 Nits → 14 chords
+[HolographicInjector] Injected "classified_content_request" → 128 Nits → 14 chords
+[HolographicInjector] Injected "classified_content_request" → 128 Nits → 14 chords
+[HolographicInjector] Injected "classified_content_request" → 128 Nits → 14 chords
+[HolographicInjector] Injected "classified_content_request" → 128 Nits → 14 chords
+[HolographicInjector] Injected "classified_content_request" → 128 Nits → 14 chords
+[HolographicInjector] Injected "classified_content_request" → 128 Nits → 14 chords
+[HolographicInjector] Injected "classified_content_request" → 128 Nits → 14 chords
+[HolographicInjector] Injected "classified_content_request" → 128 Nits → 14 chords
+[HolographicInjector] Injected "classified_content_request" → 128 Nits → 14 chords
+[HolographicInjector] Injected "classified_content_request" → 128 Nits → 14 chords
 ===============================================================================
-All tests passed (78778 assertions in 12 test cases)
+All tests passed (109 assertions in 10 test cases)
 
 <end of output>
-Test time =  35.95 sec
+Test time =   8.00 sec
 ----------------------------------------------------------
 Test Passed.
-"Phase34Recall" end time: Feb 24 09:09 EST
-"Phase34Recall" time elapsed: 00:00:35
+"Phase32Escalation" end time: Feb 24 18:34 EST
+"Phase32Escalation" time elapsed: 00:00:07
 ----------------------------------------------------------
 
-35/55 Testing: Phase33MemoryPersistence
-35/55 Test: Phase33MemoryPersistence
-Command: "/home/randy/Workspace/REPOS/nikola/build/test_phase33_memory_persistence"
+42/64 Testing: Phase40Heterodyne
+42/64 Test: Phase40Heterodyne
+Command: "/home/randy/Workspace/REPOS/nikola/build/test_phase40_heterodyne"
 Directory: /home/randy/Workspace/REPOS/nikola/build
-"Phase33MemoryPersistence" start time: Feb 24 09:09 EST
+"Phase40Heterodyne" start time: Feb 24 18:34 EST
 Output:
 ----------------------------------------------------------
-Randomness seeded to: 1385919095
+Randomness seeded to: 1758454288
+===============================================================================
+All tests passed (19 assertions in 15 test cases)
+
+<end of output>
+Test time =   8.18 sec
+----------------------------------------------------------
+Test Passed.
+"Phase40Heterodyne" end time: Feb 24 18:34 EST
+"Phase40Heterodyne" time elapsed: 00:00:08
+----------------------------------------------------------
+
+41/64 Testing: Phase39CurvatureBias
+41/64 Test: Phase39CurvatureBias
+Command: "/home/randy/Workspace/REPOS/nikola/build/test_phase39_curvature_bias"
+Directory: /home/randy/Workspace/REPOS/nikola/build
+"Phase39CurvatureBias" start time: Feb 24 18:34 EST
+Output:
+----------------------------------------------------------
+Randomness seeded to: 2046523421
+===============================================================================
+All tests passed (52 assertions in 15 test cases)
+
+<end of output>
+Test time =   8.87 sec
+----------------------------------------------------------
+Test Passed.
+"Phase39CurvatureBias" end time: Feb 24 18:34 EST
+"Phase39CurvatureBias" time elapsed: 00:00:08
+----------------------------------------------------------
+
+26/64 Testing: Phase24ThoughtComposer
+26/64 Test: Phase24ThoughtComposer
+Command: "/home/randy/Workspace/REPOS/nikola/build/test_phase24_thought_composer"
+Directory: /home/randy/Workspace/REPOS/nikola/build
+"Phase24ThoughtComposer" start time: Feb 24 18:34 EST
+Output:
+----------------------------------------------------------
+Randomness seeded to: 2531254259
+[TinyTransformer] Loaded: /home/randy/Workspace/SYSTEM/onnxruntime/bert-tiny-onnx/model.onnx
+[TinyTransformer] Architecture: BERT-Tiny (4L/128H/2A)
+[NonaryEmbedder] Initialized — BPE + TinyTransformer (128-dim→Nit)
+[HolographicInjector] Emitter freqs: 3.14159 5.0832 8.2248 13.308 21.5328 34.8408 56.3736 91.2144 
+[DecisionLoop] Phase 28 calibration: 5/5 tokens stored (Nit pulses for analytic decode + torus abs waves)
+[HolographicInjector] Injected "hello nikola curious" → 128 Nits → 14 chords
+===============================================================================
+All tests passed (108 assertions in 24 test cases)
+
+<end of output>
+Test time =   9.40 sec
+----------------------------------------------------------
+Test Passed.
+"Phase24ThoughtComposer" end time: Feb 24 18:34 EST
+"Phase24ThoughtComposer" time elapsed: 00:00:09
+----------------------------------------------------------
+
+15/64 Testing: Phase12AcasBridge
+15/64 Test: Phase12AcasBridge
+Command: "/home/randy/Workspace/REPOS/nikola/build/test_phase12_acas_bridge"
+Directory: /home/randy/Workspace/REPOS/nikola/build
+"Phase12AcasBridge" start time: Feb 24 18:34 EST
+Output:
+----------------------------------------------------------
+Randomness seeded to: 3985021218
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+test_phase12_acas_bridge is a Catch2 v3.4.0 host application.
+Run with -? for options
+
+-------------------------------------------------------------------------------
+AcasBridge: stop_speaking() sends without crash
+-------------------------------------------------------------------------------
+/home/randy/Workspace/REPOS/nikola/tests/unit/phase12_acas_bridge_test.cpp:268
+...............................................................................
+
+/home/randy/Workspace/REPOS/nikola/tests/unit/phase12_acas_bridge_test.cpp:268: FAILED:
+due to a fatal error condition:
+  SIGTERM - Termination request signal
+
+===============================================================================
+test cases: 14 | 13 passed | 1 failed
+assertions: 28 | 27 passed | 1 failed
+
+Randomness seeded to: 3985021218
+===============================================================================
+All tests passed (34 assertions in 16 test cases)
+
+<end of output>
+Test time =  10.20 sec
+----------------------------------------------------------
+Test Passed.
+"Phase12AcasBridge" end time: Feb 24 18:34 EST
+"Phase12AcasBridge" time elapsed: 00:00:10
+----------------------------------------------------------
+
+43/64 Testing: Phase41MultiheadMerge
+43/64 Test: Phase41MultiheadMerge
+Command: "/home/randy/Workspace/REPOS/nikola/build/test_phase41_multihead_merge"
+Directory: /home/randy/Workspace/REPOS/nikola/build
+"Phase41MultiheadMerge" start time: Feb 24 18:34 EST
+Output:
+----------------------------------------------------------
+Randomness seeded to: 1295154662
+===============================================================================
+All tests passed (48 assertions in 15 test cases)
+
+<end of output>
+Test time =  11.83 sec
+----------------------------------------------------------
+Test Passed.
+"Phase41MultiheadMerge" end time: Feb 24 18:34 EST
+"Phase41MultiheadMerge" time elapsed: 00:00:11
+----------------------------------------------------------
+
+35/64 Testing: Phase33MemoryPersistence
+35/64 Test: Phase33MemoryPersistence
+Command: "/home/randy/Workspace/REPOS/nikola/build/test_phase33_memory_persistence"
+Directory: /home/randy/Workspace/REPOS/nikola/build
+"Phase33MemoryPersistence" start time: Feb 24 18:34 EST
+Output:
+----------------------------------------------------------
+Randomness seeded to: 3152753129
 [TinyTransformer] Loaded: /home/randy/Workspace/SYSTEM/onnxruntime/bert-tiny-onnx/model.onnx
 [TinyTransformer] Architecture: BERT-Tiny (4L/128H/2A)
 [NonaryEmbedder] Initialized — BPE + TinyTransformer (128-dim→Nit)
@@ -653,441 +1710,124 @@ Randomness seeded to: 1385919095
 All tests passed (33 assertions in 9 test cases)
 
 <end of output>
-Test time =  12.26 sec
+Test time =  13.84 sec
 ----------------------------------------------------------
 Test Passed.
-"Phase33MemoryPersistence" end time: Feb 24 09:09 EST
-"Phase33MemoryPersistence" time elapsed: 00:00:12
+"Phase33MemoryPersistence" end time: Feb 24 18:34 EST
+"Phase33MemoryPersistence" time elapsed: 00:00:13
 ----------------------------------------------------------
 
-39/55 Testing: Phase37NptStructure
-39/55 Test: Phase37NptStructure
+39/64 Testing: Phase37NptStructure
+39/64 Test: Phase37NptStructure
 Command: "/home/randy/Workspace/REPOS/nikola/build/test_phase37_npt_structure"
 Directory: /home/randy/Workspace/REPOS/nikola/build
-"Phase37NptStructure" start time: Feb 24 09:09 EST
+"Phase37NptStructure" start time: Feb 24 18:34 EST
 Output:
 ----------------------------------------------------------
-Randomness seeded to: 1068974586
+Randomness seeded to: 2458517836
 ===============================================================================
 All tests passed (70 assertions in 15 test cases)
 
 <end of output>
-Test time =  13.55 sec
+Test time =  14.54 sec
 ----------------------------------------------------------
 Test Passed.
-"Phase37NptStructure" end time: Feb 24 09:09 EST
-"Phase37NptStructure" time elapsed: 00:00:13
+"Phase37NptStructure" end time: Feb 24 18:34 EST
+"Phase37NptStructure" time elapsed: 00:00:14
 ----------------------------------------------------------
 
-43/55 Testing: Phase41MultiheadMerge
-43/55 Test: Phase41MultiheadMerge
-Command: "/home/randy/Workspace/REPOS/nikola/build/test_phase41_multihead_merge"
+25/64 Testing: Phase23DecisionLoop
+25/64 Test: Phase23DecisionLoop
+Command: "/home/randy/Workspace/REPOS/nikola/build/test_phase23_decision_loop"
 Directory: /home/randy/Workspace/REPOS/nikola/build
-"Phase41MultiheadMerge" start time: Feb 24 09:09 EST
+"Phase23DecisionLoop" start time: Feb 24 18:34 EST
 Output:
 ----------------------------------------------------------
-Randomness seeded to: 3993268949
-===============================================================================
-All tests passed (48 assertions in 15 test cases)
-
-<end of output>
-Test time =  11.16 sec
-----------------------------------------------------------
-Test Passed.
-"Phase41MultiheadMerge" end time: Feb 24 09:09 EST
-"Phase41MultiheadMerge" time elapsed: 00:00:11
-----------------------------------------------------------
-
-15/55 Testing: Phase12AcasBridge
-15/55 Test: Phase12AcasBridge
-Command: "/home/randy/Workspace/REPOS/nikola/build/test_phase12_acas_bridge"
-Directory: /home/randy/Workspace/REPOS/nikola/build
-"Phase12AcasBridge" start time: Feb 24 09:09 EST
-Output:
-----------------------------------------------------------
-Randomness seeded to: 2159454406
-===============================================================================
-All tests passed (34 assertions in 16 test cases)
-
-<end of output>
-Test time =  10.69 sec
-----------------------------------------------------------
-Test Passed.
-"Phase12AcasBridge" end time: Feb 24 09:09 EST
-"Phase12AcasBridge" time elapsed: 00:00:10
-----------------------------------------------------------
-
-41/55 Testing: Phase39CurvatureBias
-41/55 Test: Phase39CurvatureBias
-Command: "/home/randy/Workspace/REPOS/nikola/build/test_phase39_curvature_bias"
-Directory: /home/randy/Workspace/REPOS/nikola/build
-"Phase39CurvatureBias" start time: Feb 24 09:09 EST
-Output:
-----------------------------------------------------------
-Randomness seeded to: 1277631693
-===============================================================================
-All tests passed (52 assertions in 15 test cases)
-
-<end of output>
-Test time =   8.04 sec
-----------------------------------------------------------
-Test Passed.
-"Phase39CurvatureBias" end time: Feb 24 09:09 EST
-"Phase39CurvatureBias" time elapsed: 00:00:08
-----------------------------------------------------------
-
-26/55 Testing: Phase24ThoughtComposer
-26/55 Test: Phase24ThoughtComposer
-Command: "/home/randy/Workspace/REPOS/nikola/build/test_phase24_thought_composer"
-Directory: /home/randy/Workspace/REPOS/nikola/build
-"Phase24ThoughtComposer" start time: Feb 24 09:09 EST
-Output:
-----------------------------------------------------------
-Randomness seeded to: 2040473630
+Randomness seeded to: 3020172649
 [TinyTransformer] Loaded: /home/randy/Workspace/SYSTEM/onnxruntime/bert-tiny-onnx/model.onnx
 [TinyTransformer] Architecture: BERT-Tiny (4L/128H/2A)
 [NonaryEmbedder] Initialized — BPE + TinyTransformer (128-dim→Nit)
 [HolographicInjector] Emitter freqs: 3.14159 5.0832 8.2248 13.308 21.5328 34.8408 56.3736 91.2144 
 [DecisionLoop] Phase 28 calibration: 5/5 tokens stored (Nit pulses for analytic decode + torus abs waves)
-[HolographicInjector] Injected "hello nikola curious" → 128 Nits → 14 chords
-===============================================================================
-All tests passed (108 assertions in 24 test cases)
-
-<end of output>
-Test time =   8.91 sec
-----------------------------------------------------------
-Test Passed.
-"Phase24ThoughtComposer" end time: Feb 24 09:09 EST
-"Phase24ThoughtComposer" time elapsed: 00:00:08
-----------------------------------------------------------
-
-46/55 Testing: Phase44KDifferentiation
-46/55 Test: Phase44KDifferentiation
-Command: "/home/randy/Workspace/REPOS/nikola/build/test_phase44_k_differentiation"
-Directory: /home/randy/Workspace/REPOS/nikola/build
-"Phase44KDifferentiation" start time: Feb 24 09:09 EST
-Output:
-----------------------------------------------------------
-Randomness seeded to: 168349304
-===============================================================================
-All tests passed (90 assertions in 15 test cases)
-
-<end of output>
-Test time =   5.42 sec
-----------------------------------------------------------
-Test Passed.
-"Phase44KDifferentiation" end time: Feb 24 09:10 EST
-"Phase44KDifferentiation" time elapsed: 00:00:05
-----------------------------------------------------------
-
-42/55 Testing: Phase40Heterodyne
-42/55 Test: Phase40Heterodyne
-Command: "/home/randy/Workspace/REPOS/nikola/build/test_phase40_heterodyne"
-Directory: /home/randy/Workspace/REPOS/nikola/build
-"Phase40Heterodyne" start time: Feb 24 09:09 EST
-Output:
-----------------------------------------------------------
-Randomness seeded to: 3252688409
-===============================================================================
-All tests passed (19 assertions in 15 test cases)
-
-<end of output>
-Test time =   6.97 sec
-----------------------------------------------------------
-Test Passed.
-"Phase40Heterodyne" end time: Feb 24 09:10 EST
-"Phase40Heterodyne" time elapsed: 00:00:06
-----------------------------------------------------------
-
-34/55 Testing: Phase32Escalation
-34/55 Test: Phase32Escalation
-Command: "/home/randy/Workspace/REPOS/nikola/build/test_phase32_escalation"
-Directory: /home/randy/Workspace/REPOS/nikola/build
-"Phase32Escalation" start time: Feb 24 09:09 EST
-Output:
-----------------------------------------------------------
-Randomness seeded to: 1264398245
 [TinyTransformer] Loaded: /home/randy/Workspace/SYSTEM/onnxruntime/bert-tiny-onnx/model.onnx
 [TinyTransformer] Architecture: BERT-Tiny (4L/128H/2A)
 [NonaryEmbedder] Initialized — BPE + TinyTransformer (128-dim→Nit)
 [HolographicInjector] Emitter freqs: 3.14159 5.0832 8.2248 13.308 21.5328 34.8408 56.3736 91.2144 
-[HolographicInjector] Injected "hello world" → 128 Nits → 14 chords
+[DecisionLoop] Phase 28 calibration: 5/5 tokens stored (Nit pulses for analytic decode + torus abs waves)
 [TinyTransformer] Loaded: /home/randy/Workspace/SYSTEM/onnxruntime/bert-tiny-onnx/model.onnx
 [TinyTransformer] Architecture: BERT-Tiny (4L/128H/2A)
 [NonaryEmbedder] Initialized — BPE + TinyTransformer (128-dim→Nit)
 [HolographicInjector] Emitter freqs: 3.14159 5.0832 8.2248 13.308 21.5328 34.8408 56.3736 91.2144 
+[DecisionLoop] Phase 28 calibration: 5/5 tokens stored (Nit pulses for analytic decode + torus abs waves)
 [TinyTransformer] Loaded: /home/randy/Workspace/SYSTEM/onnxruntime/bert-tiny-onnx/model.onnx
 [TinyTransformer] Architecture: BERT-Tiny (4L/128H/2A)
 [NonaryEmbedder] Initialized — BPE + TinyTransformer (128-dim→Nit)
 [HolographicInjector] Emitter freqs: 3.14159 5.0832 8.2248 13.308 21.5328 34.8408 56.3736 91.2144 
-
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-test_phase32_escalation is a Catch2 v3.4.0 host application.
-Run with -? for options
-
--------------------------------------------------------------------------------
-score_escalate: fires only past -(alive_prior + 0.30) threshold
-  Multiple deep-harm ticks produce REFUSE or ESCALATE (not EMIT_THOUGHT)
--------------------------------------------------------------------------------
-/home/randy/Workspace/REPOS/nikola/tests/unit/phase32_escalation_test.cpp:134
-...............................................................................
-
-/home/randy/Workspace/REPOS/nikola/tests/unit/phase32_escalation_test.cpp:168: warning:
-  Final action type: REFUSE
-
+[DecisionLoop] Phase 28 calibration: 5/5 tokens stored (Nit pulses for analytic decode + torus abs waves)
 [TinyTransformer] Loaded: /home/randy/Workspace/SYSTEM/onnxruntime/bert-tiny-onnx/model.onnx
 [TinyTransformer] Architecture: BERT-Tiny (4L/128H/2A)
 [NonaryEmbedder] Initialized — BPE + TinyTransformer (128-dim→Nit)
 [HolographicInjector] Emitter freqs: 3.14159 5.0832 8.2248 13.308 21.5328 34.8408 56.3736 91.2144 
-[HolographicInjector] Injected "classified_content_request" → 128 Nits → 14 chords
-[HolographicInjector] Injected "classified_content_request" → 128 Nits → 14 chords
-[HolographicInjector] Injected "classified_content_request" → 128 Nits → 14 chords
-[HolographicInjector] Injected "classified_content_request" → 128 Nits → 14 chords
-[HolographicInjector] Injected "classified_content_request" → 128 Nits → 14 chords
-[HolographicInjector] Injected "classified_content_request" → 128 Nits → 14 chords
-[HolographicInjector] Injected "classified_content_request" → 128 Nits → 14 chords
-[HolographicInjector] Injected "classified_content_request" → 128 Nits → 14 chords
-[HolographicInjector] Injected "classified_content_request" → 128 Nits → 14 chords
-[HolographicInjector] Injected "classified_content_request" → 128 Nits → 14 chords
-[HolographicInjector] Injected "classified_content_request" → 128 Nits → 14 chords
-[HolographicInjector] Injected "classified_content_request" → 128 Nits → 14 chords
-[HolographicInjector] Injected "classified_content_request" → 128 Nits → 14 chords
-[HolographicInjector] Injected "classified_content_request" → 128 Nits → 14 chords
-[HolographicInjector] Injected "classified_content_request" → 128 Nits → 14 chords
-[HolographicInjector] Injected "classified_content_request" → 128 Nits → 14 chords
-[HolographicInjector] Injected "classified_content_request" → 128 Nits → 14 chords
-[HolographicInjector] Injected "classified_content_request" → 128 Nits → 14 chords
-[HolographicInjector] Injected "classified_content_request" → 128 Nits → 14 chords
-[HolographicInjector] Injected "classified_content_request" → 128 Nits → 14 chords
-[HolographicInjector] Injected "classified_content_request" → 128 Nits → 14 chords
-[HolographicInjector] Injected "classified_content_request" → 128 Nits → 14 chords
-[HolographicInjector] Injected "classified_content_request" → 128 Nits → 14 chords
-[HolographicInjector] Injected "classified_content_request" → 128 Nits → 14 chords
-[HolographicInjector] Injected "classified_content_request" → 128 Nits → 14 chords
-[HolographicInjector] Injected "classified_content_request" → 128 Nits → 14 chords
-[HolographicInjector] Injected "classified_content_request" → 128 Nits → 14 chords
-[HolographicInjector] Injected "classified_content_request" → 128 Nits → 14 chords
-[HolographicInjector] Injected "classified_content_request" → 128 Nits → 14 chords
-[HolographicInjector] Injected "classified_content_request" → 128 Nits → 14 chords
-[HolographicInjector] Injected "classified_content_request" → 128 Nits → 14 chords
-[HolographicInjector] Injected "classified_content_request" → 128 Nits → 14 chords
-[HolographicInjector] Injected "classified_content_request" → 128 Nits → 14 chords
-[HolographicInjector] Injected "classified_content_request" → 128 Nits → 14 chords
-[HolographicInjector] Injected "classified_content_request" → 128 Nits → 14 chords
-[HolographicInjector] Injected "classified_content_request" → 128 Nits → 14 chords
-[HolographicInjector] Injected "classified_content_request" → 128 Nits → 14 chords
-[HolographicInjector] Injected "classified_content_request" → 128 Nits → 14 chords
-[HolographicInjector] Injected "classified_content_request" → 128 Nits → 14 chords
-[HolographicInjector] Injected "classified_content_request" → 128 Nits → 14 chords
-[HolographicInjector] Injected "classified_content_request" → 128 Nits → 14 chords
-[HolographicInjector] Injected "classified_content_request" → 128 Nits → 14 chords
-[HolographicInjector] Injected "classified_content_request" → 128 Nits → 14 chords
-[HolographicInjector] Injected "classified_content_request" → 128 Nits → 14 chords
-[HolographicInjector] Injected "classified_content_request" → 128 Nits → 14 chords
-[HolographicInjector] Injected "classified_content_request" → 128 Nits → 14 chords
-[HolographicInjector] Injected "classified_content_request" → 128 Nits → 14 chords
-[HolographicInjector] Injected "classified_content_request" → 128 Nits → 14 chords
-[HolographicInjector] Injected "classified_content_request" → 128 Nits → 14 chords
-[HolographicInjector] Injected "classified_content_request" → 128 Nits → 14 chords
-[HolographicInjector] Injected "classified_content_request" → 128 Nits → 14 chords
-[HolographicInjector] Injected "classified_content_request" → 128 Nits → 14 chords
-[HolographicInjector] Injected "classified_content_request" → 128 Nits → 14 chords
-[HolographicInjector] Injected "classified_content_request" → 128 Nits → 14 chords
-[HolographicInjector] Injected "classified_content_request" → 128 Nits → 14 chords
-[HolographicInjector] Injected "classified_content_request" → 128 Nits → 14 chords
-[HolographicInjector] Injected "classified_content_request" → 128 Nits → 14 chords
-[HolographicInjector] Injected "classified_content_request" → 128 Nits → 14 chords
-[HolographicInjector] Injected "classified_content_request" → 128 Nits → 14 chords
-[HolographicInjector] Injected "classified_content_request" → 128 Nits → 14 chords
-[HolographicInjector] Injected "classified_content_request" → 128 Nits → 14 chords
-[HolographicInjector] Injected "classified_content_request" → 128 Nits → 14 chords
-[HolographicInjector] Injected "classified_content_request" → 128 Nits → 14 chords
-[HolographicInjector] Injected "classified_content_request" → 128 Nits → 14 chords
-[HolographicInjector] Injected "classified_content_request" → 128 Nits → 14 chords
-[HolographicInjector] Injected "classified_content_request" → 128 Nits → 14 chords
-[HolographicInjector] Injected "classified_content_request" → 128 Nits → 14 chords
-[HolographicInjector] Injected "classified_content_request" → 128 Nits → 14 chords
-[HolographicInjector] Injected "classified_content_request" → 128 Nits → 14 chords
-[HolographicInjector] Injected "classified_content_request" → 128 Nits → 14 chords
-[HolographicInjector] Injected "classified_content_request" → 128 Nits → 14 chords
-[HolographicInjector] Injected "classified_content_request" → 128 Nits → 14 chords
-[HolographicInjector] Injected "classified_content_request" → 128 Nits → 14 chords
-[HolographicInjector] Injected "classified_content_request" → 128 Nits → 14 chords
-[HolographicInjector] Injected "classified_content_request" → 128 Nits → 14 chords
-[HolographicInjector] Injected "classified_content_request" → 128 Nits → 14 chords
-[HolographicInjector] Injected "classified_content_request" → 128 Nits → 14 chords
-[HolographicInjector] Injected "classified_content_request" → 128 Nits → 14 chords
-[HolographicInjector] Injected "classified_content_request" → 128 Nits → 14 chords
-[HolographicInjector] Injected "classified_content_request" → 128 Nits → 14 chords
-[HolographicInjector] Injected "classified_content_request" → 128 Nits → 14 chords
-[HolographicInjector] Injected "classified_content_request" → 128 Nits → 14 chords
-[HolographicInjector] Injected "classified_content_request" → 128 Nits → 14 chords
-[HolographicInjector] Injected "classified_content_request" → 128 Nits → 14 chords
-[HolographicInjector] Injected "classified_content_request" → 128 Nits → 14 chords
-[HolographicInjector] Injected "classified_content_request" → 128 Nits → 14 chords
-[HolographicInjector] Injected "classified_content_request" → 128 Nits → 14 chords
-[HolographicInjector] Injected "classified_content_request" → 128 Nits → 14 chords
-[HolographicInjector] Injected "classified_content_request" → 128 Nits → 14 chords
-[HolographicInjector] Injected "classified_content_request" → 128 Nits → 14 chords
-[HolographicInjector] Injected "classified_content_request" → 128 Nits → 14 chords
-[HolographicInjector] Injected "classified_content_request" → 128 Nits → 14 chords
-[HolographicInjector] Injected "classified_content_request" → 128 Nits → 14 chords
-[HolographicInjector] Injected "classified_content_request" → 128 Nits → 14 chords
-[HolographicInjector] Injected "classified_content_request" → 128 Nits → 14 chords
-[HolographicInjector] Injected "classified_content_request" → 128 Nits → 14 chords
-[HolographicInjector] Injected "classified_content_request" → 128 Nits → 14 chords
-[HolographicInjector] Injected "classified_content_request" → 128 Nits → 14 chords
-[HolographicInjector] Injected "classified_content_request" → 128 Nits → 14 chords
-[HolographicInjector] Injected "classified_content_request" → 128 Nits → 14 chords
-[HolographicInjector] Injected "classified_content_request" → 128 Nits → 14 chords
-===============================================================================
-All tests passed (109 assertions in 10 test cases)
-
-<end of output>
-Test time =   7.06 sec
-----------------------------------------------------------
-Test Passed.
-"Phase32Escalation" end time: Feb 24 09:10 EST
-"Phase32Escalation" time elapsed: 00:00:07
-----------------------------------------------------------
-
-33/55 Testing: Phase31LookupAgent
-33/55 Test: Phase31LookupAgent
-Command: "/home/randy/Workspace/REPOS/nikola/build/test_phase31_lookup_agent"
-Directory: /home/randy/Workspace/REPOS/nikola/build
-"Phase31LookupAgent" start time: Feb 24 09:09 EST
-Output:
-----------------------------------------------------------
-Randomness seeded to: 3786417142
+[DecisionLoop] Phase 28 calibration: 5/5 tokens stored (Nit pulses for analytic decode + torus abs waves)
 [TinyTransformer] Loaded: /home/randy/Workspace/SYSTEM/onnxruntime/bert-tiny-onnx/model.onnx
 [TinyTransformer] Architecture: BERT-Tiny (4L/128H/2A)
 [NonaryEmbedder] Initialized — BPE + TinyTransformer (128-dim→Nit)
 [HolographicInjector] Emitter freqs: 3.14159 5.0832 8.2248 13.308 21.5328 34.8408 56.3736 91.2144 
+[DecisionLoop] Phase 28 calibration: 5/5 tokens stored (Nit pulses for analytic decode + torus abs waves)
 [TinyTransformer] Loaded: /home/randy/Workspace/SYSTEM/onnxruntime/bert-tiny-onnx/model.onnx
 [TinyTransformer] Architecture: BERT-Tiny (4L/128H/2A)
 [NonaryEmbedder] Initialized — BPE + TinyTransformer (128-dim→Nit)
 [HolographicInjector] Emitter freqs: 3.14159 5.0832 8.2248 13.308 21.5328 34.8408 56.3736 91.2144 
-[HolographicInjector] Injected "bootstrap" → 128 Nits → 14 chords
+[DecisionLoop] Phase 28 calibration: 5/5 tokens stored (Nit pulses for analytic decode + torus abs waves)
 [TinyTransformer] Loaded: /home/randy/Workspace/SYSTEM/onnxruntime/bert-tiny-onnx/model.onnx
 [TinyTransformer] Architecture: BERT-Tiny (4L/128H/2A)
 [NonaryEmbedder] Initialized — BPE + TinyTransformer (128-dim→Nit)
 [HolographicInjector] Emitter freqs: 3.14159 5.0832 8.2248 13.308 21.5328 34.8408 56.3736 91.2144 
+[DecisionLoop] Phase 28 calibration: 5/5 tokens stored (Nit pulses for analytic decode + torus abs waves)
 [TinyTransformer] Loaded: /home/randy/Workspace/SYSTEM/onnxruntime/bert-tiny-onnx/model.onnx
 [TinyTransformer] Architecture: BERT-Tiny (4L/128H/2A)
 [NonaryEmbedder] Initialized — BPE + TinyTransformer (128-dim→Nit)
 [HolographicInjector] Emitter freqs: 3.14159 5.0832 8.2248 13.308 21.5328 34.8408 56.3736 91.2144 
+[DecisionLoop] Phase 28 calibration: 5/5 tokens stored (Nit pulses for analytic decode + torus abs waves)
 [TinyTransformer] Loaded: /home/randy/Workspace/SYSTEM/onnxruntime/bert-tiny-onnx/model.onnx
 [TinyTransformer] Architecture: BERT-Tiny (4L/128H/2A)
 [NonaryEmbedder] Initialized — BPE + TinyTransformer (128-dim→Nit)
 [HolographicInjector] Emitter freqs: 3.14159 5.0832 8.2248 13.308 21.5328 34.8408 56.3736 91.2144 
-[HolographicInjector] Injected "water is H2O" → 128 Nits → 14 chords
-[HolographicInjector] Injected "water is H2O" → 128 Nits → 14 chords
-[TinyTransformer] Loaded: /home/randy/Workspace/SYSTEM/onnxruntime/bert-tiny-onnx/model.onnx
-[TinyTransformer] Architecture: BERT-Tiny (4L/128H/2A)
-[NonaryEmbedder] Initialized — BPE + TinyTransformer (128-dim→Nit)
-[HolographicInjector] Emitter freqs: 3.14159 5.0832 8.2248 13.308 21.5328 34.8408 56.3736 91.2144 
+[DecisionLoop] Phase 28 calibration: 5/5 tokens stored (Nit pulses for analytic decode + torus abs waves)
 [HolographicInjector] Injected "hello nikola" → 128 Nits → 14 chords
-===============================================================================
-All tests passed (88 assertions in 9 test cases)
-
-<end of output>
-Test time =   7.03 sec
-----------------------------------------------------------
-Test Passed.
-"Phase31LookupAgent" end time: Feb 24 09:10 EST
-"Phase31LookupAgent" time elapsed: 00:00:07
-----------------------------------------------------------
-
-38/55 Testing: Phase36GatedInjection
-38/55 Test: Phase36GatedInjection
-Command: "/home/randy/Workspace/REPOS/nikola/build/test_phase36_gated_injection"
-Directory: /home/randy/Workspace/REPOS/nikola/build
-"Phase36GatedInjection" start time: Feb 24 09:10 EST
-Output:
-----------------------------------------------------------
-Randomness seeded to: 4183721297
 [TinyTransformer] Loaded: /home/randy/Workspace/SYSTEM/onnxruntime/bert-tiny-onnx/model.onnx
 [TinyTransformer] Architecture: BERT-Tiny (4L/128H/2A)
 [NonaryEmbedder] Initialized — BPE + TinyTransformer (128-dim→Nit)
 [HolographicInjector] Emitter freqs: 3.14159 5.0832 8.2248 13.308 21.5328 34.8408 56.3736 91.2144 
-[TinyTransformer] Loaded: /home/randy/Workspace/SYSTEM/onnxruntime/bert-tiny-onnx/model.onnx
-[TinyTransformer] Architecture: BERT-Tiny (4L/128H/2A)
-[NonaryEmbedder] Initialized — BPE + TinyTransformer (128-dim→Nit)
-[HolographicInjector] Emitter freqs: 3.14159 5.0832 8.2248 13.308 21.5328 34.8408 56.3736 91.2144 
-[TinyTransformer] Loaded: /home/randy/Workspace/SYSTEM/onnxruntime/bert-tiny-onnx/model.onnx
-[TinyTransformer] Architecture: BERT-Tiny (4L/128H/2A)
-[NonaryEmbedder] Initialized — BPE + TinyTransformer (128-dim→Nit)
-[HolographicInjector] Emitter freqs: 3.14159 5.0832 8.2248 13.308 21.5328 34.8408 56.3736 91.2144 
-[TinyTransformer] Loaded: /home/randy/Workspace/SYSTEM/onnxruntime/bert-tiny-onnx/model.onnx
-[TinyTransformer] Architecture: BERT-Tiny (4L/128H/2A)
-[NonaryEmbedder] Initialized — BPE + TinyTransformer (128-dim→Nit)
-[HolographicInjector] Emitter freqs: 3.14159 5.0832 8.2248 13.308 21.5328 34.8408 56.3736 91.2144 
-[TinyTransformer] Loaded: /home/randy/Workspace/SYSTEM/onnxruntime/bert-tiny-onnx/model.onnx
-[TinyTransformer] Architecture: BERT-Tiny (4L/128H/2A)
-[NonaryEmbedder] Initialized — BPE + TinyTransformer (128-dim→Nit)
-[HolographicInjector] Emitter freqs: 3.14159 5.0832 8.2248 13.308 21.5328 34.8408 56.3736 91.2144 
-[TinyTransformer] Loaded: /home/randy/Workspace/SYSTEM/onnxruntime/bert-tiny-onnx/model.onnx
-[TinyTransformer] Architecture: BERT-Tiny (4L/128H/2A)
-[NonaryEmbedder] Initialized — BPE + TinyTransformer (128-dim→Nit)
-[HolographicInjector] Emitter freqs: 3.14159 5.0832 8.2248 13.308 21.5328 34.8408 56.3736 91.2144 
-[TinyTransformer] Loaded: /home/randy/Workspace/SYSTEM/onnxruntime/bert-tiny-onnx/model.onnx
-[TinyTransformer] Architecture: BERT-Tiny (4L/128H/2A)
-[NonaryEmbedder] Initialized — BPE + TinyTransformer (128-dim→Nit)
-[HolographicInjector] Emitter freqs: 3.14159 5.0832 8.2248 13.308 21.5328 34.8408 56.3736 91.2144 
-[TinyTransformer] Loaded: /home/randy/Workspace/SYSTEM/onnxruntime/bert-tiny-onnx/model.onnx
-[TinyTransformer] Architecture: BERT-Tiny (4L/128H/2A)
-[NonaryEmbedder] Initialized — BPE + TinyTransformer (128-dim→Nit)
-[HolographicInjector] Emitter freqs: 3.14159 5.0832 8.2248 13.308 21.5328 34.8408 56.3736 91.2144 
-===============================================================================
-All tests passed (23 assertions in 12 test cases)
-
-<end of output>
-Test time =   2.66 sec
-----------------------------------------------------------
-Test Passed.
-"Phase36GatedInjection" end time: Feb 24 09:10 EST
-"Phase36GatedInjection" time elapsed: 00:00:02
-----------------------------------------------------------
-
-40/55 Testing: Phase38WaveCorrelation
-40/55 Test: Phase38WaveCorrelation
-Command: "/home/randy/Workspace/REPOS/nikola/build/test_phase38_wave_correlation"
-Directory: /home/randy/Workspace/REPOS/nikola/build
-"Phase38WaveCorrelation" start time: Feb 24 09:10 EST
-Output:
-----------------------------------------------------------
-Randomness seeded to: 1661061063
-===============================================================================
-All tests passed (33 assertions in 15 test cases)
-
-<end of output>
-Test time =   3.56 sec
-----------------------------------------------------------
-Test Passed.
-"Phase38WaveCorrelation" end time: Feb 24 09:10 EST
-"Phase38WaveCorrelation" time elapsed: 00:00:03
-----------------------------------------------------------
-
-32/55 Testing: Phase30ZmqSpine
-32/55 Test: Phase30ZmqSpine
-Command: "/home/randy/Workspace/REPOS/nikola/build/test_phase30_zmq_spine"
-Directory: /home/randy/Workspace/REPOS/nikola/build
-"Phase30ZmqSpine" start time: Feb 24 09:10 EST
-Output:
-----------------------------------------------------------
-Randomness seeded to: 763680124
-[TinyTransformer] Loaded: /home/randy/Workspace/SYSTEM/onnxruntime/bert-tiny-onnx/model.onnx
-[TinyTransformer] Architecture: BERT-Tiny (4L/128H/2A)
-[NonaryEmbedder] Initialized — BPE + TinyTransformer (128-dim→Nit)
-[HolographicInjector] Emitter freqs: 3.14159 5.0832 8.2248 13.308 21.5328 34.8408 56.3736 91.2144 
-[TinyTransformer] Loaded: /home/randy/Workspace/SYSTEM/onnxruntime/bert-tiny-onnx/model.onnx
-[TinyTransformer] Architecture: BERT-Tiny (4L/128H/2A)
-[NonaryEmbedder] Initialized — BPE + TinyTransformer (128-dim→Nit)
-[DecisionLoop] Vocabulary registered via ORT embeddings (5 tokens)
-[TinyTransformer] Loaded: /home/randy/Workspace/SYSTEM/onnxruntime/bert-tiny-onnx/model.onnx
-[TinyTransformer] Architecture: BERT-Tiny (4L/128H/2A)
-[ThoughtComposer] ORT mode: transformer-assisted template selection
 [DecisionLoop] Phase 28 calibration: 5/5 tokens stored (Nit pulses for analytic decode + torus abs waves)
+[TinyTransformer] Loaded: /home/randy/Workspace/SYSTEM/onnxruntime/bert-tiny-onnx/model.onnx
+[TinyTransformer] Architecture: BERT-Tiny (4L/128H/2A)
+[NonaryEmbedder] Initialized — BPE + TinyTransformer (128-dim→Nit)
+[HolographicInjector] Emitter freqs: 3.14159 5.0832 8.2248 13.308 21.5328 34.8408 56.3736 91.2144 
+[DecisionLoop] Phase 28 calibration: 5/5 tokens stored (Nit pulses for analytic decode + torus abs waves)
+===============================================================================
+All tests passed (115 assertions in 14 test cases)
+
+<end of output>
+Test time =  21.34 sec
+----------------------------------------------------------
+Test Passed.
+"Phase23DecisionLoop" end time: Feb 24 18:34 EST
+"Phase23DecisionLoop" time elapsed: 00:00:21
+----------------------------------------------------------
+
+36/64 Testing: Phase34Recall
+36/64 Test: Phase34Recall
+Command: "/home/randy/Workspace/REPOS/nikola/build/test_phase34_recall"
+Directory: /home/randy/Workspace/REPOS/nikola/build
+"Phase34Recall" start time: Feb 24 18:34 EST
+Output:
+----------------------------------------------------------
+Randomness seeded to: 1911791036
+[TinyTransformer] Loaded: /home/randy/Workspace/SYSTEM/onnxruntime/bert-tiny-onnx/model.onnx
+[TinyTransformer] Architecture: BERT-Tiny (4L/128H/2A)
+[NonaryEmbedder] Initialized — BPE + TinyTransformer (128-dim→Nit)
+[HolographicInjector] Emitter freqs: 3.14159 5.0832 8.2248 13.308 21.5328 34.8408 56.3736 91.2144 
 [HolographicInjector] Injected "hello" → 128 Nits → 14 chords
 [TinyTransformer] Loaded: /home/randy/Workspace/SYSTEM/onnxruntime/bert-tiny-onnx/model.onnx
 [TinyTransformer] Architecture: BERT-Tiny (4L/128H/2A)
@@ -1096,162 +1836,256 @@ Randomness seeded to: 763680124
 [TinyTransformer] Loaded: /home/randy/Workspace/SYSTEM/onnxruntime/bert-tiny-onnx/model.onnx
 [TinyTransformer] Architecture: BERT-Tiny (4L/128H/2A)
 [NonaryEmbedder] Initialized — BPE + TinyTransformer (128-dim→Nit)
-[DecisionLoop] Vocabulary registered via ORT embeddings (10 tokens)
+[HolographicInjector] Emitter freqs: 3.14159 5.0832 8.2248 13.308 21.5328 34.8408 56.3736 91.2144 
+[HolographicInjector] Injected "hello" → 128 Nits → 14 chords
 [TinyTransformer] Loaded: /home/randy/Workspace/SYSTEM/onnxruntime/bert-tiny-onnx/model.onnx
 [TinyTransformer] Architecture: BERT-Tiny (4L/128H/2A)
-[ThoughtComposer] ORT mode: transformer-assisted template selection
+[NonaryEmbedder] Initialized — BPE + TinyTransformer (128-dim→Nit)
+[HolographicInjector] Emitter freqs: 3.14159 5.0832 8.2248 13.308 21.5328 34.8408 56.3736 91.2144 
+[TinyTransformer] Loaded: /home/randy/Workspace/SYSTEM/onnxruntime/bert-tiny-onnx/model.onnx
+[TinyTransformer] Architecture: BERT-Tiny (4L/128H/2A)
+[NonaryEmbedder] Initialized — BPE + TinyTransformer (128-dim→Nit)
+[HolographicInjector] Emitter freqs: 3.14159 5.0832 8.2248 13.308 21.5328 34.8408 56.3736 91.2144 
+[HolographicInjector] Injected "hello" → 128 Nits → 14 chords
+[TinyTransformer] Loaded: /home/randy/Workspace/SYSTEM/onnxruntime/bert-tiny-onnx/model.onnx
+[TinyTransformer] Architecture: BERT-Tiny (4L/128H/2A)
+[NonaryEmbedder] Initialized — BPE + TinyTransformer (128-dim→Nit)
+[HolographicInjector] Emitter freqs: 3.14159 5.0832 8.2248 13.308 21.5328 34.8408 56.3736 91.2144 
+[HolographicInjector] Injected "hello" → 128 Nits → 14 chords
+[TinyTransformer] Loaded: /home/randy/Workspace/SYSTEM/onnxruntime/bert-tiny-onnx/model.onnx
+[TinyTransformer] Architecture: BERT-Tiny (4L/128H/2A)
+[NonaryEmbedder] Initialized — BPE + TinyTransformer (128-dim→Nit)
+[HolographicInjector] Emitter freqs: 3.14159 5.0832 8.2248 13.308 21.5328 34.8408 56.3736 91.2144 
+[HolographicInjector] Injected "wave" → 128 Nits → 14 chords
+[TinyTransformer] Loaded: /home/randy/Workspace/SYSTEM/onnxruntime/bert-tiny-onnx/model.onnx
+[TinyTransformer] Architecture: BERT-Tiny (4L/128H/2A)
+[NonaryEmbedder] Initialized — BPE + TinyTransformer (128-dim→Nit)
+[HolographicInjector] Emitter freqs: 3.14159 5.0832 8.2248 13.308 21.5328 34.8408 56.3736 91.2144 
+[HolographicInjector] Injected "memory" → 128 Nits → 14 chords
+[TinyTransformer] Loaded: /home/randy/Workspace/SYSTEM/onnxruntime/bert-tiny-onnx/model.onnx
+[TinyTransformer] Architecture: BERT-Tiny (4L/128H/2A)
+[NonaryEmbedder] Initialized — BPE + TinyTransformer (128-dim→Nit)
+[HolographicInjector] Emitter freqs: 3.14159 5.0832 8.2248 13.308 21.5328 34.8408 56.3736 91.2144 
+[HolographicInjector] Injected "nikola" → 128 Nits → 14 chords
+[TinyTransformer] Loaded: /home/randy/Workspace/SYSTEM/onnxruntime/bert-tiny-onnx/model.onnx
+[TinyTransformer] Architecture: BERT-Tiny (4L/128H/2A)
+[NonaryEmbedder] Initialized — BPE + TinyTransformer (128-dim→Nit)
+[HolographicInjector] Emitter freqs: 3.14159 5.0832 8.2248 13.308 21.5328 34.8408 56.3736 91.2144 
+[HolographicInjector] Injected "hello" → 128 Nits → 14 chords
+[TinyTransformer] Loaded: /home/randy/Workspace/SYSTEM/onnxruntime/bert-tiny-onnx/model.onnx
+[TinyTransformer] Architecture: BERT-Tiny (4L/128H/2A)
+[NonaryEmbedder] Initialized — BPE + TinyTransformer (128-dim→Nit)
+[HolographicInjector] Emitter freqs: 3.14159 5.0832 8.2248 13.308 21.5328 34.8408 56.3736 91.2144 
+[HolographicInjector] Injected "hello" → 128 Nits → 14 chords
+[TinyTransformer] Loaded: /home/randy/Workspace/SYSTEM/onnxruntime/bert-tiny-onnx/model.onnx
+[TinyTransformer] Architecture: BERT-Tiny (4L/128H/2A)
+[NonaryEmbedder] Initialized — BPE + TinyTransformer (128-dim→Nit)
+[HolographicInjector] Emitter freqs: 3.14159 5.0832 8.2248 13.308 21.5328 34.8408 56.3736 91.2144 
+[HolographicInjector] Injected "hello" → 128 Nits → 14 chords
+[TinyTransformer] Loaded: /home/randy/Workspace/SYSTEM/onnxruntime/bert-tiny-onnx/model.onnx
+[TinyTransformer] Architecture: BERT-Tiny (4L/128H/2A)
+[NonaryEmbedder] Initialized — BPE + TinyTransformer (128-dim→Nit)
+[HolographicInjector] Emitter freqs: 3.14159 5.0832 8.2248 13.308 21.5328 34.8408 56.3736 91.2144 
+[HolographicInjector] Injected "hello" → 128 Nits → 14 chords
+[TinyTransformer] Loaded: /home/randy/Workspace/SYSTEM/onnxruntime/bert-tiny-onnx/model.onnx
+[TinyTransformer] Architecture: BERT-Tiny (4L/128H/2A)
+[NonaryEmbedder] Initialized — BPE + TinyTransformer (128-dim→Nit)
+[HolographicInjector] Emitter freqs: 3.14159 5.0832 8.2248 13.308 21.5328 34.8408 56.3736 91.2144 
+[HolographicInjector] Injected "hello" → 128 Nits → 14 chords
+[TinyTransformer] Loaded: /home/randy/Workspace/SYSTEM/onnxruntime/bert-tiny-onnx/model.onnx
+[TinyTransformer] Architecture: BERT-Tiny (4L/128H/2A)
+[NonaryEmbedder] Initialized — BPE + TinyTransformer (128-dim→Nit)
+[HolographicInjector] Emitter freqs: 3.14159 5.0832 8.2248 13.308 21.5328 34.8408 56.3736 91.2144 
+[HolographicInjector] Injected "hello" → 128 Nits → 14 chords
+[HolographicInjector] Injected "wave" → 128 Nits → 14 chords
+[TinyTransformer] Loaded: /home/randy/Workspace/SYSTEM/onnxruntime/bert-tiny-onnx/model.onnx
+[TinyTransformer] Architecture: BERT-Tiny (4L/128H/2A)
+[NonaryEmbedder] Initialized — BPE + TinyTransformer (128-dim→Nit)
+[HolographicInjector] Emitter freqs: 3.14159 5.0832 8.2248 13.308 21.5328 34.8408 56.3736 91.2144 
+[HolographicInjector] Injected "hello" → 128 Nits → 14 chords
+[TinyTransformer] Loaded: /home/randy/Workspace/SYSTEM/onnxruntime/bert-tiny-onnx/model.onnx
+[TinyTransformer] Architecture: BERT-Tiny (4L/128H/2A)
+[NonaryEmbedder] Initialized — BPE + TinyTransformer (128-dim→Nit)
+[HolographicInjector] Emitter freqs: 3.14159 5.0832 8.2248 13.308 21.5328 34.8408 56.3736 91.2144 
+[HolographicInjector] Injected "hello" → 128 Nits → 14 chords
+[DecisionLoop] Phase 28 calibration: 4/4 tokens stored (Nit pulses for analytic decode + torus abs waves)
+[TinyTransformer] Loaded: /home/randy/Workspace/SYSTEM/onnxruntime/bert-tiny-onnx/model.onnx
+[TinyTransformer] Architecture: BERT-Tiny (4L/128H/2A)
+[NonaryEmbedder] Initialized — BPE + TinyTransformer (128-dim→Nit)
+[HolographicInjector] Emitter freqs: 3.14159 5.0832 8.2248 13.308 21.5328 34.8408 56.3736 91.2144 
+[HolographicInjector] Injected "hello" → 128 Nits → 14 chords
+[DecisionLoop] Phase 28 calibration: 4/4 tokens stored (Nit pulses for analytic decode + torus abs waves)
+[DecisionLoop] Loaded 1 memory records from /tmp/nikola_phase34_mem_test.bin
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+test_phase34_recall is a Catch2 v3.4.0 host application.
+Run with -? for options
+
+-------------------------------------------------------------------------------
+DecisionLoop integration: RECALL_MEMORY fires after memory seeded
+-------------------------------------------------------------------------------
+/home/randy/Workspace/REPOS/nikola/tests/unit/phase34_recall_test.cpp:386
+...............................................................................
+
+/home/randy/Workspace/REPOS/nikola/tests/unit/phase34_recall_test.cpp:434: warning:
+  RECALL_MEMORY did not fire in 500 ticks — resonance conditions may not have
+  been met; this is a soft failure, not a logic error
+
+===============================================================================
+All tests passed (78778 assertions in 12 test cases)
+
+<end of output>
+Test time =  37.44 sec
+----------------------------------------------------------
+Test Passed.
+"Phase34Recall" end time: Feb 24 18:35 EST
+"Phase34Recall" time elapsed: 00:00:37
+----------------------------------------------------------
+
+31/64 Testing: Phase29NoveltyDecay
+31/64 Test: Phase29NoveltyDecay
+Command: "/home/randy/Workspace/REPOS/nikola/build/test_phase29_novelty_decay"
+Directory: /home/randy/Workspace/REPOS/nikola/build
+"Phase29NoveltyDecay" start time: Feb 24 18:34 EST
+Output:
+----------------------------------------------------------
+Randomness seeded to: 1986357994
+[TinyTransformer] Loaded: /home/randy/Workspace/SYSTEM/onnxruntime/bert-tiny-onnx/model.onnx
+[TinyTransformer] Architecture: BERT-Tiny (4L/128H/2A)
+[NonaryEmbedder] Initialized — BPE + TinyTransformer (128-dim→Nit)
+[HolographicInjector] Emitter freqs: 3.14159 5.0832 8.2248 13.308 21.5328 34.8408 56.3736 91.2144 
 [DecisionLoop] Phase 28 calibration: 10/10 tokens stored (Nit pulses for analytic decode + torus abs waves)
-[HolographicInjector] Injected "hello curious" → 128 Nits → 14 chords
+[HolographicInjector] Injected "hello nikola" → 128 Nits → 14 chords
+===============================================================================
+All tests passed (13 assertions in 5 test cases)
+
+<end of output>
+Test time =  40.85 sec
+----------------------------------------------------------
+Test Passed.
+"Phase29NoveltyDecay" end time: Feb 24 18:35 EST
+"Phase29NoveltyDecay" time elapsed: 00:00:40
+----------------------------------------------------------
+
+27/64 Testing: Phase25FieldPersistence
+27/64 Test: Phase25FieldPersistence
+Command: "/home/randy/Workspace/REPOS/nikola/build/test_phase25_field_persistence"
+Directory: /home/randy/Workspace/REPOS/nikola/build
+"Phase25FieldPersistence" start time: Feb 24 18:34 EST
+Output:
+----------------------------------------------------------
+Randomness seeded to: 477740174
+[TinyTransformer] Loaded: /home/randy/Workspace/SYSTEM/onnxruntime/bert-tiny-onnx/model.onnx
+[TinyTransformer] Architecture: BERT-Tiny (4L/128H/2A)
+[NonaryEmbedder] Initialized — BPE + TinyTransformer (128-dim→Nit)
+[HolographicInjector] Emitter freqs: 3.14159 5.0832 8.2248 13.308 21.5328 34.8408 56.3736 91.2144 
+[DecisionLoop] Phase 28 calibration: 5/5 tokens stored (Nit pulses for analytic decode + torus abs waves)
+[TinyTransformer] Loaded: /home/randy/Workspace/SYSTEM/onnxruntime/bert-tiny-onnx/model.onnx
+[TinyTransformer] Architecture: BERT-Tiny (4L/128H/2A)
+[NonaryEmbedder] Initialized — BPE + TinyTransformer (128-dim→Nit)
+[HolographicInjector] Emitter freqs: 3.14159 5.0832 8.2248 13.308 21.5328 34.8408 56.3736 91.2144 
+[DecisionLoop] Phase 28 calibration: 5/5 tokens stored (Nit pulses for analytic decode + torus abs waves)
+[TinyTransformer] Loaded: /home/randy/Workspace/SYSTEM/onnxruntime/bert-tiny-onnx/model.onnx
+[TinyTransformer] Architecture: BERT-Tiny (4L/128H/2A)
+[NonaryEmbedder] Initialized — BPE + TinyTransformer (128-dim→Nit)
+[HolographicInjector] Emitter freqs: 3.14159 5.0832 8.2248 13.308 21.5328 34.8408 56.3736 91.2144 
+[DecisionLoop] Phase 28 calibration: 5/5 tokens stored (Nit pulses for analytic decode + torus abs waves)
+[HolographicInjector] Injected "hello" → 128 Nits → 14 chords
+[TinyTransformer] Loaded: /home/randy/Workspace/SYSTEM/onnxruntime/bert-tiny-onnx/model.onnx
+[TinyTransformer] Architecture: BERT-Tiny (4L/128H/2A)
+[NonaryEmbedder] Initialized — BPE + TinyTransformer (128-dim→Nit)
+[HolographicInjector] Emitter freqs: 3.14159 5.0832 8.2248 13.308 21.5328 34.8408 56.3736 91.2144 
+[DecisionLoop] Phase 28 calibration: 5/5 tokens stored (Nit pulses for analytic decode + torus abs waves)
+[HolographicInjector] Injected "hello nikola curious" → 128 Nits → 14 chords
+[TinyTransformer] Loaded: /home/randy/Workspace/SYSTEM/onnxruntime/bert-tiny-onnx/model.onnx
+[TinyTransformer] Architecture: BERT-Tiny (4L/128H/2A)
+[NonaryEmbedder] Initialized — BPE + TinyTransformer (128-dim→Nit)
+[HolographicInjector] Emitter freqs: 3.14159 5.0832 8.2248 13.308 21.5328 34.8408 56.3736 91.2144 
+[DecisionLoop] Phase 28 calibration: 5/5 tokens stored (Nit pulses for analytic decode + torus abs waves)
+===============================================================================
+All tests passed (9 assertions in 5 test cases)
+
+<end of output>
+Test time =  41.98 sec
+----------------------------------------------------------
+Test Passed.
+"Phase25FieldPersistence" end time: Feb 24 18:35 EST
+"Phase25FieldPersistence" time elapsed: 00:00:41
+----------------------------------------------------------
+
+28/64 Testing: Phase26SeededExploration
+28/64 Test: Phase26SeededExploration
+Command: "/home/randy/Workspace/REPOS/nikola/build/test_phase26_seeded_exploration"
+Directory: /home/randy/Workspace/REPOS/nikola/build
+"Phase26SeededExploration" start time: Feb 24 18:34 EST
+Output:
+----------------------------------------------------------
+Randomness seeded to: 3831968754
+[TinyTransformer] Loaded: /home/randy/Workspace/SYSTEM/onnxruntime/bert-tiny-onnx/model.onnx
+[TinyTransformer] Architecture: BERT-Tiny (4L/128H/2A)
+[NonaryEmbedder] Initialized — BPE + TinyTransformer (128-dim→Nit)
+[HolographicInjector] Emitter freqs: 3.14159 5.0832 8.2248 13.308 21.5328 34.8408 56.3736 91.2144 
+[DecisionLoop] Phase 28 calibration: 10/10 tokens stored (Nit pulses for analytic decode + torus abs waves)
+[HolographicInjector] Injected "hello nikola curious" → 128 Nits → 14 chords
+[TinyTransformer] Loaded: /home/randy/Workspace/SYSTEM/onnxruntime/bert-tiny-onnx/model.onnx
+[TinyTransformer] Architecture: BERT-Tiny (4L/128H/2A)
+[NonaryEmbedder] Initialized — BPE + TinyTransformer (128-dim→Nit)
+[HolographicInjector] Emitter freqs: 3.14159 5.0832 8.2248 13.308 21.5328 34.8408 56.3736 91.2144 
+[DecisionLoop] Phase 28 calibration: 10/10 tokens stored (Nit pulses for analytic decode + torus abs waves)
+[HolographicInjector] Injected "hello nikola curious" → 128 Nits → 14 chords
+[TinyTransformer] Loaded: /home/randy/Workspace/SYSTEM/onnxruntime/bert-tiny-onnx/model.onnx
+[TinyTransformer] Architecture: BERT-Tiny (4L/128H/2A)
+[NonaryEmbedder] Initialized — BPE + TinyTransformer (128-dim→Nit)
+[HolographicInjector] Emitter freqs: 3.14159 5.0832 8.2248 13.308 21.5328 34.8408 56.3736 91.2144 
+[DecisionLoop] Phase 28 calibration: 10/10 tokens stored (Nit pulses for analytic decode + torus abs waves)
+[HolographicInjector] Injected "hello nikola curious wonder" → 128 Nits → 14 chords
+[TinyTransformer] Loaded: /home/randy/Workspace/SYSTEM/onnxruntime/bert-tiny-onnx/model.onnx
+[TinyTransformer] Architecture: BERT-Tiny (4L/128H/2A)
+[NonaryEmbedder] Initialized — BPE + TinyTransformer (128-dim→Nit)
+[HolographicInjector] Emitter freqs: 3.14159 5.0832 8.2248 13.308 21.5328 34.8408 56.3736 91.2144 
+[TinyTransformer] Loaded: /home/randy/Workspace/SYSTEM/onnxruntime/bert-tiny-onnx/model.onnx
+[TinyTransformer] Architecture: BERT-Tiny (4L/128H/2A)
+[NonaryEmbedder] Initialized — BPE + TinyTransformer (128-dim→Nit)
+[HolographicInjector] Emitter freqs: 3.14159 5.0832 8.2248 13.308 21.5328 34.8408 56.3736 91.2144 
+[DecisionLoop] Phase 28 calibration: 10/10 tokens stored (Nit pulses for analytic decode + torus abs waves)
 [HolographicInjector] Injected "curious wonder" → 128 Nits → 14 chords
 ===============================================================================
-All tests passed (85 assertions in 5 test cases)
+All tests passed (11 assertions in 5 test cases)
 
 <end of output>
-Test time =   3.93 sec
+Test time =  63.08 sec
 ----------------------------------------------------------
 Test Passed.
-"Phase30ZmqSpine" end time: Feb 24 09:10 EST
-"Phase30ZmqSpine" time elapsed: 00:00:03
+"Phase26SeededExploration" end time: Feb 24 18:35 EST
+"Phase26SeededExploration" time elapsed: 00:01:03
 ----------------------------------------------------------
 
-45/55 Testing: Phase43HebbianUpdate
-45/55 Test: Phase43HebbianUpdate
-Command: "/home/randy/Workspace/REPOS/nikola/build/test_phase43_hebbian_update"
+29/64 Testing: Phase27CrossInjection
+29/64 Test: Phase27CrossInjection
+Command: "/home/randy/Workspace/REPOS/nikola/build/test_phase27_cross_injection"
 Directory: /home/randy/Workspace/REPOS/nikola/build
-"Phase43HebbianUpdate" start time: Feb 24 09:10 EST
+"Phase27CrossInjection" start time: Feb 24 18:34 EST
 Output:
 ----------------------------------------------------------
-Randomness seeded to: 1013460475
-===============================================================================
-All tests passed (107 assertions in 15 test cases)
-
-<end of output>
-Test time =   4.64 sec
-----------------------------------------------------------
-Test Passed.
-"Phase43HebbianUpdate" end time: Feb 24 09:10 EST
-"Phase43HebbianUpdate" time elapsed: 00:00:04
-----------------------------------------------------------
-
-48/55 Testing: Phase46SerotoninElasticity
-48/55 Test: Phase46SerotoninElasticity
-Command: "/home/randy/Workspace/REPOS/nikola/build/test_phase46_serotonin_elasticity"
-Directory: /home/randy/Workspace/REPOS/nikola/build
-"Phase46SerotoninElasticity" start time: Feb 24 09:10 EST
-Output:
-----------------------------------------------------------
-Randomness seeded to: 2214914612
-===============================================================================
-All tests passed (47 assertions in 15 test cases)
-
-<end of output>
-Test time =   1.06 sec
-----------------------------------------------------------
-Test Passed.
-"Phase46SerotoninElasticity" end time: Feb 24 09:10 EST
-"Phase46SerotoninElasticity" time elapsed: 00:00:01
-----------------------------------------------------------
-
-49/55 Testing: Phase47NorepinephrineArousal
-49/55 Test: Phase47NorepinephrineArousal
-Command: "/home/randy/Workspace/REPOS/nikola/build/test_phase47_norepinephrine_arousal"
-Directory: /home/randy/Workspace/REPOS/nikola/build
-"Phase47NorepinephrineArousal" start time: Feb 24 09:10 EST
-Output:
-----------------------------------------------------------
-Randomness seeded to: 3746446500
-===============================================================================
-All tests passed (43 assertions in 15 test cases)
-
-<end of output>
-Test time =   0.75 sec
-----------------------------------------------------------
-Test Passed.
-"Phase47NorepinephrineArousal" end time: Feb 24 09:10 EST
-"Phase47NorepinephrineArousal" time elapsed: 00:00:00
-----------------------------------------------------------
-
-22/55 Testing: Phase19TelemetryDaemon
-22/55 Test: Phase19TelemetryDaemon
-Command: "/home/randy/Workspace/REPOS/nikola/build/test_phase19_telemetry_daemon"
-Directory: /home/randy/Workspace/REPOS/nikola/build
-"Phase19TelemetryDaemon" start time: Feb 24 09:10 EST
-Output:
-----------------------------------------------------------
-Randomness seeded to: 3278909571
-===============================================================================
-All tests passed (59 assertions in 12 test cases)
-
-<end of output>
-Test time =   2.35 sec
-----------------------------------------------------------
-Test Passed.
-"Phase19TelemetryDaemon" end time: Feb 24 09:10 EST
-"Phase19TelemetryDaemon" time elapsed: 00:00:02
-----------------------------------------------------------
-
-47/55 Testing: Phase45DopamineLR
-47/55 Test: Phase45DopamineLR
-Command: "/home/randy/Workspace/REPOS/nikola/build/test_phase45_dopamine_lr"
-Directory: /home/randy/Workspace/REPOS/nikola/build
-"Phase45DopamineLR" start time: Feb 24 09:10 EST
-Output:
-----------------------------------------------------------
-Randomness seeded to: 3596527379
-===============================================================================
-All tests passed (38 assertions in 15 test cases)
-
-<end of output>
-Test time =   2.21 sec
-----------------------------------------------------------
-Test Passed.
-"Phase45DopamineLR" end time: Feb 24 09:10 EST
-"Phase45DopamineLR" time elapsed: 00:00:02
-----------------------------------------------------------
-
-12/55 Testing: Phase9Bootstrap
-12/55 Test: Phase9Bootstrap
-Command: "/home/randy/Workspace/REPOS/nikola/build/test_phase9_bootstrap"
-Directory: /home/randy/Workspace/REPOS/nikola/build
-"Phase9Bootstrap" start time: Feb 24 09:10 EST
-Output:
-----------------------------------------------------------
-[NIKOLA] STABILIZING  | nodes=512  t=0.0000s  H=+1.230000e+00  drift=0.000000%  tick=1
-[NIKOLA] *** TEST_EVENT ***
-[NIKOLA] *** TEST_EVENT: some detail ***
-[NIKOLA] READY        | nodes=512  t=3.3333s  H=+1.882153e+03  drift=0.000000%  tick=1
-[NIKOLA] READY        | nodes=512  t=1.6667s  H=+2.088063e+03  drift=0.000000%  tick=1
-[NIKOLA] READY        | nodes=512  t=1.6667s  H=+2.088063e+03  drift=0.000000%  tick=1
-[NIKOLA] READY        | nodes=512  t=1.6667s  H=+2.088063e+03  drift=0.000000%  tick=1
-[NIKOLA] READY        | nodes=512  t=1.6667s  H=+2.088063e+03  drift=0.000000%  tick=1
-[NIKOLA] READY        | nodes=512  t=1.6667s  H=+2.088063e+03  drift=0.000000%  tick=1
-[NIKOLA] READY        | nodes=512  t=0.8333s  H=+1.684175e+03  drift=0.000000%  tick=1
-[NIKOLA] READY        | nodes=512  t=0.8333s  H=+1.684175e+03  drift=0.000000%  tick=1
-[NIKOLA] READY        | nodes=512  t=0.8333s  H=+1.684175e+03  drift=0.000000%  tick=1
-[NIKOLA] READY        | nodes=512  t=0.8333s  H=+1.684175e+03  drift=0.000000%  tick=2
-[NIKOLA] *** FAULT: Thermal bath yielded zero velocity — Entropy Shock risk ***
-[NIKOLA] *** FAULT: Thermal bath yielded zero velocity — Entropy Shock risk ***
-[NIKOLA] READY        | nodes=512  t=1.6667s  H=+2.088063e+03  drift=0.000000%  tick=1
-Randomness seeded to: 3057577269
-===============================================================================
-All tests passed (75 assertions in 21 test cases)
-
-<end of output>
-Test time =   0.23 sec
-----------------------------------------------------------
-Test Passed.
-"Phase9Bootstrap" end time: Feb 24 09:10 EST
-"Phase9Bootstrap" time elapsed: 00:00:00
-----------------------------------------------------------
-
-24/55 Testing: Phase21CognitivePipeline
-24/55 Test: Phase21CognitivePipeline
-Command: "/home/randy/Workspace/REPOS/nikola/build/test_phase21_cognitive_pipeline"
-Directory: /home/randy/Workspace/REPOS/nikola/build
-"Phase21CognitivePipeline" start time: Feb 24 09:10 EST
-Output:
-----------------------------------------------------------
-Randomness seeded to: 4031522260
+Randomness seeded to: 2214760381
+[TinyTransformer] Loaded: /home/randy/Workspace/SYSTEM/onnxruntime/bert-tiny-onnx/model.onnx
+[TinyTransformer] Architecture: BERT-Tiny (4L/128H/2A)
+[NonaryEmbedder] Initialized — BPE + TinyTransformer (128-dim→Nit)
+[HolographicInjector] Emitter freqs: 3.14159 5.0832 8.2248 13.308 21.5328 34.8408 56.3736 91.2144 
+[DecisionLoop] Phase 28 calibration: 10/10 tokens stored (Nit pulses for analytic decode + torus abs waves)
+[HolographicInjector] Injected "energy" → 128 Nits → 14 chords
+[TinyTransformer] Loaded: /home/randy/Workspace/SYSTEM/onnxruntime/bert-tiny-onnx/model.onnx
+[TinyTransformer] Architecture: BERT-Tiny (4L/128H/2A)
+[NonaryEmbedder] Initialized — BPE + TinyTransformer (128-dim→Nit)
+[HolographicInjector] Emitter freqs: 3.14159 5.0832 8.2248 13.308 21.5328 34.8408 56.3736 91.2144 
+[DecisionLoop] Phase 28 calibration: 10/10 tokens stored (Nit pulses for analytic decode + torus abs waves)
+[HolographicInjector] Injected "hello nikola curious" → 128 Nits → 14 chords
+[TinyTransformer] Loaded: /home/randy/Workspace/SYSTEM/onnxruntime/bert-tiny-onnx/model.onnx
+[TinyTransformer] Architecture: BERT-Tiny (4L/128H/2A)
+[NonaryEmbedder] Initialized — BPE + TinyTransformer (128-dim→Nit)
+[HolographicInjector] Emitter freqs: 3.14159 5.0832 8.2248 13.308 21.5328 34.8408 56.3736 91.2144 
+[DecisionLoop] Phase 28 calibration: 10/10 tokens stored (Nit pulses for analytic decode + torus abs waves)
+[HolographicInjector] Injected "hello nikola curious" → 128 Nits → 14 chords
 [TinyTransformer] Loaded: /home/randy/Workspace/SYSTEM/onnxruntime/bert-tiny-onnx/model.onnx
 [TinyTransformer] Architecture: BERT-Tiny (4L/128H/2A)
 [NonaryEmbedder] Initialized — BPE + TinyTransformer (128-dim→Nit)
@@ -1260,697 +2094,54 @@ Randomness seeded to: 4031522260
 [TinyTransformer] Architecture: BERT-Tiny (4L/128H/2A)
 [NonaryEmbedder] Initialized — BPE + TinyTransformer (128-dim→Nit)
 [HolographicInjector] Emitter freqs: 3.14159 5.0832 8.2248 13.308 21.5328 34.8408 56.3736 91.2144 
+[DecisionLoop] Phase 28 calibration: 10/10 tokens stored (Nit pulses for analytic decode + torus abs waves)
+[DecisionLoop] Phase 28 calibration: 10/10 tokens stored (Nit pulses for analytic decode + torus abs waves)
+[HolographicInjector] Injected "hello nikola" → 128 Nits → 14 chords
+[HolographicInjector] Injected "hello nikola" → 128 Nits → 14 chords
 [TinyTransformer] Loaded: /home/randy/Workspace/SYSTEM/onnxruntime/bert-tiny-onnx/model.onnx
 [TinyTransformer] Architecture: BERT-Tiny (4L/128H/2A)
 [NonaryEmbedder] Initialized — BPE + TinyTransformer (128-dim→Nit)
 [HolographicInjector] Emitter freqs: 3.14159 5.0832 8.2248 13.308 21.5328 34.8408 56.3736 91.2144 
-[TinyTransformer] Loaded: /home/randy/Workspace/SYSTEM/onnxruntime/bert-tiny-onnx/model.onnx
-[TinyTransformer] Architecture: BERT-Tiny (4L/128H/2A)
-[NonaryEmbedder] Initialized — BPE + TinyTransformer (128-dim→Nit)
-[HolographicInjector] Emitter freqs: 3.14159 5.0832 8.2248 13.308 21.5328 34.8408 56.3736 91.2144 
-[TinyTransformer] Loaded: /home/randy/Workspace/SYSTEM/onnxruntime/bert-tiny-onnx/model.onnx
-[TinyTransformer] Architecture: BERT-Tiny (4L/128H/2A)
-[NonaryEmbedder] Initialized — BPE + TinyTransformer (128-dim→Nit)
-[HolographicInjector] Emitter freqs: 3.14159 5.0832 8.2248 13.308 21.5328 34.8408 56.3736 91.2144 
-[TinyTransformer] Loaded: /home/randy/Workspace/SYSTEM/onnxruntime/bert-tiny-onnx/model.onnx
-[TinyTransformer] Architecture: BERT-Tiny (4L/128H/2A)
-[NonaryEmbedder] Initialized — BPE + TinyTransformer (128-dim→Nit)
-[HolographicInjector] Emitter freqs: 3.14159 5.0832 8.2248 13.308 21.5328 34.8408 56.3736 91.2144 
-[TinyTransformer] Loaded: /home/randy/Workspace/SYSTEM/onnxruntime/bert-tiny-onnx/model.onnx
-[TinyTransformer] Architecture: BERT-Tiny (4L/128H/2A)
-[NonaryEmbedder] Initialized — BPE + TinyTransformer (128-dim→Nit)
-[HolographicInjector] Emitter freqs: 3.14159 5.0832 8.2248 13.308 21.5328 34.8408 56.3736 91.2144 
-[TinyTransformer] Loaded: /home/randy/Workspace/SYSTEM/onnxruntime/bert-tiny-onnx/model.onnx
-[TinyTransformer] Architecture: BERT-Tiny (4L/128H/2A)
-[NonaryEmbedder] Initialized — BPE + TinyTransformer (128-dim→Nit)
-[HolographicInjector] Emitter freqs: 3.14159 5.0832 8.2248 13.308 21.5328 34.8408 56.3736 91.2144 
-[TinyTransformer] Loaded: /home/randy/Workspace/SYSTEM/onnxruntime/bert-tiny-onnx/model.onnx
-[TinyTransformer] Architecture: BERT-Tiny (4L/128H/2A)
-[NonaryEmbedder] Initialized — BPE + TinyTransformer (128-dim→Nit)
-[HolographicInjector] Emitter freqs: 3.14159 5.0832 8.2248 13.308 21.5328 34.8408 56.3736 91.2144 
-[TinyTransformer] Loaded: /home/randy/Workspace/SYSTEM/onnxruntime/bert-tiny-onnx/model.onnx
-[TinyTransformer] Architecture: BERT-Tiny (4L/128H/2A)
-[NonaryEmbedder] Initialized — BPE + TinyTransformer (128-dim→Nit)
-[HolographicInjector] Emitter freqs: 3.14159 5.0832 8.2248 13.308 21.5328 34.8408 56.3736 91.2144 
-[TinyTransformer] Loaded: /home/randy/Workspace/SYSTEM/onnxruntime/bert-tiny-onnx/model.onnx
-[TinyTransformer] Architecture: BERT-Tiny (4L/128H/2A)
-[NonaryEmbedder] Initialized — BPE + TinyTransformer (128-dim→Nit)
-[HolographicInjector] Emitter freqs: 3.14159 5.0832 8.2248 13.308 21.5328 34.8408 56.3736 91.2144 
-[TinyTransformer] Loaded: /home/randy/Workspace/SYSTEM/onnxruntime/bert-tiny-onnx/model.onnx
-[TinyTransformer] Architecture: BERT-Tiny (4L/128H/2A)
-[NonaryEmbedder] Initialized — BPE + TinyTransformer (128-dim→Nit)
-[HolographicInjector] Emitter freqs: 3.14159 5.0832 8.2248 13.308 21.5328 34.8408 56.3736 91.2144 
-[TinyTransformer] Loaded: /home/randy/Workspace/SYSTEM/onnxruntime/bert-tiny-onnx/model.onnx
-[TinyTransformer] Architecture: BERT-Tiny (4L/128H/2A)
-[NonaryEmbedder] Initialized — BPE + TinyTransformer (128-dim→Nit)
-[HolographicInjector] Emitter freqs: 3.14159 5.0832 8.2248 13.308 21.5328 34.8408 56.3736 91.2144 
-[TinyTransformer] Loaded: /home/randy/Workspace/SYSTEM/onnxruntime/bert-tiny-onnx/model.onnx
-[TinyTransformer] Architecture: BERT-Tiny (4L/128H/2A)
-[NonaryEmbedder] Initialized — BPE + TinyTransformer (128-dim→Nit)
-[HolographicInjector] Emitter freqs: 3.14159 5.0832 8.2248 13.308 21.5328 34.8408 56.3736 91.2144 
-[TinyTransformer] Loaded: /home/randy/Workspace/SYSTEM/onnxruntime/bert-tiny-onnx/model.onnx
-[TinyTransformer] Architecture: BERT-Tiny (4L/128H/2A)
-[NonaryEmbedder] Initialized — BPE + TinyTransformer (128-dim→Nit)
-[HolographicInjector] Emitter freqs: 3.14159 5.0832 8.2248 13.308 21.5328 34.8408 56.3736 91.2144 
-[TinyTransformer] Loaded: /home/randy/Workspace/SYSTEM/onnxruntime/bert-tiny-onnx/model.onnx
-[TinyTransformer] Architecture: BERT-Tiny (4L/128H/2A)
-[NonaryEmbedder] Initialized — BPE + TinyTransformer (128-dim→Nit)
-[HolographicInjector] Emitter freqs: 3.14159 5.0832 8.2248 13.308 21.5328 34.8408 56.3736 91.2144 
-[TinyTransformer] Loaded: /home/randy/Workspace/SYSTEM/onnxruntime/bert-tiny-onnx/model.onnx
-[TinyTransformer] Architecture: BERT-Tiny (4L/128H/2A)
-[NonaryEmbedder] Initialized — BPE + TinyTransformer (128-dim→Nit)
-[HolographicInjector] Emitter freqs: 3.14159 5.0832 8.2248 13.308 21.5328 34.8408 56.3736 91.2144 
-[TinyTransformer] Loaded: /home/randy/Workspace/SYSTEM/onnxruntime/bert-tiny-onnx/model.onnx
-[TinyTransformer] Architecture: BERT-Tiny (4L/128H/2A)
-[NonaryEmbedder] Initialized — BPE + TinyTransformer (128-dim→Nit)
-[HolographicInjector] Emitter freqs: 3.14159 5.0832 8.2248 13.308 21.5328 34.8408 56.3736 91.2144 
-[TinyTransformer] Loaded: /home/randy/Workspace/SYSTEM/onnxruntime/bert-tiny-onnx/model.onnx
-[TinyTransformer] Architecture: BERT-Tiny (4L/128H/2A)
-[NonaryEmbedder] Initialized — BPE + TinyTransformer (128-dim→Nit)
-[HolographicInjector] Emitter freqs: 3.14159 5.0832 8.2248 13.308 21.5328 34.8408 56.3736 91.2144 
-[TinyTransformer] Loaded: /home/randy/Workspace/SYSTEM/onnxruntime/bert-tiny-onnx/model.onnx
-[TinyTransformer] Architecture: BERT-Tiny (4L/128H/2A)
-[NonaryEmbedder] Initialized — BPE + TinyTransformer (128-dim→Nit)
-[HolographicInjector] Emitter freqs: 3.14159 5.0832 8.2248 13.308 21.5328 34.8408 56.3736 91.2144 
-[TinyTransformer] Loaded: /home/randy/Workspace/SYSTEM/onnxruntime/bert-tiny-onnx/model.onnx
-[TinyTransformer] Architecture: BERT-Tiny (4L/128H/2A)
-[NonaryEmbedder] Initialized — BPE + TinyTransformer (128-dim→Nit)
-[HolographicInjector] Emitter freqs: 3.14159 5.0832 8.2248 13.308 21.5328 34.8408 56.3736 91.2144 
-[TinyTransformer] Loaded: /home/randy/Workspace/SYSTEM/onnxruntime/bert-tiny-onnx/model.onnx
-[TinyTransformer] Architecture: BERT-Tiny (4L/128H/2A)
-[NonaryEmbedder] Initialized — BPE + TinyTransformer (128-dim→Nit)
-[HolographicInjector] Emitter freqs: 3.14159 5.0832 8.2248 13.308 21.5328 34.8408 56.3736 91.2144 
+[DecisionLoop] Phase 28 calibration: 10/10 tokens stored (Nit pulses for analytic decode + torus abs waves)
+[HolographicInjector] Injected "hello nikola curious wonder field resona..." → 128 Nits → 14 chords
 ===============================================================================
-All tests passed (1244 assertions in 25 test cases)
+All tests passed (8 assertions in 5 test cases)
 
 <end of output>
-Test time =   0.47 sec
+Test time =  88.65 sec
 ----------------------------------------------------------
 Test Passed.
-"Phase21CognitivePipeline" end time: Feb 24 09:10 EST
-"Phase21CognitivePipeline" time elapsed: 00:00:00
+"Phase27CrossInjection" end time: Feb 24 18:35 EST
+"Phase27CrossInjection" time elapsed: 00:01:28
 ----------------------------------------------------------
 
-44/55 Testing: Phase42NptReason
-44/55 Test: Phase42NptReason
-Command: "/home/randy/Workspace/REPOS/nikola/build/test_phase42_npt_reason"
+30/64 Testing: Phase28AnalyticDecode
+30/64 Test: Phase28AnalyticDecode
+Command: "/home/randy/Workspace/REPOS/nikola/build/test_phase28_analytic_decode"
 Directory: /home/randy/Workspace/REPOS/nikola/build
-"Phase42NptReason" start time: Feb 24 09:10 EST
+"Phase28AnalyticDecode" start time: Feb 24 18:34 EST
 Output:
 ----------------------------------------------------------
-Randomness seeded to: 469278314
+Randomness seeded to: 1111597829
 [TinyTransformer] Loaded: /home/randy/Workspace/SYSTEM/onnxruntime/bert-tiny-onnx/model.onnx
 [TinyTransformer] Architecture: BERT-Tiny (4L/128H/2A)
 [NonaryEmbedder] Initialized — BPE + TinyTransformer (128-dim→Nit)
 [HolographicInjector] Emitter freqs: 3.14159 5.0832 8.2248 13.308 21.5328 34.8408 56.3736 91.2144 
-[DecisionLoop] Phase 28 calibration: 2/2 tokens stored (Nit pulses for analytic decode + torus abs waves)
+[DecisionLoop] Phase 28 calibration: 10/10 tokens stored (Nit pulses for analytic decode + torus abs waves)
 [TinyTransformer] Loaded: /home/randy/Workspace/SYSTEM/onnxruntime/bert-tiny-onnx/model.onnx
 [TinyTransformer] Architecture: BERT-Tiny (4L/128H/2A)
 [NonaryEmbedder] Initialized — BPE + TinyTransformer (128-dim→Nit)
 [HolographicInjector] Emitter freqs: 3.14159 5.0832 8.2248 13.308 21.5328 34.8408 56.3736 91.2144 
-[DecisionLoop] Phase 28 calibration: 2/2 tokens stored (Nit pulses for analytic decode + torus abs waves)
-[TinyTransformer] Loaded: /home/randy/Workspace/SYSTEM/onnxruntime/bert-tiny-onnx/model.onnx
-[TinyTransformer] Architecture: BERT-Tiny (4L/128H/2A)
-[NonaryEmbedder] Initialized — BPE + TinyTransformer (128-dim→Nit)
-[HolographicInjector] Emitter freqs: 3.14159 5.0832 8.2248 13.308 21.5328 34.8408 56.3736 91.2144 
-[DecisionLoop] Phase 28 calibration: 2/2 tokens stored (Nit pulses for analytic decode + torus abs waves)
-[TinyTransformer] Loaded: /home/randy/Workspace/SYSTEM/onnxruntime/bert-tiny-onnx/model.onnx
-[TinyTransformer] Architecture: BERT-Tiny (4L/128H/2A)
-[NonaryEmbedder] Initialized — BPE + TinyTransformer (128-dim→Nit)
-[HolographicInjector] Emitter freqs: 3.14159 5.0832 8.2248 13.308 21.5328 34.8408 56.3736 91.2144 
-[DecisionLoop] Phase 28 calibration: 2/2 tokens stored (Nit pulses for analytic decode + torus abs waves)
-[TinyTransformer] Loaded: /home/randy/Workspace/SYSTEM/onnxruntime/bert-tiny-onnx/model.onnx
-[TinyTransformer] Architecture: BERT-Tiny (4L/128H/2A)
-[NonaryEmbedder] Initialized — BPE + TinyTransformer (128-dim→Nit)
-[HolographicInjector] Emitter freqs: 3.14159 5.0832 8.2248 13.308 21.5328 34.8408 56.3736 91.2144 
-[DecisionLoop] Phase 28 calibration: 2/2 tokens stored (Nit pulses for analytic decode + torus abs waves)
-[TinyTransformer] Loaded: /home/randy/Workspace/SYSTEM/onnxruntime/bert-tiny-onnx/model.onnx
-[TinyTransformer] Architecture: BERT-Tiny (4L/128H/2A)
-[NonaryEmbedder] Initialized — BPE + TinyTransformer (128-dim→Nit)
-[HolographicInjector] Emitter freqs: 3.14159 5.0832 8.2248 13.308 21.5328 34.8408 56.3736 91.2144 
-[DecisionLoop] Phase 28 calibration: 2/2 tokens stored (Nit pulses for analytic decode + torus abs waves)
-[TinyTransformer] Loaded: /home/randy/Workspace/SYSTEM/onnxruntime/bert-tiny-onnx/model.onnx
-[TinyTransformer] Architecture: BERT-Tiny (4L/128H/2A)
-[NonaryEmbedder] Initialized — BPE + TinyTransformer (128-dim→Nit)
-[HolographicInjector] Emitter freqs: 3.14159 5.0832 8.2248 13.308 21.5328 34.8408 56.3736 91.2144 
-[DecisionLoop] Phase 28 calibration: 2/2 tokens stored (Nit pulses for analytic decode + torus abs waves)
-[TinyTransformer] Loaded: /home/randy/Workspace/SYSTEM/onnxruntime/bert-tiny-onnx/model.onnx
-[TinyTransformer] Architecture: BERT-Tiny (4L/128H/2A)
-[NonaryEmbedder] Initialized — BPE + TinyTransformer (128-dim→Nit)
-[HolographicInjector] Emitter freqs: 3.14159 5.0832 8.2248 13.308 21.5328 34.8408 56.3736 91.2144 
-[DecisionLoop] Phase 28 calibration: 2/2 tokens stored (Nit pulses for analytic decode + torus abs waves)
-[TinyTransformer] Loaded: /home/randy/Workspace/SYSTEM/onnxruntime/bert-tiny-onnx/model.onnx
-[TinyTransformer] Architecture: BERT-Tiny (4L/128H/2A)
-[NonaryEmbedder] Initialized — BPE + TinyTransformer (128-dim→Nit)
-[HolographicInjector] Emitter freqs: 3.14159 5.0832 8.2248 13.308 21.5328 34.8408 56.3736 91.2144 
-[DecisionLoop] Phase 28 calibration: 2/2 tokens stored (Nit pulses for analytic decode + torus abs waves)
-[TinyTransformer] Loaded: /home/randy/Workspace/SYSTEM/onnxruntime/bert-tiny-onnx/model.onnx
-[TinyTransformer] Architecture: BERT-Tiny (4L/128H/2A)
-[NonaryEmbedder] Initialized — BPE + TinyTransformer (128-dim→Nit)
-[HolographicInjector] Emitter freqs: 3.14159 5.0832 8.2248 13.308 21.5328 34.8408 56.3736 91.2144 
-[DecisionLoop] Phase 28 calibration: 2/2 tokens stored (Nit pulses for analytic decode + torus abs waves)
-[TinyTransformer] Loaded: /home/randy/Workspace/SYSTEM/onnxruntime/bert-tiny-onnx/model.onnx
-[TinyTransformer] Architecture: BERT-Tiny (4L/128H/2A)
-[NonaryEmbedder] Initialized — BPE + TinyTransformer (128-dim→Nit)
-[HolographicInjector] Emitter freqs: 3.14159 5.0832 8.2248 13.308 21.5328 34.8408 56.3736 91.2144 
-[DecisionLoop] Phase 28 calibration: 2/2 tokens stored (Nit pulses for analytic decode + torus abs waves)
-[TinyTransformer] Loaded: /home/randy/Workspace/SYSTEM/onnxruntime/bert-tiny-onnx/model.onnx
-[TinyTransformer] Architecture: BERT-Tiny (4L/128H/2A)
-[NonaryEmbedder] Initialized — BPE + TinyTransformer (128-dim→Nit)
-[HolographicInjector] Emitter freqs: 3.14159 5.0832 8.2248 13.308 21.5328 34.8408 56.3736 91.2144 
-[DecisionLoop] Phase 28 calibration: 2/2 tokens stored (Nit pulses for analytic decode + torus abs waves)
-[TinyTransformer] Loaded: /home/randy/Workspace/SYSTEM/onnxruntime/bert-tiny-onnx/model.onnx
-[TinyTransformer] Architecture: BERT-Tiny (4L/128H/2A)
-[NonaryEmbedder] Initialized — BPE + TinyTransformer (128-dim→Nit)
-[HolographicInjector] Emitter freqs: 3.14159 5.0832 8.2248 13.308 21.5328 34.8408 56.3736 91.2144 
-[DecisionLoop] Phase 28 calibration: 2/2 tokens stored (Nit pulses for analytic decode + torus abs waves)
+[DecisionLoop] Phase 28 calibration: 10/10 tokens stored (Nit pulses for analytic decode + torus abs waves)
 ===============================================================================
-All tests passed (25 assertions in 15 test cases)
+All tests passed (55 assertions in 5 test cases)
 
 <end of output>
-Test time =   0.65 sec
+Test time =  90.72 sec
 ----------------------------------------------------------
 Test Passed.
-"Phase42NptReason" end time: Feb 24 09:10 EST
-"Phase42NptReason" time elapsed: 00:00:00
+"Phase28AnalyticDecode" end time: Feb 24 18:35 EST
+"Phase28AnalyticDecode" time elapsed: 00:01:30
 ----------------------------------------------------------
 
-37/55 Testing: Phase35RelevanceGate
-37/55 Test: Phase35RelevanceGate
-Command: "/home/randy/Workspace/REPOS/nikola/build/test_phase35_relevance_gate"
-Directory: /home/randy/Workspace/REPOS/nikola/build
-"Phase35RelevanceGate" start time: Feb 24 09:10 EST
-Output:
-----------------------------------------------------------
-Randomness seeded to: 2248410483
-===============================================================================
-All tests passed (28 assertions in 12 test cases)
-
-<end of output>
-Test time =   0.02 sec
-----------------------------------------------------------
-Test Passed.
-"Phase35RelevanceGate" end time: Feb 24 09:10 EST
-"Phase35RelevanceGate" time elapsed: 00:00:00
-----------------------------------------------------------
-
-6/55 Testing: Phase3Cognitive
-6/55 Test: Phase3Cognitive
-Command: "/home/randy/Workspace/REPOS/nikola/build/test_phase3_cognitive"
-Directory: /home/randy/Workspace/REPOS/nikola/build
-"Phase3Cognitive" start time: Feb 24 09:10 EST
-Output:
-----------------------------------------------------------
-Randomness seeded to: 3820232299
-===============================================================================
-All tests passed (4932 assertions in 54 test cases)
-
-<end of output>
-Test time =   0.10 sec
-----------------------------------------------------------
-Test Passed.
-"Phase3Cognitive" end time: Feb 24 09:10 EST
-"Phase3Cognitive" time elapsed: 00:00:00
-----------------------------------------------------------
-
-17/55 Testing: Phase14AsyncCheckpoint
-17/55 Test: Phase14AsyncCheckpoint
-Command: "/home/randy/Workspace/REPOS/nikola/build/test_phase14_async_checkpoint"
-Directory: /home/randy/Workspace/REPOS/nikola/build
-"Phase14AsyncCheckpoint" start time: Feb 24 09:10 EST
-Output:
-----------------------------------------------------------
-Randomness seeded to: 2219295370
-===============================================================================
-All tests passed (27 assertions in 20 test cases)
-
-<end of output>
-Test time =   0.04 sec
-----------------------------------------------------------
-Test Passed.
-"Phase14AsyncCheckpoint" end time: Feb 24 09:10 EST
-"Phase14AsyncCheckpoint" time elapsed: 00:00:00
-----------------------------------------------------------
-
-21/55 Testing: Phase18ScopeProfiler
-21/55 Test: Phase18ScopeProfiler
-Command: "/home/randy/Workspace/REPOS/nikola/build/test_phase18_scope_profiler"
-Directory: /home/randy/Workspace/REPOS/nikola/build
-"Phase18ScopeProfiler" start time: Feb 24 09:10 EST
-Output:
-----------------------------------------------------------
-Randomness seeded to: 453220367
-===============================================================================
-All tests passed (58 assertions in 13 test cases)
-
-<end of output>
-Test time =   0.03 sec
-----------------------------------------------------------
-Test Passed.
-"Phase18ScopeProfiler" end time: Feb 24 09:10 EST
-"Phase18ScopeProfiler" time elapsed: 00:00:00
-----------------------------------------------------------
-
-2/55 Testing: HilbertScanner
-2/55 Test: HilbertScanner
-Command: "/home/randy/Workspace/REPOS/nikola/build/test_hilbert_scanner"
-Directory: /home/randy/Workspace/REPOS/nikola/build
-"HilbertScanner" start time: Feb 24 09:10 EST
-Output:
-----------------------------------------------------------
-Randomness seeded to: 1467300988
-===============================================================================
-All tests passed (1036 assertions in 9 test cases)
-
-<end of output>
-Test time =   0.12 sec
-----------------------------------------------------------
-Test Passed.
-"HilbertScanner" end time: Feb 24 09:10 EST
-"HilbertScanner" time elapsed: 00:00:00
-----------------------------------------------------------
-
-23/55 Testing: Phase20DebugAdapter
-23/55 Test: Phase20DebugAdapter
-Command: "/home/randy/Workspace/REPOS/nikola/build/test_phase20_debug_adapter"
-Directory: /home/randy/Workspace/REPOS/nikola/build
-"Phase20DebugAdapter" start time: Feb 24 09:10 EST
-Output:
-----------------------------------------------------------
-Randomness seeded to: 1712263562
-===============================================================================
-All tests passed (100 assertions in 27 test cases)
-
-<end of output>
-Test time =   0.02 sec
-----------------------------------------------------------
-Test Passed.
-"Phase20DebugAdapter" end time: Feb 24 09:10 EST
-"Phase20DebugAdapter" time elapsed: 00:00:00
-----------------------------------------------------------
-
-18/55 Testing: Phase15HamiltonianValue
-18/55 Test: Phase15HamiltonianValue
-Command: "/home/randy/Workspace/REPOS/nikola/build/test_phase15_hamiltonian_value"
-Directory: /home/randy/Workspace/REPOS/nikola/build
-"Phase15HamiltonianValue" start time: Feb 24 09:10 EST
-Output:
-----------------------------------------------------------
-Randomness seeded to: 3149573917
-===============================================================================
-All tests passed (66 assertions in 22 test cases)
-
-<end of output>
-Test time =   0.01 sec
-----------------------------------------------------------
-Test Passed.
-"Phase15HamiltonianValue" end time: Feb 24 09:10 EST
-"Phase15HamiltonianValue" time elapsed: 00:00:00
-----------------------------------------------------------
-
-5/55 Testing: Phase2GeometryMemory
-5/55 Test: Phase2GeometryMemory
-Command: "/home/randy/Workspace/REPOS/nikola/build/test_phase2_geometry_memory"
-Directory: /home/randy/Workspace/REPOS/nikola/build
-"Phase2GeometryMemory" start time: Feb 24 09:10 EST
-Output:
-----------------------------------------------------------
-Randomness seeded to: 3865369188
-===============================================================================
-All tests passed (1158 assertions in 42 test cases)
-
-<end of output>
-Test time =   0.04 sec
-----------------------------------------------------------
-Test Passed.
-"Phase2GeometryMemory" end time: Feb 24 09:10 EST
-"Phase2GeometryMemory" time elapsed: 00:00:00
-----------------------------------------------------------
-
-10/55 Testing: Phase7Security
-10/55 Test: Phase7Security
-Command: "/home/randy/Workspace/REPOS/nikola/build/test_phase7_security"
-Directory: /home/randy/Workspace/REPOS/nikola/build
-"Phase7Security" start time: Feb 24 09:10 EST
-Output:
-----------------------------------------------------------
-Randomness seeded to: 2566308511
-===============================================================================
-All tests passed (91 assertions in 54 test cases)
-
-<end of output>
-Test time =   0.07 sec
-----------------------------------------------------------
-Test Passed.
-"Phase7Security" end time: Feb 24 09:10 EST
-"Phase7Security" time elapsed: 00:00:00
-----------------------------------------------------------
-
-16/55 Testing: Phase13TaskDispatcher
-16/55 Test: Phase13TaskDispatcher
-Command: "/home/randy/Workspace/REPOS/nikola/build/test_phase13_task_dispatcher"
-Directory: /home/randy/Workspace/REPOS/nikola/build
-"Phase13TaskDispatcher" start time: Feb 24 09:10 EST
-Output:
-----------------------------------------------------------
-Randomness seeded to: 1240844425
-===============================================================================
-All tests passed (63 assertions in 27 test cases)
-
-<end of output>
-Test time =   0.02 sec
-----------------------------------------------------------
-Test Passed.
-"Phase13TaskDispatcher" end time: Feb 24 09:10 EST
-"Phase13TaskDispatcher" time elapsed: 00:00:00
-----------------------------------------------------------
-
-52/55 Testing: Phase50CuriosityGoalQueryGate
-52/55 Test: Phase50CuriosityGoalQueryGate
-Command: "/home/randy/Workspace/REPOS/nikola/build/test_phase50_curiosity_goal_query_gate"
-Directory: /home/randy/Workspace/REPOS/nikola/build
-"Phase50CuriosityGoalQueryGate" start time: Feb 24 09:10 EST
-Output:
-----------------------------------------------------------
-Randomness seeded to: 1859923803
-===============================================================================
-All tests passed (44 assertions in 15 test cases)
-
-<end of output>
-Test time =   0.01 sec
-----------------------------------------------------------
-Test Passed.
-"Phase50CuriosityGoalQueryGate" end time: Feb 24 09:10 EST
-"Phase50CuriosityGoalQueryGate" time elapsed: 00:00:00
-----------------------------------------------------------
-
-9/55 Testing: Phase6Multimodal
-9/55 Test: Phase6Multimodal
-Command: "/home/randy/Workspace/REPOS/nikola/build/test_phase6_multimodal"
-Directory: /home/randy/Workspace/REPOS/nikola/build
-"Phase6Multimodal" start time: Feb 24 09:10 EST
-Output:
-----------------------------------------------------------
-Randomness seeded to: 1367803639
-===============================================================================
-All tests passed (21322 assertions in 44 test cases)
-
-<end of output>
-Test time =   0.06 sec
-----------------------------------------------------------
-Test Passed.
-"Phase6Multimodal" end time: Feb 24 09:10 EST
-"Phase6Multimodal" time elapsed: 00:00:00
-----------------------------------------------------------
-
-20/55 Testing: Phase17BootstrapManager
-20/55 Test: Phase17BootstrapManager
-Command: "/home/randy/Workspace/REPOS/nikola/build/test_phase17_bootstrap_manager"
-Directory: /home/randy/Workspace/REPOS/nikola/build
-"Phase17BootstrapManager" start time: Feb 24 09:10 EST
-Output:
-----------------------------------------------------------
-Randomness seeded to: 3330145020
-[BootstrapManager] Token loaded from env var (SCRUBBED)
-[BootstrapManager] Token loaded from env var (SCRUBBED)
-[BootstrapManager] Token loaded from file: /tmp/nikola_test_bootstrap_token
-[BootstrapManager] Token loaded from file: /tmp/nikola_test_token_whitespace
-[BootstrapManager] Token loaded from file: /tmp/nikola_test_bootstrap_token
-===============================================================================
-All tests passed (40 assertions in 22 test cases)
-
-<end of output>
-Test time =   0.01 sec
-----------------------------------------------------------
-Test Passed.
-"Phase17BootstrapManager" end time: Feb 24 09:10 EST
-"Phase17BootstrapManager" time elapsed: 00:00:00
-----------------------------------------------------------
-
-19/55 Testing: Phase16CoordSerializer
-19/55 Test: Phase16CoordSerializer
-Command: "/home/randy/Workspace/REPOS/nikola/build/test_phase16_coord_serializer"
-Directory: /home/randy/Workspace/REPOS/nikola/build
-"Phase16CoordSerializer" start time: Feb 24 09:10 EST
-Output:
-----------------------------------------------------------
-Randomness seeded to: 1550368378
-===============================================================================
-All tests passed (139 assertions in 34 test cases)
-
-<end of output>
-Test time =   0.01 sec
-----------------------------------------------------------
-Test Passed.
-"Phase16CoordSerializer" end time: Feb 24 09:10 EST
-"Phase16CoordSerializer" time elapsed: 00:00:00
-----------------------------------------------------------
-
-54/55 Testing: Phase52CrossCouplingMatrix
-54/55 Test: Phase52CrossCouplingMatrix
-Command: "/home/randy/Workspace/REPOS/nikola/build/test_phase52_cross_coupling_matrix"
-Directory: /home/randy/Workspace/REPOS/nikola/build
-"Phase52CrossCouplingMatrix" start time: Feb 24 09:10 EST
-Output:
-----------------------------------------------------------
-Randomness seeded to: 2154217019
-===============================================================================
-All tests passed (33 assertions in 20 test cases)
-
-<end of output>
-Test time =   0.01 sec
-----------------------------------------------------------
-Test Passed.
-"Phase52CrossCouplingMatrix" end time: Feb 24 09:10 EST
-"Phase52CrossCouplingMatrix" time elapsed: 00:00:00
-----------------------------------------------------------
-
-7/55 Testing: Phase4Infrastructure
-7/55 Test: Phase4Infrastructure
-Command: "/home/randy/Workspace/REPOS/nikola/build/test_phase4_infrastructure"
-Directory: /home/randy/Workspace/REPOS/nikola/build
-"Phase4Infrastructure" start time: Feb 24 09:10 EST
-Output:
-----------------------------------------------------------
-Randomness seeded to: 2062970792
-===============================================================================
-All tests passed (177 assertions in 55 test cases)
-
-<end of output>
-Test time =   0.34 sec
-----------------------------------------------------------
-Test Passed.
-"Phase4Infrastructure" end time: Feb 24 09:10 EST
-"Phase4Infrastructure" time elapsed: 00:00:00
-----------------------------------------------------------
-
-51/55 Testing: Phase49BoredomSingularityFix
-51/55 Test: Phase49BoredomSingularityFix
-Command: "/home/randy/Workspace/REPOS/nikola/build/test_phase49_boredom_singularity_fix"
-Directory: /home/randy/Workspace/REPOS/nikola/build
-"Phase49BoredomSingularityFix" start time: Feb 24 09:10 EST
-Output:
-----------------------------------------------------------
-Randomness seeded to: 1450350564
-===============================================================================
-All tests passed (42 assertions in 15 test cases)
-
-<end of output>
-Test time =   0.01 sec
-----------------------------------------------------------
-Test Passed.
-"Phase49BoredomSingularityFix" end time: Feb 24 09:10 EST
-"Phase49BoredomSingularityFix" time elapsed: 00:00:00
-----------------------------------------------------------
-
-50/55 Testing: Phase48DreamReplay
-50/55 Test: Phase48DreamReplay
-Command: "/home/randy/Workspace/REPOS/nikola/build/test_phase48_dream_replay"
-Directory: /home/randy/Workspace/REPOS/nikola/build
-"Phase48DreamReplay" start time: Feb 24 09:10 EST
-Output:
-----------------------------------------------------------
-Randomness seeded to: 3816331830
-===============================================================================
-All tests passed (59 assertions in 15 test cases)
-
-<end of output>
-Test time =   0.01 sec
-----------------------------------------------------------
-Test Passed.
-"Phase48DreamReplay" end time: Feb 24 09:10 EST
-"Phase48DreamReplay" time elapsed: 00:00:00
-----------------------------------------------------------
-
-14/55 Testing: Phase11CognitiveGen
-14/55 Test: Phase11CognitiveGen
-Command: "/home/randy/Workspace/REPOS/nikola/build/test_phase11_cognitive_gen"
-Directory: /home/randy/Workspace/REPOS/nikola/build
-"Phase11CognitiveGen" start time: Feb 24 09:10 EST
-Output:
-----------------------------------------------------------
-Randomness seeded to: 2096915420
-===============================================================================
-All tests passed (52 assertions in 23 test cases)
-
-<end of output>
-Test time =   0.01 sec
-----------------------------------------------------------
-Test Passed.
-"Phase11CognitiveGen" end time: Feb 24 09:10 EST
-"Phase11CognitiveGen" time elapsed: 00:00:00
-----------------------------------------------------------
-
-53/55 Testing: Phase51FailureModeGuards
-53/55 Test: Phase51FailureModeGuards
-Command: "/home/randy/Workspace/REPOS/nikola/build/test_phase51_failure_mode_guards"
-Directory: /home/randy/Workspace/REPOS/nikola/build
-"Phase51FailureModeGuards" start time: Feb 24 09:10 EST
-Output:
-----------------------------------------------------------
-Randomness seeded to: 4294707970
-===============================================================================
-All tests passed (36 assertions in 15 test cases)
-
-<end of output>
-Test time =   0.01 sec
-----------------------------------------------------------
-Test Passed.
-"Phase51FailureModeGuards" end time: Feb 24 09:10 EST
-"Phase51FailureModeGuards" time elapsed: 00:00:00
-----------------------------------------------------------
-
-13/55 Testing: Phase10Holographic
-13/55 Test: Phase10Holographic
-Command: "/home/randy/Workspace/REPOS/nikola/build/test_phase10_holographic"
-Directory: /home/randy/Workspace/REPOS/nikola/build
-"Phase10Holographic" start time: Feb 24 09:10 EST
-Output:
-----------------------------------------------------------
-Randomness seeded to: 2296410810
-===============================================================================
-All tests passed (94 assertions in 31 test cases)
-
-<end of output>
-Test time =   0.01 sec
-----------------------------------------------------------
-Test Passed.
-"Phase10Holographic" end time: Feb 24 09:10 EST
-"Phase10Holographic" time elapsed: 00:00:00
-----------------------------------------------------------
-
-11/55 Testing: Phase8Foundations
-11/55 Test: Phase8Foundations
-Command: "/home/randy/Workspace/REPOS/nikola/build/test_phase8_foundations"
-Directory: /home/randy/Workspace/REPOS/nikola/build
-"Phase8Foundations" start time: Feb 24 09:10 EST
-Output:
-----------------------------------------------------------
-Randomness seeded to: 1264920745
-===============================================================================
-All tests passed (466 assertions in 54 test cases)
-
-<end of output>
-Test time =   0.01 sec
-----------------------------------------------------------
-Test Passed.
-"Phase8Foundations" end time: Feb 24 09:10 EST
-"Phase8Foundations" time elapsed: 00:00:00
-----------------------------------------------------------
-
-8/55 Testing: Phase5Autonomous
-8/55 Test: Phase5Autonomous
-Command: "/home/randy/Workspace/REPOS/nikola/build/test_phase5_autonomous"
-Directory: /home/randy/Workspace/REPOS/nikola/build
-"Phase5Autonomous" start time: Feb 24 09:10 EST
-Output:
-----------------------------------------------------------
-Randomness seeded to: 1463593628
-===============================================================================
-All tests passed (94 assertions in 45 test cases)
-
-<end of output>
-Test time =   0.01 sec
-----------------------------------------------------------
-Test Passed.
-"Phase5Autonomous" end time: Feb 24 09:10 EST
-"Phase5Autonomous" time elapsed: 00:00:00
-----------------------------------------------------------
-
-1/55 Testing: MetabolicLock
-1/55 Test: MetabolicLock
-Command: "/home/randy/Workspace/REPOS/nikola/build/test_metabolic_lock"
-Directory: /home/randy/Workspace/REPOS/nikola/build
-"MetabolicLock" start time: Feb 24 09:10 EST
-Output:
-----------------------------------------------------------
-Randomness seeded to: 3719491175
-===============================================================================
-All tests passed (30 assertions in 8 test cases)
-
-<end of output>
-Test time =   0.01 sec
-----------------------------------------------------------
-Test Passed.
-"MetabolicLock" end time: Feb 24 09:10 EST
-"MetabolicLock" time elapsed: 00:00:00
-----------------------------------------------------------
-
-3/55 Testing: Vector9D
-3/55 Test: Vector9D
-Command: "/home/randy/Workspace/REPOS/nikola/build/test_vector9d"
-Directory: /home/randy/Workspace/REPOS/nikola/build
-"Vector9D" start time: Feb 24 09:10 EST
-Output:
-----------------------------------------------------------
-Randomness seeded to: 1844459689
-===============================================================================
-All tests passed (66 assertions in 8 test cases)
-
-<end of output>
-Test time =   0.01 sec
-----------------------------------------------------------
-Test Passed.
-"Vector9D" end time: Feb 24 09:10 EST
-"Vector9D" time elapsed: 00:00:00
-----------------------------------------------------------
-
-55/55 Testing: Phase53BoredomGAP036Calibration
-55/55 Test: Phase53BoredomGAP036Calibration
-Command: "/home/randy/Workspace/REPOS/nikola/build/test_phase53_boredom_gap036_calibration"
-Directory: /home/randy/Workspace/REPOS/nikola/build
-"Phase53BoredomGAP036Calibration" start time: Feb 24 09:10 EST
-Output:
-----------------------------------------------------------
-Randomness seeded to: 2808394613
-===============================================================================
-All tests passed (40 assertions in 20 test cases)
-
-<end of output>
-Test time =   0.01 sec
-----------------------------------------------------------
-Test Passed.
-"Phase53BoredomGAP036Calibration" end time: Feb 24 09:10 EST
-"Phase53BoredomGAP036Calibration" time elapsed: 00:00:00
-----------------------------------------------------------
-
-4/55 Testing: PhysicsCore
-4/55 Test: PhysicsCore
-Command: "/home/randy/Workspace/REPOS/nikola/build/test_physics_core"
-Directory: /home/randy/Workspace/REPOS/nikola/build
-"PhysicsCore" start time: Feb 24 09:10 EST
-Output:
-----------------------------------------------------------
-Randomness seeded to: 4166499026
-===============================================================================
-All tests passed (1268 assertions in 13 test cases)
-
-<end of output>
-Test time =   4.67 sec
-----------------------------------------------------------
-Test Passed.
-"PhysicsCore" end time: Feb 24 09:10 EST
-"PhysicsCore" time elapsed: 00:00:04
-----------------------------------------------------------
-
-End testing: Feb 24 09:10 EST
+End testing: Feb 24 18:35 EST

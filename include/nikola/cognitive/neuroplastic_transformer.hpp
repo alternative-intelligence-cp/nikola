@@ -477,15 +477,19 @@ public:
      *   Low NE  → higher effective temperature → broader multi-head integration
      *   (calm, exploratory, diffuse association).
      *
-     *   Mirrors the spec's refractive index formula §5.1:
-     *     s_eff = s_local / (1 + N_t)
+     *   Mirrors the spec's refractive index formula §5.1 (Phase 54 corrected):
+     *     s_eff = s_local / (1 + N_t²)   ← spec §"Non-Linear Interaction Terms"
      *   mapped to NPT attention temperature:
-     *     τ_eff = τ / (1 + N_t)
+     *     τ_eff = τ / (1 + N_t²)
      *
      *   Regime table:
-     *     N = 1.0 (panic/stress)  τ_eff = τ/2     sharp, tunnel-vision attention
-     *     N = 0.5 (baseline)      τ_eff = τ/1.5   moderate focus
-     *     N = 0.0 (deep calm)     τ_eff = τ       full breadth, max integration
+     *     N = 1.0 (panic/stress)  τ_eff = τ/2      sharp, tunnel-vision attention
+     *     N = 0.5 (baseline)      τ_eff = τ/1.25   moderate focus
+     *     N = 0.0 (deep calm)     τ_eff = τ        full breadth, max integration
+     *
+     *   Note: Phase 47 used linear 1/(1+N); Phase 54 corrects to quadratic 1/(1+N²).
+     *   At N=0 and N=1 the results are identical; the difference appears at intermediate
+     *   values (e.g. N=0.5: old=τ/1.5, new=τ/1.25 — weaker suppression at baseline).
      *
      * @param torus_wf       Read-only live torus WaveFunction.
      * @param dopamine       Current dopamine level ∈ [0, 1].  Default 0.5 (baseline)
@@ -494,7 +498,7 @@ public:
      *                       — moderate elasticity, identical to Phase 45 behaviour
      *                       when not provided.
      * @param norepinephrine Current norepinephrine level ∈ [0, 1].  Default 0.5
-     *                       — τ_eff = τ/1.5, identical to Phase 46 behaviour
+     *                       — τ_eff = τ/1.25, identical to Phase 46 behaviour
      *                       when not provided.
      * @return AttentionResult with softmax head_scores and the heterodyne
      *         output WaveFunction (has_output = true).
@@ -518,12 +522,15 @@ public:
         const auto  weights = npt_curvature_weights();
         const auto  biased  = apply_curvature_bias(raw, R_mean, weights, curvature_alpha_);
 
-        // Phase 47: Norepinephrine arousal — modulate effective attention temperature.
-        // τ_eff = τ / (1 + N)  mirrors spec §5.1 refractive index formula.
+        // Phase 54: Norepinephrine arousal — modulate effective attention temperature.
+        // τ_eff = τ / (1 + N²)  spec §"Non-Linear Interaction Terms" quadratic formula.
+        // Phase 47 used linear 1/(1+N); Phase 54 corrects to spec-defined quadratic.
         // High N → lower τ_eff → sharper softmax (hyper-vigilance, focus).
         // Low N  → τ_eff → τ   → broad integration (calm, exploratory).
-        const float tau_eff  = temperature_ / (1.0f + std::clamp(norepinephrine, 0.0f, 1.0f));
-        last_tau_eff_        = tau_eff;
+        // N=0: τ (same), N=1: τ/2 (same), N=0.5: τ/1.25 (was τ/1.5, weaker baseline damping).
+        const float N_clamped = std::clamp(norepinephrine, 0.0f, 1.0f);
+        const float tau_eff   = temperature_ / (1.0f + N_clamped * N_clamped);
+        last_tau_eff_         = tau_eff;
 
         AttentionResult result(grid_n_);
         result.head_scores = attention_softmax(biased, tau_eff);
@@ -604,7 +611,7 @@ public:
 
     // ── Phase 47 accessors ──────────────────────────────────────────────────
 
-    /// Last computed τ_eff = τ / (1 + N) from the most recent forward() (Phase 47).
+    /// Last computed τ_eff = τ / (1 + N²) from the most recent forward() (Phase 54 corrected from Phase 47).
     /// Telemetry: equals τ at N=0 (calm), τ/2 at N=1.0 (panic).
     float last_tau_eff() const noexcept { return last_tau_eff_; }
 
