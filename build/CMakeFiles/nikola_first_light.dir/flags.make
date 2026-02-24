@@ -6,5 +6,5 @@ CXX_DEFINES = -DNIKOLA_AUTONOMY_ENGINE_IMPL -DNIKOLA_HAS_ORT -DNIKOLA_ORT_MODEL_
 
 CXX_INCLUDES = -I/home/randy/Workspace/REPOS/nikola/include -I/home/randy/Workspace/REPOS/nikola/build -isystem /usr/include/eigen3 -isystem /home/randy/Workspace/SYSTEM/onnxruntime/cpp/include
 
-CXX_FLAGS = -g -std=c++23 -fPIE -Wall -Wextra -Wpedantic -Werror=return-type
+CXX_FLAGS = -O3 -DNDEBUG -std=c++23 -fPIE -Wall -Wextra -Wpedantic -Werror=return-type
 

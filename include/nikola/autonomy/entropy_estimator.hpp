@@ -59,6 +59,26 @@ inline constexpr float BOREDOM_DECAY_RATE     = 0.01f;
 /// Spec §6.3: "θ_explore ≈ 0.8".  Raised from the original 0.7 stub.
 inline constexpr float BOREDOM_EXPLORE_THRESH = 0.8f;
 
+// ── GAP-036: Time-domain logistic calibration (10-minute exploration cycle) ──
+
+/// Slope of the time-domain logistic: k = 0.00656 s⁻¹.
+/// Derived from boundary conditions (spec §GAP-036):
+///   B(0s) ≈ 0.10 (right after novelty)
+///   B(600s) ≈ 0.85 (trigger after 10 idle minutes)
+/// Solution: k·T_half = ln(9) ≈ 2.197, 600k − 2.197 = 1.737 → k ≈ 0.00656.
+inline constexpr float BOREDOM_K_SEC         = 0.00656f;
+
+/// Inflection point of the time-domain logistic (B = 0.5 at this age in seconds).
+/// T_half = ln(9) / k ≈ 335 s.
+inline constexpr float BOREDOM_T_HALF_SEC    = 335.0f;
+
+/// k scaled to per-tick for a 1000 Hz physics loop: k_tick = k_sec / 1000.
+/// At 1 kHz a tick is 1 ms; in 600 000 ticks (= 600 s) boredom reaches 0.85.
+inline constexpr float BOREDOM_K_TICK        = 6.56e-6f;
+
+/// T_half in ticks for a 1000 Hz physics loop: 335 s × 1000 Hz = 335 000 ticks.
+inline constexpr float BOREDOM_T_HALF_TICKS  = 335'000.0f;
+
 // ── EntropyEstimator ──────────────────────────────────────────────────────────
 
 /**
@@ -192,27 +212,62 @@ private:
 class BoredomRegulator {
 public:
     /// Phase 49: tunable — defaults match spec §6.2 constants.
-    explicit BoredomRegulator(float alpha_acc  = BOREDOM_ALPHA_ACC,
-                              float k          = BOREDOM_K,
-                              float decay_rate = BOREDOM_DECAY_RATE) noexcept
-        : alpha_acc_(alpha_acc), k_(k), decay_rate_(decay_rate) {}
+    /// @param time_domain_mode  Phase 53 / GAP-036: when true, use the
+    ///   calibrated time-domain logistic B(t)=σ(k·(elapsed−T_half)) instead
+    ///   of the Phase 49 entropy-driven ΔB formula.  Default false preserves
+    ///   all previous behaviour.
+    explicit BoredomRegulator(float alpha_acc       = BOREDOM_ALPHA_ACC,
+                              float k               = BOREDOM_K,
+                              float decay_rate      = BOREDOM_DECAY_RATE,
+                              bool  time_domain_mode = false) noexcept
+        : alpha_acc_(alpha_acc), k_(k), decay_rate_(decay_rate)
+        , time_domain_mode_(time_domain_mode)
+    {
+        if (time_domain_mode_) {
+            // Pre-compute logistic at elapsed=0: B = 1/(1+exp(k·T_half)).
+            // With the spec-calibrated params this evaluates to ≈ 0.10.
+            boredom_ = 1.0f / (1.0f + std::exp(BOREDOM_K_SEC * BOREDOM_T_HALF_SEC));
+        }
+    }
 
     /**
-     * @brief Advance boredom using AUTO-04 sigmoidal formula.
+     * @brief Advance boredom one timestep.
      *
+     * **Phase 49 mode** (default, time_domain_mode = false):
      *   ΔB = α_acc · (1 − tanh(k · H)) · dt   — bounded accumulation
      *      − decay_rate · dt                   — passive drain
+     *
+     * **Phase 53 / GAP-036 mode** (time_domain_mode = true):
+     *   Tracks elapsed seconds since last novelty event.
+     *   Entropy ≥ ENTROPY_TARGET is treated as novelty and resets the timer.
+     *   B(elapsed) = 1 / (1 + exp(−k_sec · (elapsed − T_half_sec)))
+     *   where k_sec = BOREDOM_K_SEC = 0.00656, T_half_sec = 335 s.
+     *   Boundary conditions (spec §GAP-036): B(0)≈0.10, B(600)≈0.85.
      *
      * @param entropy  Shannon entropy from EntropyEstimator (bits).
      * @param dt       Elapsed seconds.
      */
     void update(float entropy, float dt) noexcept {
-        // Phase 49: AUTO-04 sigmoidal accumulation (spec §6.2)
-        last_delta_b_ = alpha_acc_ * (1.0f - std::tanh(k_ * entropy));
-        boredom_ += last_delta_b_ * dt;   // bounded: never infinite at H=0
-        boredom_ -= decay_rate_   * dt;   // passive drain when entropy is high
-        boredom_  = std::clamp(boredom_, 0.0f, 1.0f);
         last_entropy_ = entropy;
+        if (time_domain_mode_) {
+            // --- Phase 53: GAP-036 time-domain logistic ---
+            if (entropy >= ENTROPY_TARGET) {
+                // Novelty detected: reset elapsed counter.
+                elapsed_s_ = 0.0f;
+            } else {
+                elapsed_s_ += dt;
+            }
+            boredom_      = 1.0f / (1.0f + std::exp(-BOREDOM_K_SEC
+                                    * (elapsed_s_ - BOREDOM_T_HALF_SEC)));
+            // Instantaneous rate = logistic derivative = k·B·(1−B).
+            last_delta_b_ = BOREDOM_K_SEC * boredom_ * (1.0f - boredom_);
+        } else {
+            // --- Phase 49: AUTO-04 sigmoidal accumulation (spec §6.2) ---
+            last_delta_b_ = alpha_acc_ * (1.0f - std::tanh(k_ * entropy));
+            boredom_ += last_delta_b_ * dt;   // bounded: never infinite at H=0
+            boredom_ -= decay_rate_   * dt;   // passive drain when entropy is high
+            boredom_  = std::clamp(boredom_, 0.0f, 1.0f);
+        }
     }
 
     /// True when boredom > θ_explore (spec §6.3: 0.8).
@@ -224,6 +279,7 @@ public:
     [[nodiscard]] float last_entropy() const noexcept { return last_entropy_; }
 
     /// Phase 49 telemetry: last ΔB/dt = α_acc·(1−tanh(k·H)) ∈ [0, α_acc].
+    /// Phase 53 mode: instantaneous logistic derivative k·B·(1−B).
     [[nodiscard]] float last_delta_b() const noexcept { return last_delta_b_; }
 
     /// Phase 49 param accessors (for tests / telemetry).
@@ -231,26 +287,44 @@ public:
     [[nodiscard]] float k_param()     const noexcept { return k_; }
     [[nodiscard]] float decay_rate()  const noexcept { return decay_rate_; }
 
+    /// Phase 53 / GAP-036 accessors.
+    [[nodiscard]] bool  is_time_domain_mode()         const noexcept { return time_domain_mode_; }
+    [[nodiscard]] float elapsed_since_novelty_s()     const noexcept { return elapsed_s_; }
+
     /// Phase 50: directly subtract from boredom (clamped to 0). Used by
     /// AutonomyEngine to drain boredom after emitting a CuriosityGoal, preventing
     /// immediate re-fire (early Mania Loop guard, spec §9.2).
+    /// In time-domain mode, drain resets the novelty counter to zero.
     void drain(float amount) noexcept {
-        boredom_ = std::max(0.0f, boredom_ - amount);
+        if (time_domain_mode_) {
+            elapsed_s_ = 0.0f;   // exploration event = novelty reset
+            boredom_   = 1.0f / (1.0f + std::exp(BOREDOM_K_SEC * BOREDOM_T_HALF_SEC));
+        } else {
+            boredom_ = std::max(0.0f, boredom_ - amount);
+        }
     }
 
     void reset() noexcept {
-        boredom_      = 0.0f;
+        if (time_domain_mode_) {
+            boredom_ = 1.0f / (1.0f + std::exp(BOREDOM_K_SEC * BOREDOM_T_HALF_SEC));
+        } else {
+            boredom_ = 0.0f;
+        }
         last_entropy_ = 0.0f;
         last_delta_b_ = 0.0f;
+        elapsed_s_    = 0.0f;
     }
 
 private:
-    float alpha_acc_    = BOREDOM_ALPHA_ACC;
-    float k_            = BOREDOM_K;
-    float decay_rate_   = BOREDOM_DECAY_RATE;
+    float alpha_acc_       = BOREDOM_ALPHA_ACC;
+    float k_               = BOREDOM_K;
+    float decay_rate_      = BOREDOM_DECAY_RATE;
+    bool  time_domain_mode_ = false;   ///< Phase 53: GAP-036 logistic mode
+
     float boredom_      = 0.0f;
     float last_entropy_ = 0.0f;
-    float last_delta_b_ = 0.0f;   ///< Phase 49 telemetry
+    float last_delta_b_ = 0.0f;   ///< Phase 49 / 53 telemetry
+    float elapsed_s_    = 0.0f;   ///< Phase 53: seconds since last novelty
 };
 
 } // namespace nikola::autonomy

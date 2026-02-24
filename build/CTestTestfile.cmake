@@ -112,3 +112,5 @@ add_test([=[Phase51FailureModeGuards]=] "/home/randy/Workspace/REPOS/nikola/buil
 set_tests_properties([=[Phase51FailureModeGuards]=] PROPERTIES  _BACKTRACE_TRIPLES "/home/randy/Workspace/REPOS/nikola/CMakeLists.txt;457;add_test;/home/randy/Workspace/REPOS/nikola/CMakeLists.txt;0;")
 add_test([=[Phase52CrossCouplingMatrix]=] "/home/randy/Workspace/REPOS/nikola/build/test_phase52_cross_coupling_matrix")
 set_tests_properties([=[Phase52CrossCouplingMatrix]=] PROPERTIES  _BACKTRACE_TRIPLES "/home/randy/Workspace/REPOS/nikola/CMakeLists.txt;462;add_test;/home/randy/Workspace/REPOS/nikola/CMakeLists.txt;0;")
+add_test([=[Phase53BoredomGAP036Calibration]=] "/home/randy/Workspace/REPOS/nikola/build/test_phase53_boredom_gap036_calibration")
+set_tests_properties([=[Phase53BoredomGAP036Calibration]=] PROPERTIES  _BACKTRACE_TRIPLES "/home/randy/Workspace/REPOS/nikola/CMakeLists.txt;467;add_test;/home/randy/Workspace/REPOS/nikola/CMakeLists.txt;0;")

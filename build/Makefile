@@ -887,6 +887,19 @@ test_phase52_cross_coupling_matrix/fast:
 .PHONY : test_phase52_cross_coupling_matrix/fast
 
 #=============================================================================
+# Target rules for targets named test_phase53_boredom_gap036_calibration
+
+# Build rule for target.
+test_phase53_boredom_gap036_calibration: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 test_phase53_boredom_gap036_calibration
+.PHONY : test_phase53_boredom_gap036_calibration
+
+# fast build rule for target.
+test_phase53_boredom_gap036_calibration/fast:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_phase53_boredom_gap036_calibration.dir/build.make CMakeFiles/test_phase53_boredom_gap036_calibration.dir/build
+.PHONY : test_phase53_boredom_gap036_calibration/fast
+
+#=============================================================================
 # Target rules for targets named nikola_first_light
 
 # Build rule for target.
@@ -2339,6 +2352,30 @@ tests/unit/phase52_cross_coupling_matrix_test.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_phase52_cross_coupling_matrix.dir/build.make CMakeFiles/test_phase52_cross_coupling_matrix.dir/tests/unit/phase52_cross_coupling_matrix_test.cpp.s
 .PHONY : tests/unit/phase52_cross_coupling_matrix_test.cpp.s
 
+tests/unit/phase53_boredom_gap036_calibration_test.o: tests/unit/phase53_boredom_gap036_calibration_test.cpp.o
+.PHONY : tests/unit/phase53_boredom_gap036_calibration_test.o
+
+# target to build an object file
+tests/unit/phase53_boredom_gap036_calibration_test.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_phase53_boredom_gap036_calibration.dir/build.make CMakeFiles/test_phase53_boredom_gap036_calibration.dir/tests/unit/phase53_boredom_gap036_calibration_test.cpp.o
+.PHONY : tests/unit/phase53_boredom_gap036_calibration_test.cpp.o
+
+tests/unit/phase53_boredom_gap036_calibration_test.i: tests/unit/phase53_boredom_gap036_calibration_test.cpp.i
+.PHONY : tests/unit/phase53_boredom_gap036_calibration_test.i
+
+# target to preprocess a source file
+tests/unit/phase53_boredom_gap036_calibration_test.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_phase53_boredom_gap036_calibration.dir/build.make CMakeFiles/test_phase53_boredom_gap036_calibration.dir/tests/unit/phase53_boredom_gap036_calibration_test.cpp.i
+.PHONY : tests/unit/phase53_boredom_gap036_calibration_test.cpp.i
+
+tests/unit/phase53_boredom_gap036_calibration_test.s: tests/unit/phase53_boredom_gap036_calibration_test.cpp.s
+.PHONY : tests/unit/phase53_boredom_gap036_calibration_test.s
+
+# target to generate assembly for a file
+tests/unit/phase53_boredom_gap036_calibration_test.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_phase53_boredom_gap036_calibration.dir/build.make CMakeFiles/test_phase53_boredom_gap036_calibration.dir/tests/unit/phase53_boredom_gap036_calibration_test.cpp.s
+.PHONY : tests/unit/phase53_boredom_gap036_calibration_test.cpp.s
+
 tests/unit/phase5_autonomous_test.o: tests/unit/phase5_autonomous_test.cpp.o
 .PHONY : tests/unit/phase5_autonomous_test.o
 
@@ -2569,6 +2606,7 @@ help:
 	@echo "... test_phase50_curiosity_goal_query_gate"
 	@echo "... test_phase51_failure_mode_guards"
 	@echo "... test_phase52_cross_coupling_matrix"
+	@echo "... test_phase53_boredom_gap036_calibration"
 	@echo "... test_phase5_autonomous"
 	@echo "... test_phase6_multimodal"
 	@echo "... test_phase7_security"
@@ -2756,6 +2794,9 @@ help:
 	@echo "... tests/unit/phase52_cross_coupling_matrix_test.o"
 	@echo "... tests/unit/phase52_cross_coupling_matrix_test.i"
 	@echo "... tests/unit/phase52_cross_coupling_matrix_test.s"
+	@echo "... tests/unit/phase53_boredom_gap036_calibration_test.o"
+	@echo "... tests/unit/phase53_boredom_gap036_calibration_test.i"
+	@echo "... tests/unit/phase53_boredom_gap036_calibration_test.s"
 	@echo "... tests/unit/phase5_autonomous_test.o"
 	@echo "... tests/unit/phase5_autonomous_test.i"
 	@echo "... tests/unit/phase5_autonomous_test.s"

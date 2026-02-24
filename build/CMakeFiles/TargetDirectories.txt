@@ -53,6 +53,7 @@
 /home/randy/Workspace/REPOS/nikola/build/CMakeFiles/test_phase50_curiosity_goal_query_gate.dir
 /home/randy/Workspace/REPOS/nikola/build/CMakeFiles/test_phase51_failure_mode_guards.dir
 /home/randy/Workspace/REPOS/nikola/build/CMakeFiles/test_phase52_cross_coupling_matrix.dir
+/home/randy/Workspace/REPOS/nikola/build/CMakeFiles/test_phase53_boredom_gap036_calibration.dir
 /home/randy/Workspace/REPOS/nikola/build/CMakeFiles/nikola_first_light.dir
 /home/randy/Workspace/REPOS/nikola/build/CMakeFiles/test.dir
 /home/randy/Workspace/REPOS/nikola/build/CMakeFiles/edit_cache.dir

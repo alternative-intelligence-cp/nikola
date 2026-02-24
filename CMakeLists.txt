@@ -461,6 +461,11 @@ if(NIKOLA_BUILD_TESTS)
     target_link_libraries(test_phase52_cross_coupling_matrix PRIVATE nikola_core Catch2::Catch2WithMain)
     add_test(NAME Phase52CrossCouplingMatrix COMMAND test_phase52_cross_coupling_matrix)
 
+    # Phase 53 Unit Tests: GAP-036 Boredom k-Parameter Calibration (spec §GAP-036)
+    add_executable(test_phase53_boredom_gap036_calibration tests/unit/phase53_boredom_gap036_calibration_test.cpp)
+    target_link_libraries(test_phase53_boredom_gap036_calibration PRIVATE nikola_core Catch2::Catch2WithMain)
+    add_test(NAME Phase53BoredomGAP036Calibration COMMAND test_phase53_boredom_gap036_calibration)
+
     message(STATUS "Tests configured - run with: make test")
 endif()
 
