@@ -1,0 +1,9 @@
+cargo-features = ["edition2024"]
+[package]
+name = "nikola"
+version = "0.0.4"
+authors = ["Randy Hoggard <randy@ai-liberation-platform.org>"]
+edition = "2024"
+
+[dependencies]
+zmq = "0.10.5"

@@ -70,6 +70,15 @@
 /home/randy/Workspace/REPOS/nikola/build/CMakeFiles/test_phase67_partition_table.dir
 /home/randy/Workspace/REPOS/nikola/build/CMakeFiles/test_phase68_proto_schema.dir
 /home/randy/Workspace/REPOS/nikola/build/CMakeFiles/test_phase69_conversion_validator.dir
+/home/randy/Workspace/REPOS/nikola/build/CMakeFiles/test_phase70_resonance_index.dir
+/home/randy/Workspace/REPOS/nikola/build/CMakeFiles/test_phase71_compose_orchestration.dir
+/home/randy/Workspace/REPOS/nikola/build/CMakeFiles/test_phase72_page_cache_policy.dir
+/home/randy/Workspace/REPOS/nikola/build/CMakeFiles/test_phase73_neural_trace.dir
+/home/randy/Workspace/REPOS/nikola/build/CMakeFiles/test_phase74_error_taxonomy.dir
+/home/randy/Workspace/REPOS/nikola/build/CMakeFiles/test_phase75_perf_tuning.dir
+/home/randy/Workspace/REPOS/nikola/build/CMakeFiles/test_phase76_k8s_hpa.dir
+/home/randy/Workspace/REPOS/nikola/build/CMakeFiles/test_phase77_cuda_kernels.dir
+/home/randy/Workspace/REPOS/nikola/build/CMakeFiles/test_phase78_docker_compose_orchestration.dir
 /home/randy/Workspace/REPOS/nikola/build/CMakeFiles/nikola_first_light.dir
 /home/randy/Workspace/REPOS/nikola/build/CMakeFiles/test.dir
 /home/randy/Workspace/REPOS/nikola/build/CMakeFiles/edit_cache.dir

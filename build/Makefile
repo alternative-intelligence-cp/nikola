@@ -1108,6 +1108,123 @@ test_phase69_conversion_validator/fast:
 .PHONY : test_phase69_conversion_validator/fast
 
 #=============================================================================
+# Target rules for targets named test_phase70_resonance_index
+
+# Build rule for target.
+test_phase70_resonance_index: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 test_phase70_resonance_index
+.PHONY : test_phase70_resonance_index
+
+# fast build rule for target.
+test_phase70_resonance_index/fast:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_phase70_resonance_index.dir/build.make CMakeFiles/test_phase70_resonance_index.dir/build
+.PHONY : test_phase70_resonance_index/fast
+
+#=============================================================================
+# Target rules for targets named test_phase71_compose_orchestration
+
+# Build rule for target.
+test_phase71_compose_orchestration: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 test_phase71_compose_orchestration
+.PHONY : test_phase71_compose_orchestration
+
+# fast build rule for target.
+test_phase71_compose_orchestration/fast:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_phase71_compose_orchestration.dir/build.make CMakeFiles/test_phase71_compose_orchestration.dir/build
+.PHONY : test_phase71_compose_orchestration/fast
+
+#=============================================================================
+# Target rules for targets named test_phase72_page_cache_policy
+
+# Build rule for target.
+test_phase72_page_cache_policy: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 test_phase72_page_cache_policy
+.PHONY : test_phase72_page_cache_policy
+
+# fast build rule for target.
+test_phase72_page_cache_policy/fast:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_phase72_page_cache_policy.dir/build.make CMakeFiles/test_phase72_page_cache_policy.dir/build
+.PHONY : test_phase72_page_cache_policy/fast
+
+#=============================================================================
+# Target rules for targets named test_phase73_neural_trace
+
+# Build rule for target.
+test_phase73_neural_trace: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 test_phase73_neural_trace
+.PHONY : test_phase73_neural_trace
+
+# fast build rule for target.
+test_phase73_neural_trace/fast:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_phase73_neural_trace.dir/build.make CMakeFiles/test_phase73_neural_trace.dir/build
+.PHONY : test_phase73_neural_trace/fast
+
+#=============================================================================
+# Target rules for targets named test_phase74_error_taxonomy
+
+# Build rule for target.
+test_phase74_error_taxonomy: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 test_phase74_error_taxonomy
+.PHONY : test_phase74_error_taxonomy
+
+# fast build rule for target.
+test_phase74_error_taxonomy/fast:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_phase74_error_taxonomy.dir/build.make CMakeFiles/test_phase74_error_taxonomy.dir/build
+.PHONY : test_phase74_error_taxonomy/fast
+
+#=============================================================================
+# Target rules for targets named test_phase75_perf_tuning
+
+# Build rule for target.
+test_phase75_perf_tuning: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 test_phase75_perf_tuning
+.PHONY : test_phase75_perf_tuning
+
+# fast build rule for target.
+test_phase75_perf_tuning/fast:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_phase75_perf_tuning.dir/build.make CMakeFiles/test_phase75_perf_tuning.dir/build
+.PHONY : test_phase75_perf_tuning/fast
+
+#=============================================================================
+# Target rules for targets named test_phase76_k8s_hpa
+
+# Build rule for target.
+test_phase76_k8s_hpa: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 test_phase76_k8s_hpa
+.PHONY : test_phase76_k8s_hpa
+
+# fast build rule for target.
+test_phase76_k8s_hpa/fast:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_phase76_k8s_hpa.dir/build.make CMakeFiles/test_phase76_k8s_hpa.dir/build
+.PHONY : test_phase76_k8s_hpa/fast
+
+#=============================================================================
+# Target rules for targets named test_phase77_cuda_kernels
+
+# Build rule for target.
+test_phase77_cuda_kernels: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 test_phase77_cuda_kernels
+.PHONY : test_phase77_cuda_kernels
+
+# fast build rule for target.
+test_phase77_cuda_kernels/fast:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_phase77_cuda_kernels.dir/build.make CMakeFiles/test_phase77_cuda_kernels.dir/build
+.PHONY : test_phase77_cuda_kernels/fast
+
+#=============================================================================
+# Target rules for targets named test_phase78_docker_compose_orchestration
+
+# Build rule for target.
+test_phase78_docker_compose_orchestration: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 test_phase78_docker_compose_orchestration
+.PHONY : test_phase78_docker_compose_orchestration
+
+# fast build rule for target.
+test_phase78_docker_compose_orchestration/fast:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_phase78_docker_compose_orchestration.dir/build.make CMakeFiles/test_phase78_docker_compose_orchestration.dir/build
+.PHONY : test_phase78_docker_compose_orchestration/fast
+
+#=============================================================================
 # Target rules for targets named nikola_first_light
 
 # Build rule for target.
@@ -3016,6 +3133,222 @@ tests/unit/phase6_multimodal_test.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_phase6_multimodal.dir/build.make CMakeFiles/test_phase6_multimodal.dir/tests/unit/phase6_multimodal_test.cpp.s
 .PHONY : tests/unit/phase6_multimodal_test.cpp.s
 
+tests/unit/phase70_resonance_index_test.o: tests/unit/phase70_resonance_index_test.cpp.o
+.PHONY : tests/unit/phase70_resonance_index_test.o
+
+# target to build an object file
+tests/unit/phase70_resonance_index_test.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_phase70_resonance_index.dir/build.make CMakeFiles/test_phase70_resonance_index.dir/tests/unit/phase70_resonance_index_test.cpp.o
+.PHONY : tests/unit/phase70_resonance_index_test.cpp.o
+
+tests/unit/phase70_resonance_index_test.i: tests/unit/phase70_resonance_index_test.cpp.i
+.PHONY : tests/unit/phase70_resonance_index_test.i
+
+# target to preprocess a source file
+tests/unit/phase70_resonance_index_test.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_phase70_resonance_index.dir/build.make CMakeFiles/test_phase70_resonance_index.dir/tests/unit/phase70_resonance_index_test.cpp.i
+.PHONY : tests/unit/phase70_resonance_index_test.cpp.i
+
+tests/unit/phase70_resonance_index_test.s: tests/unit/phase70_resonance_index_test.cpp.s
+.PHONY : tests/unit/phase70_resonance_index_test.s
+
+# target to generate assembly for a file
+tests/unit/phase70_resonance_index_test.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_phase70_resonance_index.dir/build.make CMakeFiles/test_phase70_resonance_index.dir/tests/unit/phase70_resonance_index_test.cpp.s
+.PHONY : tests/unit/phase70_resonance_index_test.cpp.s
+
+tests/unit/phase71_compose_orchestration_test.o: tests/unit/phase71_compose_orchestration_test.cpp.o
+.PHONY : tests/unit/phase71_compose_orchestration_test.o
+
+# target to build an object file
+tests/unit/phase71_compose_orchestration_test.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_phase71_compose_orchestration.dir/build.make CMakeFiles/test_phase71_compose_orchestration.dir/tests/unit/phase71_compose_orchestration_test.cpp.o
+.PHONY : tests/unit/phase71_compose_orchestration_test.cpp.o
+
+tests/unit/phase71_compose_orchestration_test.i: tests/unit/phase71_compose_orchestration_test.cpp.i
+.PHONY : tests/unit/phase71_compose_orchestration_test.i
+
+# target to preprocess a source file
+tests/unit/phase71_compose_orchestration_test.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_phase71_compose_orchestration.dir/build.make CMakeFiles/test_phase71_compose_orchestration.dir/tests/unit/phase71_compose_orchestration_test.cpp.i
+.PHONY : tests/unit/phase71_compose_orchestration_test.cpp.i
+
+tests/unit/phase71_compose_orchestration_test.s: tests/unit/phase71_compose_orchestration_test.cpp.s
+.PHONY : tests/unit/phase71_compose_orchestration_test.s
+
+# target to generate assembly for a file
+tests/unit/phase71_compose_orchestration_test.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_phase71_compose_orchestration.dir/build.make CMakeFiles/test_phase71_compose_orchestration.dir/tests/unit/phase71_compose_orchestration_test.cpp.s
+.PHONY : tests/unit/phase71_compose_orchestration_test.cpp.s
+
+tests/unit/phase72_page_cache_policy_test.o: tests/unit/phase72_page_cache_policy_test.cpp.o
+.PHONY : tests/unit/phase72_page_cache_policy_test.o
+
+# target to build an object file
+tests/unit/phase72_page_cache_policy_test.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_phase72_page_cache_policy.dir/build.make CMakeFiles/test_phase72_page_cache_policy.dir/tests/unit/phase72_page_cache_policy_test.cpp.o
+.PHONY : tests/unit/phase72_page_cache_policy_test.cpp.o
+
+tests/unit/phase72_page_cache_policy_test.i: tests/unit/phase72_page_cache_policy_test.cpp.i
+.PHONY : tests/unit/phase72_page_cache_policy_test.i
+
+# target to preprocess a source file
+tests/unit/phase72_page_cache_policy_test.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_phase72_page_cache_policy.dir/build.make CMakeFiles/test_phase72_page_cache_policy.dir/tests/unit/phase72_page_cache_policy_test.cpp.i
+.PHONY : tests/unit/phase72_page_cache_policy_test.cpp.i
+
+tests/unit/phase72_page_cache_policy_test.s: tests/unit/phase72_page_cache_policy_test.cpp.s
+.PHONY : tests/unit/phase72_page_cache_policy_test.s
+
+# target to generate assembly for a file
+tests/unit/phase72_page_cache_policy_test.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_phase72_page_cache_policy.dir/build.make CMakeFiles/test_phase72_page_cache_policy.dir/tests/unit/phase72_page_cache_policy_test.cpp.s
+.PHONY : tests/unit/phase72_page_cache_policy_test.cpp.s
+
+tests/unit/phase73_neural_trace_test.o: tests/unit/phase73_neural_trace_test.cpp.o
+.PHONY : tests/unit/phase73_neural_trace_test.o
+
+# target to build an object file
+tests/unit/phase73_neural_trace_test.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_phase73_neural_trace.dir/build.make CMakeFiles/test_phase73_neural_trace.dir/tests/unit/phase73_neural_trace_test.cpp.o
+.PHONY : tests/unit/phase73_neural_trace_test.cpp.o
+
+tests/unit/phase73_neural_trace_test.i: tests/unit/phase73_neural_trace_test.cpp.i
+.PHONY : tests/unit/phase73_neural_trace_test.i
+
+# target to preprocess a source file
+tests/unit/phase73_neural_trace_test.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_phase73_neural_trace.dir/build.make CMakeFiles/test_phase73_neural_trace.dir/tests/unit/phase73_neural_trace_test.cpp.i
+.PHONY : tests/unit/phase73_neural_trace_test.cpp.i
+
+tests/unit/phase73_neural_trace_test.s: tests/unit/phase73_neural_trace_test.cpp.s
+.PHONY : tests/unit/phase73_neural_trace_test.s
+
+# target to generate assembly for a file
+tests/unit/phase73_neural_trace_test.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_phase73_neural_trace.dir/build.make CMakeFiles/test_phase73_neural_trace.dir/tests/unit/phase73_neural_trace_test.cpp.s
+.PHONY : tests/unit/phase73_neural_trace_test.cpp.s
+
+tests/unit/phase74_error_taxonomy_test.o: tests/unit/phase74_error_taxonomy_test.cpp.o
+.PHONY : tests/unit/phase74_error_taxonomy_test.o
+
+# target to build an object file
+tests/unit/phase74_error_taxonomy_test.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_phase74_error_taxonomy.dir/build.make CMakeFiles/test_phase74_error_taxonomy.dir/tests/unit/phase74_error_taxonomy_test.cpp.o
+.PHONY : tests/unit/phase74_error_taxonomy_test.cpp.o
+
+tests/unit/phase74_error_taxonomy_test.i: tests/unit/phase74_error_taxonomy_test.cpp.i
+.PHONY : tests/unit/phase74_error_taxonomy_test.i
+
+# target to preprocess a source file
+tests/unit/phase74_error_taxonomy_test.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_phase74_error_taxonomy.dir/build.make CMakeFiles/test_phase74_error_taxonomy.dir/tests/unit/phase74_error_taxonomy_test.cpp.i
+.PHONY : tests/unit/phase74_error_taxonomy_test.cpp.i
+
+tests/unit/phase74_error_taxonomy_test.s: tests/unit/phase74_error_taxonomy_test.cpp.s
+.PHONY : tests/unit/phase74_error_taxonomy_test.s
+
+# target to generate assembly for a file
+tests/unit/phase74_error_taxonomy_test.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_phase74_error_taxonomy.dir/build.make CMakeFiles/test_phase74_error_taxonomy.dir/tests/unit/phase74_error_taxonomy_test.cpp.s
+.PHONY : tests/unit/phase74_error_taxonomy_test.cpp.s
+
+tests/unit/phase75_perf_tuning_test.o: tests/unit/phase75_perf_tuning_test.cpp.o
+.PHONY : tests/unit/phase75_perf_tuning_test.o
+
+# target to build an object file
+tests/unit/phase75_perf_tuning_test.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_phase75_perf_tuning.dir/build.make CMakeFiles/test_phase75_perf_tuning.dir/tests/unit/phase75_perf_tuning_test.cpp.o
+.PHONY : tests/unit/phase75_perf_tuning_test.cpp.o
+
+tests/unit/phase75_perf_tuning_test.i: tests/unit/phase75_perf_tuning_test.cpp.i
+.PHONY : tests/unit/phase75_perf_tuning_test.i
+
+# target to preprocess a source file
+tests/unit/phase75_perf_tuning_test.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_phase75_perf_tuning.dir/build.make CMakeFiles/test_phase75_perf_tuning.dir/tests/unit/phase75_perf_tuning_test.cpp.i
+.PHONY : tests/unit/phase75_perf_tuning_test.cpp.i
+
+tests/unit/phase75_perf_tuning_test.s: tests/unit/phase75_perf_tuning_test.cpp.s
+.PHONY : tests/unit/phase75_perf_tuning_test.s
+
+# target to generate assembly for a file
+tests/unit/phase75_perf_tuning_test.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_phase75_perf_tuning.dir/build.make CMakeFiles/test_phase75_perf_tuning.dir/tests/unit/phase75_perf_tuning_test.cpp.s
+.PHONY : tests/unit/phase75_perf_tuning_test.cpp.s
+
+tests/unit/phase76_k8s_hpa_test.o: tests/unit/phase76_k8s_hpa_test.cpp.o
+.PHONY : tests/unit/phase76_k8s_hpa_test.o
+
+# target to build an object file
+tests/unit/phase76_k8s_hpa_test.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_phase76_k8s_hpa.dir/build.make CMakeFiles/test_phase76_k8s_hpa.dir/tests/unit/phase76_k8s_hpa_test.cpp.o
+.PHONY : tests/unit/phase76_k8s_hpa_test.cpp.o
+
+tests/unit/phase76_k8s_hpa_test.i: tests/unit/phase76_k8s_hpa_test.cpp.i
+.PHONY : tests/unit/phase76_k8s_hpa_test.i
+
+# target to preprocess a source file
+tests/unit/phase76_k8s_hpa_test.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_phase76_k8s_hpa.dir/build.make CMakeFiles/test_phase76_k8s_hpa.dir/tests/unit/phase76_k8s_hpa_test.cpp.i
+.PHONY : tests/unit/phase76_k8s_hpa_test.cpp.i
+
+tests/unit/phase76_k8s_hpa_test.s: tests/unit/phase76_k8s_hpa_test.cpp.s
+.PHONY : tests/unit/phase76_k8s_hpa_test.s
+
+# target to generate assembly for a file
+tests/unit/phase76_k8s_hpa_test.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_phase76_k8s_hpa.dir/build.make CMakeFiles/test_phase76_k8s_hpa.dir/tests/unit/phase76_k8s_hpa_test.cpp.s
+.PHONY : tests/unit/phase76_k8s_hpa_test.cpp.s
+
+tests/unit/phase77_cuda_kernels_test.o: tests/unit/phase77_cuda_kernels_test.cpp.o
+.PHONY : tests/unit/phase77_cuda_kernels_test.o
+
+# target to build an object file
+tests/unit/phase77_cuda_kernels_test.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_phase77_cuda_kernels.dir/build.make CMakeFiles/test_phase77_cuda_kernels.dir/tests/unit/phase77_cuda_kernels_test.cpp.o
+.PHONY : tests/unit/phase77_cuda_kernels_test.cpp.o
+
+tests/unit/phase77_cuda_kernels_test.i: tests/unit/phase77_cuda_kernels_test.cpp.i
+.PHONY : tests/unit/phase77_cuda_kernels_test.i
+
+# target to preprocess a source file
+tests/unit/phase77_cuda_kernels_test.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_phase77_cuda_kernels.dir/build.make CMakeFiles/test_phase77_cuda_kernels.dir/tests/unit/phase77_cuda_kernels_test.cpp.i
+.PHONY : tests/unit/phase77_cuda_kernels_test.cpp.i
+
+tests/unit/phase77_cuda_kernels_test.s: tests/unit/phase77_cuda_kernels_test.cpp.s
+.PHONY : tests/unit/phase77_cuda_kernels_test.s
+
+# target to generate assembly for a file
+tests/unit/phase77_cuda_kernels_test.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_phase77_cuda_kernels.dir/build.make CMakeFiles/test_phase77_cuda_kernels.dir/tests/unit/phase77_cuda_kernels_test.cpp.s
+.PHONY : tests/unit/phase77_cuda_kernels_test.cpp.s
+
+tests/unit/phase78_docker_compose_orchestration_test.o: tests/unit/phase78_docker_compose_orchestration_test.cpp.o
+.PHONY : tests/unit/phase78_docker_compose_orchestration_test.o
+
+# target to build an object file
+tests/unit/phase78_docker_compose_orchestration_test.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_phase78_docker_compose_orchestration.dir/build.make CMakeFiles/test_phase78_docker_compose_orchestration.dir/tests/unit/phase78_docker_compose_orchestration_test.cpp.o
+.PHONY : tests/unit/phase78_docker_compose_orchestration_test.cpp.o
+
+tests/unit/phase78_docker_compose_orchestration_test.i: tests/unit/phase78_docker_compose_orchestration_test.cpp.i
+.PHONY : tests/unit/phase78_docker_compose_orchestration_test.i
+
+# target to preprocess a source file
+tests/unit/phase78_docker_compose_orchestration_test.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_phase78_docker_compose_orchestration.dir/build.make CMakeFiles/test_phase78_docker_compose_orchestration.dir/tests/unit/phase78_docker_compose_orchestration_test.cpp.i
+.PHONY : tests/unit/phase78_docker_compose_orchestration_test.cpp.i
+
+tests/unit/phase78_docker_compose_orchestration_test.s: tests/unit/phase78_docker_compose_orchestration_test.cpp.s
+.PHONY : tests/unit/phase78_docker_compose_orchestration_test.s
+
+# target to generate assembly for a file
+tests/unit/phase78_docker_compose_orchestration_test.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_phase78_docker_compose_orchestration.dir/build.make CMakeFiles/test_phase78_docker_compose_orchestration.dir/tests/unit/phase78_docker_compose_orchestration_test.cpp.s
+.PHONY : tests/unit/phase78_docker_compose_orchestration_test.cpp.s
+
 tests/unit/phase7_security_test.o: tests/unit/phase7_security_test.cpp.o
 .PHONY : tests/unit/phase7_security_test.o
 
@@ -3217,6 +3550,15 @@ help:
 	@echo "... test_phase68_proto_schema"
 	@echo "... test_phase69_conversion_validator"
 	@echo "... test_phase6_multimodal"
+	@echo "... test_phase70_resonance_index"
+	@echo "... test_phase71_compose_orchestration"
+	@echo "... test_phase72_page_cache_policy"
+	@echo "... test_phase73_neural_trace"
+	@echo "... test_phase74_error_taxonomy"
+	@echo "... test_phase75_perf_tuning"
+	@echo "... test_phase76_k8s_hpa"
+	@echo "... test_phase77_cuda_kernels"
+	@echo "... test_phase78_docker_compose_orchestration"
 	@echo "... test_phase7_security"
 	@echo "... test_phase8_foundations"
 	@echo "... test_phase9_bootstrap"
@@ -3459,6 +3801,33 @@ help:
 	@echo "... tests/unit/phase6_multimodal_test.o"
 	@echo "... tests/unit/phase6_multimodal_test.i"
 	@echo "... tests/unit/phase6_multimodal_test.s"
+	@echo "... tests/unit/phase70_resonance_index_test.o"
+	@echo "... tests/unit/phase70_resonance_index_test.i"
+	@echo "... tests/unit/phase70_resonance_index_test.s"
+	@echo "... tests/unit/phase71_compose_orchestration_test.o"
+	@echo "... tests/unit/phase71_compose_orchestration_test.i"
+	@echo "... tests/unit/phase71_compose_orchestration_test.s"
+	@echo "... tests/unit/phase72_page_cache_policy_test.o"
+	@echo "... tests/unit/phase72_page_cache_policy_test.i"
+	@echo "... tests/unit/phase72_page_cache_policy_test.s"
+	@echo "... tests/unit/phase73_neural_trace_test.o"
+	@echo "... tests/unit/phase73_neural_trace_test.i"
+	@echo "... tests/unit/phase73_neural_trace_test.s"
+	@echo "... tests/unit/phase74_error_taxonomy_test.o"
+	@echo "... tests/unit/phase74_error_taxonomy_test.i"
+	@echo "... tests/unit/phase74_error_taxonomy_test.s"
+	@echo "... tests/unit/phase75_perf_tuning_test.o"
+	@echo "... tests/unit/phase75_perf_tuning_test.i"
+	@echo "... tests/unit/phase75_perf_tuning_test.s"
+	@echo "... tests/unit/phase76_k8s_hpa_test.o"
+	@echo "... tests/unit/phase76_k8s_hpa_test.i"
+	@echo "... tests/unit/phase76_k8s_hpa_test.s"
+	@echo "... tests/unit/phase77_cuda_kernels_test.o"
+	@echo "... tests/unit/phase77_cuda_kernels_test.i"
+	@echo "... tests/unit/phase77_cuda_kernels_test.s"
+	@echo "... tests/unit/phase78_docker_compose_orchestration_test.o"
+	@echo "... tests/unit/phase78_docker_compose_orchestration_test.i"
+	@echo "... tests/unit/phase78_docker_compose_orchestration_test.s"
 	@echo "... tests/unit/phase7_security_test.o"
 	@echo "... tests/unit/phase7_security_test.i"
 	@echo "... tests/unit/phase7_security_test.s"

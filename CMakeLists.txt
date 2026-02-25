@@ -552,6 +552,70 @@ if(NIKOLA_BUILD_TESTS)
     target_link_libraries(test_phase69_conversion_validator PRIVATE nikola_core Catch2::Catch2WithMain)
     add_test(NAME Phase69ConversionValidator COMMAND test_phase69_conversion_validator)
 
+    # Phase 70 Unit Tests: GAP-024 Ingestion Pipeline → Resonance Index Synchronization
+    # (MemTable flush thresholds, minor/major merge triggers, visibility lag ≤500 ms,
+    #  snapshot isolation ref-count, Hilbert key ordering, atomic-swap safety)
+    add_executable(test_phase70_resonance_index tests/unit/phase70_resonance_index_test.cpp)
+    target_link_libraries(test_phase70_resonance_index PRIVATE nikola_core Catch2::Catch2WithMain)
+    add_test(NAME Phase70ResonanceIndex COMMAND test_phase70_resonance_index)
+
+    # Phase 71 Unit Tests: GAP-026 Docker Compose Service Orchestration
+    # (4-layer dependency graph, healthcheck budgets, graceful shutdown sequence,
+    #  GPU/KVM resource predicates, IPC volume sharing, Cryptographic Amnesia guard)
+    add_executable(test_phase71_compose_orchestration tests/unit/phase71_compose_orchestration_test.cpp)
+    target_link_libraries(test_phase71_compose_orchestration PRIVATE nikola_core Catch2::Catch2WithMain)
+    add_test(NAME Phase71ComposeOrchestration COMMAND test_phase71_compose_orchestration)
+
+    # Phase 72 Unit Tests: GAP-027a LMDB Memory-Mapped I/O Page Cache Management
+    # (madvise policy dispatch, SSD/HDD storage profiles, huge-page eligibility,
+    #  mlock wavefront pinning, page-alignment utils, predictive WILLNEED prefetch)
+    add_executable(test_phase72_page_cache_policy tests/unit/phase72_page_cache_policy_test.cpp)
+    target_link_libraries(test_phase72_page_cache_policy PRIVATE nikola_core Catch2::Catch2WithMain)
+    add_test(NAME Phase72PageCachePolicy COMMAND test_phase72_page_cache_policy)
+
+    # Phase 73 Unit Tests: GAP-027b Observability and Tracing Integration
+    # (Neural Trace concept, W3C traceparent propagation, tail-based Interest sampling,
+    #  semantic span attributes, Prometheus metrics and histogram buckets,
+    #  performance budgets, storage efficiency constants)
+    add_executable(test_phase73_neural_trace tests/unit/phase73_neural_trace_test.cpp)
+    target_link_libraries(test_phase73_neural_trace PRIVATE nikola_core Catch2::Catch2WithMain)
+    add_test(NAME Phase73NeuralTrace COMMAND test_phase73_neural_trace)
+
+    # Phase 74 Unit Tests: GAP-042 Error Code Taxonomy and Handling Guide
+    # (Homeostatic Regulation philosophy, Soft SCRAM, INF/PHY/COG error codes,
+    #  severity + recovery metadata, fault-condition thresholds, JSON log schema)
+    add_executable(test_phase74_error_taxonomy tests/unit/phase74_error_taxonomy_test.cpp)
+    target_link_libraries(test_phase74_error_taxonomy PRIVATE nikola_core Catch2::Catch2WithMain)
+    add_test(NAME Phase74ErrorTaxonomy COMMAND test_phase74_error_taxonomy)
+
+    # Phase 75 Unit Tests: GAP-043 Performance Tuning Cookbook
+    # ("Phase 0" memory-bound mandate, knob defaults/ranges, diagnostic thresholds,
+    #  benchmark baselines, hardware profiles, perf predicate functions)
+    add_executable(test_phase75_perf_tuning tests/unit/phase75_perf_tuning_test.cpp)
+    target_link_libraries(test_phase75_perf_tuning PRIVATE nikola_core Catch2::Catch2WithMain)
+    add_test(NAME Phase75PerfTuning COMMAND test_phase75_perf_tuning)
+
+    # Phase 76 Unit Tests: GAP-045 Kubernetes HPA for Biological Architectures
+    # (Homeostatic scaling, ATP sigmoid governor, unified load metric,
+    #  StatefulSet Physics Engine, Worker Pool PDB, Prometheus adapter config)
+    add_executable(test_phase76_k8s_hpa tests/unit/phase76_k8s_hpa_test.cpp)
+    target_link_libraries(test_phase76_k8s_hpa PRIVATE nikola_core Catch2::Catch2WithMain)
+    add_test(NAME Phase76K8sHpa COMMAND test_phase76_k8s_hpa)
+
+    # Phase 77 Unit Tests: GAP-046 High-Frequency CUDA Kernel Optimization Strategies
+    # (CUDA Graphs 80% overhead reduction, persistent mega-kernel doorbell pattern,
+    #  H100 occupancy limits, audio-visual pipeline constants, strategy selection)
+    add_executable(test_phase77_cuda_kernels tests/unit/phase77_cuda_kernels_test.cpp)
+    target_link_libraries(test_phase77_cuda_kernels PRIVATE nikola_core Catch2::Catch2WithMain)
+    add_test(NAME Phase77CudaKernels COMMAND test_phase77_cuda_kernels)
+
+    # Phase 78 Unit Tests: GAP-026 Docker Compose Service Orchestration
+    # (4-layer service topology, healthcheck parameters, startup/shutdown timing,
+    #  resource limits, service capability flags, memory-safe shutdown state machine)
+    add_executable(test_phase78_docker_compose_orchestration tests/unit/phase78_docker_compose_orchestration_test.cpp)
+    target_link_libraries(test_phase78_docker_compose_orchestration PRIVATE nikola_core Catch2::Catch2WithMain)
+    add_test(NAME Phase78DockerComposeOrchestration COMMAND test_phase78_docker_compose_orchestration)
+
     message(STATUS "Tests configured - run with: make test")
 endif()
 
