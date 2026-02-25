@@ -1043,6 +1043,71 @@ test_phase64_cymatic_transduction/fast:
 .PHONY : test_phase64_cymatic_transduction/fast
 
 #=============================================================================
+# Target rules for targets named test_phase65_visual_frame_rate
+
+# Build rule for target.
+test_phase65_visual_frame_rate: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 test_phase65_visual_frame_rate
+.PHONY : test_phase65_visual_frame_rate
+
+# fast build rule for target.
+test_phase65_visual_frame_rate/fast:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_phase65_visual_frame_rate.dir/build.make CMakeFiles/test_phase65_visual_frame_rate.dir/build
+.PHONY : test_phase65_visual_frame_rate/fast
+
+#=============================================================================
+# Target rules for targets named test_phase66_inner_monologue
+
+# Build rule for target.
+test_phase66_inner_monologue: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 test_phase66_inner_monologue
+.PHONY : test_phase66_inner_monologue
+
+# fast build rule for target.
+test_phase66_inner_monologue/fast:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_phase66_inner_monologue.dir/build.make CMakeFiles/test_phase66_inner_monologue.dir/build
+.PHONY : test_phase66_inner_monologue/fast
+
+#=============================================================================
+# Target rules for targets named test_phase67_partition_table
+
+# Build rule for target.
+test_phase67_partition_table: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 test_phase67_partition_table
+.PHONY : test_phase67_partition_table
+
+# fast build rule for target.
+test_phase67_partition_table/fast:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_phase67_partition_table.dir/build.make CMakeFiles/test_phase67_partition_table.dir/build
+.PHONY : test_phase67_partition_table/fast
+
+#=============================================================================
+# Target rules for targets named test_phase68_proto_schema
+
+# Build rule for target.
+test_phase68_proto_schema: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 test_phase68_proto_schema
+.PHONY : test_phase68_proto_schema
+
+# fast build rule for target.
+test_phase68_proto_schema/fast:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_phase68_proto_schema.dir/build.make CMakeFiles/test_phase68_proto_schema.dir/build
+.PHONY : test_phase68_proto_schema/fast
+
+#=============================================================================
+# Target rules for targets named test_phase69_conversion_validator
+
+# Build rule for target.
+test_phase69_conversion_validator: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 test_phase69_conversion_validator
+.PHONY : test_phase69_conversion_validator
+
+# fast build rule for target.
+test_phase69_conversion_validator/fast:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_phase69_conversion_validator.dir/build.make CMakeFiles/test_phase69_conversion_validator.dir/build
+.PHONY : test_phase69_conversion_validator/fast
+
+#=============================================================================
 # Target rules for targets named nikola_first_light
 
 # Build rule for target.
@@ -2807,6 +2872,126 @@ tests/unit/phase64_cymatic_transduction_test.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_phase64_cymatic_transduction.dir/build.make CMakeFiles/test_phase64_cymatic_transduction.dir/tests/unit/phase64_cymatic_transduction_test.cpp.s
 .PHONY : tests/unit/phase64_cymatic_transduction_test.cpp.s
 
+tests/unit/phase65_visual_frame_rate_test.o: tests/unit/phase65_visual_frame_rate_test.cpp.o
+.PHONY : tests/unit/phase65_visual_frame_rate_test.o
+
+# target to build an object file
+tests/unit/phase65_visual_frame_rate_test.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_phase65_visual_frame_rate.dir/build.make CMakeFiles/test_phase65_visual_frame_rate.dir/tests/unit/phase65_visual_frame_rate_test.cpp.o
+.PHONY : tests/unit/phase65_visual_frame_rate_test.cpp.o
+
+tests/unit/phase65_visual_frame_rate_test.i: tests/unit/phase65_visual_frame_rate_test.cpp.i
+.PHONY : tests/unit/phase65_visual_frame_rate_test.i
+
+# target to preprocess a source file
+tests/unit/phase65_visual_frame_rate_test.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_phase65_visual_frame_rate.dir/build.make CMakeFiles/test_phase65_visual_frame_rate.dir/tests/unit/phase65_visual_frame_rate_test.cpp.i
+.PHONY : tests/unit/phase65_visual_frame_rate_test.cpp.i
+
+tests/unit/phase65_visual_frame_rate_test.s: tests/unit/phase65_visual_frame_rate_test.cpp.s
+.PHONY : tests/unit/phase65_visual_frame_rate_test.s
+
+# target to generate assembly for a file
+tests/unit/phase65_visual_frame_rate_test.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_phase65_visual_frame_rate.dir/build.make CMakeFiles/test_phase65_visual_frame_rate.dir/tests/unit/phase65_visual_frame_rate_test.cpp.s
+.PHONY : tests/unit/phase65_visual_frame_rate_test.cpp.s
+
+tests/unit/phase66_inner_monologue_test.o: tests/unit/phase66_inner_monologue_test.cpp.o
+.PHONY : tests/unit/phase66_inner_monologue_test.o
+
+# target to build an object file
+tests/unit/phase66_inner_monologue_test.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_phase66_inner_monologue.dir/build.make CMakeFiles/test_phase66_inner_monologue.dir/tests/unit/phase66_inner_monologue_test.cpp.o
+.PHONY : tests/unit/phase66_inner_monologue_test.cpp.o
+
+tests/unit/phase66_inner_monologue_test.i: tests/unit/phase66_inner_monologue_test.cpp.i
+.PHONY : tests/unit/phase66_inner_monologue_test.i
+
+# target to preprocess a source file
+tests/unit/phase66_inner_monologue_test.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_phase66_inner_monologue.dir/build.make CMakeFiles/test_phase66_inner_monologue.dir/tests/unit/phase66_inner_monologue_test.cpp.i
+.PHONY : tests/unit/phase66_inner_monologue_test.cpp.i
+
+tests/unit/phase66_inner_monologue_test.s: tests/unit/phase66_inner_monologue_test.cpp.s
+.PHONY : tests/unit/phase66_inner_monologue_test.s
+
+# target to generate assembly for a file
+tests/unit/phase66_inner_monologue_test.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_phase66_inner_monologue.dir/build.make CMakeFiles/test_phase66_inner_monologue.dir/tests/unit/phase66_inner_monologue_test.cpp.s
+.PHONY : tests/unit/phase66_inner_monologue_test.cpp.s
+
+tests/unit/phase67_partition_table_test.o: tests/unit/phase67_partition_table_test.cpp.o
+.PHONY : tests/unit/phase67_partition_table_test.o
+
+# target to build an object file
+tests/unit/phase67_partition_table_test.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_phase67_partition_table.dir/build.make CMakeFiles/test_phase67_partition_table.dir/tests/unit/phase67_partition_table_test.cpp.o
+.PHONY : tests/unit/phase67_partition_table_test.cpp.o
+
+tests/unit/phase67_partition_table_test.i: tests/unit/phase67_partition_table_test.cpp.i
+.PHONY : tests/unit/phase67_partition_table_test.i
+
+# target to preprocess a source file
+tests/unit/phase67_partition_table_test.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_phase67_partition_table.dir/build.make CMakeFiles/test_phase67_partition_table.dir/tests/unit/phase67_partition_table_test.cpp.i
+.PHONY : tests/unit/phase67_partition_table_test.cpp.i
+
+tests/unit/phase67_partition_table_test.s: tests/unit/phase67_partition_table_test.cpp.s
+.PHONY : tests/unit/phase67_partition_table_test.s
+
+# target to generate assembly for a file
+tests/unit/phase67_partition_table_test.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_phase67_partition_table.dir/build.make CMakeFiles/test_phase67_partition_table.dir/tests/unit/phase67_partition_table_test.cpp.s
+.PHONY : tests/unit/phase67_partition_table_test.cpp.s
+
+tests/unit/phase68_proto_schema_test.o: tests/unit/phase68_proto_schema_test.cpp.o
+.PHONY : tests/unit/phase68_proto_schema_test.o
+
+# target to build an object file
+tests/unit/phase68_proto_schema_test.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_phase68_proto_schema.dir/build.make CMakeFiles/test_phase68_proto_schema.dir/tests/unit/phase68_proto_schema_test.cpp.o
+.PHONY : tests/unit/phase68_proto_schema_test.cpp.o
+
+tests/unit/phase68_proto_schema_test.i: tests/unit/phase68_proto_schema_test.cpp.i
+.PHONY : tests/unit/phase68_proto_schema_test.i
+
+# target to preprocess a source file
+tests/unit/phase68_proto_schema_test.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_phase68_proto_schema.dir/build.make CMakeFiles/test_phase68_proto_schema.dir/tests/unit/phase68_proto_schema_test.cpp.i
+.PHONY : tests/unit/phase68_proto_schema_test.cpp.i
+
+tests/unit/phase68_proto_schema_test.s: tests/unit/phase68_proto_schema_test.cpp.s
+.PHONY : tests/unit/phase68_proto_schema_test.s
+
+# target to generate assembly for a file
+tests/unit/phase68_proto_schema_test.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_phase68_proto_schema.dir/build.make CMakeFiles/test_phase68_proto_schema.dir/tests/unit/phase68_proto_schema_test.cpp.s
+.PHONY : tests/unit/phase68_proto_schema_test.cpp.s
+
+tests/unit/phase69_conversion_validator_test.o: tests/unit/phase69_conversion_validator_test.cpp.o
+.PHONY : tests/unit/phase69_conversion_validator_test.o
+
+# target to build an object file
+tests/unit/phase69_conversion_validator_test.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_phase69_conversion_validator.dir/build.make CMakeFiles/test_phase69_conversion_validator.dir/tests/unit/phase69_conversion_validator_test.cpp.o
+.PHONY : tests/unit/phase69_conversion_validator_test.cpp.o
+
+tests/unit/phase69_conversion_validator_test.i: tests/unit/phase69_conversion_validator_test.cpp.i
+.PHONY : tests/unit/phase69_conversion_validator_test.i
+
+# target to preprocess a source file
+tests/unit/phase69_conversion_validator_test.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_phase69_conversion_validator.dir/build.make CMakeFiles/test_phase69_conversion_validator.dir/tests/unit/phase69_conversion_validator_test.cpp.i
+.PHONY : tests/unit/phase69_conversion_validator_test.cpp.i
+
+tests/unit/phase69_conversion_validator_test.s: tests/unit/phase69_conversion_validator_test.cpp.s
+.PHONY : tests/unit/phase69_conversion_validator_test.s
+
+# target to generate assembly for a file
+tests/unit/phase69_conversion_validator_test.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_phase69_conversion_validator.dir/build.make CMakeFiles/test_phase69_conversion_validator.dir/tests/unit/phase69_conversion_validator_test.cpp.s
+.PHONY : tests/unit/phase69_conversion_validator_test.cpp.s
+
 tests/unit/phase6_multimodal_test.o: tests/unit/phase6_multimodal_test.cpp.o
 .PHONY : tests/unit/phase6_multimodal_test.o
 
@@ -3026,6 +3211,11 @@ help:
 	@echo "... test_phase62_temporal_decoherence"
 	@echo "... test_phase63_nonary_overflow"
 	@echo "... test_phase64_cymatic_transduction"
+	@echo "... test_phase65_visual_frame_rate"
+	@echo "... test_phase66_inner_monologue"
+	@echo "... test_phase67_partition_table"
+	@echo "... test_phase68_proto_schema"
+	@echo "... test_phase69_conversion_validator"
 	@echo "... test_phase6_multimodal"
 	@echo "... test_phase7_security"
 	@echo "... test_phase8_foundations"
@@ -3251,6 +3441,21 @@ help:
 	@echo "... tests/unit/phase64_cymatic_transduction_test.o"
 	@echo "... tests/unit/phase64_cymatic_transduction_test.i"
 	@echo "... tests/unit/phase64_cymatic_transduction_test.s"
+	@echo "... tests/unit/phase65_visual_frame_rate_test.o"
+	@echo "... tests/unit/phase65_visual_frame_rate_test.i"
+	@echo "... tests/unit/phase65_visual_frame_rate_test.s"
+	@echo "... tests/unit/phase66_inner_monologue_test.o"
+	@echo "... tests/unit/phase66_inner_monologue_test.i"
+	@echo "... tests/unit/phase66_inner_monologue_test.s"
+	@echo "... tests/unit/phase67_partition_table_test.o"
+	@echo "... tests/unit/phase67_partition_table_test.i"
+	@echo "... tests/unit/phase67_partition_table_test.s"
+	@echo "... tests/unit/phase68_proto_schema_test.o"
+	@echo "... tests/unit/phase68_proto_schema_test.i"
+	@echo "... tests/unit/phase68_proto_schema_test.s"
+	@echo "... tests/unit/phase69_conversion_validator_test.o"
+	@echo "... tests/unit/phase69_conversion_validator_test.i"
+	@echo "... tests/unit/phase69_conversion_validator_test.s"
 	@echo "... tests/unit/phase6_multimodal_test.o"
 	@echo "... tests/unit/phase6_multimodal_test.i"
 	@echo "... tests/unit/phase6_multimodal_test.s"

@@ -131,5 +131,10 @@ set(CMAKE_DEPEND_INFO_FILES
   "CMakeFiles/test_phase62_temporal_decoherence.dir/DependInfo.cmake"
   "CMakeFiles/test_phase63_nonary_overflow.dir/DependInfo.cmake"
   "CMakeFiles/test_phase64_cymatic_transduction.dir/DependInfo.cmake"
+  "CMakeFiles/test_phase65_visual_frame_rate.dir/DependInfo.cmake"
+  "CMakeFiles/test_phase66_inner_monologue.dir/DependInfo.cmake"
+  "CMakeFiles/test_phase67_partition_table.dir/DependInfo.cmake"
+  "CMakeFiles/test_phase68_proto_schema.dir/DependInfo.cmake"
+  "CMakeFiles/test_phase69_conversion_validator.dir/DependInfo.cmake"
   "CMakeFiles/nikola_first_light.dir/DependInfo.cmake"
   )

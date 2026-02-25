@@ -65,6 +65,11 @@
 /home/randy/Workspace/REPOS/nikola/build/CMakeFiles/test_phase62_temporal_decoherence.dir
 /home/randy/Workspace/REPOS/nikola/build/CMakeFiles/test_phase63_nonary_overflow.dir
 /home/randy/Workspace/REPOS/nikola/build/CMakeFiles/test_phase64_cymatic_transduction.dir
+/home/randy/Workspace/REPOS/nikola/build/CMakeFiles/test_phase65_visual_frame_rate.dir
+/home/randy/Workspace/REPOS/nikola/build/CMakeFiles/test_phase66_inner_monologue.dir
+/home/randy/Workspace/REPOS/nikola/build/CMakeFiles/test_phase67_partition_table.dir
+/home/randy/Workspace/REPOS/nikola/build/CMakeFiles/test_phase68_proto_schema.dir
+/home/randy/Workspace/REPOS/nikola/build/CMakeFiles/test_phase69_conversion_validator.dir
 /home/randy/Workspace/REPOS/nikola/build/CMakeFiles/nikola_first_light.dir
 /home/randy/Workspace/REPOS/nikola/build/CMakeFiles/test.dir
 /home/randy/Workspace/REPOS/nikola/build/CMakeFiles/edit_cache.dir

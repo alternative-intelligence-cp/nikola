@@ -521,6 +521,37 @@ if(NIKOLA_BUILD_TESTS)
     target_link_libraries(test_phase64_cymatic_transduction PRIVATE nikola_core Catch2::Catch2WithMain)
     add_test(NAME Phase64CymaticTransduction COMMAND test_phase64_cymatic_transduction)
 
+    # Phase 65 Unit Tests: GAP-018 Visual Cymatics Frame Rate Adaptation (physics↔display rate bridge, energy accumulation, Reinhard tone-mapping, Nyquist aliasing, chromatic aberration, stroboscopic trigger, triple-buffer seqlock)
+    add_executable(test_phase65_visual_frame_rate tests/unit/phase65_visual_frame_rate_test.cpp)
+    target_link_libraries(test_phase65_visual_frame_rate PRIVATE nikola_core Catch2::Catch2WithMain)
+    add_test(NAME Phase65VisualFrameRate COMMAND test_phase65_visual_frame_rate)
+
+    # Phase 66 Unit Tests: GAP-016 Inner Monologue Recursive Reasoning Control (Mamba-9D hard/soft depth limits, thermodynamic ATP budget, spectral entropy coherence watchdog, closed-geodesic loop detection, Neuro-Necrosis decay, refractive trap memory)
+    add_executable(test_phase66_inner_monologue tests/unit/phase66_inner_monologue_test.cpp)
+    target_link_libraries(test_phase66_inner_monologue PRIVATE nikola_core Catch2::Catch2WithMain)
+    add_test(NAME Phase66InnerMonologue COMMAND test_phase66_inner_monologue)
+
+    # Phase 67 Unit Tests: GAP-019 Distributed Partition Table Update Protocol
+    # (Two-Phase Epoch Barrier, LIF trigger, VRAM safety, SoA payload sizing,
+    #  CRC32C integrity, SPD metric validation, 2P-EBP state machine)
+    add_executable(test_phase67_partition_table tests/unit/phase67_partition_table_test.cpp)
+    target_link_libraries(test_phase67_partition_table PRIVATE nikola_core Catch2::Catch2WithMain)
+    add_test(NAME Phase67PartitionTable COMMAND test_phase67_partition_table)
+
+    # Phase 68 Unit Tests: GAP-023 Protocol Buffer Schema Evolution Strategy
+    # (SemVer classification, package namespacing, field lifecycle / tombstone protocol,
+    #  compatibility matrix M[producer,consumer], sparse waveform threshold, artifact naming)
+    add_executable(test_phase68_proto_schema tests/unit/phase68_proto_schema_test.cpp)
+    target_link_libraries(test_phase68_proto_schema PRIVATE nikola_core Catch2::Catch2WithMain)
+    add_test(NAME Phase68ProtoSchema COMMAND test_phase68_proto_schema)
+
+    # Phase 69 Unit Tests: GAP-023b DMC <-> GGUF Bidirectional Conversion Validation
+    # (round-trip fidelity: energy drift <0.001, Pearson r >0.999, phase error <0.03 rad,
+    #  Jaccard topology =1.0, Q9_0 quantisation, KL divergence masking, version matrix)
+    add_executable(test_phase69_conversion_validator tests/unit/phase69_conversion_validator_test.cpp)
+    target_link_libraries(test_phase69_conversion_validator PRIVATE nikola_core Catch2::Catch2WithMain)
+    add_test(NAME Phase69ConversionValidator COMMAND test_phase69_conversion_validator)
+
     message(STATUS "Tests configured - run with: make test")
 endif()
 
