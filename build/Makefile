@@ -1017,6 +1017,32 @@ test_phase62_temporal_decoherence/fast:
 .PHONY : test_phase62_temporal_decoherence/fast
 
 #=============================================================================
+# Target rules for targets named test_phase63_nonary_overflow
+
+# Build rule for target.
+test_phase63_nonary_overflow: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 test_phase63_nonary_overflow
+.PHONY : test_phase63_nonary_overflow
+
+# fast build rule for target.
+test_phase63_nonary_overflow/fast:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_phase63_nonary_overflow.dir/build.make CMakeFiles/test_phase63_nonary_overflow.dir/build
+.PHONY : test_phase63_nonary_overflow/fast
+
+#=============================================================================
+# Target rules for targets named test_phase64_cymatic_transduction
+
+# Build rule for target.
+test_phase64_cymatic_transduction: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 test_phase64_cymatic_transduction
+.PHONY : test_phase64_cymatic_transduction
+
+# fast build rule for target.
+test_phase64_cymatic_transduction/fast:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_phase64_cymatic_transduction.dir/build.make CMakeFiles/test_phase64_cymatic_transduction.dir/build
+.PHONY : test_phase64_cymatic_transduction/fast
+
+#=============================================================================
 # Target rules for targets named nikola_first_light
 
 # Build rule for target.
@@ -2733,6 +2759,54 @@ tests/unit/phase62_temporal_decoherence_test.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_phase62_temporal_decoherence.dir/build.make CMakeFiles/test_phase62_temporal_decoherence.dir/tests/unit/phase62_temporal_decoherence_test.cpp.s
 .PHONY : tests/unit/phase62_temporal_decoherence_test.cpp.s
 
+tests/unit/phase63_nonary_overflow_test.o: tests/unit/phase63_nonary_overflow_test.cpp.o
+.PHONY : tests/unit/phase63_nonary_overflow_test.o
+
+# target to build an object file
+tests/unit/phase63_nonary_overflow_test.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_phase63_nonary_overflow.dir/build.make CMakeFiles/test_phase63_nonary_overflow.dir/tests/unit/phase63_nonary_overflow_test.cpp.o
+.PHONY : tests/unit/phase63_nonary_overflow_test.cpp.o
+
+tests/unit/phase63_nonary_overflow_test.i: tests/unit/phase63_nonary_overflow_test.cpp.i
+.PHONY : tests/unit/phase63_nonary_overflow_test.i
+
+# target to preprocess a source file
+tests/unit/phase63_nonary_overflow_test.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_phase63_nonary_overflow.dir/build.make CMakeFiles/test_phase63_nonary_overflow.dir/tests/unit/phase63_nonary_overflow_test.cpp.i
+.PHONY : tests/unit/phase63_nonary_overflow_test.cpp.i
+
+tests/unit/phase63_nonary_overflow_test.s: tests/unit/phase63_nonary_overflow_test.cpp.s
+.PHONY : tests/unit/phase63_nonary_overflow_test.s
+
+# target to generate assembly for a file
+tests/unit/phase63_nonary_overflow_test.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_phase63_nonary_overflow.dir/build.make CMakeFiles/test_phase63_nonary_overflow.dir/tests/unit/phase63_nonary_overflow_test.cpp.s
+.PHONY : tests/unit/phase63_nonary_overflow_test.cpp.s
+
+tests/unit/phase64_cymatic_transduction_test.o: tests/unit/phase64_cymatic_transduction_test.cpp.o
+.PHONY : tests/unit/phase64_cymatic_transduction_test.o
+
+# target to build an object file
+tests/unit/phase64_cymatic_transduction_test.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_phase64_cymatic_transduction.dir/build.make CMakeFiles/test_phase64_cymatic_transduction.dir/tests/unit/phase64_cymatic_transduction_test.cpp.o
+.PHONY : tests/unit/phase64_cymatic_transduction_test.cpp.o
+
+tests/unit/phase64_cymatic_transduction_test.i: tests/unit/phase64_cymatic_transduction_test.cpp.i
+.PHONY : tests/unit/phase64_cymatic_transduction_test.i
+
+# target to preprocess a source file
+tests/unit/phase64_cymatic_transduction_test.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_phase64_cymatic_transduction.dir/build.make CMakeFiles/test_phase64_cymatic_transduction.dir/tests/unit/phase64_cymatic_transduction_test.cpp.i
+.PHONY : tests/unit/phase64_cymatic_transduction_test.cpp.i
+
+tests/unit/phase64_cymatic_transduction_test.s: tests/unit/phase64_cymatic_transduction_test.cpp.s
+.PHONY : tests/unit/phase64_cymatic_transduction_test.s
+
+# target to generate assembly for a file
+tests/unit/phase64_cymatic_transduction_test.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_phase64_cymatic_transduction.dir/build.make CMakeFiles/test_phase64_cymatic_transduction.dir/tests/unit/phase64_cymatic_transduction_test.cpp.s
+.PHONY : tests/unit/phase64_cymatic_transduction_test.cpp.s
+
 tests/unit/phase6_multimodal_test.o: tests/unit/phase6_multimodal_test.cpp.o
 .PHONY : tests/unit/phase6_multimodal_test.o
 
@@ -2950,6 +3024,8 @@ help:
 	@echo "... test_phase60_soa_layout"
 	@echo "... test_phase61_torus_geometry"
 	@echo "... test_phase62_temporal_decoherence"
+	@echo "... test_phase63_nonary_overflow"
+	@echo "... test_phase64_cymatic_transduction"
 	@echo "... test_phase6_multimodal"
 	@echo "... test_phase7_security"
 	@echo "... test_phase8_foundations"
@@ -3169,6 +3245,12 @@ help:
 	@echo "... tests/unit/phase62_temporal_decoherence_test.o"
 	@echo "... tests/unit/phase62_temporal_decoherence_test.i"
 	@echo "... tests/unit/phase62_temporal_decoherence_test.s"
+	@echo "... tests/unit/phase63_nonary_overflow_test.o"
+	@echo "... tests/unit/phase63_nonary_overflow_test.i"
+	@echo "... tests/unit/phase63_nonary_overflow_test.s"
+	@echo "... tests/unit/phase64_cymatic_transduction_test.o"
+	@echo "... tests/unit/phase64_cymatic_transduction_test.i"
+	@echo "... tests/unit/phase64_cymatic_transduction_test.s"
 	@echo "... tests/unit/phase6_multimodal_test.o"
 	@echo "... tests/unit/phase6_multimodal_test.i"
 	@echo "... tests/unit/phase6_multimodal_test.s"

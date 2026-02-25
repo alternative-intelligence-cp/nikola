@@ -132,3 +132,7 @@ add_test([=[Phase61TorusGeometry]=] "/home/randy/Workspace/REPOS/nikola/build/te
 set_tests_properties([=[Phase61TorusGeometry]=] PROPERTIES  _BACKTRACE_TRIPLES "/home/randy/Workspace/REPOS/nikola/CMakeLists.txt;507;add_test;/home/randy/Workspace/REPOS/nikola/CMakeLists.txt;0;")
 add_test([=[Phase62TemporalDecoherence]=] "/home/randy/Workspace/REPOS/nikola/build/test_phase62_temporal_decoherence")
 set_tests_properties([=[Phase62TemporalDecoherence]=] PROPERTIES  _BACKTRACE_TRIPLES "/home/randy/Workspace/REPOS/nikola/CMakeLists.txt;512;add_test;/home/randy/Workspace/REPOS/nikola/CMakeLists.txt;0;")
+add_test([=[Phase63NonaryOverflow]=] "/home/randy/Workspace/REPOS/nikola/build/test_phase63_nonary_overflow")
+set_tests_properties([=[Phase63NonaryOverflow]=] PROPERTIES  _BACKTRACE_TRIPLES "/home/randy/Workspace/REPOS/nikola/CMakeLists.txt;517;add_test;/home/randy/Workspace/REPOS/nikola/CMakeLists.txt;0;")
+add_test([=[Phase64CymaticTransduction]=] "/home/randy/Workspace/REPOS/nikola/build/test_phase64_cymatic_transduction")
+set_tests_properties([=[Phase64CymaticTransduction]=] PROPERTIES  _BACKTRACE_TRIPLES "/home/randy/Workspace/REPOS/nikola/CMakeLists.txt;522;add_test;/home/randy/Workspace/REPOS/nikola/CMakeLists.txt;0;")

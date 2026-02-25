@@ -511,6 +511,16 @@ if(NIKOLA_BUILD_TESTS)
     target_link_libraries(test_phase62_temporal_decoherence PRIVATE nikola_core Catch2::Catch2WithMain)
     add_test(NAME Phase62TemporalDecoherence COMMAND test_phase62_temporal_decoherence)
 
+    # Phase 63 Unit Tests: GAP-044 Nonary Overflow Probability Distribution (bits-per-trit, uniform/Gaussian overflow stats, Spectral Cascading carry decomposition, saturation monitoring, Voronoi dither)
+    add_executable(test_phase63_nonary_overflow tests/unit/phase63_nonary_overflow_test.cpp)
+    target_link_libraries(test_phase63_nonary_overflow PRIVATE nikola_core Catch2::Catch2WithMain)
+    add_test(NAME Phase63NonaryOverflow COMMAND test_phase63_nonary_overflow)
+
+    # Phase 64 Unit Tests: GAP-017 Cymatic Transduction Sampling Rate (8 golden-ratio emitters, 48kHz→1kHz decimation, FIR anti-alias filter, latency budget, Goertzel frequency extraction, dual-path architecture)
+    add_executable(test_phase64_cymatic_transduction tests/unit/phase64_cymatic_transduction_test.cpp)
+    target_link_libraries(test_phase64_cymatic_transduction PRIVATE nikola_core Catch2::Catch2WithMain)
+    add_test(NAME Phase64CymaticTransduction COMMAND test_phase64_cymatic_transduction)
+
     message(STATUS "Tests configured - run with: make test")
 endif()
 

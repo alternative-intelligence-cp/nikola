@@ -457,6 +457,18 @@
 },
 {
   "directory": "/home/randy/Workspace/REPOS/nikola/build",
+  "command": "/usr/bin/c++ -DNIKOLA_HAS_ORT -DNIKOLA_ORT_MODEL_PATH=\\\"/home/randy/Workspace/SYSTEM/onnxruntime/bert-tiny-onnx/model.onnx\\\" -DNIKOLA_ORT_TOKENIZER_PATH=\\\"/home/randy/Workspace/SYSTEM/onnxruntime/bert-tiny-onnx\\\" -I/home/randy/Workspace/REPOS/nikola/include -I/home/randy/Workspace/REPOS/nikola/build -isystem /usr/include/eigen3 -isystem /home/randy/Workspace/SYSTEM/onnxruntime/cpp/include -O3 -DNDEBUG -std=c++23 -fPIE -Wall -Wextra -Wpedantic -Werror=return-type -o CMakeFiles/test_phase63_nonary_overflow.dir/tests/unit/phase63_nonary_overflow_test.cpp.o -c /home/randy/Workspace/REPOS/nikola/tests/unit/phase63_nonary_overflow_test.cpp",
+  "file": "/home/randy/Workspace/REPOS/nikola/tests/unit/phase63_nonary_overflow_test.cpp",
+  "output": "CMakeFiles/test_phase63_nonary_overflow.dir/tests/unit/phase63_nonary_overflow_test.cpp.o"
+},
+{
+  "directory": "/home/randy/Workspace/REPOS/nikola/build",
+  "command": "/usr/bin/c++ -DNIKOLA_HAS_ORT -DNIKOLA_ORT_MODEL_PATH=\\\"/home/randy/Workspace/SYSTEM/onnxruntime/bert-tiny-onnx/model.onnx\\\" -DNIKOLA_ORT_TOKENIZER_PATH=\\\"/home/randy/Workspace/SYSTEM/onnxruntime/bert-tiny-onnx\\\" -I/home/randy/Workspace/REPOS/nikola/include -I/home/randy/Workspace/REPOS/nikola/build -isystem /usr/include/eigen3 -isystem /home/randy/Workspace/SYSTEM/onnxruntime/cpp/include -O3 -DNDEBUG -std=c++23 -fPIE -Wall -Wextra -Wpedantic -Werror=return-type -o CMakeFiles/test_phase64_cymatic_transduction.dir/tests/unit/phase64_cymatic_transduction_test.cpp.o -c /home/randy/Workspace/REPOS/nikola/tests/unit/phase64_cymatic_transduction_test.cpp",
+  "file": "/home/randy/Workspace/REPOS/nikola/tests/unit/phase64_cymatic_transduction_test.cpp",
+  "output": "CMakeFiles/test_phase64_cymatic_transduction.dir/tests/unit/phase64_cymatic_transduction_test.cpp.o"
+},
+{
+  "directory": "/home/randy/Workspace/REPOS/nikola/build",
   "command": "/usr/bin/c++ -DNIKOLA_AUTONOMY_ENGINE_IMPL -DNIKOLA_HAS_ORT -DNIKOLA_ORT_MODEL_PATH=\\\"/home/randy/Workspace/SYSTEM/onnxruntime/bert-tiny-onnx/model.onnx\\\" -DNIKOLA_ORT_TOKENIZER_PATH=\\\"/home/randy/Workspace/SYSTEM/onnxruntime/bert-tiny-onnx\\\" -I/home/randy/Workspace/REPOS/nikola/include -I/home/randy/Workspace/REPOS/nikola/build -isystem /usr/include/eigen3 -isystem /home/randy/Workspace/SYSTEM/onnxruntime/cpp/include -O3 -DNDEBUG -std=c++23 -fPIE -Wall -Wextra -Wpedantic -Werror=return-type -o CMakeFiles/nikola_first_light.dir/src/main.cpp.o -c /home/randy/Workspace/REPOS/nikola/src/main.cpp",
   "file": "/home/randy/Workspace/REPOS/nikola/src/main.cpp",
   "output": "CMakeFiles/nikola_first_light.dir/src/main.cpp.o"
