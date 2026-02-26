@@ -41,8 +41,11 @@ Memory, attention, and reasoning emerge from wave interference — not from look
 | GPU Hamiltonian Kernel | ✅ | hamiltonian_density_kernel, RTX 3090, sm_86 | Phase 110 |
 | CUDA Wave Kernels | ✅ | psi_squared_kernel, scale_field_kernel | Phase 105 |
 | 9D Hilbert Scanner | ✅ | Skilling algorithm, variable-precision, 0 failures | Phase 94 |
-| Neuroplastic Transformer | ✅ | Multi-head attention on wavefunction | Phase 43 |
-| Holographic Injector | ✅ | Text → BERT embedding → field injection | Phase 10 |
+| Mamba-9D SSM (CognitiveCore) | ✅ | SSM H=256, 16r×16s state space, WavefunctionSampler, TokenMapper | Phase 3 |
+| Neuroplastic Transformer (NPT) | ✅ | Wave-correlation attention, 8 heads at π·φⁿ bands | Phase 43 |
+| Holographic Emitter Array | ✅ | 8 emitters at f_n=π·φⁿ Hz (spectrally orthogonal injection) | Phase 10 |
+| Holographic Injector | ✅ | Text → BERT embedding → emitter chord → field injection | Phase 10 |
+| SIE Infrastructure | ✅ | PhysicsOracle watchdog, PIMPL hot-swap, code_blacklist, dlopen | Phase 28+ |
 | BERT Tokenizer | ✅ | Real tokenizer.json, 30,522 tokens, 695 KB | — |
 | BERT-tiny ONNX Model | ✅ | Real 17.5 MB model, dynamic-axes inference | — |
 | Semantic Memory | ✅ | Wave-basis Hilbert-indexed, save/load persistence | Phase 69 |
@@ -127,7 +130,11 @@ TorusGrid (T⁹, 19,683 nodes, SoA layout)
     │
     ▼
 NeuralProcessingTransformer (NPT)
-    │    (multi-head attention on Ψ)
+    │    (wave-correlation attention, 8 heads at π·φⁿ bands)
+    │    [Transformer sits here — before Mamba, not after]
+    ▼
+CognitiveCore / Mamba-9D SSM
+    │    (H=256 state space, 100-step wave window, WavefunctionSampler)
     ▼
 SemanticMemory (wave-basis, Hilbert-indexed, persistent)
     │
@@ -189,15 +196,16 @@ Both are implemented via third-party reference code in `third_party/`.
 - ✅ Research audit (see [docs/RESEARCH_AUDIT_2026_FEB.md](docs/RESEARCH_AUDIT_2026_FEB.md))
 
 **Near-term**
-- Fix propagator.cu nvcc C++20 compatibility (std::span + TorusGrid adjacency API)
 - AVX-512 SIMD intrinsic path for TorusBlock (GAP-021 completion)
 - nikola-run streaming output mode
+- Curiosity engine (active learning / intrinsic motivation — stub exists in interior/curiosity.hpp)
 
-**Future Research**
-- Mamba-9D State Space Model (selective SSM on the toroidal field)
-- TIMO / PHI architecture (Transformer-Input-Mamba-Output dual path)
-- Nine-emitter Tesla 3-6-9 harmonic resonance calibration
-- Self-Improvement Engine (SIE) driven by Hamiltonian drift monitoring
+**Future Work**
+- Fix propagator.cu nvcc C++20 compatibility (std::span + TorusGrid adjacency API)
+- SIE Phase 4: full autonomous code-generation + sandbox + hot-swap loop
+- Aria language runtime (port entire model once Aria compiler is complete)
+- Emitter frequency research: explore Tesla 3-6-9 harmonic tuning vs. current π·φⁿ golden-ratio scheme
+- Mamba-9D selective scan upgrade (current impl uses tanh-gated recurrence; replace with true S6 selective scan kernel)
 
 ---
 
@@ -234,7 +242,9 @@ We welcome contributions from researchers and developers! See [CONTRIBUTING.md](
 Priority areas:
 - Fix propagator.cu nvcc compatibility (C++20 std::span, TorusGrid adjacency API)
 - AVX-512 SIMD implementation for TorusBlock
-- Mamba-9D state space model
+- SIE Phase 4: full autonomous code-generation + sandbox + hot-swap runtime
+- Mamba-9D S6 selective scan kernel (upgrade current tanh-gated recurrence to true Mamba S6)
+- Curiosity engine implementation (interior/curiosity.hpp stub)
 - Empirical benchmarks vs. transformer baseline
 
 ## Academic Use
