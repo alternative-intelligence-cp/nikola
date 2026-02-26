@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.20)
-project(Nikola VERSION 0.0.4 LANGUAGES CXX)
+project(Nikola VERSION 0.0.4 LANGUAGES C CXX)
 
 # C++23 required for Phase 0+ implementation
 # (modules, constexpr enhancements, improved concepts)
@@ -16,7 +16,7 @@ add_compile_options(
     -Wall
     -Wextra
     -Wpedantic
-    -Werror=return-type
+    $<$<COMPILE_LANGUAGE:CXX>:-Werror=return-type>
 )
 
 # Find dependencies
@@ -615,6 +615,357 @@ if(NIKOLA_BUILD_TESTS)
     add_executable(test_phase78_docker_compose_orchestration tests/unit/phase78_docker_compose_orchestration_test.cpp)
     target_link_libraries(test_phase78_docker_compose_orchestration PRIVATE nikola_core Catch2::Catch2WithMain)
     add_test(NAME Phase78DockerComposeOrchestration COMMAND test_phase78_docker_compose_orchestration)
+
+    # Phase 79 Unit Tests: GAP-027 LMDB Memory-Mapped I/O Page Cache Management
+    # (madvise policy selection, SSD/HDD profiles, HDD sequential override,
+    #  Hugepage + mlock eviction priorities, Hilbert page geometry, 100x I/O claim)
+    add_executable(test_phase79_lmdb_page_cache tests/unit/phase79_lmdb_page_cache_test.cpp)
+    target_link_libraries(test_phase79_lmdb_page_cache PRIVATE nikola_core Catch2::Catch2WithMain)
+    add_test(NAME Phase79LmdbPageCache COMMAND test_phase79_lmdb_page_cache)
+
+    # Phase 80 — GAP-013: Transactional Metabolic Scheduling with RAII Locks
+    # (three-tier ATP energy model: Zones I/II/III, GRACE_PERIOD_S=5, overdraft penalty 10%,
+    #  WAL micro-transaction yield, pre-flight feasibility, emergency abort / coma escalation)
+    add_executable(test_phase80_metabolic_scheduler tests/unit/phase80_metabolic_scheduler_test.cpp)
+    target_link_libraries(test_phase80_metabolic_scheduler PRIVATE nikola_core Catch2::Catch2WithMain)
+    add_test(NAME Phase80MetabolicScheduler COMMAND test_phase80_metabolic_scheduler)
+
+    # Phase 81 — GAP-032: Spectral Radius Upper Bound for SSM Stability
+    # (Nyquist stability: Δ_safe=1.6/((1−r)·ρ(G)+ε), MAX_GROWTH_RATE=10.0,
+    #  gain limiter ||A||≤ln(10), power iteration 5 steps, 4 failure modes)
+    add_executable(test_phase81_spectral_stabilizer tests/unit/phase81_spectral_stabilizer_test.cpp)
+    target_link_libraries(test_phase81_spectral_stabilizer PRIVATE nikola_core Catch2::Catch2WithMain)
+    add_test(NAME Phase81SpectralStabilizer COMMAND test_phase81_spectral_stabilizer)
+
+    # Phase 82 — GAP-007: Voronoi Quantization with Soft Saturation and TPDF Dithering
+    # (z' = A_max·tanh(z/A_scale), A_max=4.5, A_scale=2.5, Voronoi on real axis,
+    #  TPDF ν = U[-0.5,0.5]+U[-0.5,0.5], <5% THD, <0.01% energy drift)
+    add_executable(test_phase82_voronoi_quantizer tests/unit/phase82_voronoi_quantizer_test.cpp)
+    target_link_libraries(test_phase82_voronoi_quantizer PRIVATE nikola_core Catch2::Catch2WithMain)
+    add_test(NAME Phase82VoronoiQuantizer COMMAND test_phase82_voronoi_quantizer)
+
+    # Phase 83 — GAP-043: Performance Tuning Cookbook
+    # (physics_dt 1ms/1kHz, cache ≥95%, Laplacian ~1e-7, energy drift <0.01%,
+    #  benchmarks 0.48ms-7.8ms, CUDA 6-kernel 90μs overhead, 3^9 grid geometry)
+    add_executable(test_phase83_performance_policy tests/unit/phase83_performance_policy_test.cpp)
+    target_link_libraries(test_phase83_performance_policy PRIVATE nikola_core Catch2::Catch2WithMain)
+    add_test(NAME Phase83PerformancePolicy COMMAND test_phase83_performance_policy)
+
+    # Phase 84 — GAP-020: Temporal Decoherence Detection Thresholds
+    # (EMITTER_F_MAX=441Hz, PHASE_EPSILON=π/10, physics limit 113μs, visual 8.3ms,
+    #  PTP states LOCKED/WARNING/SCRAM at 50/100/150μs, watchdog 2ms, heartbeat 500ms)
+    add_executable(test_phase84_temporal_coherence tests/unit/phase84_temporal_coherence_test.cpp)
+    target_link_libraries(test_phase84_temporal_coherence PRIVATE nikola_core Catch2::Catch2WithMain)
+    add_test(NAME Phase84TemporalCoherence COMMAND test_phase84_temporal_coherence)
+
+    # Phase 85 — GAP-021: TorusGridSoA Memory Alignment Guarantees
+    # (AVX-512 64-byte alignment, ZMM_FLOATS=16, TORUS_BLOCK=19683, METRIC_COMP=45,
+    #  AOS stride 188B, SOA stride 4B, CUDA_WARP=128B, soa_bandwidth_efficiency)
+    add_executable(test_phase85_soa_alignment tests/unit/phase85_soa_alignment_test.cpp)
+    target_link_libraries(test_phase85_soa_alignment PRIVATE nikola_core Catch2::Catch2WithMain)
+    add_test(NAME Phase85SoaAlignment COMMAND test_phase85_soa_alignment)
+
+    # Phase 86 — GAP-025: End-to-End Latency Budget Allocation
+    # (TICK_BUDGET=1ms, physics 600μs, cognitive 200μs, ENGS 50μs, infra 50μs,
+    #  safety margin 100μs, WARNING=950μs, CRITICAL=1050μs, watchdog 2ms)
+    add_executable(test_phase86_latency_budget tests/unit/phase86_latency_budget_test.cpp)
+    target_link_libraries(test_phase86_latency_budget PRIVATE nikola_core Catch2::Catch2WithMain)
+    add_test(NAME Phase86LatencyBudget COMMAND test_phase86_latency_budget)
+
+    # Phase 87 — GAP-041: 9D Coordinate Dimension Semantics Glossary
+    # (4 domains: systemic/temporal/quantum/spatial; r∈[0,1], s∈[0,2], t cyclic,
+    #  u,v,w complex, x,y,z int14-bit; HIGH_Q>0.8, DEEP_FOCUS>1.5)
+    add_executable(test_phase87_coordinate_semantics tests/unit/phase87_coordinate_semantics_test.cpp)
+    target_link_libraries(test_phase87_coordinate_semantics PRIVATE nikola_core Catch2::Catch2WithMain)
+    add_test(NAME Phase87CoordinateSemantics COMMAND test_phase87_coordinate_semantics)
+
+    # Phase 88 — GAP-042: System Error Taxonomy (INF/PHY/COG)
+    # (14 error codes: INF-001..005, PHY-001..004, COG-001..005; CRITICAL/HIGH/MEDIUM/LOW;
+    #  10 recovery strategies; lookup_error(), is_fatal(), category/severity/recovery labels)
+    add_executable(test_phase88_error_taxonomy tests/unit/phase88_error_taxonomy_test.cpp)
+    target_link_libraries(test_phase88_error_taxonomy PRIVATE nikola_core Catch2::Catch2WithMain)
+    add_test(NAME Phase88ErrorTaxonomy COMMAND test_phase88_error_taxonomy)
+
+    # Phase 89 — GAP-016: Inner Monologue Recursion & ATP Policy
+    # (D_hard=12, D_soft=7, ATP_reserve=0.15, C_base=0.05, λ=0.15,
+    #  entropy_limit=0.85, gradient_limit=0.05, MAX_ACTIVE_TRAPS=9)
+    add_executable(test_phase89_inner_monologue_policy tests/unit/phase89_inner_monologue_policy_test.cpp)
+    target_link_libraries(test_phase89_inner_monologue_policy PRIVATE nikola_core Catch2::Catch2WithMain)
+    add_test(NAME Phase89InnerMonologuePolicy COMMAND test_phase89_inner_monologue_policy)
+
+    # Phase 90 — GAP-019: Distributed Partition Table Update Protocol (2P-EBP)
+    # (LIF_trigger=0.2, VRAM_safety=90%, rollback_timeout=5000ms,
+    #  stability_penalty=1h, CRC32C validation, Morton keys 16B big-endian)
+    add_executable(test_phase90_partition_table_protocol tests/unit/phase90_partition_table_protocol_test.cpp)
+    target_link_libraries(test_phase90_partition_table_protocol PRIVATE nikola_core Catch2::Catch2WithMain)
+    add_test(NAME Phase90PartitionTableProtocol COMMAND test_phase90_partition_table_protocol)
+
+    # Phase 91 — GAP-023: Protocol Buffer Schema Evolution Strategy
+    # (SemVer MAJOR.MINOR.PATCH, package nikola.spine.vN, field IDs immutable,
+    #  tombstone reserved IDs, compatibility matrix 4 cases, MORTON_KEY_BYTES_V2=16)
+    add_executable(test_phase91_schema_evolution_policy tests/unit/phase91_schema_evolution_policy_test.cpp)
+    target_link_libraries(test_phase91_schema_evolution_policy PRIVATE nikola_core Catch2::Catch2WithMain)
+    add_test(NAME Phase91SchemaEvolutionPolicy COMMAND test_phase91_schema_evolution_policy)
+
+    # Phase 92 — GAP-024: Ingestion Pipeline → Resonance Index Synchronisation
+    # (LSM async merge, MemTable trigger 10k nodes / 1s, visibility_lag_max 500ms,
+    #  full rebuild on nap/fragmentation>20%, atomic snapshot swap at tick boundary)
+    add_executable(test_phase92_resonance_index_policy tests/unit/phase92_resonance_index_policy_test.cpp)
+    target_link_libraries(test_phase92_resonance_index_policy PRIVATE nikola_core Catch2::Catch2WithMain)
+    add_test(NAME Phase92ResonanceIndexPolicy COMMAND test_phase92_resonance_index_policy)
+
+    # Phase 93 — GAP-026: Docker Compose Service Orchestration Policy
+    # (4-layer hierarchy, spine healthcheck 5s/2s/5-retry, PHYSICS stack 64MB,
+    #  MEMORY graceful 60s SIGTERM, CurveZMQ Ironhouse, resource limits)
+    add_executable(test_phase93_service_orchestration tests/unit/phase93_service_orchestration_test.cpp)
+    target_link_libraries(test_phase93_service_orchestration PRIVATE nikola_core Catch2::Catch2WithMain)
+    add_test(NAME Phase93ServiceOrchestration COMMAND test_phase93_service_orchestration)
+
+    # Phase 94 — GAP-009: 9D Hilbert Curve State Machine (Hamilton & Rau-Chaplin)
+    add_executable(test_phase94_hilbert_state_machine tests/unit/phase94_hilbert_state_machine_test.cpp)
+    target_link_libraries(test_phase94_hilbert_state_machine PRIVATE nikola_core Catch2::Catch2WithMain)
+    add_test(NAME Phase94HilbertStateMachine COMMAND test_phase94_hilbert_state_machine)
+
+    # Phase 95 — GAP-038: CRC32C hardware intrinsics (SSE4.2 _mm_crc32_u{8,16,32,64})
+    #   Header-only: include/nikola/system/crc32c.hpp
+    #   -msse4.2 enables __SSE4_2__ and activates the hardware path.
+    add_executable(test_phase95_crc32c tests/unit/phase95_crc32c_test.cpp)
+    target_link_libraries(test_phase95_crc32c PRIVATE nikola_core Catch2::Catch2WithMain)
+    target_compile_options(test_phase95_crc32c PRIVATE -msse4.2)
+    add_test(NAME Phase95Crc32c COMMAND test_phase95_crc32c)
+
+    # Phase 96 — GAP-039: ZMQ HWM backpressure (§3.4 ZeroMQ Spine / Gap 4.4 impl spec)
+    #   Tests: compile-time constants, configure_socket() sockopt readback,
+    #          HWM enforcement (DONTWAIT → nullopt), round-trip integrity,
+    #          LINGER=0 fast close, IMMEDIATE=1 fail-fast, ZmqSpine factory API.
+    add_executable(test_phase96_zmq_hwm tests/unit/phase96_zmq_hwm_test.cpp)
+    target_link_libraries(test_phase96_zmq_hwm PRIVATE nikola_core Catch2::Catch2WithMain)
+    add_test(NAME Phase96ZmqHwm COMMAND test_phase96_zmq_hwm)
+
+    # Phase 97 — GAP-040: LMDB full-copy compaction validator
+    #   Header: include/nikola/infrastructure/lmdb_compaction.hpp
+    #   Tests: policy layer, lifecycle (write/delete/compact/integrity),
+    #          file size reduction, record count, deleted-record absence, error handling.
+    add_executable(test_phase97_lmdb_compaction tests/unit/phase97_lmdb_compaction_test.cpp)
+    target_link_libraries(test_phase97_lmdb_compaction PRIVATE nikola_core Catch2::Catch2WithMain lmdb)
+    add_test(NAME Phase97LmdbCompaction COMMAND test_phase97_lmdb_compaction)
+
+    # Phase 98 — GAP-010: CurveZMQ Ironhouse cryptographic identity management
+    #   Header: include/nikola/security/ironhouse.hpp
+    #   Tests: key constants, KeyTier policy, key generation, socket option readback,
+    #          live CurveZMQ round-trip, wrong-key handshake failure, ZapWhitelist.
+    add_executable(test_phase98_ironhouse tests/unit/phase98_ironhouse_test.cpp)
+    target_link_libraries(test_phase98_ironhouse PRIVATE nikola_core Catch2::Catch2WithMain)
+    add_test(NAME Phase98Ironhouse COMMAND test_phase98_ironhouse)
+
+    # Phase 99 — GAP-028: LSM-DMC Neurogenesis Pruning Compactor
+    #   Header: include/nikola/persistence/lsm_neurogenesis.hpp
+    #   Tests: constants, LsmMemTable ops, sorted_events(), CompactionStats,
+    #          MERGE_ONLY / PRUNE_LOW / FULL compaction, readback, empty edge case.
+    add_executable(test_phase99_lsm_neurogenesis tests/unit/phase99_lsm_neurogenesis_test.cpp)
+    target_link_libraries(test_phase99_lsm_neurogenesis PRIVATE nikola_core Catch2::Catch2WithMain lmdb)
+    add_test(NAME Phase99LsmNeurogenesis COMMAND test_phase99_lsm_neurogenesis)
+
+    # Phase 100 — GAP-031: Hebbian-Riemannian Metric Convergence
+    #   Header: include/nikola/math/hebbian_metric.hpp
+    #   Tests: constants, compute_correlation(), is_spd(), project_to_spd(),
+    #          hebbian_update(), lyapunov_energy(), convergence rate, stability, SPD enforcement.
+    add_executable(test_phase100_hebbian_metric tests/unit/phase100_hebbian_metric_test.cpp)
+    target_link_libraries(test_phase100_hebbian_metric PRIVATE nikola_core Catch2::Catch2WithMain)
+    add_test(NAME Phase100HebbianMetric COMMAND test_phase100_hebbian_metric)
+
+    # Phase 101 — GAP-015: BERT-Tiny TinyTransformer ORT Inference
+    #   Header: include/nikola/ml/tiny_transformer.hpp
+    #   Test model: tests/assets/bert_tiny_test.onnx  (Cast+MatMul int64→float[1,128])
+    #   Tests: constants, env factory, bad-path throws, load, I/O names, I/O counts,
+    #          forward() shape/NaN/Inf/magnitude, forward() empty throws, determinism.
+    if(NIKOLA_HAS_ORT)
+        add_executable(test_phase101_tiny_transformer
+            tests/unit/phase101_tiny_transformer_test.cpp)
+        target_compile_definitions(test_phase101_tiny_transformer PRIVATE
+            NIKOLA_TEST_ASSETS_DIR="${CMAKE_SOURCE_DIR}/tests/assets")
+        target_link_libraries(test_phase101_tiny_transformer PRIVATE
+            nikola_core Catch2::Catch2WithMain onnxruntime_imported)
+        set_target_properties(test_phase101_tiny_transformer PROPERTIES
+            BUILD_RPATH "${ORT_ROOT}/lib")
+        add_test(NAME Phase101TinyTransformer COMMAND test_phase101_tiny_transformer)
+    else()
+        message(STATUS "Skipping Phase 101 (TinyTransformer) — ORT not found at ${ORT_ROOT}")
+    endif()
+
+    # Phase 102 — GAP-014: GGUF Model Streaming (GgufModelStreamer)
+    #   Header: include/nikola/persistence/gguf_model_streamer.hpp
+    #   Test model: tests/assets/nikola_test.gguf  (3 F32 tensors, 1 KV)
+    #   Links: libggml-base.so  (gguf_init_from_file, ggml_init, ggml_get_tensor)
+    add_executable(test_phase102_gguf_model_streamer
+        tests/unit/phase102_gguf_model_streamer_test.cpp)
+    target_compile_definitions(test_phase102_gguf_model_streamer PRIVATE
+        NIKOLA_TEST_ASSETS_DIR="${CMAKE_SOURCE_DIR}/tests/assets")
+    target_include_directories(test_phase102_gguf_model_streamer PRIVATE
+        /usr/local/include)
+    target_link_libraries(test_phase102_gguf_model_streamer PRIVATE
+        nikola_core Catch2::Catch2WithMain ggml-base)
+    add_test(NAME Phase102GgufModelStreamer COMMAND test_phase102_gguf_model_streamer)
+
+    # Phase 103 — GAP-035: Adversarial Code Dojo GA (GAlib 2.4.7)
+    #   Header: include/nikola/autonomy/adversarial_dojo_ga.hpp
+    #   Links: libga.so.2.4.7  (GASimpleGA, GA1DArrayGenome, GAStatistics)
+    #   Tests: constants, structs, simulate_attack(), invalid args, GA run,
+    #          fitness consistency, decode_genome, idempotency, scalability.
+    add_executable(test_phase103_adversarial_dojo_ga
+        tests/unit/phase103_adversarial_dojo_ga_test.cpp)
+    target_link_libraries(test_phase103_adversarial_dojo_ga PRIVATE
+        nikola_core Catch2::Catch2WithMain ga)
+    add_test(NAME Phase103AdversarialDojoGA COMMAND test_phase103_adversarial_dojo_ga)
+
+    # Phase 104 Unit Tests: GAP-034 GPU-resident Hamiltonian
+    #   UFIE energy reduction (kinetic + gradient/IBP + nonlinear) in SoA layout
+    #   matching the CUDA __global__ kernel layout from docs §02_foundations/04_energy_conservation.md.
+    #   Uses cuda_runtime_api.h (host-side only) for device queries; no nvcc required.
+    #   Dependency: libcudart — CUDA 12.0, RTX 3090 (sm_86) confirmed present.
+    add_executable(test_phase104_gpu_hamiltonian
+        tests/unit/phase104_gpu_hamiltonian_test.cpp)
+    target_include_directories(test_phase104_gpu_hamiltonian PRIVATE
+        /usr/local/cuda/include)
+    target_link_directories(test_phase104_gpu_hamiltonian PRIVATE
+        /usr/local/cuda/lib64)
+    target_link_libraries(test_phase104_gpu_hamiltonian PRIVATE
+        nikola_core Catch2::Catch2WithMain cudart)
+    set_target_properties(test_phase104_gpu_hamiltonian PROPERTIES
+        BUILD_RPATH  "/usr/local/cuda/lib64"
+        INSTALL_RPATH "/usr/local/cuda/lib64")
+    add_test(NAME Phase104GpuHamiltonian COMMAND test_phase104_gpu_hamiltonian)
+
+    # Phase 105 requires CUDA compilation — enable CUDA language now (idempotent).
+    # Guarded by CUDAToolkit presence; RTX 3090 + nvcc 12.0 confirmed on build host.
+    find_package(CUDAToolkit QUIET)
+    if(CUDAToolkit_FOUND)
+        enable_language(CUDA)
+
+        # Phase 105 Unit Tests: GAP-046 (live) — actual CUDA __global__ kernels on RTX 3090
+        #   psi_squared_kernel: |Ψᵢ|² per element; scale_field_kernel: Ψ *= α in-place.
+        #   sm_86 / CC 8.6; block size 256; cudaDeviceSynchronize after each launch.
+        add_executable(test_phase105_cuda_wave_kernel
+            tests/unit/phase105_cuda_wave_kernel_test.cpp
+            src/infrastructure/cuda_wave_kernel.cu)
+        set_target_properties(test_phase105_cuda_wave_kernel PROPERTIES
+            CUDA_ARCHITECTURES "86"
+            CUDA_STANDARD 17
+            BUILD_RPATH  "/usr/local/cuda/lib64"
+            INSTALL_RPATH "/usr/local/cuda/lib64")
+        target_include_directories(test_phase105_cuda_wave_kernel PRIVATE
+            ${CMAKE_SOURCE_DIR}/include
+            /usr/local/cuda/include)
+        target_link_directories(test_phase105_cuda_wave_kernel PRIVATE
+            /usr/local/cuda/lib64)
+        target_link_libraries(test_phase105_cuda_wave_kernel PRIVATE
+            Catch2::Catch2WithMain cudart)
+        add_test(NAME Phase105CudaWaveKernel COMMAND test_phase105_cuda_wave_kernel)
+
+        message(STATUS "CUDA ${CUDAToolkit_VERSION} found — Phase 105 target enabled")
+    else()
+        message(STATUS "CUDAToolkit not found — Phase 105 target skipped")
+    endif()
+
+    # -------------------------------------------------------------------------
+    # Phase 106 / GAP-045 (live) — K8s HPA Runtime (live kubectl interface)
+    # -------------------------------------------------------------------------
+    add_executable(test_phase106_k8s_hpa_runtime
+        tests/unit/phase106_k8s_hpa_runtime_test.cpp)
+    target_include_directories(test_phase106_k8s_hpa_runtime PRIVATE
+        ${CMAKE_SOURCE_DIR}/include)
+    target_link_libraries(test_phase106_k8s_hpa_runtime PRIVATE
+        nikola_core Catch2::Catch2WithMain)
+    add_test(NAME Phase106K8sHpaRuntime COMMAND test_phase106_k8s_hpa_runtime)
+
+    # -------------------------------------------------------------------------
+    # SPHINCS+-shake-256f static library  (GAP-047 / Phase 107)
+    # Parameter set: sphincs-shake-256f
+    #   PK = 64 B | SK = 128 B | Sig ≤ 49856 B
+    #   Sign ~1 ms (ref), Verify ~1 ms (ref)  — "f" = fast/larger sig
+    # Source: third_party/sphincsplus/ref (public domain, PQClean lineage)
+    # -------------------------------------------------------------------------
+    set(SPHINCS_REF ${CMAKE_SOURCE_DIR}/third_party/sphincsplus/ref)
+    add_library(sphincsplus_shake256f STATIC
+        ${SPHINCS_REF}/address.c
+        ${SPHINCS_REF}/fors.c
+        ${SPHINCS_REF}/merkle.c
+        ${SPHINCS_REF}/sign.c
+        ${SPHINCS_REF}/utils.c
+        ${SPHINCS_REF}/utilsx1.c
+        ${SPHINCS_REF}/wots.c
+        ${SPHINCS_REF}/wotsx1.c
+        ${SPHINCS_REF}/randombytes.c
+        ${SPHINCS_REF}/fips202.c
+        ${SPHINCS_REF}/hash_shake.c
+        ${SPHINCS_REF}/thash_shake_simple.c)
+    target_compile_definitions(sphincsplus_shake256f PRIVATE
+        PARAMS=sphincs-shake-256f)
+    target_include_directories(sphincsplus_shake256f PRIVATE
+        ${SPHINCS_REF})
+    set_target_properties(sphincsplus_shake256f PROPERTIES
+        C_STANDARD 99
+        C_STANDARD_REQUIRED ON)
+    # Suppress pedantic warnings from reference C99 code
+    target_compile_options(sphincsplus_shake256f PRIVATE -w)
+
+    # -------------------------------------------------------------------------
+    # Phase 107 / GAP-047 — SPHINCS+ Post-Quantum Signer
+    # -------------------------------------------------------------------------
+    add_executable(test_phase107_sphincs_signer
+        tests/unit/phase107_sphincs_signer_test.cpp)
+    target_include_directories(test_phase107_sphincs_signer PRIVATE
+        ${CMAKE_SOURCE_DIR}/include
+        ${SPHINCS_REF})
+    target_compile_definitions(test_phase107_sphincs_signer PRIVATE
+        PARAMS=sphincs-shake-256f)
+    target_link_libraries(test_phase107_sphincs_signer PRIVATE
+        nikola_core Catch2::Catch2WithMain sphincsplus_shake256f)
+    add_test(NAME Phase107SphincsSignerTest COMMAND test_phase107_sphincs_signer)
+
+    # -------------------------------------------------------------------------
+    # Kyber-768 (ML-KEM-768) static library  (Phase 108)
+    # Parameter set: kyber768  (KYBER_K=3, NIST Level 3)
+    #   PK = 1184 B | SK = 2400 B | CT = 1088 B | SS = 32 B
+    #   KEM latency: ~0.1 ms  (ref impl) — suitable for ephemeral key exchange
+    # Source: third_party/kyber/ref (CC0 public domain, pq-crystals)
+    # -------------------------------------------------------------------------
+    set(KYBER_REF ${CMAKE_SOURCE_DIR}/third_party/kyber/ref)
+    add_library(kyber768 STATIC
+        ${KYBER_REF}/kem.c
+        ${KYBER_REF}/indcpa.c
+        ${KYBER_REF}/poly.c
+        ${KYBER_REF}/polyvec.c
+        ${KYBER_REF}/ntt.c
+        ${KYBER_REF}/reduce.c
+        ${KYBER_REF}/cbd.c
+        ${KYBER_REF}/verify.c
+        ${KYBER_REF}/symmetric-shake.c
+        ${KYBER_REF}/fips202.c
+        ${KYBER_REF}/randombytes.c)
+    target_compile_definitions(kyber768 PRIVATE
+        KYBER_K=3)
+    target_include_directories(kyber768 PRIVATE
+        ${KYBER_REF})
+    set_target_properties(kyber768 PROPERTIES
+        C_STANDARD 99
+        C_STANDARD_REQUIRED ON)
+    # Suppress pedantic warnings from reference C99 code
+    target_compile_options(kyber768 PRIVATE -w)
+
+    # -------------------------------------------------------------------------
+    # Phase 108 — ML-KEM (Kyber-768) Key Encapsulation Mechanism
+    # -------------------------------------------------------------------------
+    add_executable(test_phase108_mlkem_kem
+        tests/unit/phase108_mlkem_kem_test.cpp)
+    target_include_directories(test_phase108_mlkem_kem PRIVATE
+        ${CMAKE_SOURCE_DIR}/include
+        ${KYBER_REF})
+    target_compile_definitions(test_phase108_mlkem_kem PRIVATE
+        KYBER_K=3)
+    target_link_libraries(test_phase108_mlkem_kem PRIVATE
+        nikola_core Catch2::Catch2WithMain kyber768)
+    add_test(NAME Phase108MlKemKemTest COMMAND test_phase108_mlkem_kem)
 
     message(STATUS "Tests configured - run with: make test")
 endif()

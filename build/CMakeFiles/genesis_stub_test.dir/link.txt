@@ -1,1 +1,0 @@
-/usr/bin/c++ -O3 -DNDEBUG CMakeFiles/genesis_stub_test.dir/tests/genesis_stub_test.cpp.o -o genesis_stub_test  libnikola_core.a /usr/lib/x86_64-linux-gnu/libprotobuf.so /usr/lib/x86_64-linux-gnu/libzmq.so 

@@ -1,0 +1,23 @@
+# Build artifacts
+build/
+
+# Third-party large binaries (source kept; compiled output excluded)
+third_party/onnxruntime*/
+third_party/opentelemetry*/
+
+# Compiled objects and libraries
+*.o
+*.a
+*.so
+*.so.*
+
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+
+# Editor / OS
+.DS_Store
+*.swp
+*.swo
+.vscode/settings.json

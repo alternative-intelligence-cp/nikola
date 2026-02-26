@@ -69,8 +69,16 @@ private:
     void load_vocab(const std::string& path) {
         // Minimal tokenizer.json parser — extracts "vocab" map from HuggingFace format
         // Format: {"model": {"vocab": {"[CLS]": 101, "word": id, ...}}}
+        // Accepts either a direct file path or a directory containing tokenizer.json
         std::ifstream f(path);
-        if (!f.is_open()) return;  // graceful fallback to hash mode
+        if (!f.is_open()) {
+            // Try treating path as a directory and appending /tokenizer.json
+            std::ifstream f2(path + "/tokenizer.json");
+            if (!f2.is_open()) return;  // graceful fallback to hash mode
+            f2.close();
+            f.open(path + "/tokenizer.json");
+        }
+        if (!f.is_open()) return;
 
         std::string line;
         bool in_vocab = false;

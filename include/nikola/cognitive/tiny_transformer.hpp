@@ -46,6 +46,46 @@ public:
         if (out_count == 0) {
             throw std::runtime_error("[TinyTransformer] Model has no outputs");
         }
+
+        // Introspect model input names — some exports omit attention_mask
+        Ort::AllocatorWithDefaultOptions alloc;
+        size_t in_count = session_->GetInputCount();
+        input_names_storage_.clear();
+        input_names_.clear();
+        has_attention_mask_ = false;
+        for (size_t i = 0; i < in_count; ++i) {
+            auto name = session_->GetInputNameAllocated(i, alloc);
+            input_names_storage_.emplace_back(name.get());
+            if (input_names_storage_.back() == "attention_mask") {
+                has_attention_mask_ = true;
+            }
+        }
+        for (const auto& s : input_names_storage_) {
+            input_names_.push_back(s.c_str());
+        }
+
+        // Introspect fixed vs dynamic sequence length from input shape
+        // Shape is [batch, seq_len]; if seq_len > 0 it is a fixed requirement
+        {
+            auto type_info = session_->GetInputTypeInfo(0);
+            auto ti = type_info.GetTensorTypeAndShapeInfo();
+            auto shape = ti.GetShape();
+            if (shape.size() >= 2 && shape[1] > 0) {
+                fixed_seq_len_ = static_cast<size_t>(shape[1]);
+            }
+        }
+
+        // Introspect output name
+        output_names_storage_.clear();
+        output_names_.clear();
+        size_t out_count2 = session_->GetOutputCount();
+        for (size_t i = 0; i < out_count2; ++i) {
+            auto name = session_->GetOutputNameAllocated(i, alloc);
+            output_names_storage_.emplace_back(name.get());
+        }
+        for (const auto& s : output_names_storage_) {
+            output_names_.push_back(s.c_str());
+        }
     }
 
     // Forward pass: token IDs → 128-dim [CLS] embedding
@@ -53,19 +93,25 @@ public:
     std::vector<float> forward(const std::vector<int64_t>& token_ids,
                                const std::vector<int64_t>& attention_mask = {}) const {
 
-        size_t seq_len = std::min(token_ids.size(), static_cast<size_t>(MAX_SEQ_LEN));
+        // Determine effective sequence length (respect fixed model shape if any)
+        size_t max_len = (fixed_seq_len_ > 0) ? fixed_seq_len_
+                                               : static_cast<size_t>(MAX_SEQ_LEN);
+        size_t seq_len = std::min(token_ids.size(), max_len);
 
-        // Truncate token IDs
-        std::vector<int64_t> ids(token_ids.begin(), token_ids.begin() + seq_len);
+        // Truncate token IDs, then zero-pad to max_len if model requires fixed shape
+        std::vector<int64_t> ids(max_len, 0);
+        std::copy(token_ids.begin(), token_ids.begin() + seq_len, ids.begin());
 
-        // Build attention mask (all 1s for real tokens)
-        std::vector<int64_t> mask;
+        // Build attention mask (1 for real tokens, 0 for padding)
+        std::vector<int64_t> mask(max_len, 0);
         if (attention_mask.empty()) {
-            mask.assign(seq_len, 1);
+            std::fill(mask.begin(), mask.begin() + seq_len, 1);
         } else {
-            mask.assign(attention_mask.begin(),
-                        attention_mask.begin() + std::min(attention_mask.size(), seq_len));
+            size_t copy_len = std::min(attention_mask.size(), seq_len);
+            std::copy(attention_mask.begin(), attention_mask.begin() + copy_len, mask.begin());
         }
+
+        seq_len = max_len;  // tensor shape must match model expectation
 
         std::array<int64_t, 2> shape{1, static_cast<int64_t>(seq_len)};
 
@@ -77,7 +123,9 @@ public:
 
         std::vector<Ort::Value> inputs;
         inputs.push_back(std::move(ids_tensor));
-        inputs.push_back(std::move(mask_tensor));
+        if (has_attention_mask_) {
+            inputs.push_back(std::move(mask_tensor));
+        }
 
         // Allocate output tensor
         auto outputs = session_->Run(
@@ -96,9 +144,13 @@ private:
     std::unique_ptr<Ort::Session> session_;
     mutable Ort::MemoryInfo       memory_info_;
 
-    // BERT-Tiny input/output names
-    std::vector<const char*> input_names_  {"input_ids", "attention_mask"};
-    std::vector<const char*> output_names_ {"last_hidden_state"};
+    // Populated at construction by introspecting the loaded model
+    std::vector<std::string>     input_names_storage_;
+    std::vector<std::string>     output_names_storage_;
+    std::vector<const char*>     input_names_;
+    std::vector<const char*>     output_names_;
+    bool                         has_attention_mask_ = false;
+    size_t                       fixed_seq_len_      = 0;  // 0 = dynamic
 };
 
 } // namespace nikola::cognitive
