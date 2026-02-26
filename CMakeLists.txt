@@ -70,6 +70,7 @@ set(AUTONOMY_SOURCES
     src/autonomy/metabolic_lock.cpp
     src/autonomy/autonomy_engine_impl.cpp
     src/autonomy/decision_loop.cpp
+    src/autonomy/module_swapper.cpp
 )
 
 set(SPATIAL_SOURCES
@@ -1030,6 +1031,24 @@ if(NIKOLA_BUILD_TESTS)
     target_link_libraries(test_phase109_memory_persistence PRIVATE
         nikola_core Catch2::Catch2WithMain)
     add_test(NAME Phase109MemoryPersistenceTest COMMAND test_phase109_memory_persistence)
+
+    # ── Phase 112: ModuleSwapper hot-swap engine ────────────────────────────
+    # Shared library plugin used as a dlopen target by the test suite.
+    add_library(phase112_test_plugin MODULE
+        tests/unit/phase112_test_module.cpp)
+    set_target_properties(phase112_test_plugin PROPERTIES
+        PREFIX ""
+        LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/test_plugins")
+
+    # Test executable.
+    add_executable(test_phase112_module_swapper
+        tests/unit/phase112_module_swapper_test.cpp)
+    target_link_libraries(test_phase112_module_swapper PRIVATE
+        nikola_core Catch2::Catch2WithMain ${CMAKE_DL_LIBS})
+    target_compile_definitions(test_phase112_module_swapper PRIVATE
+        PHASE112_PLUGIN_DIR="${CMAKE_BINARY_DIR}/test_plugins")
+    add_dependencies(test_phase112_module_swapper phase112_test_plugin)
+    add_test(NAME Phase112ModuleSwapper COMMAND test_phase112_module_swapper)
 
     message(STATUS "Tests configured - run with: make test")
 endif()
