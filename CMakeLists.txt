@@ -967,6 +967,12 @@ if(NIKOLA_BUILD_TESTS)
         nikola_core Catch2::Catch2WithMain kyber768)
     add_test(NAME Phase108MlKemKemTest COMMAND test_phase108_mlkem_kem)
 
+    add_executable(test_phase109_memory_persistence
+        tests/unit/phase109_memory_persistence_test.cpp)
+    target_link_libraries(test_phase109_memory_persistence PRIVATE
+        nikola_core Catch2::Catch2WithMain)
+    add_test(NAME Phase109MemoryPersistenceTest COMMAND test_phase109_memory_persistence)
+
     message(STATUS "Tests configured - run with: make test")
 endif()
 
