@@ -858,6 +858,9 @@ if(NIKOLA_BUILD_TESTS)
         target_link_directories(nikola_cuda PUBLIC
             /usr/local/cuda/lib64)
         target_link_libraries(nikola_cuda PUBLIC cudart)
+        # NIKOLA_HAS_CUDA_KERNELS: all targets linking nikola_cuda get this define,
+        # enabling GpuHamiltonianOracle::compute() to dispatch to compute_hamiltonian_device().
+        target_compile_definitions(nikola_cuda PUBLIC NIKOLA_HAS_CUDA_KERNELS)
 
         # Phase 22 Unit Tests: skipped — propagator.cu has C++20 / TorusGrid API
         # issues preventing nvcc compilation.  Tracked for follow-up.

@@ -312,14 +312,25 @@ public:
     /**
      * @brief Compute Hamiltonian over @p buf with current configuration.
      *
-     * Delegates to compute_hamiltonian_host(); the GPU kernel dispatch path
-     * (nikola_cuda) calls the identical reduction on device and returns the
-     * same result struct via cudaMemcpy.
+     * When NIKOLA_HAS_CUDA_KERNELS is defined at compile time (set by the
+     * nikola_cuda CMake target) and a GPU is available, dispatches to the GPU
+     * reduction path (compute_hamiltonian_device).  Otherwise falls back to the
+     * CPU Kahan-compensated reference path (compute_hamiltonian_host).
+     *
+     * - CPU builds (no nikola_cuda): always call compute_hamiltonian_host.
+     * - GPU builds (link nikola_cuda): call compute_hamiltonian_device when
+     *   a CUDA-capable device is present, otherwise fall back to host.
      *
      * @throws std::invalid_argument on inconsistent buffer or dV ≤ 0.
+     * @throws std::runtime_error    on CUDA error (GPU path only).
      */
     [[nodiscard]]
     GpuHamiltonianTerms compute(const GpuFieldBuffer& buf) const {
+#ifdef NIKOLA_HAS_CUDA_KERNELS
+        if (buf.size() > 0 && has_gpu()) {
+            return compute_hamiltonian_device(buf, cfg_);
+        }
+#endif
         return compute_hamiltonian_host(buf, cfg_);
     }
 
