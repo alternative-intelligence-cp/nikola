@@ -71,6 +71,7 @@ set(AUTONOMY_SOURCES
     src/autonomy/autonomy_engine_impl.cpp
     src/autonomy/decision_loop.cpp
     src/autonomy/module_swapper.cpp
+    src/autonomy/evolutionary_orchestrator.cpp
 )
 
 set(SPATIAL_SOURCES
@@ -1049,6 +1050,17 @@ if(NIKOLA_BUILD_TESTS)
         PHASE112_PLUGIN_DIR="${CMAKE_BINARY_DIR}/test_plugins")
     add_dependencies(test_phase112_module_swapper phase112_test_plugin)
     add_test(NAME Phase112ModuleSwapper COMMAND test_phase112_module_swapper)
+
+    # ── Phase 113: EvolutionaryOrchestrator SIE loop controller ───────────────
+    add_executable(test_phase113_evolutionary_orchestrator
+        tests/unit/phase113_evolutionary_orchestrator_test.cpp)
+    target_link_libraries(test_phase113_evolutionary_orchestrator PRIVATE
+        nikola_core Catch2::Catch2WithMain ${CMAKE_DL_LIBS})
+    target_compile_definitions(test_phase113_evolutionary_orchestrator PRIVATE
+        PHASE113_PLUGIN_DIR="${CMAKE_BINARY_DIR}/test_plugins")
+    add_dependencies(test_phase113_evolutionary_orchestrator phase112_test_plugin)
+    add_test(NAME Phase113EvolutionaryOrchestrator
+        COMMAND test_phase113_evolutionary_orchestrator)
 
     message(STATUS "Tests configured - run with: make test")
 endif()
