@@ -15,10 +15,13 @@
 #include <complex>
 #include <cmath>
 #include <random>
-#include <span>
 #include <array>
 #include <cassert>
+#include <cstddef>
 #include <limits>
+#if __cplusplus >= 202002L
+#  include <span>
+#endif
 
 namespace nikola::foundation {
 
@@ -50,21 +53,23 @@ inline float magnitude(Complex c) noexcept {
 // ============================================================================
 
 /**
- * @brief Kahan–Neumaier compensated sum of an array of Complex values.
+ * @brief Kahan–Neumaier compensated sum over a raw pointer+count.
  *
  * Reduces floating-point cancellation error from O(n·ε) to O(ε).  This is
  * mandatory when accumulating 18 neighbours in the 9D discrete Laplacian.
+ * This overload is compatible with C++17 and nvcc.
  *
- * @param values  Contiguous span of complex values to sum.
+ * @param values  Pointer to the first Complex element.
+ * @param count   Number of elements.
  * @return        Compensated sum.
  */
 [[nodiscard]]
-inline Complex kahan_sum(std::span<const Complex> values) noexcept {
+inline Complex kahan_sum(const Complex* values, std::size_t count) noexcept {
     Complex sum{0.f, 0.f};
     Complex compensation{0.f, 0.f};   // running error term
 
-    for (const Complex& v : values) {
-        Complex y = v - compensation;
+    for (std::size_t i = 0; i < count; ++i) {
+        Complex y = values[i] - compensation;
         Complex t = sum + y;
         compensation = (t - sum) - y;
         sum = t;
@@ -78,8 +83,18 @@ inline Complex kahan_sum(std::span<const Complex> values) noexcept {
 template<std::size_t N>
 [[nodiscard]]
 inline Complex kahan_sum(const std::array<Complex, N>& values) noexcept {
-    return kahan_sum(std::span<const Complex>{values.data(), N});
+    return kahan_sum(values.data(), N);
 }
+
+#if __cplusplus >= 202002L
+/**
+ * @brief Kahan sum of a std::span (C++20 overload).
+ */
+[[nodiscard]]
+inline Complex kahan_sum(std::span<const Complex> values) noexcept {
+    return kahan_sum(values.data(), values.size());
+}
+#endif
 
 // ============================================================================
 // Thermal bath sampling  (for velocity field initialization, Gap 1.2)

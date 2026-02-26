@@ -837,16 +837,19 @@ if(NIKOLA_BUILD_TESTS)
         enable_language(CUDA)
 
         # -----------------------------------------------------------------------
-        # nikola_cuda — CUDA library for GPU Hamiltonian kernel (Phase 110).
+        # nikola_cuda — CUDA library for GPU kernels (Phases 110 + 111).
         #   Compiles: src/physics/torus_cuda.cu    (GPU Hamiltonian kernel, Phase 110)
+        #             src/physics/propagator.cu    (CudaPropagator Strang-Verlet, Phase 111)
         #
-        # Note: propagator.cu is NOT included here because it transitively pulls
-        # in toroidal_grid.hpp (std::span — C++20) and calls TorusGrid methods
-        # (adjacency_table_size, adjacency_table) that are absent in the host
-        # header.  The CudaPropagator target is tracked for a follow-up fix.
+        # propagator.cu fix (2026-02-26): Two issues resolved:
+        #   1. std::span / #include <span> in complex_field.hpp and toroidal_grid.hpp
+        #      → moved under #if __cplusplus >= 202002L; C++17 core uses pointer+size.
+        #   2. TorusGrid::adjacency_table_size() / adjacency_table() missing
+        #      → added as public [[nodiscard]] accessors to toroidal_grid.hpp.
         # -----------------------------------------------------------------------
         add_library(nikola_cuda STATIC
-            src/physics/torus_cuda.cu)
+            src/physics/torus_cuda.cu
+            src/physics/propagator.cu)
         set_target_properties(nikola_cuda PROPERTIES
             CUDA_ARCHITECTURES "86"
             CUDA_STANDARD 17
@@ -861,10 +864,6 @@ if(NIKOLA_BUILD_TESTS)
         # NIKOLA_HAS_CUDA_KERNELS: all targets linking nikola_cuda get this define,
         # enabling GpuHamiltonianOracle::compute() to dispatch to compute_hamiltonian_device().
         target_compile_definitions(nikola_cuda PUBLIC NIKOLA_HAS_CUDA_KERNELS)
-
-        # Phase 22 Unit Tests: skipped — propagator.cu has C++20 / TorusGrid API
-        # issues preventing nvcc compilation.  Tracked for follow-up.
-        # add_executable(test_phase22_cuda_propagator ...)
 
         # Phase 105 Unit Tests: GAP-046 (live) — actual CUDA __global__ kernels on RTX 3090
         #   psi_squared_kernel: |Ψᵢ|² per element; scale_field_kernel: Ψ *= α in-place.
@@ -904,7 +903,24 @@ if(NIKOLA_BUILD_TESTS)
             INSTALL_RPATH "/usr/local/cuda/lib64")
         add_test(NAME Phase110TorusCudaKernels COMMAND test_phase110_torus_cuda)
 
-        message(STATUS "CUDA ${CUDAToolkit_VERSION} found — nikola_cuda (torus_cuda.cu), Phase 105, 110 targets enabled")
+        # Phase 111 Unit Tests: CudaPropagator — full GPU Strang-Verlet wave propagation.
+        #   Tests CudaPropagator::upload/step/download against CPU Propagator reference.
+        #   Requires propagator.cu, which needed C++17 compatibility fixes (see above).
+        add_executable(test_phase111_cuda_propagator
+            tests/unit/phase111_cuda_propagator_test.cpp)
+        target_include_directories(test_phase111_cuda_propagator PRIVATE
+            ${CMAKE_SOURCE_DIR}/include
+            /usr/local/cuda/include)
+        target_link_directories(test_phase111_cuda_propagator PRIVATE
+            /usr/local/cuda/lib64)
+        target_link_libraries(test_phase111_cuda_propagator PRIVATE
+            nikola_core nikola_cuda Catch2::Catch2WithMain)
+        set_target_properties(test_phase111_cuda_propagator PROPERTIES
+            BUILD_RPATH  "/usr/local/cuda/lib64"
+            INSTALL_RPATH "/usr/local/cuda/lib64")
+        add_test(NAME Phase111CudaPropagator COMMAND test_phase111_cuda_propagator)
+
+        message(STATUS "CUDA ${CUDAToolkit_VERSION} found — nikola_cuda (torus_cuda.cu + propagator.cu), Phase 105, 110, 111 targets enabled")
     else()
         message(STATUS "CUDAToolkit not found — nikola_cuda and CUDA tests skipped")
     endif()

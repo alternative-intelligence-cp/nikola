@@ -23,8 +23,10 @@
 #include <cassert>
 #include <stdexcept>
 #include <algorithm>
-#include <span>
 #include <limits>
+#if __cplusplus >= 202002L
+#  include <span>
+#endif
 #include <cstring>
 #include <random>
 
@@ -371,6 +373,25 @@ public:
         assert(adj_valid_ && i < adj_.size() / 18);
         return &adj_[i * 18];
     }
+
+    /**
+     * @brief Total number of elements in the precomputed adjacency table.
+     *
+     * Equal to num_active_nodes() * 18.  Valid only after precompute_adjacency().
+     * Compatible with C++17 and nvcc.
+     */
+    [[nodiscard]]
+    size_t adjacency_table_size() const noexcept { return adj_.size(); }
+
+    /**
+     * @brief Raw pointer to the precomputed adjacency table data.
+     *
+     * Layout: adj[i * 18 + n] is the n-th neighbour of node i.
+     * VACUUM_NODE entries use std::numeric_limits<size_t>::max().
+     * Valid only after precompute_adjacency().  Compatible with C++17 and nvcc.
+     */
+    [[nodiscard]]
+    const size_t* adjacency_table() const noexcept { return adj_.data(); }
 
     // ------------------------------------------------------------------ SoA data access (for propagator)
 
