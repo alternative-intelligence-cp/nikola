@@ -978,8 +978,17 @@ target_compile_definitions(nikola_first_light PRIVATE NIKOLA_AUTONOMY_ENGINE_IMP
 target_link_libraries(nikola_first_light PRIVATE nikola_core)
 message(STATUS "First Light executable: nikola_first_light")
 
+# ============================================================================
+# NIKOLA-RUN — Inference CLI
+# ============================================================================
+add_executable(nikola_run src/nikola_run.cpp)
+target_compile_definitions(nikola_run PRIVATE NIKOLA_AUTONOMY_ENGINE_IMPL)
+target_link_libraries(nikola_run PRIVATE nikola_core)
+set_target_properties(nikola_run PROPERTIES OUTPUT_NAME "nikola-run")
+message(STATUS "Inference CLI: nikola-run")
+
 # Installation
-install(TARGETS nikola_core
+install(TARGETS nikola_core nikola_run
     LIBRARY DESTINATION lib
     ARCHIVE DESTINATION lib
     RUNTIME DESTINATION bin
