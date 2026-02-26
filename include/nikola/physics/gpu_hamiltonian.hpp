@@ -233,6 +233,34 @@ inline GpuHamiltonianTerms compute_hamiltonian_host(
 }
 
 // ============================================================================
+// Free function: device-side parallel reduction (actual CUDA kernel dispatch)
+// ============================================================================
+
+/**
+ * @brief Compute the UFIE Hamiltonian over @p buf using actual CUDA GPU kernels.
+ *
+ * Device path for GAP-034 (Phase 110).  Defined in `src/physics/torus_cuda.cu`
+ * and available when linking `nikola_cuda`.
+ *
+ * Algorithm mirrors `compute_hamiltonian_host()` but runs on the GPU:
+ *   - Per-thread: computes kin_i, grd_i, nl_i in double precision.
+ *   - Block-level: shared-memory tree reduction (256 threads/block).
+ *   - Cross-block: atomicAdd to three global double accumulators.
+ *   - Final: multiply sums by dV, return GpuHamiltonianTerms.
+ *
+ * Precision: results match compute_hamiltonian_host() within ≈ 1 ULP for
+ * N ≤ 20 000 nodes (RTX 3090, sm_86, CUDA 12.0).
+ *
+ * @throws std::invalid_argument  if buf.consistent() is false.
+ * @throws std::invalid_argument  if cfg.dV ≤ 0.
+ * @throws std::runtime_error     on any CUDA error during kernel execution.
+ */
+[[nodiscard]]
+GpuHamiltonianTerms compute_hamiltonian_device(
+        const GpuFieldBuffer&       buf,
+        const GpuHamiltonianConfig& cfg);
+
+// ============================================================================
 // GpuHamiltonianOracle — GPU-aware class with CUDA runtime device queries
 // ============================================================================
 
