@@ -72,6 +72,7 @@ set(AUTONOMY_SOURCES
     src/autonomy/decision_loop.cpp
     src/autonomy/module_swapper.cpp
     src/autonomy/evolutionary_orchestrator.cpp
+    src/autonomy/shadow_spine.cpp
 )
 
 set(SPATIAL_SOURCES
@@ -112,6 +113,7 @@ set(ECONOMY_SOURCES
 
 # Genesis Module 4: Security Layer
 set(SECURITY_SOURCES
+    src/security/hybrid_verifier.cpp           # Phase 114 / GAP-047
     # src/security/homeostasis.cpp  # TODO: Phase 3
     # src/security/polymorphic_defense.cpp
 )
@@ -1061,6 +1063,20 @@ if(NIKOLA_BUILD_TESTS)
     add_dependencies(test_phase113_evolutionary_orchestrator phase112_test_plugin)
     add_test(NAME Phase113EvolutionaryOrchestrator
         COMMAND test_phase113_evolutionary_orchestrator)
+
+    # ── Phase 114: HybridVerifier + ShadowSpine (GAP-047) ─────────────────────
+    add_executable(test_phase114_hybrid_verifier
+        tests/unit/phase114_hybrid_verifier_test.cpp)
+    target_include_directories(test_phase114_hybrid_verifier PRIVATE
+        ${CMAKE_SOURCE_DIR}/include
+        ${SPHINCS_REF})
+    target_compile_definitions(test_phase114_hybrid_verifier PRIVATE
+        PARAMS=sphincs-shake-256f
+        PHASE114_PLUGIN_DIR="${CMAKE_BINARY_DIR}/test_plugins")
+    target_link_libraries(test_phase114_hybrid_verifier PRIVATE
+        nikola_core Catch2::Catch2WithMain sphincsplus_shake256f ssl crypto ${CMAKE_DL_LIBS})
+    add_dependencies(test_phase114_hybrid_verifier phase112_test_plugin)
+    add_test(NAME Phase114HybridVerifier COMMAND test_phase114_hybrid_verifier)
 
     message(STATUS "Tests configured - run with: make test")
 endif()
