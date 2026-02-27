@@ -1212,6 +1212,16 @@ if(NIKOLA_BUILD_TESTS)
         nikola_core Catch2::Catch2WithMain)
     add_test(NAME Phase126AttentionPrimer COMMAND test_phase126_attention_primer)
 
+    # -------------------------------------------------------------------------
+    # Phase 127 — SpectralFilter (nikola::cognitive)
+    # spectral_filter.cpp is compiled into nikola_core (COGNITIVE_SOURCES, line ~98).
+    # -------------------------------------------------------------------------
+    add_executable(test_phase127_spectral_filter
+        tests/unit/phase127_spectral_filter_test.cpp)
+    target_link_libraries(test_phase127_spectral_filter PRIVATE
+        nikola_core Catch2::Catch2WithMain)
+    add_test(NAME Phase127SpectralFilter COMMAND test_phase127_spectral_filter)
+
     message(STATUS "Tests configured - run with: make test")
 endif()
 
