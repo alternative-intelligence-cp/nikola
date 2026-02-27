@@ -1078,6 +1078,15 @@ if(NIKOLA_BUILD_TESTS)
     add_dependencies(test_phase114_hybrid_verifier phase112_test_plugin)
     add_test(NAME Phase114HybridVerifier COMMAND test_phase114_hybrid_verifier)
 
+    # -------------------------------------------------------------------------
+    # Phase 115 — Mamba S6 selective scan (CognitiveCore upgrade)
+    # -------------------------------------------------------------------------
+    add_executable(test_phase115_mamba_s6
+        tests/unit/phase115_mamba_s6_test.cpp)
+    target_link_libraries(test_phase115_mamba_s6 PRIVATE
+        nikola_core Catch2::Catch2WithMain)
+    add_test(NAME Phase115MambaS6 COMMAND test_phase115_mamba_s6)
+
     message(STATUS "Tests configured - run with: make test")
 endif()
 

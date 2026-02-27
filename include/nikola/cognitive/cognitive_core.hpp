@@ -172,6 +172,9 @@ public:
         , B_(static_cast<size_t>(H_ * I_),  0.f)   // row-major H×I
         , C_(static_cast<size_t>(O_ * H_),  0.f)   // row-major O×H
         , D_(static_cast<size_t>(O_),        0.f)   // skip bias, length O
+        // S6 selective-scan projections (zero until randomise_selective())
+        , W_delta_(static_cast<size_t>(H_ * I_), 0.f)  // H×I: input → Δ
+        , W_Bsel_( static_cast<size_t>(H_ * I_), 0.f)  // H×I: input → selective B
     {}
 
     // ------------------------------------------------------------------ weight access
@@ -196,6 +199,14 @@ public:
     std::vector<float>&       D()       noexcept { return D_; }
     const std::vector<float>& D() const noexcept { return D_; }
 
+    /// S6 selective-scan: input → Δ projection (H×I row-major).
+    std::vector<float>&       W_delta()       noexcept { return W_delta_; }
+    const std::vector<float>& W_delta() const noexcept { return W_delta_; }
+
+    /// S6 selective-scan: input → selective-B projection (H×I row-major).
+    std::vector<float>&       W_Bsel()       noexcept { return W_Bsel_; }
+    const std::vector<float>& W_Bsel() const noexcept { return W_Bsel_; }
+
     // ------------------------------------------------------------------ initialisation
 
     /**
@@ -216,6 +227,28 @@ public:
         for (float& v : B_) v = nd_B(rng);
         for (float& v : C_) v = nd_C(rng);
         std::fill(D_.begin(), D_.end(), 0.f);
+    }
+
+    /**
+     * @brief Initialise Mamba S6 selective-scan projections W_delta and W_Bsel.
+     *
+     * Call this after (or instead of) randomise() when you want selective-scan
+     * capability.  The base A / B / C / D weights are left unchanged so the
+     * classic update_state() path remains valid.
+     *
+     * - W_delta (H×I): projects input u → per-element time-step Δ.
+     *   Initialised small-positive so softplus(Δ) ≈ 0.1 at start.
+     * - W_Bsel  (H×I): projects input u → selective-B vector.
+     *   Initialised with the same scale as B (σ = 0.1/√I).
+     */
+    void randomise_selective(uint32_t seed = 42) {
+        std::mt19937 rng(seed + 1u);   // offset to differ from randomise()
+        // W_delta: small positive init so softplus(raw)≈log2 ≈ 0.7 at start
+        const float sigma = 0.1f / std::sqrt(static_cast<float>(I_));
+        std::normal_distribution<float> nd_d(0.f, sigma);
+        std::normal_distribution<float> nd_b(0.f, sigma);
+        for (float& v : W_delta_) v = nd_d(rng);
+        for (float& v : W_Bsel_)  v = nd_b(rng);
     }
 
     /**
@@ -289,6 +322,79 @@ public:
     }
 
     /**
+     * @brief Mamba S6 selective-scan state update.
+     *
+     * Implements the true input-dependent (selective) scan from the Mamba paper
+     * (Gu & Dao 2023, §3.2 "S6").  A stays fixed; Δ, B, C are input-dependent.
+     *
+     * Algorithm per hidden unit i:
+     * \code
+     *   raw_Δ_i = W_delta[i,:] · u          // I→H linear projection
+     *   Δ_i     = softplus(raw_Δ_i)          // positive time-step
+     *   b_t_i   = W_Bsel[i,:] · u           // selective input mixing coefficient
+     *
+     *   // Zero-Order Hold (ZOH) discretisation:
+     *   Ā_i  = exp(Δ_i · A_i)              // clamped to [0, 1] for stability
+     *   B̄_i  = (Ā_i − 1) / A_i · Δ_i · b_t_i
+     *           (limit when A_i ≈ 0: B̄_i = Δ_i · b_t_i)
+     *
+     *   h_{t+1,i} = Ā_i · h_{t,i} + B̄_i   // selective recurrence
+     * \endcode
+     *
+     * The output is still read via compute_output() (C · h + D).
+     *
+     * @pre  W_delta_ and W_Bsel_ must be initialised (call randomise_selective()
+     *       or set them manually before the first call).
+     * @param h  [in/out] Hidden state, length H.  Modified in-place.
+     * @param u  Input coordinate vector, length I (= SSM_INPUT_DIM = 9).
+     */
+    void selective_step(State& h, const std::array<float, TORUS_DIMS>& u) {
+        if (static_cast<int>(h.size()) != H_)
+            throw std::invalid_argument("SSMLayer::selective_step: h dimension mismatch");
+
+        constexpr float kEpsA = 1e-6f;   // guard A_i ≈ 0 in ZOH formula
+
+        State h_new(static_cast<size_t>(H_));
+
+        for (int i = 0; i < H_; ++i) {
+            const size_t row = static_cast<size_t>(i * I_);
+
+            // 1. Input-dependent Δ_i (time step) via softplus
+            float raw_delta = 0.f;
+            for (int k = 0; k < I_; ++k)
+                raw_delta += W_delta_[row + static_cast<size_t>(k)]
+                             * u[static_cast<size_t>(k)];
+            // softplus: log(1 + exp(x)), numerically stable form
+            const float delta_i = (raw_delta > 20.f)
+                                    ? raw_delta
+                                    : std::log1p(std::exp(raw_delta));
+
+            // 2. Input-dependent selective B vector element
+            float b_t_i = 0.f;
+            for (int k = 0; k < I_; ++k)
+                b_t_i += W_Bsel_[row + static_cast<size_t>(k)]
+                         * u[static_cast<size_t>(k)];
+
+            // 3. ZOH discretisation
+            const float a_i = A_[static_cast<size_t>(i)];
+            const float a_bar_i = std::clamp(std::exp(delta_i * a_i), 0.f, 1.f);
+            float b_bar_i;
+            if (std::abs(a_i) < kEpsA) {
+                // limit: B̄ = Δ · b_t  (linear limit of ZOH)
+                b_bar_i = delta_i * b_t_i;
+            } else {
+                b_bar_i = (a_bar_i - 1.f) / a_i * delta_i * b_t_i;
+            }
+
+            // 4. Selective state update (no tanh — contraction is from Ā ∈ [0,1])
+            h_new[static_cast<size_t>(i)] =
+                a_bar_i * h[static_cast<size_t>(i)] + b_bar_i;
+        }
+
+        h = std::move(h_new);
+    }
+
+    /**
      * @brief Compute L2 norm of the hidden state.
      *
      * Should remain ≤ sqrt(H) for a tanh-activated SSM.
@@ -302,10 +408,13 @@ public:
 
 private:
     int H_, I_, O_;
-    std::vector<float> A_;   ///< Diagonal state transition, length H
-    std::vector<float> B_;   ///< Input projection, H × I (row-major)
-    std::vector<float> C_;   ///< Output projection, O × H (row-major)
-    std::vector<float> D_;   ///< Skip connection bias, length O
+    std::vector<float> A_;       ///< Diagonal state transition, length H
+    std::vector<float> B_;       ///< Input projection, H × I (row-major)
+    std::vector<float> C_;       ///< Output projection, O × H (row-major)
+    std::vector<float> D_;       ///< Skip connection bias, length O
+    // S6 selective-scan projections
+    std::vector<float> W_delta_; ///< Input → per-element Δ, H × I (row-major)
+    std::vector<float> W_Bsel_;  ///< Input → selective-B vector, H × I (row-major)
 };
 
 // ============================================================================
