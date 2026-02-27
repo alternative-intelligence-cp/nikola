@@ -1,83 +1,136 @@
 #pragma once
+/**
+ * @file wallet.hpp
+ * @brief Phase 131 — NeuralWallet: identity + simulated payment layer
+ *
+ * NeuralWallet is a pure-virtual interface for Nikola's economic identity.
+ * In production it would wrap real ECC key-pairs and on-chain signing; for now
+ * only SimulatedWallet is used — a deterministic mock that derives an
+ * Ethereum-style hex address from a seed string (no TorusManifold required).
+ * This layer is intentionally "wallet-shaped" so future real impls drop in.
+ */
 
 #include <string>
-#include <memory>
+#include <cstdint>
+#include <unordered_map>
 
 namespace nikola::economy {
 
-// Forward declaration
-class TorusManifold;
+// ---------------------------------------------------------------------------
+// NeuralWallet (abstract interface)
+// ---------------------------------------------------------------------------
 
 /**
- * @brief Neural Wallet interface for blockchain identity
+ * @brief Abstract identity + signing interface for Nikola's economic layer.
  *
- * Derives identity from torus geometry seed (SHA-256 hash).
- * The same initialization seed that creates the 9D toroidal topology
- * also serves as the private key, ensuring identity is tied to memory structure.
- *
- * Benefits:
- * - No separate key management
- * - Identity persists across restarts (if torus seed is stored)
- * - Cryptographic proof of unique neural topology
- *
- * @status STUB - Implementation deferred to Phase 4
+ * derive_identity() binds the wallet to a seed.  The seed can be anything
+ * (a torus initialisation value, a UUID, a passphrase hash).
  */
 class NeuralWallet {
 public:
     virtual ~NeuralWallet() = default;
 
     /**
-     * @brief Derive wallet identity from torus geometry
-     * @param torus The 9D toroidal manifold
-     * @return Private key (SHA-256 of seed)
+     * @brief Bind wallet identity to a seed string.
+     * @param seed Arbitrary bytes encoded as hex or printable string.
+     * @return Derived private-key string (representation only).
      */
-    virtual std::string derive_identity(const TorusManifold& torus) = 0;
+    virtual std::string derive_identity(const std::string& seed) = 0;
 
-    /**
-     * @brief Get public wallet address
-     * @return Ethereum-compatible address
-     */
+    /** @return Public wallet address (Ethereum-style 0x… hex). */
     virtual std::string get_address() const = 0;
 
-    /**
-     * @brief Sign data with private key
-     * @param data Data to sign
-     * @return ECDSA signature
-     */
+    /** @brief Sign arbitrary data; returns signature string. */
     virtual std::string sign(const std::string& data) = 0;
 
     /**
-     * @brief Verify signature
-     * @param data Original data
-     * @param signature Signature to verify
-     * @param address Claimed signer address
-     * @return true if valid
+     * @brief Verify a signature.
+     * @param data      Original signed data.
+     * @param signature Signature returned by sign().
+     * @param address   Claimed signer address.
+     * @return true if valid.
      */
-    virtual bool verify(const std::string& data, const std::string& signature,
-                       const std::string& address) = 0;
+    virtual bool verify(const std::string& data,
+                        const std::string& signature,
+                        const std::string& address) = 0;
+
+    /** @return Current balance in Wei-equivalent units. */
+    virtual uint64_t get_balance_wei() const = 0;
+
+    /** @brief Credit the wallet with amount_wei units. */
+    virtual void credit(uint64_t amount_wei) = 0;
+
+    /**
+     * @brief Debit amount_wei.
+     * @return true on success; false if insufficient funds.
+     */
+    virtual bool debit(uint64_t amount_wei) = 0;
 };
 
+// ---------------------------------------------------------------------------
+// SimulatedWallet
+// ---------------------------------------------------------------------------
+
 /**
- * @brief Simulated wallet for testing (no real blockchain)
+ * @brief Deterministic mock wallet for testing and local simulation.
  *
- * Implements NeuralWallet interface with mock operations.
- * Used during Phase 0-3 before Polygon CDK integration.
- *
- * @status ACTIVE STUB
+ * derive_identity(seed) computes a FNV-1a-inspired address from the seed.
+ * sign(data) returns a deterministic string keyed on (address, data).
+ * verify() checks the expected signature format rather than real ECDSA.
  */
 class SimulatedWallet : public NeuralWallet {
 public:
-    SimulatedWallet() = default;
+    explicit SimulatedWallet() = default;
 
-    std::string derive_identity(const TorusManifold& torus) override;
+    // -- NeuralWallet interface ---
+
+    std::string derive_identity(const std::string& seed) override;
     std::string get_address() const override;
     std::string sign(const std::string& data) override;
-    bool verify(const std::string& data, const std::string& signature,
-               const std::string& address) override;
+    bool verify(const std::string& data,
+                const std::string& signature,
+                const std::string& address) override;
+
+    uint64_t get_balance_wei() const override;
+    void     credit(uint64_t amount_wei) override;
+    bool     debit(uint64_t amount_wei)  override;
+
+    // -- SimulatedWallet extras ---
+
+    /** @return true if derive_identity() has been called. */
+    bool has_identity() const;
+
+    /** @return Number of successful sign() calls */
+    size_t sign_count() const;
+
+    /** @return Number of successful (returning true) verify() calls */
+    size_t verify_count() const;
+
+    /** @return Number of successful debit() calls */
+    size_t debit_count() const;
+
+    // -- Static helpers ---
+
+    /**
+     * @brief Derive a 40-char hex address from a seed string (FNV-1a based).
+     * Deterministic: same seed → same address across runs.
+     */
+    static std::string derive_address(const std::string& seed);
+
+    /**
+     * @brief Build the expected signature token for (address, data).
+     * Format: "sig_<addr[:8]>_<data[:8]>"
+     */
+    static std::string build_expected_sig(const std::string& address,
+                                           const std::string& data);
 
 private:
-    std::string mock_address_ = "0x0000000000000000000000000000000000000000";
-    std::string mock_private_key_ = "mock_key";
+    std::string address_;         ///< Derived 0x… address (empty until bound)
+    std::string private_key_;     ///< Derived private-key string
+    uint64_t    balance_wei_ = 0; ///< Simulated balance
+    size_t      sign_count_    = 0;
+    size_t      verify_count_  = 0;
+    size_t      debit_count_   = 0;
 };
 
 } // namespace nikola::economy

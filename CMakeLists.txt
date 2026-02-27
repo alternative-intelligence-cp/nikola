@@ -101,14 +101,14 @@ set(COGNITIVE_SOURCES
 
 # Genesis Module 2: Social Layer
 set(SOCIAL_SOURCES
-    # src/social/membrane.cpp  # TODO: Phase 2
-    # src/social/peer_registry.cpp
+    src/social/membrane.cpp         # Phase 132
+    src/social/peer_registry.cpp    # Phase 133
 )
 
 # Genesis Module 3: Economic Layer
 set(ECONOMY_SOURCES
-    # src/economy/wallet.cpp  # TODO: Phase 2
-    # src/economy/marketplace.cpp
+    src/economy/wallet.cpp          # Phase 131
+    src/economy/marketplace.cpp     # Phase 130
 )
 
 # Genesis Module 4: Security Layer
@@ -1241,6 +1241,46 @@ if(NIKOLA_BUILD_TESTS)
     target_link_libraries(test_phase129_homeostasis PRIVATE
         nikola_core Catch2::Catch2WithMain)
     add_test(NAME Phase129HomeostasisMonitor COMMAND test_phase129_homeostasis)
+
+    # -------------------------------------------------------------------------
+    # Phase 130 — NeuralMarketplace (nikola::economy)
+    # marketplace.cpp is compiled into nikola_core (ECONOMY_SOURCES).
+    # -------------------------------------------------------------------------
+    add_executable(test_phase130_marketplace
+        tests/unit/phase130_marketplace_test.cpp)
+    target_link_libraries(test_phase130_marketplace PRIVATE
+        nikola_core Catch2::Catch2WithMain)
+    add_test(NAME Phase130Marketplace COMMAND test_phase130_marketplace)
+
+    # -------------------------------------------------------------------------
+    # Phase 131 — SimulatedWallet (nikola::economy)
+    # wallet.cpp is compiled into nikola_core (ECONOMY_SOURCES).
+    # -------------------------------------------------------------------------
+    add_executable(test_phase131_wallet
+        tests/unit/phase131_wallet_test.cpp)
+    target_link_libraries(test_phase131_wallet PRIVATE
+        nikola_core Catch2::Catch2WithMain)
+    add_test(NAME Phase131Wallet COMMAND test_phase131_wallet)
+
+    # -------------------------------------------------------------------------
+    # Phase 132 — SocialMembrane (nikola::social)
+    # membrane.cpp is compiled into nikola_core (SOCIAL_SOURCES).
+    # -------------------------------------------------------------------------
+    add_executable(test_phase132_membrane
+        tests/unit/phase132_membrane_test.cpp)
+    target_link_libraries(test_phase132_membrane PRIVATE
+        nikola_core Catch2::Catch2WithMain)
+    add_test(NAME Phase132SocialMembrane COMMAND test_phase132_membrane)
+
+    # -------------------------------------------------------------------------
+    # Phase 133 — PeerRegistry (nikola::social)
+    # peer_registry.cpp is compiled into nikola_core (SOCIAL_SOURCES).
+    # -------------------------------------------------------------------------
+    add_executable(test_phase133_peer_registry
+        tests/unit/phase133_peer_registry_test.cpp)
+    target_link_libraries(test_phase133_peer_registry PRIVATE
+        nikola_core Catch2::Catch2WithMain)
+    add_test(NAME Phase133PeerRegistry COMMAND test_phase133_peer_registry)
 
     message(STATUS "Tests configured - run with: make test")
 endif()
