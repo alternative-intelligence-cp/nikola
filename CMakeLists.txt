@@ -124,7 +124,7 @@ set(INTERIOR_SOURCES
     # src/interior/affective_state.cpp
     # src/interior/dream_engine.cpp
     # src/interior/autobiography.cpp
-    # src/interior/curiosity.cpp
+    src/interior/curiosity.cpp         # Phase 118
     # src/interior/internal_dialogue.cpp
 )
 
@@ -1107,6 +1107,17 @@ if(NIKOLA_BUILD_TESTS)
     target_link_libraries(test_phase117_streaming_output PRIVATE
         nikola_core Catch2::Catch2WithMain)
     add_test(NAME Phase117StreamingOutput COMMAND test_phase117_streaming_output)
+
+    # -------------------------------------------------------------------------
+    # Phase 118 — CuriosityEngine intrinsic-motivation implementation
+    # curiosity.cpp is compiled into nikola_core (INTERIOR_SOURCES, line ~127).
+    # TorusManifold is forward-declared only; test defines a minimal stub.
+    # -------------------------------------------------------------------------
+    add_executable(test_phase118_curiosity_engine
+        tests/unit/phase118_curiosity_engine_test.cpp)
+    target_link_libraries(test_phase118_curiosity_engine PRIVATE
+        nikola_core Catch2::Catch2WithMain)
+    add_test(NAME Phase118CuriosityEngine COMMAND test_phase118_curiosity_engine)
 
     message(STATUS "Tests configured - run with: make test")
 endif()

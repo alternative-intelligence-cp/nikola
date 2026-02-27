@@ -4,6 +4,7 @@
 #include <vector>
 #include <functional>
 #include <map>
+#include <unordered_map>
 #include <cstdint>
 
 namespace nikola::interior {
@@ -116,6 +117,17 @@ public:
     void stop_autonomous_learning();
 
     /**
+     * @brief Register (or update) a knowledge gap for curiosity tracking.
+     *
+     * Call this to seed the engine with external knowledge about what domains
+     * are uncertain.  If a gap with the same domain already exists the record
+     * is merged (uncertainty averaged, query_count preserved).
+     *
+     * @param gap Gap descriptor to register.
+     */
+    void register_gap(KnowledgeGap gap);
+
+    /**
      * @brief Check if currently in autonomous learning mode
      * @return true if active
      */
@@ -135,10 +147,15 @@ public:
 
 private:
     double exploration_rate_ = 0.3;  // Default: 30% exploration
-    bool learning_active_ = false;
+    bool   learning_active_  = false;
     uint64_t questions_generated_ = 0;
-    uint64_t topics_pursued_ = 0;
+    uint64_t topics_pursued_      = 0;
     std::function<void(const Question&)> curiosity_callback_;
+
+    /// Tracked knowledge gaps (domain → KnowledgeGap)
+    std::unordered_map<std::string, KnowledgeGap> gaps_;
+    /// Ordered history of pursue_interest() calls
+    std::vector<std::string> interest_history_;
 };
 
 } // namespace nikola::interior
