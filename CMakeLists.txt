@@ -1192,6 +1192,16 @@ if(NIKOLA_BUILD_TESTS)
         nikola_core Catch2::Catch2WithMain)
     add_test(NAME Phase124Autobiography COMMAND test_phase124_autobiography)
 
+    # -------------------------------------------------------------------------
+    # Phase 125 — Scratchpad (nikola::cognitive)
+    # scratchpad.cpp is compiled into nikola_core (COGNITIVE_SOURCES, line ~97).
+    # -------------------------------------------------------------------------
+    add_executable(test_phase125_scratchpad
+        tests/unit/phase125_scratchpad_test.cpp)
+    target_link_libraries(test_phase125_scratchpad PRIVATE
+        nikola_core Catch2::Catch2WithMain)
+    add_test(NAME Phase125Scratchpad COMMAND test_phase125_scratchpad)
+
     message(STATUS "Tests configured - run with: make test")
 endif()
 
