@@ -1098,6 +1098,16 @@ if(NIKOLA_BUILD_TESTS)
         nikola_core Catch2::Catch2WithMain)
     add_test(NAME Phase116TorusBlockSIMD COMMAND test_phase116_torus_block_simd)
 
+    # -------------------------------------------------------------------------
+    # Phase 117 — nikola-run --stream mode: StreamEmitter and json_escape
+    # Header-only; no extra compile flags beyond the standard nikola_core stack.
+    # -------------------------------------------------------------------------
+    add_executable(test_phase117_streaming_output
+        tests/unit/phase117_streaming_output_test.cpp)
+    target_link_libraries(test_phase117_streaming_output PRIVATE
+        nikola_core Catch2::Catch2WithMain)
+    add_test(NAME Phase117StreamingOutput COMMAND test_phase117_streaming_output)
+
     message(STATUS "Tests configured - run with: make test")
 endif()
 

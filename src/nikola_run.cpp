@@ -42,6 +42,7 @@
 #include <nikola/cognitive/cognitive_torus.hpp>
 #include <nikola/autonomy/autonomy_engine.hpp>
 #include <nikola/autonomy/decision_loop.hpp>
+#include <nikola/cli/stream_emitter.hpp>
 
 #include <array>
 #include <atomic>
@@ -107,6 +108,7 @@ struct CliConfig {
     bool                     no_color      = false;
     bool                     quiet         = false;
     bool                     json_out      = false;
+    bool                     stream        = false;  ///< --stream: line-buffered EMIT_THOUGHT during tick loop
 };
 
 static void print_help(const char* argv0) {
@@ -121,6 +123,7 @@ static void print_help(const char* argv0) {
         << "  --model  <path>      Override ONNX model.onnx path\n"
         << "  --tokenizer <path>   Override tokenizer.json/dir path\n"
         << "  --emit-all           Print ALL non-SILENT actions\n"
+        << "  --stream             Print each EMIT_THOUGHT immediately (line-buffered)\n"
         << "  --no-color           Disable ANSI colour\n"
         << "  --quiet              Suppress status headers\n"
         << "  --json               Machine-readable JSON output\n"
@@ -142,6 +145,7 @@ static std::optional<CliConfig> parse_args(int argc, char** argv) {
         else if (a == "--interactive")  cfg.interactive    = true;
         else if (a == "--batch")        cfg.batch          = true;
         else if (a == "--emit-all")     cfg.emit_all       = true;
+        else if (a == "--stream")       cfg.stream         = true;
         else if (a == "--no-color")     cfg.no_color       = true;
         else if (a == "--quiet")        cfg.quiet          = true;
         else if (a == "--json")         cfg.json_out       = true;
@@ -201,23 +205,45 @@ static std::string run_prompt(
 
     auto t0 = std::chrono::steady_clock::now();
 
-    for (int t = 0; t < cfg.max_ticks; ++t) {
-        auto r = loop.tick();
+    if (cfg.stream) {
+        // ── Streaming path ────────────────────────────────────────────────
+        // Wire on_action to immediate flushed output; run all max_ticks ticks
+        // without early exit so all EMIT_THOUGHT events are surfaced.
+        nikola::cli::StreamEmitter emitter(std::cout,
+                                           cfg.json_out,
+                                           cfg.quiet,
+                                           cfg.emit_all);
+        loop.on_action = [&](const DecisionResult& r) {
+            emitter.emit(r);
+            if (emitter.has_output())
+                result = emitter.last_payload();
+        };
 
-        // Progress indicator (not in quiet/json/batch mode)
-        if (!cfg.quiet && !cfg.json_out && !cfg.batch) {
-            ++thinking_dots;
-            if (thinking_dots % 10 == 0) {
-                std::cerr << ansi::c(ansi::gray) << "." << ansi::c(ansi::rst) << std::flush;
+        for (int t = 0; t < cfg.max_ticks; ++t)
+            loop.tick();   // emit via on_action callback; no dot progress
+
+        loop.on_action = nullptr;   // reset for next call to run_prompt
+    } else {
+        // ── Non-streaming path ────────────────────────────────────────────
+        // Break on first interesting result (original behaviour).
+        for (int t = 0; t < cfg.max_ticks; ++t) {
+            auto r = loop.tick();
+
+            // Progress indicator (not in quiet/json/batch mode)
+            if (!cfg.quiet && !cfg.json_out && !cfg.batch) {
+                ++thinking_dots;
+                if (thinking_dots % 10 == 0) {
+                    std::cerr << ansi::c(ansi::gray) << "." << ansi::c(ansi::rst) << std::flush;
+                }
             }
-        }
 
-        bool interesting = (r.type == ActionType::EMIT_THOUGHT) ||
-                           (cfg.emit_all && r.type != ActionType::SILENT);
+            bool interesting = (r.type == ActionType::EMIT_THOUGHT) ||
+                               (cfg.emit_all && r.type != ActionType::SILENT);
 
-        if (interesting && !r.payload.empty()) {
-            result = r.payload;
-            break;
+            if (interesting && !r.payload.empty()) {
+                result = r.payload;
+                break;
+            }
         }
     }
 
