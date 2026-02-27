@@ -43,6 +43,7 @@
 #include <nikola/autonomy/autonomy_engine.hpp>
 #include <nikola/autonomy/decision_loop.hpp>
 #include <nikola/cli/stream_emitter.hpp>
+#include <nikola/telemetry/nikola_tracer.hpp>
 
 #include <array>
 #include <atomic>
@@ -109,6 +110,7 @@ struct CliConfig {
     bool                     quiet         = false;
     bool                     json_out      = false;
     bool                     stream        = false;  ///< --stream: line-buffered EMIT_THOUGHT during tick loop
+    bool                     trace_otel    = false;  ///< --trace: emit OTel spans to stderr per tick
 };
 
 static void print_help(const char* argv0) {
@@ -124,6 +126,7 @@ static void print_help(const char* argv0) {
         << "  --tokenizer <path>   Override tokenizer.json/dir path\n"
         << "  --emit-all           Print ALL non-SILENT actions\n"
         << "  --stream             Print each EMIT_THOUGHT immediately (line-buffered)\n"
+        << "  --trace              Emit OpenTelemetry tick spans to stderr\n"
         << "  --no-color           Disable ANSI colour\n"
         << "  --quiet              Suppress status headers\n"
         << "  --json               Machine-readable JSON output\n"
@@ -146,6 +149,7 @@ static std::optional<CliConfig> parse_args(int argc, char** argv) {
         else if (a == "--batch")        cfg.batch          = true;
         else if (a == "--emit-all")     cfg.emit_all       = true;
         else if (a == "--stream")       cfg.stream         = true;
+        else if (a == "--trace")        cfg.trace_otel     = true;
         else if (a == "--no-color")     cfg.no_color       = true;
         else if (a == "--quiet")        cfg.quiet          = true;
         else if (a == "--json")         cfg.json_out       = true;
@@ -376,6 +380,18 @@ int main(int argc, char** argv) {
     loop_cfg.min_emit_interval_s   = 0.0f;  // CLI: no rate limit between prompts
 
     nikola::autonomy::DecisionLoop loop(torus, engine, loop_cfg);
+
+    // ── OpenTelemetry tracing (optional) ─────────────────────────────────────
+    // When --trace is active, wire a TickTracer into loop.on_tick so that every
+    // tick emits a "nikola.tick" span with state attributes to stderr.
+    // The callback is only installed when requested; zero overhead otherwise.
+    nikola::telemetry::TickTracer tick_tracer;
+    if (cfg.trace_otel) {
+        nikola::telemetry::setup_ostream_tracer(std::cerr);
+        loop.on_tick = [&tick_tracer, &loop](const nikola::autonomy::NikolaState& s) {
+            tick_tracer.trace_tick(s, static_cast<int64_t>(loop.tick_count()));
+        };
+    }
 
     // ── Dispatch ─────────────────────────────────────────────────────────────
 

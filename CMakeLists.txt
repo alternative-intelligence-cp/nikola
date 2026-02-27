@@ -1119,6 +1119,29 @@ if(NIKOLA_BUILD_TESTS)
         nikola_core Catch2::Catch2WithMain)
     add_test(NAME Phase118CuriosityEngine COMMAND test_phase118_curiosity_engine)
 
+    # -------------------------------------------------------------------------
+    # Phase 119 — OpenTelemetry live tracing for the tick loop
+    # Links the installed OTel static libs from /usr/local/lib.
+    # Uses the in-memory exporter so tests need no network or file I/O.
+    # -------------------------------------------------------------------------
+    set(OTEL_LIBS
+        opentelemetry_exporter_in_memory
+        opentelemetry_exporter_ostream_span
+        opentelemetry_trace
+        opentelemetry_resources
+        opentelemetry_common
+        opentelemetry_version
+    )
+    add_executable(test_phase119_otel_tracing
+        tests/unit/phase119_otel_tracing_test.cpp)
+    target_include_directories(test_phase119_otel_tracing PRIVATE
+        /usr/local/include)
+    target_link_directories(test_phase119_otel_tracing PRIVATE
+        /usr/local/lib)
+    target_link_libraries(test_phase119_otel_tracing PRIVATE
+        nikola_core ${OTEL_LIBS} Catch2::Catch2WithMain)
+    add_test(NAME Phase119OtelTracing COMMAND test_phase119_otel_tracing)
+
     message(STATUS "Tests configured - run with: make test")
 endif()
 
@@ -1135,7 +1158,14 @@ message(STATUS "First Light executable: nikola_first_light")
 # ============================================================================
 add_executable(nikola_run src/nikola_run.cpp)
 target_compile_definitions(nikola_run PRIVATE NIKOLA_AUTONOMY_ENGINE_IMPL)
-target_link_libraries(nikola_run PRIVATE nikola_core)
+target_link_libraries(nikola_run PRIVATE
+    nikola_core
+    opentelemetry_exporter_ostream_span
+    opentelemetry_trace
+    opentelemetry_resources
+    opentelemetry_common
+    opentelemetry_version)
+target_link_directories(nikola_run PRIVATE /usr/local/lib)
 set_target_properties(nikola_run PROPERTIES OUTPUT_NAME "nikola-run")
 message(STATUS "Inference CLI: nikola-run")
 
