@@ -123,7 +123,7 @@ set(INTERIOR_SOURCES
     src/interior/wave_mirror.cpp     # Phase 121
     src/interior/affective_state.cpp  # Phase 120
     src/interior/dream_engine.cpp      # Phase 123
-    # src/interior/autobiography.cpp
+    src/interior/autobiography.cpp     # Phase 124
     src/interior/curiosity.cpp         # Phase 118
     src/interior/internal_dialogue.cpp   # Phase 122
 )
@@ -1181,6 +1181,16 @@ if(NIKOLA_BUILD_TESTS)
     target_link_libraries(test_phase123_dream_engine PRIVATE
         nikola_core Catch2::Catch2WithMain)
     add_test(NAME Phase123DreamEngine COMMAND test_phase123_dream_engine)
+
+    # -------------------------------------------------------------------------
+    # Phase 124 — AutobiographicalMemory personal narrative and identity
+    # autobiography.cpp is compiled into nikola_core (INTERIOR_SOURCES, line ~126).
+    # -------------------------------------------------------------------------
+    add_executable(test_phase124_autobiography
+        tests/unit/phase124_autobiography_test.cpp)
+    target_link_libraries(test_phase124_autobiography PRIVATE
+        nikola_core Catch2::Catch2WithMain)
+    add_test(NAME Phase124Autobiography COMMAND test_phase124_autobiography)
 
     message(STATUS "Tests configured - run with: make test")
 endif()
