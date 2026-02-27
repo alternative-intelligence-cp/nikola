@@ -125,7 +125,7 @@ set(INTERIOR_SOURCES
     # src/interior/dream_engine.cpp
     # src/interior/autobiography.cpp
     src/interior/curiosity.cpp         # Phase 118
-    # src/interior/internal_dialogue.cpp
+    src/interior/internal_dialogue.cpp   # Phase 122
 )
 
 # Genesis Module 7: Code Generation & Self-Improvement (Aria Language)
@@ -1161,6 +1161,16 @@ if(NIKOLA_BUILD_TESTS)
     target_link_libraries(test_phase121_wave_mirror PRIVATE
         nikola_core Catch2::Catch2WithMain)
     add_test(NAME Phase121WaveMirror COMMAND test_phase121_wave_mirror)
+
+    # -------------------------------------------------------------------------
+    # Phase 122 — InternalDialogue reasoning chain engine
+    # internal_dialogue.cpp is compiled into nikola_core (INTERIOR_SOURCES, line ~128).
+    # -------------------------------------------------------------------------
+    add_executable(test_phase122_internal_dialogue
+        tests/unit/phase122_internal_dialogue_test.cpp)
+    target_link_libraries(test_phase122_internal_dialogue PRIVATE
+        nikola_core Catch2::Catch2WithMain)
+    add_test(NAME Phase122InternalDialogue COMMAND test_phase122_internal_dialogue)
 
     message(STATUS "Tests configured - run with: make test")
 endif()
