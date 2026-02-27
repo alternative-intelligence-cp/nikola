@@ -120,7 +120,7 @@ set(SECURITY_SOURCES
 
 # Genesis Module 5: Interior Life & Metacognition
 set(INTERIOR_SOURCES
-    # src/interior/wave_mirror.cpp  # TODO: Phase 3
+    src/interior/wave_mirror.cpp     # Phase 121
     src/interior/affective_state.cpp  # Phase 120
     # src/interior/dream_engine.cpp
     # src/interior/autobiography.cpp
@@ -1151,6 +1151,16 @@ if(NIKOLA_BUILD_TESTS)
     target_link_libraries(test_phase120_affective_state PRIVATE
         nikola_core Catch2::Catch2WithMain)
     add_test(NAME Phase120AffectiveState COMMAND test_phase120_affective_state)
+
+    # -------------------------------------------------------------------------
+    # Phase 121 — WaveMirror introspective proprioception
+    # wave_mirror.cpp is compiled into nikola_core (INTERIOR_SOURCES, line ~123).
+    # -------------------------------------------------------------------------
+    add_executable(test_phase121_wave_mirror
+        tests/unit/phase121_wave_mirror_test.cpp)
+    target_link_libraries(test_phase121_wave_mirror PRIVATE
+        nikola_core Catch2::Catch2WithMain)
+    add_test(NAME Phase121WaveMirror COMMAND test_phase121_wave_mirror)
 
     message(STATUS "Tests configured - run with: make test")
 endif()
