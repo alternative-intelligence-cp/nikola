@@ -1202,6 +1202,16 @@ if(NIKOLA_BUILD_TESTS)
         nikola_core Catch2::Catch2WithMain)
     add_test(NAME Phase125Scratchpad COMMAND test_phase125_scratchpad)
 
+    # -------------------------------------------------------------------------
+    # Phase 126 — AttentionPrimer (nikola::cognitive)
+    # attention_primer.cpp is compiled into nikola_core (COGNITIVE_SOURCES, line ~96).
+    # -------------------------------------------------------------------------
+    add_executable(test_phase126_attention_primer
+        tests/unit/phase126_attention_primer_test.cpp)
+    target_link_libraries(test_phase126_attention_primer PRIVATE
+        nikola_core Catch2::Catch2WithMain)
+    add_test(NAME Phase126AttentionPrimer COMMAND test_phase126_attention_primer)
+
     message(STATUS "Tests configured - run with: make test")
 endif()
 
