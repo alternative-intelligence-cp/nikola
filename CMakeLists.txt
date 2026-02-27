@@ -122,7 +122,7 @@ set(SECURITY_SOURCES
 set(INTERIOR_SOURCES
     src/interior/wave_mirror.cpp     # Phase 121
     src/interior/affective_state.cpp  # Phase 120
-    # src/interior/dream_engine.cpp
+    src/interior/dream_engine.cpp      # Phase 123
     # src/interior/autobiography.cpp
     src/interior/curiosity.cpp         # Phase 118
     src/interior/internal_dialogue.cpp   # Phase 122
@@ -1171,6 +1171,16 @@ if(NIKOLA_BUILD_TESTS)
     target_link_libraries(test_phase122_internal_dialogue PRIVATE
         nikola_core Catch2::Catch2WithMain)
     add_test(NAME Phase122InternalDialogue COMMAND test_phase122_internal_dialogue)
+
+    # -------------------------------------------------------------------------
+    # Phase 123 — DreamEngine memory consolidation and pattern synthesis
+    # dream_engine.cpp is compiled into nikola_core (INTERIOR_SOURCES, line ~125).
+    # -------------------------------------------------------------------------
+    add_executable(test_phase123_dream_engine
+        tests/unit/phase123_dream_engine_test.cpp)
+    target_link_libraries(test_phase123_dream_engine PRIVATE
+        nikola_core Catch2::Catch2WithMain)
+    add_test(NAME Phase123DreamEngine COMMAND test_phase123_dream_engine)
 
     message(STATUS "Tests configured - run with: make test")
 endif()

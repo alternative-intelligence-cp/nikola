@@ -1,124 +1,220 @@
 #pragma once
+/**
+ * @file dream_engine.hpp
+ * @brief Phase 123 — DreamEngine: memory consolidation and pattern synthesis
+ *
+ * Implements REM-sleep analogue for Nikola. During idle periods (boredom >=
+ * DREAM_IDLE_THRESHOLD) the engine replays the experience buffer, finds
+ * similarity-based connections between neurochemical snapshots, distils them
+ * into ConsolidatedMemory entries, and processes nightmare experiences
+ * (high-entropy / low-dopamine events) for failure-pattern extraction.
+ *
+ * No TorusManifold / Coord9D / QuantumScratchpad / AttentionPrimer
+ * dependencies — operates purely on NikolaState snapshots and string tags.
+ *
+ * Key constants (tuneable):
+ *  DREAM_IDLE_THRESHOLD        0.60  boredom needed to start a dream cycle
+ *  DREAM_BUFFER_SIZE           256   max recorded experiences (FIFO)
+ *  DREAM_SIMILARITY_THRESHOLD  0.55  min state_similarity() to form fragment
+ *  DREAM_NIGHTMARE_ENTROPY     1.40  entropy above which marks a nightmare
+ *  DREAM_NIGHTMARE_DOPAMINE    0.25  dopamine below which marks a nightmare
+ *  DREAM_CONSOLIDATION_MIN     0.50  min fragment novelty_score to consolidate
+ *  DREAM_MAX_RECALL            8     default max recall results
+ */
 
 #include <cstdint>
-#include <vector>
+#include <cmath>
 #include <string>
+#include <vector>
+#include <functional>
 
-#include <nikola/cognitive/attention_primer.hpp>
+#include <nikola/autonomy/decision_loop.hpp>
 
 namespace nikola::interior {
 
-// Forward declaration
-class TorusManifold;
-class QuantumScratchpad;
+using nikola::autonomy::NikolaState;
 
-// Import Coord9D from cognitive namespace
-using Coord9D = nikola::cognitive::Coord9D;
+// ---------------------------------------------------------------------------
+// Constants
+// ---------------------------------------------------------------------------
+
+inline constexpr double DREAM_IDLE_THRESHOLD       = 0.60;
+inline constexpr size_t DREAM_BUFFER_SIZE          = 256;
+inline constexpr double DREAM_SIMILARITY_THRESHOLD = 0.55;
+inline constexpr float  DREAM_NIGHTMARE_ENTROPY    = 1.40f;
+inline constexpr float  DREAM_NIGHTMARE_DOPAMINE   = 0.25f;
+inline constexpr double DREAM_CONSOLIDATION_MIN    = 0.50;
+inline constexpr size_t DREAM_MAX_RECALL           = 8;
+
+// ---------------------------------------------------------------------------
+// Data types
+// ---------------------------------------------------------------------------
 
 /**
- * @brief Dream Engine - Memory Consolidation and Pattern Synthesis
- *
- * Implements REM sleep for wave processors. During idle time (beyond basic
- * boredom), this system:
- * - Replays recent experiences
- * - Finds hidden connections between memories
- * - Consolidates insights from quantum scratchpad to permanent memory
- * - Runs "nightmare analysis" to learn from failures
- *
- * This is essential for deep learning - not just reacting to experiences,
- * but actively synthesizing them into new understanding.
- *
- * Neuroscience inspiration:
- * - Memory consolidation during sleep strengthens learning
- * - Dreams find unexpected connections (creativity)
- * - Nightmares help process threats (safety learning)
- *
- * @status STUB - Implementation deferred to Phase 6
+ * @brief A single recorded experience — neurochemical snapshot + metadata.
  */
-
-struct TimeRange {
-    int64_t start_timestamp;
-    int64_t end_timestamp;
+struct Experience {
+    uint64_t    tick          = 0;
+    NikolaState state         = {};
+    std::string tag;              ///< brief label e.g. "reward_spike", "error"
+    float       reward_signal = 0.f; ///< +/- reward magnitude at recording time
+    bool        is_nightmare  = false;
 };
 
-struct MemoryTrace {
-    int64_t timestamp;
-    std::vector<Coord9D> locations;
-    std::vector<std::complex<double>> wave_patterns;
-    std::string context;
+/**
+ * @brief A connection discovered between two experiences during dreaming.
+ */
+struct DreamFragment {
+    size_t      exp_index_a   = 0;
+    size_t      exp_index_b   = 0;
+    double      similarity    = 0.0;  ///< state_similarity(a, b) in [0, 1]
+    double      novelty_score = 0.0;  ///< how surprising this pairing is
+    std::string insight;              ///< auto-generated human-readable note
 };
 
-struct PatternConnection {
-    MemoryTrace memory_a;
-    MemoryTrace memory_b;
-    double similarity_score;
-    std::string discovered_relationship;
+/**
+ * @brief A fully consolidated memory distilled from one or more fragments.
+ */
+struct ConsolidatedMemory {
+    uint64_t    formation_tick = 0;
+    std::string key_insight;
+    double      confidence     = 0.0;  ///< mean novelty of contributing fragments
+    std::vector<size_t> source_exp_indices;
+    bool        from_nightmare = false;
 };
+
+/**
+ * @brief Summary of one complete dream cycle.
+ */
+struct DreamCycle {
+    uint64_t start_tick           = 0;
+    uint64_t end_tick             = 0;
+    size_t   fragments_found      = 0;
+    size_t   memories_formed      = 0;
+    size_t   nightmares_processed = 0;
+    double   mean_novelty         = 0.0; ///< avg novelty across all fragments
+};
+
+// ---------------------------------------------------------------------------
+// DreamEngine
+// ---------------------------------------------------------------------------
 
 class DreamEngine {
 public:
-    /**
-     * @brief Replay recent experiences
-     * @param torus The 9D toroidal manifold
-     * @param range Time period to replay
-     */
-    void replay_experience(TorusManifold& torus, const TimeRange& range);
+    DreamEngine() = default;
+
+    // --- Recording ----------------------------------------------------------
 
     /**
-     * @brief Find unexpected patterns across memories
-     * @param torus The 9D toroidal manifold
-     * @return Discovered connections
+     * @brief Record an experience for future dreaming.
+     *
+     * Buffer is capped at DREAM_BUFFER_SIZE; oldest entries are evicted (FIFO).
+     * is_nightmare is auto-set via is_nightmare_state(state).
      */
-    std::vector<PatternConnection> find_patterns(const TorusManifold& torus);
+    void record_experience(const std::string& tag,
+                           const NikolaState& state,
+                           float reward = 0.f);
+
+    // --- Dreaming -----------------------------------------------------------
 
     /**
-     * @brief Consolidate from quantum scratchpad to long-term memory
-     * @param torus The 9D toroidal manifold
-     * @param scratchpad Quantum hypothesis buffer
+     * @brief Run one full dream cycle across the experience buffer.
+     *
+     * Scans all unique pairs, builds DreamFragments for pairs with
+     * similarity >= DREAM_SIMILARITY_THRESHOLD, then consolidates fragments
+     * with novelty_score >= DREAM_CONSOLIDATION_MIN into ConsolidatedMemory
+     * entries.  Nightmare experiences are also counted and processed.
      */
-    void consolidate_to_longterm(TorusManifold& torus, QuantumScratchpad& scratchpad);
+    DreamCycle dream(uint64_t tick);
+
+    // --- Query --------------------------------------------------------------
 
     /**
-     * @brief Run nightmare analysis (learn from failures)
-     * @param torus The 9D toroidal manifold
-     * @param range Time period to analyze
-     * @return Identified failure patterns
+     * @brief Recall consolidated memories whose insight overlaps query words.
+     * @return Pointers into memories_, sorted descending by confidence.
      */
-    std::vector<std::string> run_nightmare_analysis(const TorusManifold& torus,
-                                                     const TimeRange& range);
+    std::vector<const ConsolidatedMemory*>
+    recall(const std::string& query, size_t max = DREAM_MAX_RECALL) const;
 
     /**
-     * @brief Start continuous dreaming (runs in background thread)
-     * @param torus The 9D toroidal manifold
-     * @param scratchpad Quantum hypothesis buffer
-     * @param interval_ms How often to consolidate (default 60 seconds)
+     * @brief Extract failure patterns from nightmare experiences.
+     * @return Human-readable descriptions of identified failure patterns.
      */
-    void start_continuous_dreaming(TorusManifold& torus,
-                                   QuantumScratchpad& scratchpad,
-                                   uint64_t interval_ms = 60000);
+    std::vector<std::string> process_nightmares() const;
+
+    // --- Accessors ----------------------------------------------------------
+
+    const std::vector<Experience>&         experiences() const { return experiences_; }
+    const std::vector<ConsolidatedMemory>& memories()    const { return memories_; }
+    const std::vector<DreamCycle>&         dream_log()   const { return dream_log_; }
+
+    size_t experience_count() const { return experiences_.size(); }
+    size_t memory_count()     const { return memories_.size(); }
+    size_t nightmare_count()  const;
+
+    // --- Stats --------------------------------------------------------------
+
+    struct Stats {
+        size_t total_experiences      = 0;
+        size_t total_nightmares       = 0;
+        size_t total_fragments        = 0;   ///< cumulative across all cycles
+        size_t total_memories         = 0;
+        size_t total_dream_cycles     = 0;
+        double mean_memory_confidence = 0.0;
+    };
+
+    Stats stats() const;
+
+    // --- Callback -----------------------------------------------------------
+
+    using DreamCallback = std::function<void(const DreamCycle&)>;
+    void on_dream_complete(DreamCallback cb) { dream_cb_ = std::move(cb); }
+
+    // --- Pure-static helpers ------------------------------------------------
 
     /**
-     * @brief Stop continuous dreaming
+     * @brief Similarity of two NikolaState snapshots in [0, 1].
+     *
+     * 1 - L2(dopamine, atp, entropy, torus_energy) / sqrt(4) clamped to [0,1].
      */
-    void stop_continuous_dreaming();
+    static double state_similarity(const NikolaState& a, const NikolaState& b);
 
     /**
-     * @brief Get statistics on consolidation
-     * @return Map of metric → value
+     * @brief True when entropy > DREAM_NIGHTMARE_ENTROPY
+     *                AND dopamine < DREAM_NIGHTMARE_DOPAMINE.
      */
-    std::map<std::string, uint64_t> get_stats() const;
+    static bool is_nightmare_state(const NikolaState& s);
 
     /**
-     * @brief Check if currently dreaming
-     * @return true if dream cycle active
+     * @brief True when boredom >= DREAM_IDLE_THRESHOLD.
      */
-    bool is_dreaming() const { return dreaming_; }
+    static bool is_idle_enough(const NikolaState& s);
+
+    /**
+     * @brief Auto-generate a human-readable insight string for a fragment.
+     */
+    static std::string generate_insight(const Experience& a,
+                                        const Experience& b,
+                                        double similarity);
+
+    /**
+     * @brief Score novelty of a fragment given the mean buffer similarity.
+     *
+     * novelty = (1 - similarity) * (1 - mean_similarity) clamped to [0, 1].
+     * High when the pair is both dissimilar to each other AND the buffer
+     * mean similarity is low (many diverse states -> surprising connection).
+     */
+    static double compute_novelty(double similarity, double mean_similarity);
 
 private:
-    bool dreaming_ = false;
-    uint64_t total_consolidations_ = 0;
-    uint64_t patterns_discovered_ = 0;
-    uint64_t nightmares_processed_ = 0;
+    std::vector<Experience>         experiences_;
+    std::vector<ConsolidatedMemory> memories_;
+    std::vector<DreamCycle>         dream_log_;
+    size_t                          total_fragments_ = 0;
+    DreamCallback                   dream_cb_;
+
+    // word-overlap helper for recall scoring
+    static double tag_overlap(const std::string& a, const std::string& b);
 };
 
 } // namespace nikola::interior
