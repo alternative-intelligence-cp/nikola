@@ -1087,6 +1087,17 @@ if(NIKOLA_BUILD_TESTS)
         nikola_core Catch2::Catch2WithMain)
     add_test(NAME Phase115MambaS6 COMMAND test_phase115_mamba_s6)
 
+    # -------------------------------------------------------------------------
+    # Phase 116 — GAP-021 final: AVX-512 SIMD arithmetic kernels for TorusBlock
+    # -mavx512f enables __AVX512F__ guard and _mm512_* intrinsics in the header.
+    # -------------------------------------------------------------------------
+    add_executable(test_phase116_torus_block_simd
+        tests/unit/phase116_torus_block_simd_test.cpp)
+    target_compile_options(test_phase116_torus_block_simd PRIVATE -mavx512f)
+    target_link_libraries(test_phase116_torus_block_simd PRIVATE
+        nikola_core Catch2::Catch2WithMain)
+    add_test(NAME Phase116TorusBlockSIMD COMMAND test_phase116_torus_block_simd)
+
     message(STATUS "Tests configured - run with: make test")
 endif()
 
