@@ -34,7 +34,7 @@ class TorusManifold;
  * - Active learning: query what reduces uncertainty most
  * - Intrinsic motivation: curiosity as reward signal
  *
- * @status STUB - Implementation deferred to Phase 6
+ * @status IMPLEMENTED — Phase 118 (Shannon entropy ranking, gap saturation, uncertainty decay)
  */
 
 struct Question {

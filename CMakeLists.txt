@@ -121,7 +121,7 @@ set(SECURITY_SOURCES
 # Genesis Module 5: Interior Life & Metacognition
 set(INTERIOR_SOURCES
     # src/interior/wave_mirror.cpp  # TODO: Phase 3
-    # src/interior/affective_state.cpp
+    src/interior/affective_state.cpp  # Phase 120
     # src/interior/dream_engine.cpp
     # src/interior/autobiography.cpp
     src/interior/curiosity.cpp         # Phase 118
@@ -1141,6 +1141,16 @@ if(NIKOLA_BUILD_TESTS)
     target_link_libraries(test_phase119_otel_tracing PRIVATE
         nikola_core ${OTEL_LIBS} Catch2::Catch2WithMain)
     add_test(NAME Phase119OtelTracing COMMAND test_phase119_otel_tracing)
+
+    # -------------------------------------------------------------------------
+    # Phase 120 — AffectiveState interior module
+    # affective_state.cpp is compiled into nikola_core (INTERIOR_SOURCES, line ~124).
+    # -------------------------------------------------------------------------
+    add_executable(test_phase120_affective_state
+        tests/unit/phase120_affective_state_test.cpp)
+    target_link_libraries(test_phase120_affective_state PRIVATE
+        nikola_core Catch2::Catch2WithMain)
+    add_test(NAME Phase120AffectiveState COMMAND test_phase120_affective_state)
 
     message(STATUS "Tests configured - run with: make test")
 endif()
