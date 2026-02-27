@@ -114,8 +114,8 @@ set(ECONOMY_SOURCES
 # Genesis Module 4: Security Layer
 set(SECURITY_SOURCES
     src/security/hybrid_verifier.cpp           # Phase 114 / GAP-047
-    # src/security/homeostasis.cpp  # TODO: Phase 3
-    # src/security/polymorphic_defense.cpp
+    src/security/homeostasis.cpp               # Phase 129
+    src/security/polymorphic_defense.cpp       # Phase 128
 )
 
 # Genesis Module 5: Interior Life & Metacognition
@@ -1221,6 +1221,26 @@ if(NIKOLA_BUILD_TESTS)
     target_link_libraries(test_phase127_spectral_filter PRIVATE
         nikola_core Catch2::Catch2WithMain)
     add_test(NAME Phase127SpectralFilter COMMAND test_phase127_spectral_filter)
+
+    # -------------------------------------------------------------------------
+    # Phase 128 — PolymorphicDefense (nikola::security)
+    # polymorphic_defense.cpp is compiled into nikola_core (SECURITY_SOURCES).
+    # -------------------------------------------------------------------------
+    add_executable(test_phase128_polymorphic_defense
+        tests/unit/phase128_polymorphic_defense_test.cpp)
+    target_link_libraries(test_phase128_polymorphic_defense PRIVATE
+        nikola_core Catch2::Catch2WithMain)
+    add_test(NAME Phase128PolymorphicDefense COMMAND test_phase128_polymorphic_defense)
+
+    # -------------------------------------------------------------------------
+    # Phase 129 — HomeostasisMonitor (nikola::security)
+    # homeostasis.cpp is compiled into nikola_core (SECURITY_SOURCES).
+    # -------------------------------------------------------------------------
+    add_executable(test_phase129_homeostasis
+        tests/unit/phase129_homeostasis_test.cpp)
+    target_link_libraries(test_phase129_homeostasis PRIVATE
+        nikola_core Catch2::Catch2WithMain)
+    add_test(NAME Phase129HomeostasisMonitor COMMAND test_phase129_homeostasis)
 
     message(STATUS "Tests configured - run with: make test")
 endif()
