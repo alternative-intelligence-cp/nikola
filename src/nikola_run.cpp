@@ -44,7 +44,9 @@
 #include <nikola/autonomy/decision_loop.hpp>
 #include <nikola/cli/stream_emitter.hpp>
 #include <nikola/telemetry/nikola_tracer.hpp>
+#include <nikola/diag/scope_profiler.hpp>
 
+#include <algorithm>
 #include <array>
 #include <atomic>
 #include <chrono>
@@ -111,6 +113,7 @@ struct CliConfig {
     bool                     json_out      = false;
     bool                     stream        = false;  ///< --stream: line-buffered EMIT_THOUGHT during tick loop
     bool                     trace_otel    = false;  ///< --trace: emit OTel spans to stderr per tick
+    bool                     profile       = false;  ///< --profile: print ScopeProfiler report after run
 };
 
 static void print_help(const char* argv0) {
@@ -127,6 +130,7 @@ static void print_help(const char* argv0) {
         << "  --emit-all           Print ALL non-SILENT actions\n"
         << "  --stream             Print each EMIT_THOUGHT immediately (line-buffered)\n"
         << "  --trace              Emit OpenTelemetry tick spans to stderr\n"
+        << "  --profile            Print scope profiler report to stderr after run\n"
         << "  --no-color           Disable ANSI colour\n"
         << "  --quiet              Suppress status headers\n"
         << "  --json               Machine-readable JSON output\n"
@@ -150,6 +154,7 @@ static std::optional<CliConfig> parse_args(int argc, char** argv) {
         else if (a == "--emit-all")     cfg.emit_all       = true;
         else if (a == "--stream")       cfg.stream         = true;
         else if (a == "--trace")        cfg.trace_otel     = true;
+        else if (a == "--profile")      cfg.profile        = true;
         else if (a == "--no-color")     cfg.no_color       = true;
         else if (a == "--quiet")        cfg.quiet          = true;
         else if (a == "--json")         cfg.json_out       = true;
@@ -392,6 +397,31 @@ int main(int argc, char** argv) {
             tick_tracer.trace_tick(s, static_cast<int64_t>(loop.tick_count()));
         };
     }
+
+    // ── Profile dump (RAII — fires on any return path) ───────────────────────
+    struct ProfilePrinter {
+        const CliConfig& cfg;
+        ~ProfilePrinter() {
+            if (!cfg.profile) return;
+            auto report = nikola::diag::ScopeProfiler::global().report();
+            std::sort(report.begin(), report.end(),
+                      [](const auto& a, const auto& b){
+                          return a.total_us > b.total_us;
+                      });
+            std::cerr << "\n--- Profile report (" << report.size() << " scopes) ---\n";
+            for (const auto& s : report) {
+                std::cerr << "  " << s.name
+                          << "  n="    << s.count
+                          << "  mean=" << std::fixed << std::setprecision(2)
+                          << s.mean_us() << "us"
+                          << "  min="  << s.min_us  << "us"
+                          << "  max="  << s.max_us  << "us"
+                          << "  1kHz=" << s.budget_fraction_1khz() * 100.0
+                          << "%\n";
+            }
+        }
+    };
+    const ProfilePrinter _prof_print{cfg};
 
     // ── Dispatch ─────────────────────────────────────────────────────────────
 

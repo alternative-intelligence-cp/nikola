@@ -28,6 +28,7 @@
 #include <utility>
 
 #include <nikola/foundation/nit.hpp>
+#include <nikola/diag/scope_profiler.hpp>
 
 namespace nikola::autonomy {
 
@@ -423,6 +424,7 @@ std::string DecisionLoop::build_payload(ActionType type, const NikolaState& s) c
 
 DecisionResult DecisionLoop::tick()
 {
+    NIKOLA_PROFILE("DecisionLoop::tick");
     // ── 0. Reset per-tick warm state ─────────────────────────────────────────
     last_ex_tokens_.clear();
 
@@ -433,16 +435,22 @@ DecisionResult DecisionLoop::tick()
 
     // ── 1. Advance torus physics ─────────────────────────────────────────────
     const float dt = torus_.safe_dt();
-    torus_.run(cfg_.steps_per_tick, dt);
+    {
+        NIKOLA_PROFILE("torus::run");
+        torus_.run(cfg_.steps_per_tick, dt);
+    }
 
     // ── 2. Update AutonomyEngine with current field state ───────────────────
     const auto& g = torus_.grid();
     const size_t N = g.num_active_nodes();
     const float elapsed_dt = dt * static_cast<float>(cfg_.steps_per_tick);
 
-    engine_.tick(elapsed_dt,
-                 std::span<const float>(g.psi_real(), N),
-                 std::span<const float>(g.psi_imag(), N));
+    {
+        NIKOLA_PROFILE("autonomy::tick");
+        engine_.tick(elapsed_dt,
+                     std::span<const float>(g.psi_real(), N),
+                     std::span<const float>(g.psi_imag(), N));
+    }
 
     // ── 3. Snapshot internal state ──────────────────────────────────────────
     NikolaState s = read_state();
