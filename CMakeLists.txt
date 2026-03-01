@@ -924,9 +924,37 @@ if(NIKOLA_BUILD_TESTS)
             INSTALL_RPATH "/usr/local/cuda/lib64")
         add_test(NAME Phase111CudaPropagator COMMAND test_phase111_cuda_propagator)
 
-        message(STATUS "CUDA ${CUDAToolkit_VERSION} found — nikola_cuda (torus_cuda.cu + propagator.cu), Phase 105, 110, 111 targets enabled")
+        # Phase 135 — CognitiveTorus GPU wiring integration test.
+        #   Verifies CognitiveTorus::run() delegates to CudaPropagator under
+        #   NIKOLA_HAS_CUDA_KERNELS: finite field, energy stability, GPU vs CPU
+        #   L2 error < 0.5%, hot_nodes() sane, full 19,683-node 50-step run.
+        add_executable(test_phase135_cognitive_torus_cuda
+            tests/unit/phase135_cognitive_torus_cuda_test.cpp)
+        target_include_directories(test_phase135_cognitive_torus_cuda PRIVATE
+            ${CMAKE_SOURCE_DIR}/include
+            /usr/local/cuda/include)
+        target_link_directories(test_phase135_cognitive_torus_cuda PRIVATE
+            /usr/local/cuda/lib64)
+        target_link_libraries(test_phase135_cognitive_torus_cuda PRIVATE
+            nikola_core nikola_cuda Catch2::Catch2WithMain)
+        set_target_properties(test_phase135_cognitive_torus_cuda PROPERTIES
+            BUILD_RPATH  "/usr/local/cuda/lib64"
+            INSTALL_RPATH "/usr/local/cuda/lib64")
+        add_test(NAME Phase135CognitiveToruscuda COMMAND test_phase135_cognitive_torus_cuda)
+
+        message(STATUS "CUDA ${CUDAToolkit_VERSION} found — nikola_cuda (torus_cuda.cu + propagator.cu), Phase 105, 110, 111, 135 targets enabled")
     else()
         message(STATUS "CUDAToolkit not found — nikola_cuda and CUDA tests skipped")
+    endif()
+
+    # Propagate NIKOLA_HAS_CUDA_KERNELS to nikola_core and all its consumers
+    # so that header-only inline functions (CognitiveTorus::run, step) compile
+    # the GPU branch.  Must be after endif() so nikola_cuda is guaranteed to
+    # exist as a target.
+    if(TARGET nikola_cuda)
+        target_link_libraries(nikola_core PUBLIC nikola_cuda)
+        target_link_directories(nikola_core PUBLIC /usr/local/cuda/lib64)
+        message(STATUS "nikola_core: PUBLIC link to nikola_cuda — GPU path active in all consumers")
     endif()
 
     # -------------------------------------------------------------------------
@@ -1307,6 +1335,16 @@ target_link_libraries(nikola_run PRIVATE
     opentelemetry_version)
 target_link_directories(nikola_run PRIVATE /usr/local/lib)
 set_target_properties(nikola_run PROPERTIES OUTPUT_NAME "nikola-run")
+# Wire nikola_cuda into the CLI when CUDA is available so that
+# NIKOLA_HAS_CUDA_KERNELS is defined and CognitiveTorus::run() uses the GPU.
+if(TARGET nikola_cuda)
+    target_link_libraries(nikola_run PRIVATE nikola_cuda)
+    target_link_directories(nikola_run PRIVATE /usr/local/cuda/lib64)
+    set_target_properties(nikola_run PROPERTIES
+        BUILD_RPATH  "/usr/local/cuda/lib64"
+        INSTALL_RPATH "/usr/local/cuda/lib64")
+    message(STATUS "nikola-run: linked nikola_cuda — GPU propagator active")
+endif()
 message(STATUS "Inference CLI: nikola-run")
 
 # Installation

@@ -22,6 +22,9 @@
 
 #include <nikola/physics/wave_function.hpp>
 #include <nikola/physics/propagator.hpp>
+#ifdef NIKOLA_HAS_CUDA_KERNELS
+#  include <nikola/physics/cuda_propagator.hpp>
+#endif
 #include <nikola/cognitive/holographic_injector.hpp>
 #include <nikola/cognitive/relevance_gate.hpp>
 #include <nikola/foundation/toroidal_grid.hpp>
@@ -269,17 +272,32 @@ public:
      * @param dt  Timestep.  Should satisfy CFL: dt ≤ max_dt().
      */
     void step(float dt) {
+#ifdef NIKOLA_HAS_CUDA_KERNELS
+        gpu_prop_.step_synced(wf_, dt);
+#else
         propagator_.step(wf_, dt);
+#endif
     }
 
     /**
      * @brief Run N consecutive physics steps.
      *
+     * Uses the GPU propagator when compiled with CUDA (NIKOLA_HAS_CUDA_KERNELS).
+     * The host WaveFunction is uploaded once, all N steps run on-device, then
+     * the result is downloaded back — minimising PCIe traffic (~15 µs total
+     * for 19,683 nodes regardless of step count).
+     *
      * @param steps  Number of steps.
      * @param dt     Timestep per step.
      */
     void run(int steps, float dt) {
+#ifdef NIKOLA_HAS_CUDA_KERNELS
+        gpu_prop_.upload(wf_);          // H→D  (~0.47 MB, ~15 µs)
+        gpu_prop_.run(steps, dt);       // pure-GPU Strang-Verlet
+        gpu_prop_.download(wf_);        // D→H  (~15 µs)
+#else
         for (int i = 0; i < steps; ++i) step(dt);
+#endif
     }
 
     /**
@@ -420,8 +438,12 @@ public:
 
 private:
     physics::WaveFunction wf_;
-    physics::Propagator   propagator_;
+    physics::Propagator   propagator_;   ///< CPU fallback (always constructed)
     std::unique_ptr<HolographicInjector<foundation::TorusGrid>> injector_;
+
+#ifdef NIKOLA_HAS_CUDA_KERNELS
+    physics::CudaPropagator gpu_prop_;   ///< GPU propagator (lazy-inited on first upload)
+#endif
 
 #ifdef NIKOLA_HAS_ORT
     NonaryEmbedder embedder_;
