@@ -15,6 +15,7 @@
 #include <catch2/catch_test_macros.hpp>
 #include <catch2/matchers/catch_matchers_floating_point.hpp>
 #include <catch2/catch_approx.hpp>
+#include <memory>
 
 #include "nikola/physics/soa_layout.hpp"
 
@@ -127,9 +128,11 @@ TEST_CASE("GAP-021 §12: sizeof(TorusBlock) is a multiple of 64", "[gap021][toru
 }
 
 TEST_CASE("GAP-021 §13: TorusBlock fields have correct element counts", "[gap021][torusblock]") {
-    REQUIRE(TorusBlock{}.psi_real.size()        == static_cast<std::size_t>(TorusBlock::BLOCK_SIZE));
-    REQUIRE(TorusBlock{}.psi_imag.size()        == static_cast<std::size_t>(TorusBlock::BLOCK_SIZE));
-    REQUIRE(TorusBlock{}.metric_tensor.size()   == static_cast<std::size_t>(METRIC_TENSOR_COMPONENTS));
+    // TorusBlock is ~3.6 MB — heap-allocate to avoid stack overflow in parallel test runs
+    auto block = std::make_unique<TorusBlock>();
+    REQUIRE(block->psi_real.size()      == static_cast<std::size_t>(TorusBlock::BLOCK_SIZE));
+    REQUIRE(block->psi_imag.size()      == static_cast<std::size_t>(TorusBlock::BLOCK_SIZE));
+    REQUIRE(block->metric_tensor.size() == static_cast<std::size_t>(METRIC_TENSOR_COMPONENTS));
 }
 
 // ---------------------------------------------------------------------------

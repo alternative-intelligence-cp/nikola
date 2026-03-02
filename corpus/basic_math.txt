@@ -1,0 +1,43 @@
+# Basic arithmetic facts
+# Format: one training sentence per line
+
+zero plus zero equals zero
+one plus one equals two
+two plus two equals four
+three plus three equals six
+four plus four equals eight
+five plus five equals ten
+one plus two equals three
+two plus three equals five
+three plus four equals seven
+four plus five equals nine
+five plus six equals eleven
+ten minus one equals nine
+ten minus two equals eight
+ten minus three equals seven
+ten minus five equals five
+two times two equals four
+two times three equals six
+two times four equals eight
+three times three equals nine
+three times four equals twelve
+four times four equals sixteen
+five times five equals twenty five
+ten divided by two equals five
+ten divided by five equals two
+twelve divided by three equals four
+zero times any number equals zero
+one times any number equals that number
+addition combines two numbers into a sum
+subtraction finds the difference between two numbers
+multiplication is repeated addition
+division splits a number into equal parts
+a prime number has only two factors one and itself
+two is the smallest prime number
+three four five is a right triangle
+the sum of angles in a triangle equals one hundred eighty degrees
+infinity is not a number it is a concept
+the ratio of a circle circumference to diameter equals pi
+probability is a number between zero and one
+equal means the same value on both sides
+greater means one number is larger than another

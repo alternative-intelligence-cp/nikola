@@ -1360,8 +1360,24 @@ if(TARGET nikola_cuda)
 endif()
 message(STATUS "Inference CLI: nikola-run")
 
+# ============================================================================
+# NIKOLA-TRAIN — Corpus ingestion CLI
+# ============================================================================
+add_executable(nikola_train src/nikola_train.cpp)
+target_compile_definitions(nikola_train PRIVATE NIKOLA_AUTONOMY_ENGINE_IMPL)
+target_link_libraries(nikola_train PRIVATE nikola_core)
+set_target_properties(nikola_train PROPERTIES OUTPUT_NAME "nikola-train")
+if(TARGET nikola_cuda)
+    target_link_libraries(nikola_train PRIVATE nikola_cuda)
+    target_link_directories(nikola_train PRIVATE /usr/local/cuda/lib64)
+    set_target_properties(nikola_train PROPERTIES
+        BUILD_RPATH  "/usr/local/cuda/lib64"
+        INSTALL_RPATH "/usr/local/cuda/lib64")
+endif()
+message(STATUS "Training CLI: nikola-train")
+
 # Installation
-install(TARGETS nikola_core nikola_run
+install(TARGETS nikola_core nikola_run nikola_train
     LIBRARY DESTINATION lib
     ARCHIVE DESTINATION lib
     RUNTIME DESTINATION bin

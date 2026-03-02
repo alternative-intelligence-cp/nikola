@@ -1,0 +1,33 @@
+# Physics concepts for training
+# Format: one sentence per line
+
+energy cannot be created or destroyed only transformed
+a wave carries energy through space
+light travels at the fastest speed in the universe
+gravity pulls mass toward other mass
+quantum mechanics describes the behavior of very small particles
+a field pervades space and exerts force on particles
+entropy measures the disorder in a system
+resonance occurs when energy is added at the natural frequency
+a torus is a donut shaped surface with complex topology
+symmetry means a system looks the same after transformation
+an electron has negative charge and quantum spin
+a photon is a particle of light with no mass
+frequency is the number of oscillations per unit time
+dimension is a direction in which space extends
+space and time are united into spacetime
+matter is composed of atoms which contain electrons
+a wave has amplitude frequency and phase
+interference occurs when waves combine and add or cancel
+entropy grows in a closed system over time
+order emerges from chaos through self organization
+quantum entanglement links particles across distance
+the harmonic oscillator is the simplest periodic system
+topology studies the properties that survive deformation
+the universe began from a single point in the big bang
+gravity curves the geometry of spacetime
+a field is a value assigned to every point in space
+light is both a wave and a particle
+motion requires a change in position over time
+energy is the capacity to do work
+force causes acceleration of mass
