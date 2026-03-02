@@ -254,7 +254,8 @@ TEST_CASE("Phase30 — ZMQ pub/sub round-trip: subscriber receives versioned fra
     node->inject_stimulus("hello curious");
 
     std::thread node_thread([&node]() {
-        node->run(80);  // run 80 ticks then exit naturally
+        node->run(3000);  // run 3000 ticks — at CUDA speeds (~1.8ms/tick) this is
+                          // ~5.4s wall-time, well past the 0.65s subscriber join delay
     });
 
     // Allow sockets to bind (ZMQ bind is synchronous, but the thread needs to

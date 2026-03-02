@@ -178,21 +178,23 @@ TEST_CASE("Phase43 §6 — head 7 drifts more than head 0 per step", "[phase43]"
 // ---------------------------------------------------------------------------
 // §7  K fields never modified by forward()
 // ---------------------------------------------------------------------------
-TEST_CASE("Phase43 §7 — K fields are unchanged after forward()", "[phase43]") {
+// §7 was originally "K fields are unchanged after forward()" but Phase 44
+// intentionally introduces K-head differentiation: each K_i drifts toward
+// the live torus input (scale_by(1-s) + add_scaled(torus, s)).
+// The correct postcondition is that K fields remain finite and non-negative
+// after the drift update — not that they are identical to the pre-forward state.
+TEST_CASE("Phase43 §7 — K fields are finite and non-negative after forward()", "[phase43]") {
     auto npt   = make_npt();
     auto torus = make_active_wf();
-
-    // Snapshot K fields
-    std::array<WaveFunction, NPT_NUM_HEADS> K_before;
-    for (size_t i = 0; i < NPT_NUM_HEADS; ++i)
-        K_before[i] = npt.head(i).K.clone();
 
     (void)npt.forward(torus);
 
     for (size_t i = 0; i < NPT_NUM_HEADS; ++i) {
-        float ip   = static_cast<float>(K_before[i].inner_product_re(npt.head(i).K));
-        float norm = static_cast<float>(npt.head(i).K.total_probability());
-        REQUIRE(ip == Catch::Approx(norm).epsilon(1e-5));
+        const float norm = static_cast<float>(npt.head(i).K.total_probability());
+        // K is a valid WaveFunction: non-negative total probability, no NaN/Inf
+        REQUIRE(norm >= 0.0f);
+        REQUIRE(std::isfinite(norm));
+        REQUIRE(npt.head(i).K.is_finite());
     }
 }
 

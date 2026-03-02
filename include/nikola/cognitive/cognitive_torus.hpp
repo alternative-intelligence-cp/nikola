@@ -274,6 +274,7 @@ public:
     void step(float dt) {
 #ifdef NIKOLA_HAS_CUDA_KERNELS
         gpu_prop_.step_synced(wf_, dt);
+        wf_.advance_time(dt);            // CUDA path doesn't call advance_time internally
 #else
         propagator_.step(wf_, dt);
 #endif
@@ -292,9 +293,10 @@ public:
      */
     void run(int steps, float dt) {
 #ifdef NIKOLA_HAS_CUDA_KERNELS
-        gpu_prop_.upload(wf_);          // H→D  (~0.47 MB, ~15 µs)
-        gpu_prop_.run(steps, dt);       // pure-GPU Strang-Verlet
-        gpu_prop_.download(wf_);        // D→H  (~15 µs)
+        gpu_prop_.upload(wf_);                  // H→D  (~0.47 MB, ~15 µs)
+        gpu_prop_.run(steps, dt);               // pure-GPU Strang-Verlet
+        gpu_prop_.download(wf_);                // D→H  (~15 µs)
+        wf_.advance_time(static_cast<float>(steps) * dt);  // CUDA path doesn't call advance_time internally
 #else
         for (int i = 0; i < steps; ++i) step(dt);
 #endif
