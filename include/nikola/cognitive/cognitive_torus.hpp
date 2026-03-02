@@ -233,6 +233,22 @@ public:
     }
 
     /**
+     * @brief Zero out the entire wavefunction (Ψ → 0 at all nodes).
+     *
+     * Used after vocabulary calibration to start inference from a clean field.
+     * The calibration records Nit pulses and lexicon entries in data structures
+     * outside the torus; resetting removes the accumulated calibration energy
+     * so the live tick loop starts from a neutral baseline.
+     */
+    void reset_field() noexcept {
+        const std::size_t N = wf_.num_nodes();
+        float* pr = wf_.grid().psi_real();
+        float* pi = wf_.grid().psi_imag();
+        std::fill(pr, pr + N, 0.0f);
+        std::fill(pi, pi + N, 0.0f);
+    }
+
+    /**
      * @brief Inject a pre-computed Nit vector with salience attenuation.
      *
      * Equivalent to inject_raw() but each Nit amplitude is first multiplied

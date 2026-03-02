@@ -458,6 +458,12 @@ private:
     NikolaState  last_state_;
     uint64_t     tick_count_  = 0;
 
+    /// Pending reward signal consumed on the NEXT call to engine_.tick().
+    /// Set to POSITIVE after a successful EXPLORE that found a seed token,
+    /// causing a dopamine spike that primes EMIT_THOUGHT to fire.
+    /// Cleared (reset to NEUTRAL) after each engine_.tick() call.
+    Reward       pending_reward_ = Reward::NEUTRAL;
+
     /// Most recent seed token used by execute_explore().
     /// Phase 26 scaffold: used as fallback content for EMIT_THOUGHT when the
     /// holographic decoder has not yet converged.  After Phase 27 cross-injection

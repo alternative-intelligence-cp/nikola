@@ -377,7 +377,8 @@ void AutonomyEngine::tick(float                  dt,
     // --- 1. Total energy (Σ|Ψ|²) for dopamine — NOTE: stroboscopic (NIK-005)
     //         Use tick_physics() to pass vel spans for the invariant Hamiltonian.
     float total_energy = 0.0f;
-    for (std::size_t i = 0, n = std::min(psi_real.size(), psi_imag.size()); i < n; ++i) {
+    const std::size_t n_nodes = std::min(psi_real.size(), psi_imag.size());
+    for (std::size_t i = 0; i < n_nodes; ++i) {
         float r = psi_real[i], im = psi_imag[i];
         total_energy += r*r + im*im;
     }

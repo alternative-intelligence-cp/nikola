@@ -52,6 +52,7 @@
 #include <chrono>
 #include <cstdio>
 #include <cstring>
+#include <fstream>
 #include <iomanip>
 #include <iostream>
 #include <optional>
@@ -104,6 +105,7 @@ struct CliConfig {
     std::string              lmdb_memory_path;
     std::string              model_path    = NIKOLA_RUN_MODEL_PATH;
     std::string              tokenizer_path= NIKOLA_RUN_TOKENIZER_PATH;
+    std::string              vocab_path;           ///< --vocab: load extra words from file (one per line)
     int                      max_ticks     = 200;
     int                      steps_per_tick= 50;
     bool                     interactive   = false;
@@ -117,6 +119,80 @@ struct CliConfig {
     bool                     profile       = false;  ///< --profile: print ScopeProfiler report after run
 };
 
+// ─────────────────────────────────────────────────────────────────────────────
+// Built-in default vocabulary (~200 words covering language, math, cognition)
+// Gives Nikola something to work with cold-start, before any training.
+// ─────────────────────────────────────────────────────────────────────────────
+static const std::vector<std::string> DEFAULT_VOCABULARY = {
+    // Question / function words
+    "what", "is", "how", "why", "where", "when", "who", "which",
+    "can", "do", "does", "did", "will", "have", "has", "would", "could", "should",
+    // Articles / connectives
+    "the", "a", "an", "of", "and", "or", "but", "to", "in", "on", "at",
+    "by", "for", "with", "from", "this", "that", "these", "those", "it", "its",
+    "not", "only", "also", "more", "very", "so", "than", "then", "there",
+    // Pronouns
+    "I", "me", "my", "we", "you", "your", "they", "their", "one",
+    // Numbers / math
+    "zero", "one", "two", "three", "four", "five", "six", "seven", "eight",
+    "nine", "ten", "hundred", "thousand", "million",
+    "plus", "minus", "times", "divided", "equals", "result",
+    "sum", "product", "difference", "number", "count", "total",
+    "add", "subtract", "multiply", "divide", "calculate",
+    "greater", "smaller", "equal", "less", "more", "between",
+    // Self / identity / meta
+    "nikola", "mind", "self", "thought", "consciousness", "awareness",
+    "intelligence", "artificial", "machine", "neural", "model", "system",
+    // Cognitive / process words
+    "think", "feel", "know", "learn", "understand", "explore", "curious",
+    "wonder", "perceive", "observe", "remember", "imagine", "create",
+    "discover", "question", "answer", "reason", "logic", "pattern",
+    "meaning", "concept", "idea", "knowledge", "information", "data",
+    "process", "analyze", "solve", "predict", "generate", "respond",
+    // Physics / science
+    "energy", "field", "wave", "frequency", "space", "time", "force",
+    "matter", "light", "motion", "change", "structure", "dimension",
+    "quantum", "torus", "resonance", "interference", "harmonic",
+    // Common adjectives
+    "new", "old", "good", "true", "false", "possible", "certain",
+    "unknown", "complex", "simple", "large", "small", "fast", "slow",
+    "different", "same", "similar", "important", "interesting", "strange",
+    "open", "closed", "free", "bound", "stable", "unstable",
+    // Common verbs
+    "be", "are", "was", "were", "been", "go", "come", "see", "look",
+    "find", "make", "use", "need", "want", "give", "take", "move",
+    "grow", "build", "break", "connect", "combine", "begin", "end",
+    "increase", "decrease", "become", "exist", "appear", "follow",
+    // Language / communication
+    "word", "language", "sentence", "question", "statement", "describe",
+    "explain", "say", "tell", "ask", "mean", "refer", "define",
+    // Basic science / world
+    "life", "human", "world", "nature", "universe", "physics", "math",
+    "science", "logic", "truth", "reality", "experience",
+};
+
+/// Load supplemental words from a plain-text file (one word per line).
+/// Empty lines and lines starting with '#' are skipped.
+static std::vector<std::string> load_vocab_file(const std::string& path) {
+    std::vector<std::string> words;
+    std::ifstream f(path);
+    if (!f.is_open()) {
+        std::cerr << "Warning: could not open vocab file: " << path << "\n";
+        return words;
+    }
+    std::string line;
+    while (std::getline(f, line)) {
+        // Trim whitespace
+        auto s = line.find_first_not_of(" \t\r\n");
+        auto e = line.find_last_not_of(" \t\r\n");
+        if (s == std::string::npos) continue;
+        line = line.substr(s, e - s + 1);
+        if (line.empty() || line[0] == '#') continue;
+        words.push_back(line);
+    }
+    return words;
+}
+
 static void print_help(const char* argv0) {
     std::cout
         << "\nUsage: " << argv0 << " [options]\n\n"
@@ -129,6 +205,7 @@ static void print_help(const char* argv0) {
         << "  --memory-lmdb <dir>  Persist SemanticMemory via LMDB (crash-safe)\n"
         << "  --model  <path>      Override ONNX model.onnx path\n"
         << "  --tokenizer <path>   Override tokenizer.json/dir path\n"
+        << "  --vocab  <file>      Load extra vocabulary words from file (one per line)\n"
         << "  --emit-all           Print ALL non-SILENT actions\n"
         << "  --stream             Print each EMIT_THOUGHT immediately (line-buffered)\n"
         << "  --trace              Emit OpenTelemetry tick spans to stderr\n"
@@ -163,10 +240,11 @@ static std::optional<CliConfig> parse_args(int argc, char** argv) {
         else if (a == "--prompt")       cfg.prompt         = next();
         else if (a == "--memory")       cfg.memory_path      = next();
         else if (a == "--memory-lmdb")  cfg.lmdb_memory_path = next();
-        else if (a == "--model")        cfg.model_path     = next();
-        else if (a == "--tokenizer")    cfg.tokenizer_path = next();
-        else if (a == "--ticks")        cfg.max_ticks      = std::stoi(next());
-        else if (a == "--steps")        cfg.steps_per_tick = std::stoi(next());
+        else if (a == "--model")        cfg.model_path       = next();
+        else if (a == "--tokenizer")    cfg.tokenizer_path   = next();
+        else if (a == "--vocab")        cfg.vocab_path       = next();
+        else if (a == "--ticks")        cfg.max_ticks        = std::stoi(next());
+        else if (a == "--steps")        cfg.steps_per_tick   = std::stoi(next());
         else {
             std::cerr << "Unknown option: " << a << "  (try --help)\n";
             std::exit(1);
@@ -387,6 +465,27 @@ int main(int argc, char** argv) {
     loop_cfg.memory_path           = cfg.memory_path;
     loop_cfg.lmdb_memory_path      = cfg.lmdb_memory_path;
     loop_cfg.min_emit_interval_s   = 0.0f;  // CLI: no rate limit between prompts
+
+    // ── Vocabulary ──────────────────────────────────────────────────────────
+    // Start with the built-in default (~200 words covering language/math/physics).
+    // Merge in any words from --vocab file (deduplicated).
+    loop_cfg.vocabulary = DEFAULT_VOCABULARY;
+    if (!cfg.vocab_path.empty()) {
+        const auto extra = load_vocab_file(cfg.vocab_path);
+        for (const auto& w : extra) {
+            if (std::find(loop_cfg.vocabulary.begin(),
+                          loop_cfg.vocabulary.end(), w)
+                    == loop_cfg.vocabulary.end()) {
+                loop_cfg.vocabulary.push_back(w);
+            }
+        }
+    }
+    if (!cfg.quiet && !cfg.json_out) {
+        std::cerr << ansi::c(ansi::gray)
+                  << "  vocabulary: " << loop_cfg.vocabulary.size() << " words"
+                  << (cfg.vocab_path.empty() ? " (built-in default)" : " (default + file)")
+                  << "\n" << ansi::c(ansi::rst);
+    }
 
     nikola::autonomy::DecisionLoop loop(torus, engine, loop_cfg);
 

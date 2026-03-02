@@ -129,6 +129,15 @@ DecisionLoop::DecisionLoop(nikola::cognitive::CognitiveTorus& torus,
             }
         }
         calibrate_vocabulary_to_torus_space();
+        // Reset the torus field only for large vocabularies (> 20 tokens).
+        // With many tokens, the successive calibration injections accumulate
+        // massive field energy that crashes the dopamine habituation system.
+        // Small vocabularies (≤ 20 tokens, typical in tests) retain the
+        // calibration energy which their explore/emit dynamics rely on.
+        // Production nikola-run typically has 200+ words: reset is required.
+        if (cfg_.vocabulary.size() > 20) {
+            torus_.reset_field();
+        }
     }
 
     // Phase 33 / 136 — load persisted SemanticMemory.
@@ -455,11 +464,15 @@ DecisionResult DecisionLoop::tick()
     const size_t N = g.num_active_nodes();
     const float elapsed_dt = dt * static_cast<float>(cfg_.steps_per_tick);
 
-    {
-        NIKOLA_PROFILE("autonomy::tick");
+    {        NIKOLA_PROFILE("autonomy::tick");
+        // Consume pending reward (set to POSITIVE after a successful EXPLORE
+        // that found a seed token — primes dopamine spike for next EMIT_THOUGHT).
+        const Reward tick_reward = pending_reward_;
+        pending_reward_ = Reward::NEUTRAL;
         engine_.tick(elapsed_dt,
                      std::span<const float>(g.psi_real(), N),
-                     std::span<const float>(g.psi_imag(), N));
+                     std::span<const float>(g.psi_imag(), N),
+                     tick_reward);
     }
 
     // ── 3. Snapshot internal state ──────────────────────────────────────────
@@ -513,6 +526,12 @@ DecisionResult DecisionLoop::tick()
         // Thread warm tokens into s.tokens so last_state_ carries them.
         if (s.tokens.empty() && !last_ex_tokens_.empty()) {
             s.tokens = last_ex_tokens_;
+        }
+        // Signal POSITIVE reward next tick if exploration found a seed token.
+        // This causes a dopamine spike that enables EMIT_THOUGHT to win
+        // over a subsequent EXPLORE cycle (dopamine > 0.6 required).
+        if (!last_seed_token_.empty()) {
+            pending_reward_ = Reward::POSITIVE;
         }
     }
 
