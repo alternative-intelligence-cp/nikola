@@ -1,0 +1,93 @@
+# physics corpus — 92 items
+force equals mass times acceleration
+acceleration is the rate of change of velocity
+velocity is the rate of change of position
+momentum equals mass times velocity
+kinetic energy equals one half mass times velocity squared
+potential energy is stored energy due to position
+energy cannot be created or destroyed only transformed
+work equals force times distance
+power equals work divided by time
+gravity pulls mass toward other mass
+on earth gravity accelerates objects at nine point eight meters per second squared
+an object at rest stays at rest unless acted upon by a force
+an object in motion stays in motion unless acted upon by a force
+every action has an equal and opposite reaction
+friction opposes relative motion between surfaces
+pressure equals force divided by area
+buoyancy is the upward force exerted by a fluid
+objects float when their density is less than the fluid
+centripetal force points toward the center of circular motion
+a wave carries energy through space or matter
+frequency is the number of oscillations per unit time
+wavelength is the distance between successive wave crests
+speed equals frequency times wavelength
+light travels at approximately three hundred million meters per second
+light is both a wave and a particle
+a photon is a particle of light with no rest mass
+the electromagnetic spectrum includes radio infrared visible ultraviolet xray and gamma
+visible light spans wavelengths from four hundred to seven hundred nanometers
+reflection occurs when a wave bounces off a surface
+refraction occurs when a wave changes speed at a boundary
+diffraction occurs when a wave bends around an obstacle
+interference occurs when two waves combine
+constructive interference increases amplitude
+destructive interference decreases amplitude
+sound is a longitudinal pressure wave
+sound travels faster in solids than in gases
+the doppler effect changes observed frequency due to relative motion
+temperature measures average kinetic energy of particles
+heat flows from hot regions to cold regions
+entropy measures the disorder of a system
+entropy in a closed system tends to increase
+absolute zero is the lowest possible temperature
+absolute zero equals negative two hundred seventy three celsius
+matter exists in solid liquid and gas phases
+solids have fixed shape and volume
+liquids have fixed volume but take the shape of their container
+gases expand to fill their container
+plasma is a fourth state of matter consisting of ionized gas
+evaporation converts liquid to gas
+condensation converts gas to liquid
+melting converts solid to liquid
+freezing converts liquid to solid
+electric charge comes in positive and negative varieties
+opposite charges attract and like charges repel
+electric current is the flow of electric charge
+voltage is the potential difference that drives current
+resistance opposes the flow of current
+ohms law states voltage equals current times resistance
+power in a circuit equals voltage times current
+magnetic fields are produced by moving charges
+electric and magnetic fields are aspects of one electromagnetic field
+electromagnetic waves are created by accelerating charges
+quantum mechanics describes the behavior of very small particles
+an electron has negative charge and quantum spin
+atoms consist of protons neutrons and electrons
+protons have positive charge neutrons have no charge electrons have negative charge
+protons and neutrons reside in the nucleus
+electrons orbit the nucleus in energy shells
+the atomic number equals the number of protons
+isotopes have the same number of protons but different numbers of neutrons
+quantum particles behave as both waves and particles
+the uncertainty principle states position and momentum cannot both be precisely known
+quantum entanglement links particles across distance
+a photon carries exactly one quantum of electromagnetic energy
+energy is quantized not continuous at small scales
+nothing with mass can reach the speed of light
+mass and energy are equivalent described by e equals mc squared
+gravity curves the geometry of spacetime
+the universe began approximately fourteen billion years ago
+the universe is expanding
+a black hole is a region where gravity is so strong nothing escapes
+stars produce energy through nuclear fusion
+the sun fuses hydrogen into helium
+a field assigns a value to every point in space
+a scalar field assigns a single number to each point
+a vector field assigns a direction and magnitude to each point
+a torus is a surface shaped like a donut
+topology studies properties preserved under continuous deformation
+symmetry means a system is unchanged by a transformation
+resonance occurs when energy is added at the natural frequency
+a harmonic oscillator produces sinusoidal motion
+entropy is related to the number of possible microstates

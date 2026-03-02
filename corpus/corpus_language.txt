@@ -1,0 +1,56 @@
+# language corpus — 55 items
+a noun names a person place thing or idea
+a verb expresses an action or state of being
+an adjective describes a noun
+an adverb modifies a verb adjective or other adverb
+a pronoun replaces a noun
+a preposition shows the relationship between a noun and another element
+a conjunction connects words phrases or clauses
+an interjection expresses sudden emotion
+a sentence expresses a complete thought
+every sentence has a subject and a predicate
+the subject is what the sentence is about
+the predicate tells what the subject does or is
+a clause contains a subject and a verb
+an independent clause can stand alone as a sentence
+a dependent clause cannot stand alone
+a simple sentence has one independent clause
+a compound sentence has two or more independent clauses
+a complex sentence has an independent and a dependent clause
+language encodes thought into communicable symbols
+a word is a symbol that encodes meaning
+grammar is the set of rules that govern language structure
+syntax is the arrangement of words in a sentence
+semantics is the study of meaning in language
+pragmatics is the study of language in context
+a morpheme is the smallest unit of meaning
+a phoneme is the smallest unit of sound in a language
+writing systems represent spoken language visually
+alphabets represent individual sounds
+logographic systems represent words or morphemes
+metaphor describes one thing in terms of another
+analogy compares two things to illuminate a relationship
+a definition specifies the meaning of a term
+context shapes the meaning of a word or sentence
+ambiguity occurs when a sentence has more than one interpretation
+synonyms are words with similar meanings
+antonyms are words with opposite meanings
+communication requires a sender a message and a receiver
+language is a primary tool for sharing knowledge
+all human languages have nouns and verbs
+logic is the study of valid reasoning
+a statement is either true or false
+an argument consists of premises and a conclusion
+a valid argument preserves truth from premises to conclusion
+deductive reasoning draws specific conclusions from general principles
+inductive reasoning draws general conclusions from specific observations
+a hypothesis is a testable prediction
+evidence supports or refutes a hypothesis
+correlation does not imply causation
+a contradiction is a statement that is both true and false
+a tautology is true in all cases
+if p then q means p implies q
+the negation of true is false and the negation of false is true
+and is true only when both parts are true
+or is true when at least one part is true
+not reverses the truth value of a statement

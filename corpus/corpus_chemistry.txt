@@ -1,0 +1,87 @@
+# chemistry corpus — 86 items
+hydrogen has atomic number 1
+the symbol for hydrogen is H
+hydrogen is the lightest element and most abundant in the universe
+helium has atomic number 2
+the symbol for helium is He
+helium is a noble gas that does not react chemically
+carbon has atomic number 6
+the symbol for carbon is C
+carbon is the basis of organic chemistry and life
+nitrogen has atomic number 7
+the symbol for nitrogen is N
+nitrogen is makes up about seventy eight percent of air
+oxygen has atomic number 8
+the symbol for oxygen is O
+oxygen is essential for respiration and combustion
+sodium has atomic number 11
+the symbol for sodium is Na
+sodium is a reactive metal that forms table salt with chlorine
+magnesium has atomic number 12
+the symbol for magnesium is Mg
+magnesium is a light metal used in alloys
+silicon has atomic number 14
+the symbol for silicon is Si
+silicon is the basis of most computer chips
+sulfur has atomic number 16
+the symbol for sulfur is S
+sulfur is a yellow solid involved in many chemical reactions
+chlorine has atomic number 17
+the symbol for chlorine is Cl
+chlorine is a reactive gas used in disinfection
+iron has atomic number 26
+the symbol for iron is Fe
+iron is a common metal and major component of steel
+copper has atomic number 29
+the symbol for copper is Cu
+copper is a good conductor of electricity
+gold has atomic number 79
+the symbol for gold is Au
+gold is a noble metal that resists corrosion
+lead has atomic number 82
+the symbol for lead is Pb
+lead is a dense soft metal
+uranium has atomic number 92
+the symbol for uranium is U
+uranium is a radioactive element used in nuclear fuel
+an atom is the smallest unit of an element
+atoms consist of protons neutrons and electrons
+the atomic number equals the number of protons
+the mass number equals protons plus neutrons
+electrons occupy energy levels around the nucleus
+the outermost electrons are called valence electrons
+valence electrons determine chemical behavior
+atoms with full outer shells are chemically stable
+noble gases have full outer electron shells
+ions are atoms that have gained or lost electrons
+a cation is a positively charged ion
+an anion is a negatively charged ion
+a chemical bond holds atoms together
+a covalent bond shares electrons between atoms
+an ionic bond transfers electrons between atoms
+a metallic bond involves a sea of shared electrons
+water is a polar covalent molecule
+water has the formula H two O
+carbon dioxide has the formula CO two
+the periodic table organizes elements by atomic number
+elements in the same column share similar properties
+metals conduct electricity nonmetals generally do not
+metalloids have properties between metals and nonmetals
+a chemical reaction rearranges atoms into new substances
+reactants are the starting materials in a reaction
+products are the substances formed in a reaction
+a catalyst speeds up a reaction without being consumed
+an acid donates hydrogen ions
+a base accepts hydrogen ions
+pH measures the acidity or basicity of a solution
+neutral pH is seven
+acids have pH below seven
+bases have pH above seven
+combustion is a reaction with oxygen that releases heat and light
+oxidation is the loss of electrons
+reduction is the gain of electrons
+radioactive decay releases energy from unstable nuclei
+nuclear fission splits heavy nuclei releasing energy
+nuclear fusion combines light nuclei releasing energy
+matter is conserved in chemical reactions
+energy is conserved in chemical reactions

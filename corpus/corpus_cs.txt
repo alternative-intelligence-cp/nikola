@@ -1,0 +1,63 @@
+# cs corpus — 62 items
+a computer processes information according to a program
+a program is a sequence of instructions
+a CPU executes instructions
+memory stores data and instructions
+RAM is fast temporary memory that loses data when power is removed
+storage is persistent memory that retains data without power
+binary is a number system with base two using zeros and ones
+one bit stores a zero or a one
+eight bits make one byte
+a kilobyte is one thousand twenty four bytes
+a megabyte is one million bytes
+a gigabyte is one billion bytes
+zeros and ones are a human abstraction over discrete voltage states
+a transistor is a semiconductor switch
+logic gates implement boolean operations using transistors
+a NAND gate can implement all other logic gates
+the fetch decode execute cycle drives CPU operation
+an instruction set defines the operations a CPU can perform
+assembly language uses mnemonics for machine instructions
+a compiler translates high level code to machine code
+an interpreter executes high level code directly
+a linker combines compiled objects into an executable
+an operating system manages hardware and software resources
+a process is a running program
+threads are units of execution within a process
+a stack is a last in first out data structure
+a queue is a first in first out data structure
+a linked list connects nodes through pointers
+an array stores elements in contiguous memory
+a hash table maps keys to values using a hash function
+a binary tree has nodes with at most two children
+a binary search tree allows fast ordered lookup
+recursion is a function that calls itself
+every recursive function needs a base case
+big O notation describes algorithm time complexity
+O of one is constant time
+O of log n grows slowly as input size increases
+O of n is linear time
+O of n squared is quadratic time
+sorting arranges data in order
+searching finds an element in data
+binary search requires sorted data and runs in O log n
+the internet is a global network of interconnected computers
+IP addresses identify devices on a network
+TCP ensures reliable ordered data delivery
+UDP is faster than TCP but does not guarantee delivery
+HTTP is the protocol for transferring web pages
+HTTPS adds encryption to HTTP
+DNS translates domain names to IP addresses
+a router forwards packets between networks
+encryption transforms data so only authorized parties can read it
+public key encryption uses a key pair for encryption and decryption
+machine learning trains models on data to make predictions
+a neural network is a model inspired by biological neurons
+deep learning uses neural networks with multiple layers
+training updates model weights to reduce error
+a loss function measures prediction error
+backpropagation calculates gradients for weight updates
+a transformer uses attention to process sequences
+an embedding maps symbols to dense vectors
+tokenization splits text into tokens for processing
+a language model predicts the next token given context
