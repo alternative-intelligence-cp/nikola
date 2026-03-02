@@ -17,6 +17,7 @@
  */
 
 #include <nikola/autonomy/decision_loop.hpp>
+#include <nikola/cognitive/lmdb_memory_store.hpp>    // Phase 136 — LMDB persistence
 
 #include <algorithm>
 #include <complex>
@@ -130,13 +131,22 @@ DecisionLoop::DecisionLoop(nikola::cognitive::CognitiveTorus& torus,
         calibrate_vocabulary_to_torus_space();
     }
 
-    // Phase 33 — load persisted wave-field memory if a path was configured.
-    if (!cfg_.memory_path.empty()) {
+    // Phase 33 / 136 — load persisted SemanticMemory.
+    // LMDB (Phase 136) takes precedence over the legacy binary file.
+    if (!cfg_.lmdb_memory_path.empty()) {
+        try {
+            const size_t loaded = nikola::cognitive::load_lmdb(memory_, cfg_.lmdb_memory_path);
+            if (loaded > 0)
+                std::cout << "[DecisionLoop] Loaded " << loaded
+                          << " memory records from LMDB " << cfg_.lmdb_memory_path << "\n";
+        } catch (const std::exception& e) {
+            std::cerr << "[DecisionLoop] LMDB load (first run?): " << e.what() << "\n";
+        }
+    } else if (!cfg_.memory_path.empty()) {
         const size_t loaded = memory_.load(cfg_.memory_path);
-        if (loaded > 0) {
+        if (loaded > 0)
             std::cout << "[DecisionLoop] Loaded " << loaded
                       << " memory records from " << cfg_.memory_path << "\n";
-        }
     }
 }
 
@@ -879,6 +889,14 @@ float DecisionLoop::seconds_since(std::chrono::steady_clock::time_point t) const
 
 void DecisionLoop::save_memory() const
 {
+    if (!cfg_.lmdb_memory_path.empty()) {
+        try {
+            nikola::cognitive::save_lmdb(memory_, cfg_.lmdb_memory_path);
+        } catch (const std::exception& e) {
+            std::cerr << "[DecisionLoop] save_memory (LMDB) failed: " << e.what() << "\n";
+        }
+        return;
+    }
     if (cfg_.memory_path.empty()) return;
     try {
         memory_.save(cfg_.memory_path);

@@ -229,6 +229,16 @@ struct DecisionLoopConfig {
     ///   - After every successful STORE_MEMORY action the file is re-written.
     /// When empty (default), memory is in-RAM only — not saved between sessions.
     std::string memory_path;
+
+    /// Path to the SemanticMemory LMDB database directory (Phase 136).
+    /// When non-empty, LMDB persistence is used *instead of* the binary flat
+    /// file.  The directory is created on first write.  LMDB provides:
+    ///   - Crash-safe ACID writes (no torn records on power failure)
+    ///   - Incremental upserts (no full-file rewrite per STORE_MEMORY)
+    ///   - Hilbert-ordered B-tree keys (spatial locality during scan)
+    /// When both memory_path and lmdb_memory_path are set, lmdb_memory_path
+    /// takes precedence.
+    std::string lmdb_memory_path;
 };
 
 // ============================================================================

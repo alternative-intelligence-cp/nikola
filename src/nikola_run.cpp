@@ -101,6 +101,7 @@ namespace ansi {
 struct CliConfig {
     std::string              prompt;
     std::string              memory_path;
+    std::string              lmdb_memory_path;
     std::string              model_path    = NIKOLA_RUN_MODEL_PATH;
     std::string              tokenizer_path= NIKOLA_RUN_TOKENIZER_PATH;
     int                      max_ticks     = 200;
@@ -124,7 +125,8 @@ static void print_help(const char* argv0) {
         << "  --steps  <N>         Torus steps per tick                 [50]\n"
         << "  --interactive        REPL mode — type prompts, Ctrl-D to quit\n"
         << "  --batch              Read one prompt per stdin line\n"
-        << "  --memory <path>      Persist SemanticMemory across runs\n"
+        << "  --memory <path>      Persist SemanticMemory (binary) across runs\n"
+        << "  --memory-lmdb <dir>  Persist SemanticMemory via LMDB (crash-safe)\n"
         << "  --model  <path>      Override ONNX model.onnx path\n"
         << "  --tokenizer <path>   Override tokenizer.json/dir path\n"
         << "  --emit-all           Print ALL non-SILENT actions\n"
@@ -159,7 +161,8 @@ static std::optional<CliConfig> parse_args(int argc, char** argv) {
         else if (a == "--quiet")        cfg.quiet          = true;
         else if (a == "--json")         cfg.json_out       = true;
         else if (a == "--prompt")       cfg.prompt         = next();
-        else if (a == "--memory")       cfg.memory_path    = next();
+        else if (a == "--memory")       cfg.memory_path      = next();
+        else if (a == "--memory-lmdb")  cfg.lmdb_memory_path = next();
         else if (a == "--model")        cfg.model_path     = next();
         else if (a == "--tokenizer")    cfg.tokenizer_path = next();
         else if (a == "--ticks")        cfg.max_ticks      = std::stoi(next());
@@ -382,6 +385,7 @@ int main(int argc, char** argv) {
     loop_cfg.tokenizer_json_path   = cfg.tokenizer_path;
     loop_cfg.transformer_model_path= cfg.model_path;
     loop_cfg.memory_path           = cfg.memory_path;
+    loop_cfg.lmdb_memory_path      = cfg.lmdb_memory_path;
     loop_cfg.min_emit_interval_s   = 0.0f;  // CLI: no rate limit between prompts
 
     nikola::autonomy::DecisionLoop loop(torus, engine, loop_cfg);

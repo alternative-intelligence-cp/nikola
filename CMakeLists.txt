@@ -166,6 +166,7 @@ target_link_libraries(nikola_core PUBLIC
     protobuf::libprotobuf
     cppzmq
     Threads::Threads
+    lmdb        # Phase 136: lmdb_memory_store.hpp inline calls mdb_* C API
 )
 
 # ORT wiring
@@ -1062,6 +1063,18 @@ if(NIKOLA_BUILD_TESTS)
     target_link_libraries(test_phase109_memory_persistence PRIVATE
         nikola_core Catch2::Catch2WithMain)
     add_test(NAME Phase109MemoryPersistenceTest COMMAND test_phase109_memory_persistence)
+
+    # ── Phase 136: LMDB-backed SemanticMemory persistence ────────────────────
+    #   Tests LmdbMemoryStore and save_lmdb / load_lmdb free functions.
+    #   Header: include/nikola/cognitive/lmdb_memory_store.hpp
+    #   Requires liblmdb (linked explicitly — nikola_core does not link lmdb).
+    add_executable(test_phase136_lmdb_memory_store
+        tests/unit/phase136_lmdb_memory_store_test.cpp)
+    target_include_directories(test_phase136_lmdb_memory_store PRIVATE
+        ${CMAKE_SOURCE_DIR}/include)
+    target_link_libraries(test_phase136_lmdb_memory_store PRIVATE
+        nikola_core Catch2::Catch2WithMain lmdb)
+    add_test(NAME Phase136LmdbMemoryStore COMMAND test_phase136_lmdb_memory_store)
 
     # ── Phase 112: ModuleSwapper hot-swap engine ────────────────────────────
     # Shared library plugin used as a dlopen target by the test suite.

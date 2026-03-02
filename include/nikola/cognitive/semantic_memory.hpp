@@ -480,6 +480,28 @@ public:
     /// Underlying Hilbert scanner (for external use by QueryEngine).
     const spatial::HilbertScanner& scanner() const noexcept { return scanner_; }
 
+    // ------------------------------------------------------------------ Phase 136 LMDB persistence helpers
+
+    /**
+     * @brief Read-only access to all stored records (for LMDB serialisation).
+     * Valid until the next store() / consolidate() that modifies the map.
+     */
+    [[nodiscard]]
+    const std::unordered_map<MemoryKey, MemoryRecord>& records() const noexcept
+    {
+        return records_;
+    }
+
+    /**
+     * @brief Insert or replace a MemoryRecord directly (used by load_lmdb).
+     * Bypasses the WaveFunction-based store() path; rec.key is the map key.
+     */
+    void insert_record(MemoryRecord rec)
+    {
+        const MemoryKey k = rec.key;
+        records_[k] = std::move(rec);
+    }
+
 private:
     // ------------------------------------------------------------------ helpers
 
