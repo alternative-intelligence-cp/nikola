@@ -510,6 +510,17 @@ private:
     /// was requested of Nikola before it triggered the escalation.
     std::string last_stimulus_;
 
+    /// Best vocabulary word closest to the most recent stimulus embedding.
+    /// Computed in inject_stimulus() via analytic decode of embed_nits(text)
+    /// against original_vocab_nits_.  Used in execute_explore() to bias the
+    /// first few explores toward the semantic neighbourhood of the prompt.
+    std::string last_stimulus_seed_;
+
+    /// Number of EXPLORE ticks fired since the most recent inject_stimulus().
+    /// Resets on each inject_stimulus() call.  Used so the stimulus seed is
+    /// consumed for the first 2 explores, then cycling resumes for variety.
+    uint64_t stimulus_explore_count_ = 0;
+
     /// Persist in-RAM SemanticMemory to cfg_.memory_path (no-op if path empty).
     void save_memory() const;
 };

@@ -124,51 +124,54 @@ struct CliConfig {
 // Gives Nikola something to work with cold-start, before any training.
 // ─────────────────────────────────────────────────────────────────────────────
 static const std::vector<std::string> DEFAULT_VOCABULARY = {
-    // Question / function words
-    "what", "is", "how", "why", "where", "when", "who", "which",
-    "can", "do", "does", "did", "will", "have", "has", "would", "could", "should",
-    // Articles / connectives
-    "the", "a", "an", "of", "and", "or", "but", "to", "in", "on", "at",
-    "by", "for", "with", "from", "this", "that", "these", "those", "it", "its",
-    "not", "only", "also", "more", "very", "so", "than", "then", "there",
-    // Pronouns
-    "I", "me", "my", "we", "you", "your", "they", "their", "one",
-    // Numbers / math
+    // ── Numbers ──────────────────────────────────────────────────────────────
     "zero", "one", "two", "three", "four", "five", "six", "seven", "eight",
-    "nine", "ten", "hundred", "thousand", "million",
-    "plus", "minus", "times", "divided", "equals", "result",
-    "sum", "product", "difference", "number", "count", "total",
-    "add", "subtract", "multiply", "divide", "calculate",
-    "greater", "smaller", "equal", "less", "more", "between",
-    // Self / identity / meta
+    "nine", "ten", "hundred", "thousand", "million", "infinity",
+    // ── Arithmetic ──────────────────────────────────────────────────────────
+    "plus", "minus", "times", "divided", "equals", "sum", "product",
+    "difference", "number", "calculate", "result", "count", "total",
+    "greater", "smaller", "equal", "less", "ratio", "factor", "prime",
+    "integer", "fraction", "probability", "proportion",
+    // ── Self / identity ──────────────────────────────────────────────────────
     "nikola", "mind", "self", "thought", "consciousness", "awareness",
-    "intelligence", "artificial", "machine", "neural", "model", "system",
-    // Cognitive / process words
-    "think", "feel", "know", "learn", "understand", "explore", "curious",
-    "wonder", "perceive", "observe", "remember", "imagine", "create",
-    "discover", "question", "answer", "reason", "logic", "pattern",
-    "meaning", "concept", "idea", "knowledge", "information", "data",
-    "process", "analyze", "solve", "predict", "generate", "respond",
-    // Physics / science
+    "intelligence", "machine", "neural", "system", "architect", "cognition",
+    "identity", "memory", "purpose", "belief", "artificial", "construct",
+    "abstract", "model",
+    // ── Cognitive verbs ──────────────────────────────────────────────────────
+    "think", "feel", "know", "learn", "understand", "explore", "wonder",
+    "perceive", "observe", "remember", "imagine", "create", "discover",
+    "reason", "analyze", "solve", "predict", "generate", "express",
+    "transform", "synthesize", "sense", "recognize", "reflect",
+    // ── Concepts / epistemology ──────────────────────────────────────────────
+    "meaning", "concept", "idea", "knowledge", "information", "pattern",
+    "signal", "symbol", "truth", "reality", "experience", "representation",
+    "category", "relation", "context", "insight", "inference", "logic",
+    "structure", "definition",
+    // ── Physics / field theory ───────────────────────────────────────────────
     "energy", "field", "wave", "frequency", "space", "time", "force",
-    "matter", "light", "motion", "change", "structure", "dimension",
-    "quantum", "torus", "resonance", "interference", "harmonic",
-    // Common adjectives
-    "new", "old", "good", "true", "false", "possible", "certain",
-    "unknown", "complex", "simple", "large", "small", "fast", "slow",
-    "different", "same", "similar", "important", "interesting", "strange",
-    "open", "closed", "free", "bound", "stable", "unstable",
-    // Common verbs
-    "be", "are", "was", "were", "been", "go", "come", "see", "look",
-    "find", "make", "use", "need", "want", "give", "take", "move",
-    "grow", "build", "break", "connect", "combine", "begin", "end",
-    "increase", "decrease", "become", "exist", "appear", "follow",
-    // Language / communication
-    "word", "language", "sentence", "question", "statement", "describe",
-    "explain", "say", "tell", "ask", "mean", "refer", "define",
-    // Basic science / world
-    "life", "human", "world", "nature", "universe", "physics", "math",
-    "science", "logic", "truth", "reality", "experience",
+    "matter", "light", "motion", "dimension", "quantum", "torus",
+    "resonance", "interference", "harmonic", "entropy", "gravity",
+    "electron", "photon", "particle", "universe", "cosmos", "chaos",
+    "order", "symmetry", "topology",
+    // ── Qualities (content-bearing) ──────────────────────────────────────────
+    "true", "false", "possible", "certain", "unknown", "complex", "simple",
+    "different", "similar", "important", "strange", "stable", "dynamic",
+    "emergent", "recursive", "infinite", "bounded", "continuous", "discrete",
+    // ── Transformations ──────────────────────────────────────────────────────
+    "grow", "build", "connect", "combine", "begin", "end", "increase",
+    "decrease", "evolve", "emerge", "change", "expand", "collapse",
+    "activate", "decode", "encode", "compute", "integrate", "diverge",
+    // ── Emotional / experiential states ──────────────────────────────────────
+    "curious", "uncertain", "excited", "calm", "lost", "clear", "anxious",
+    "peaceful", "active", "quiet", "focused", "confused", "inspired",
+    "empty", "full",
+    // ── Language / representation ─────────────────────────────────────────────
+    "word", "language", "sentence", "describe", "define", "symbol",
+    "metaphor", "question", "answer", "voice", "meaning", "grammar",
+    "narrative", "logic",
+    // ── World / science ──────────────────────────────────────────────────────
+    "life", "human", "world", "nature", "physics", "math", "science",
+    "biology", "chemistry", "computation", "network", "algorithm",
 };
 
 /// Load supplemental words from a plain-text file (one word per line).
@@ -277,16 +280,17 @@ static std::string json_escape(const std::string& s) {
 //          nothing was emitted within max_ticks.
 // ─────────────────────────────────────────────────────────────────────────────
 static std::string run_prompt(
-    nikola::cognitive::CognitiveTorus& torus,
     nikola::autonomy::DecisionLoop&    loop,
     const std::string&                 prompt,
     const CliConfig&                   cfg)
 {
     using namespace nikola::autonomy;
 
-    // Inject text into the torus at t=0 relative to current tick
+    // Inject text into the torus at t=0 relative to current tick.
+    // Route through inject_stimulus() so the stimulus analytic decode runs
+    // (setting last_stimulus_seed_ for prompt-responsive EXPLORE seeding).
     if (!prompt.empty()) {
-        torus.inject_text(prompt, 0.0);
+        loop.inject_stimulus(prompt);
     }
 
     // Tick until EMIT_THOUGHT fires, or we hit the limit
@@ -412,7 +416,7 @@ static void run_repl(nikola::cognitive::CognitiveTorus& torus,
 
         if (line == "exit" || line == "quit") break;
 
-        auto thought = run_prompt(torus, loop, line, cfg);
+        auto thought = run_prompt(loop, line, cfg);
         print_result(line, thought, cfg);
     }
 
@@ -539,7 +543,7 @@ int main(int argc, char** argv) {
         std::string line;
         while (std::getline(std::cin, line)) {
             if (line.empty()) continue;
-            auto thought = run_prompt(torus, loop, line, cfg);
+            auto thought = run_prompt(loop, line, cfg);
             print_result(line, thought, cfg);
         }
         return 0;
@@ -551,7 +555,7 @@ int main(int argc, char** argv) {
             std::cerr << ansi::c(ansi::dim) << "Prompt: " << cfg.prompt
                       << "\n" << ansi::c(ansi::rst);
 
-        auto thought = run_prompt(torus, loop, cfg.prompt, cfg);
+        auto thought = run_prompt(loop, cfg.prompt, cfg);
         print_result(cfg.prompt, thought, cfg);
         return 0;
     }
@@ -563,7 +567,7 @@ int main(int argc, char** argv) {
 
     std::string line;
     if (std::getline(std::cin, line) && !line.empty()) {
-        auto thought = run_prompt(torus, loop, line, cfg);
+        auto thought = run_prompt(loop, line, cfg);
         print_result(line, thought, cfg);
     } else {
         // No input: go interactive

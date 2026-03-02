@@ -170,6 +170,31 @@ void DecisionLoop::inject_stimulus(const std::string& text)
 
 #ifdef NIKOLA_HAS_ORT
     torus_.inject_text(text, static_cast<double>(torus_.time()));
+
+    // ── Stimulus analytic decode ──────────────────────────────────────────
+    // Embed the stimulus text to Nit vectors and find the closest vocabulary
+    // token using the same analytic-signature approach as execute_explore().
+    // Stored as last_stimulus_seed_ so EXPLORE can bias its first few
+    // iterations toward the semantic neighbourhood of the user's prompt.
+    if (!original_vocab_nits_.empty()) {
+        using Injector = nikola::cognitive::HolographicInjector<nikola::foundation::TorusGrid>;
+        const double t = static_cast<double>(torus_.time());
+        const auto stim_nits = torus_.embed_nits(text);
+        if (!stim_nits.empty()) {
+            const auto actual_sig = Injector::analytic_signature(stim_nits, t);
+            constexpr float kMinCos = 0.03f;
+            float best_cos = kMinCos;
+            std::string best_tok;
+            for (const auto& [tok, tok_nits] : original_vocab_nits_) {
+                if (tok_nits.empty()) continue;
+                const auto expected_sig = Injector::analytic_signature(tok_nits, t);
+                const float cos = Injector::signature_cosine(actual_sig, expected_sig);
+                if (cos > best_cos) { best_cos = cos; best_tok = tok; }
+            }
+            last_stimulus_seed_ = best_tok;
+        }
+    }
+    stimulus_explore_count_ = 0;   // reset so the new seed gets first use
 #else
     // Without ORT we cannot embed text — the stimulus still perturbs the
     // torus by injecting a uniform low-amplitude Nit excitation.
@@ -193,6 +218,7 @@ void DecisionLoop::inject_stimulus(const std::string& text, float credibility)
     // ORT path: inject normally (amplitude modulation via NonaryEmbedder
     // is deferred to Phase 32 when the embedder API is extended).
     torus_.inject_text(text, static_cast<double>(torus_.time()));
+    stimulus_explore_count_ = 0;  // reset so new stimulus seed gets first use
 #else
     // Scale Nit amplitude by credibility:
     //   cred 0.25 → Nit{1}  (minimum non-zero)
@@ -614,6 +640,16 @@ std::string DecisionLoop::execute_explore(const NikolaState& s)
         auto maybe = decoder_.lexicon().decode(wave9d);
         if (maybe.has_value()) { seed_token = *maybe; break; }
     }
+
+    // Stimulus-seeded explore: for the first 3 EXPLOREs after a new user
+    // prompt, bias the seed toward the vocabulary word closest to the
+    // prompt's embedding.  This makes Nikola's initial thoughts orbit the
+    // semantic neighbourhood of what the user actually said.
+    if (seed_token.empty() && !last_stimulus_seed_.empty()
+            && stimulus_explore_count_ < 3) {
+        seed_token = last_stimulus_seed_;
+    }
+    ++stimulus_explore_count_;
 
     // Fall back to pseudorandom vocabulary pick
     if (seed_token.empty() && !cfg_.vocabulary.empty()) {
