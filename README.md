@@ -254,10 +254,6 @@ If you use Nikola in research:
 - Share findings with the community
 - Consider contributing improvements
 
-## 💝 Support This Project
-
-Help fund Nikola's development and AILP research! See [DONATIONS.md](DONATIONS.md) for cryptocurrency donation addresses.
-
 ## Questions?
 
 - Research discussions → GitHub Discussions
