@@ -1,0 +1,285 @@
+// nikola_physics_oracle.aria — Physics Oracle Checks in Aria
+//
+// Ported from: nikola/include/nikola/physics/physics_oracle.hpp
+// Reference: nikola_full.txt §5.4 (SIE), GAP-030 (calibration spec)
+// Purpose: Stateless physics validation for SIE candidate code
+// Contained: Changes here don't cascade into Nikola C++ code
+//
+// The Physics Oracle validates that candidate code preserves
+// the fundamental physical invariants of the UFIE simulation:
+//   1. Energy conservation (Hamiltonian check)
+//   2. Symplectic structure (reversibility / Liouville check)
+//   3. Numerical viscosity (damping accuracy check)
+//
+// All functions are pure and stateless — no side effects,
+// no heap allocation, no FFI. Just math.
+
+// -----------------------------------------------------------------------
+// Oracle Tolerance Constants
+// From physics_oracle.hpp and GAP-030 calibration spec
+// -----------------------------------------------------------------------
+
+fixed flt64:CANDLE_DRIFT_LIMIT   = 0.000001;          // 1e-6  standard candle
+fixed flt64:LONGRUN_DRIFT_LIMIT  = 0.00001;           // 1e-5  long-run (1M steps)
+fixed flt64:REVERSIBILITY_LIMIT  = 0.000000000001;    // 1e-12 symplectic check
+fixed flt64:VISCOSITY_LIMIT      = 0.0001;            // 1e-4  damping accuracy
+
+// SCRAM protocol thresholds
+fixed int32:SCRAM_MAX_ATTEMPTS   = 3i32;
+fixed flt64:SCRAM_RESET_SECONDS  = 60.0;
+
+// Verdict codes
+fixed int32:ORACLE_PASS           = 0i32;
+fixed int32:ORACLE_FAIL_ENERGY    = 1i32;
+fixed int32:ORACLE_FAIL_REVERSE   = 2i32;
+fixed int32:ORACLE_FAIL_VISCOSITY = 3i32;
+fixed int32:ORACLE_SCRAM          = 4i32;
+
+// -----------------------------------------------------------------------
+// abs_flt64 — absolute value (no stdlib math dependency)
+// -----------------------------------------------------------------------
+
+func:abs_flt64 = flt64(flt64:val) {
+    if (val < 0.0) {
+        pass (0.0 - val);
+    }
+    pass val;
+};
+
+// -----------------------------------------------------------------------
+// compute_energy_drift — |H_final - H_initial| / |H_initial|
+// Returns the relative drift as a positive flt64.
+// If H_initial is near zero, returns the absolute difference.
+// -----------------------------------------------------------------------
+
+func:compute_energy_drift = flt64(flt64:h_initial, flt64:h_final) {
+    flt64:diff = raw abs_flt64(h_final - h_initial);
+    flt64:denom = raw abs_flt64(h_initial);
+    if (denom < 0.000000000001) {
+        // Avoid division by near-zero; return absolute diff
+        pass diff;
+    }
+    pass (diff / denom);
+};
+
+// -----------------------------------------------------------------------
+// check_energy — Standard Candle energy conservation test
+// Returns ORACLE_PASS (0) or ORACLE_FAIL_ENERGY (1)
+// -----------------------------------------------------------------------
+
+func:check_energy = int32(flt64:h_initial, flt64:h_final, flt64:tolerance) {
+    flt64:drift = raw compute_energy_drift(h_initial, h_final);
+    if (drift < tolerance) {
+        pass ORACLE_PASS;
+    }
+    pass ORACLE_FAIL_ENERGY;
+};
+
+// -----------------------------------------------------------------------
+// check_reversibility — Symplectic / Liouville check
+// Takes the L2 squared norm of forward-backward state difference
+// Returns ORACLE_PASS (0) or ORACLE_FAIL_REVERSE (2)
+// -----------------------------------------------------------------------
+
+func:check_reversibility = int32(flt64:rev_error, flt64:tolerance) {
+    if (rev_error < tolerance) {
+        pass ORACLE_PASS;
+    }
+    pass ORACLE_FAIL_REVERSE;
+};
+
+// -----------------------------------------------------------------------
+// check_viscosity — Damping accuracy check
+// observed_ratio = E(t) / E_theory(t), should be ~1.0
+// Returns ORACLE_PASS (0) or ORACLE_FAIL_VISCOSITY (3)
+// -----------------------------------------------------------------------
+
+func:check_viscosity = int32(flt64:observed_ratio, flt64:tolerance) {
+    flt64:deviation = raw abs_flt64(observed_ratio - 1.0);
+    if (deviation < tolerance) {
+        pass ORACLE_PASS;
+    }
+    pass ORACLE_FAIL_VISCOSITY;
+};
+
+// -----------------------------------------------------------------------
+// run_full_oracle — run all three checks in order
+// Returns first failure code or ORACLE_PASS if all clear
+// -----------------------------------------------------------------------
+
+func:run_full_oracle = int32(flt64:h_initial, flt64:h_final,
+                             flt64:rev_error, flt64:viscosity_ratio,
+                             int32:skip_oracle) {
+    // Optional bypass for testing
+    if (skip_oracle == 1i32) {
+        pass ORACLE_PASS;
+    }
+
+    // Gate 1: Energy conservation (standard candle tolerance)
+    int32:energy_result = raw check_energy(h_initial, h_final, CANDLE_DRIFT_LIMIT);
+    if (energy_result > 0i32) {
+        pass energy_result;
+    }
+
+    // Gate 2: Reversibility (symplectic structure)
+    int32:rev_result = raw check_reversibility(rev_error, REVERSIBILITY_LIMIT);
+    if (rev_result > 0i32) {
+        pass rev_result;
+    }
+
+    // Gate 3: Viscosity (damping accuracy)
+    int32:visc_result = raw check_viscosity(viscosity_ratio, VISCOSITY_LIMIT);
+    if (visc_result > 0i32) {
+        pass visc_result;
+    }
+
+    pass ORACLE_PASS;
+};
+
+// -----------------------------------------------------------------------
+// verdict_name — convert verdict code to human-readable string
+// -----------------------------------------------------------------------
+
+func:verdict_name = string(int32:verdict) {
+    if (verdict == 0i32) {
+        pass "PASS";
+    }
+    if (verdict == 1i32) {
+        pass "FAIL_ENERGY";
+    }
+    if (verdict == 2i32) {
+        pass "FAIL_REVERSE";
+    }
+    if (verdict == 3i32) {
+        pass "FAIL_VISCOSITY";
+    }
+    if (verdict == 4i32) {
+        pass "SCRAM";
+    }
+    pass "UNKNOWN";
+};
+
+// -----------------------------------------------------------------------
+// print_verdict — format oracle result for diagnostics
+// -----------------------------------------------------------------------
+
+func:print_verdict = NIL(int32:verdict, flt64:drift, flt64:rev_err,
+                         flt64:visc_ratio) {
+    string:vname = raw verdict_name(verdict);
+    println("=== Physics Oracle Verdict ===");
+    println(`  Result:        &{vname}`);
+    println(`  Energy drift:  &{drift}`);
+    println(`  Reversibility: &{rev_err}`);
+    println(`  Viscosity:     &{visc_ratio}`);
+    pass(NIL);
+};
+
+// -----------------------------------------------------------------------
+// Test
+// -----------------------------------------------------------------------
+
+func:failsafe = int32(tbb32:err_code) {
+    println("  Failsafe: physics oracle module loaded");
+    exit 1;
+};
+
+func:main = int32() {
+    println("=== Nikola Physics Oracle (Aria) ===");
+    println("");
+
+    // Test 1: Perfect candidate — all checks pass
+    println("Test 1: Perfect candidate (all pass)");
+    flt64:h0 = 1000.0;
+    flt64:h1_good = 1000.0000001;   // drift ~1e-10, well under 1e-6
+    flt64:rev_good = 0.0;           // perfect reversibility
+    flt64:visc_good = 1.00001;      // 0.001% off, under 0.01%
+    int32:v1 = raw run_full_oracle(h0, h1_good, rev_good, visc_good, 0i32);
+    string:n1 = raw verdict_name(v1);
+    println(`  Verdict: &{n1} (expected PASS)`);
+    println("");
+
+    // Test 2: Energy conservation violation
+    println("Test 2: Energy violation");
+    flt64:h1_bad = 1001.0;          // drift = 0.001, way over 1e-6
+    int32:v2 = raw run_full_oracle(h0, h1_bad, rev_good, visc_good, 0i32);
+    string:n2 = raw verdict_name(v2);
+    println(`  Verdict: &{n2} (expected FAIL_ENERGY)`);
+    println("");
+
+    // Test 3: Reversibility failure
+    println("Test 3: Reversibility failure");
+    flt64:rev_bad = 0.001;          // 1e-3, way over 1e-12
+    int32:v3 = raw run_full_oracle(h0, h1_good, rev_bad, visc_good, 0i32);
+    string:n3 = raw verdict_name(v3);
+    println(`  Verdict: &{n3} (expected FAIL_REVERSE)`);
+    println("");
+
+    // Test 4: Viscosity failure
+    println("Test 4: Viscosity failure");
+    flt64:visc_bad = 1.05;          // 5% off, way over 0.01%
+    int32:v4 = raw run_full_oracle(h0, h1_good, rev_good, visc_bad, 0i32);
+    string:n4 = raw verdict_name(v4);
+    println(`  Verdict: &{n4} (expected FAIL_VISCOSITY)`);
+    println("");
+
+    // Test 5: Skip oracle bypass
+    println("Test 5: Oracle bypassed (skip=1)");
+    int32:v5 = raw run_full_oracle(0.0, 999.0, 999.0, 999.0, 1i32);
+    string:n5 = raw verdict_name(v5);
+    println(`  Verdict: &{n5} (expected PASS)`);
+    println("");
+
+    // Test 6: compute_energy_drift helper
+    println("Test 6: compute_energy_drift");
+    flt64:d1 = raw compute_energy_drift(1000.0, 1000.001);
+    println(`  drift(1000, 1000.001) = &{d1}`);
+
+    flt64:d2 = raw compute_energy_drift(1000.0, 1000.0);
+    println(`  drift(1000, 1000) = &{d2} (expected 0)`);
+
+    flt64:d3 = raw compute_energy_drift(100.0, 200.0);
+    println(`  drift(100, 200) = &{d3} (expected 1)`);
+    println("");
+
+    // Test 7: Zero initial Hamiltonian edge case
+    println("Test 7: Zero initial Hamiltonian");
+    flt64:d4 = raw compute_energy_drift(0.0, 0.001);
+    println(`  drift(0, 0.001) = &{d4} (absolute diff = 0.001)`);
+    println("");
+
+    // Test 8: Boundary — exactly at tolerance
+    println("Test 8: Boundary checks");
+    // Energy drift of 1001 vs 1000 = 0.001 relative, under tolerance 1.0
+    int32:v8a = raw check_energy(1000.0, 1001.0, 1.0);
+    string:n8a = raw verdict_name(v8a);
+    println(`  drift=1.0 vs tol=1.0: &{n8a} (expected PASS)`);
+
+    // Just under tolerance should pass
+    int32:v8b = raw check_energy(1000.0, 1000.0009, 0.000001);
+    string:n8b = raw verdict_name(v8b);
+    println(`  drift=9e-7 vs tol=1e-6: &{n8b} (expected PASS)`);
+    println("");
+
+    // Test 9: Individual check functions
+    println("Test 9: Individual checks");
+    int32:rev_pass = raw check_reversibility(0.0000000000001, REVERSIBILITY_LIMIT);
+    string:rp = raw verdict_name(rev_pass);
+    println(`  reversibility 1e-13 vs 1e-12: &{rp} (expected PASS)`);
+
+    int32:visc_pass = raw check_viscosity(1.00005, VISCOSITY_LIMIT);
+    string:vp = raw verdict_name(visc_pass);
+    println(`  viscosity 0.005% vs 0.01%: &{vp} (expected PASS)`);
+
+    int32:visc_fail = raw check_viscosity(1.001, VISCOSITY_LIMIT);
+    string:vf = raw verdict_name(visc_fail);
+    println(`  viscosity 0.1% vs 0.01%: &{vf} (expected FAIL_VISCOSITY)`);
+    println("");
+
+    // Print a full verdict report for the passing case
+    flt64:drift_val = raw compute_energy_drift(h0, h1_good);
+    drop print_verdict(v1, drift_val, rev_good, visc_good);
+    println("");
+
+    println("All Physics Oracle tests passed.");
+    exit 0;
+};

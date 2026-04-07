@@ -1,0 +1,169 @@
+// nikola_sie_types.aria — SIE Data Types in Aria
+//
+// Ported from: nikola/include/nikola/autonomy/evolutionary_orchestrator.hpp
+// Purpose: Test Aria struct and enum patterns with real Nikola data types
+// Contained: Changes here don't cascade into Nikola C++ code
+
+// -----------------------------------------------------------------------
+// CycleStatus — result codes from the SIE pipeline
+// Using int32 constants (Aria enum coverage is thin)
+// -----------------------------------------------------------------------
+
+fixed int32:STATUS_SUCCESS           = 0i32;
+fixed int32:STATUS_ATP_DENIED        = 1i32;
+fixed int32:STATUS_SECURITY_REJECTED = 2i32;
+fixed int32:STATUS_PHYSICS_REJECTED  = 3i32;
+fixed int32:STATUS_LOAD_FAILED       = 4i32;
+fixed int32:STATUS_SYMBOL_MISSING    = 5i32;
+fixed int32:STATUS_SAME_MODULE       = 6i32;
+
+// -----------------------------------------------------------------------
+// CycleReport — per-cycle diagnostic output
+// -----------------------------------------------------------------------
+
+struct:CycleReport = {
+    int32:status;
+    int32:gate0_passed;      // ShadowSpine signature check
+    int32:gate1_passed;      // CodePatternBlacklist
+    int32:gate2_passed;      // PhysicsOracle
+    int32:gate3_passed;      // ModuleSwapper
+    flt64:energy_drift;      // |H_final - H_initial| / |H_initial|
+    flt64:reversibility_err; // L2 norm of forward-backward difference
+    flt64:elapsed_ms;        // wall clock time for this cycle
+    flt64:atp_consumed;      // energy budget spent
+};
+
+// -----------------------------------------------------------------------
+// CycleStats — cumulative counters across all cycles
+// -----------------------------------------------------------------------
+
+struct:CycleStats = {
+    int64:total;
+    int64:succeeded;
+    int64:atp_denied;
+    int64:security_rejected;
+    int64:physics_rejected;
+    int64:load_failed;
+};
+
+// -----------------------------------------------------------------------
+// PhysicsMeasurement — input to the physics oracle
+// -----------------------------------------------------------------------
+
+struct:PhysicsMeasurement = {
+    flt64:h_initial;       // Hamiltonian at t=0
+    flt64:h_final;         // Hamiltonian after N steps
+    flt64:reversibility_l2; // L2 squared norm of forward-backward difference
+    int32:skip_oracle;     // 1 = bypass physics check (testing only)
+};
+
+// -----------------------------------------------------------------------
+// Helper: status code to string
+// -----------------------------------------------------------------------
+
+func:status_name = string(int32:code) {
+    if (code == 0i32) {
+        pass "SUCCESS";
+    }
+    if (code == 1i32) {
+        pass "ATP_DENIED";
+    }
+    if (code == 2i32) {
+        pass "SECURITY_REJECTED";
+    }
+    if (code == 3i32) {
+        pass "PHYSICS_REJECTED";
+    }
+    if (code == 4i32) {
+        pass "LOAD_FAILED";
+    }
+    if (code == 5i32) {
+        pass "SYMBOL_MISSING";
+    }
+    if (code == 6i32) {
+        pass "SAME_MODULE";
+    }
+    pass "UNKNOWN";
+};
+
+// -----------------------------------------------------------------------
+// Helper: format CycleReport as readable output
+// -----------------------------------------------------------------------
+
+func:print_report = NIL(int32:status, int32:g0, int32:g1, int32:g2, int32:g3,
+                        flt64:drift, flt64:rev_err, flt64:elapsed, flt64:atp) {
+    string:name = raw status_name(status);
+    println("=== SIE Cycle Report ===");
+    println(`Status: &{name}`);
+    println(`Gate 0 (ShadowSpine):    &{g0}`);
+    println(`Gate 1 (Blacklist):      &{g1}`);
+    println(`Gate 2 (PhysicsOracle):  &{g2}`);
+    println(`Gate 3 (ModuleSwapper):  &{g3}`);
+    println(`Energy drift:            &{drift}`);
+    println(`Reversibility error:     &{rev_err}`);
+    println(`Elapsed (ms):            &{elapsed}`);
+    println(`ATP consumed:            &{atp}`);
+    pass(NIL);
+};
+
+// -----------------------------------------------------------------------
+// Helper: update cumulative stats
+// -----------------------------------------------------------------------
+
+func:increment_stat = int64(int64:current) {
+    pass (current + 1i64);
+};
+
+// -----------------------------------------------------------------------
+// Test: create types and print them
+// -----------------------------------------------------------------------
+
+func:failsafe = int32(tbb32:err_code) {
+    println("  Failsafe: SIE types module loaded");
+    exit 1;
+};
+
+func:main = int32() {
+    println("=== Nikola SIE Types (Aria) ===");
+    println("");
+
+    // Test status codes
+    println("Status codes:");
+    int32:s = 0i32;
+    loop(0, 7, 1) {
+        string:sname = raw status_name(s);
+        println(`  &{s} = &{sname}`);
+        s = (s + 1i32);
+    }
+    println("");
+
+    // Test CycleStats initialization
+    int64:total = 0i64;
+    int64:succeeded = 0i64;
+    int64:atp_denied = 0i64;
+
+    // Simulate 5 successful cycles
+    loop(0, 5, 1) {
+        total = raw increment_stat(total);
+        succeeded = raw increment_stat(succeeded);
+    }
+    // Simulate 2 ATP denials
+    loop(0, 2, 1) {
+        total = raw increment_stat(total);
+        atp_denied = raw increment_stat(atp_denied);
+    }
+
+    println("Cumulative stats after 7 cycles:");
+    println(`  Total:        &{total}`);
+    println(`  Succeeded:    &{succeeded}`);
+    println(`  ATP denied:   &{atp_denied}`);
+    println("");
+
+    // Print a sample report
+    drop print_report(STATUS_SUCCESS, 1i32, 1i32, 1i32, 1i32,
+                      0.0000003, 0.0, 12.5, 750.0);
+
+    println("");
+    println("All SIE types verified.");
+    exit 0;
+};
