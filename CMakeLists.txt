@@ -1076,6 +1076,17 @@ if(NIKOLA_BUILD_TESTS)
         nikola_core Catch2::Catch2WithMain lmdb)
     add_test(NAME Phase136LmdbMemoryStore COMMAND test_phase136_lmdb_memory_store)
 
+    # ── Phase 137: LMDB state persistence (NikolaState, Ψ checkpoints, autobiography)
+    #   Header: include/nikola/persistence/lmdb_state_store.hpp
+    #   Requires liblmdb (linked explicitly).
+    add_executable(test_phase137_state_persistence
+        tests/unit/phase137_state_persistence_test.cpp)
+    target_include_directories(test_phase137_state_persistence PRIVATE
+        ${CMAKE_SOURCE_DIR}/include)
+    target_link_libraries(test_phase137_state_persistence PRIVATE
+        nikola_core Catch2::Catch2WithMain lmdb)
+    add_test(NAME Phase137StatePersistence COMMAND test_phase137_state_persistence)
+
     # ── Phase 112: ModuleSwapper hot-swap engine ────────────────────────────
     # Shared library plugin used as a dlopen target by the test suite.
     add_library(phase112_test_plugin MODULE

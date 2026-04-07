@@ -18,10 +18,13 @@
 
 #include <nikola/autonomy/decision_loop.hpp>
 #include <nikola/cognitive/lmdb_memory_store.hpp>    // Phase 136 — LMDB persistence
+#include <nikola/persistence/lmdb_state_store.hpp>   // Phase 137 — full state persistence
+#include <nikola/interior/autobiography.hpp>         // Phase 137 — autobiography member
 
 #include <algorithm>
 #include <complex>
 #include <cmath>
+#include <cstring>
 #include <numeric>
 #include <random>
 #include <span>
@@ -66,6 +69,7 @@ DecisionLoop::DecisionLoop(nikola::cognitive::CognitiveTorus& torus,
     , cfg_(std::move(cfg))
     , npt_(static_cast<int>(torus.grid().grid_n()))
     , npt_last_result_(static_cast<int>(torus.grid().grid_n()))
+    , autobiography_(std::make_unique<interior::AutobiographicalMemory>())
 {
     const auto now = std::chrono::steady_clock::now();
     start_time_     = now;
@@ -157,6 +161,88 @@ DecisionLoop::DecisionLoop(nikola::cognitive::CognitiveTorus& torus,
             std::cout << "[DecisionLoop] Loaded " << loaded
                       << " memory records from " << cfg_.memory_path << "\n";
     }
+
+    // Phase 137 — open state store and load prior session state.
+    if (!cfg_.state_db_path.empty()) {
+        try {
+            state_store_ = std::make_unique<nikola::persistence::LmdbStateStore>(
+                cfg_.state_db_path);
+
+            // Restore NikolaState
+            {
+                NikolaState restored_state;
+                uint64_t restored_tick = 0;
+                if (state_store_->load_latest_state(restored_state, restored_tick)) {
+                    last_state_ = restored_state;
+                    tick_count_ = restored_tick;
+                    std::cout << "[DecisionLoop] Restored NikolaState from "
+                              << cfg_.state_db_path << " (tick "
+                              << restored_tick << ")\n";
+                }
+            }
+
+            // Restore Ψ checkpoint
+            {
+                physics::WaveFunction wf;
+                persistence::detail::CheckpointHeader chdr{};
+                if (state_store_->load_latest_checkpoint(wf, chdr)) {
+                    auto& grid = torus_.wave_function().grid();
+                    const size_t N = grid.num_active_nodes();
+                    if (wf.num_nodes() == N) {
+                        std::memcpy(grid.psi_real(), wf.grid().psi_real(), N * sizeof(float));
+                        std::memcpy(grid.psi_imag(), wf.grid().psi_imag(), N * sizeof(float));
+                        std::memcpy(grid.vel_real(), wf.grid().vel_real(), N * sizeof(float));
+                        std::memcpy(grid.vel_imag(), wf.grid().vel_imag(), N * sizeof(float));
+                        std::cout << "[DecisionLoop] Restored Ψ checkpoint ("
+                                  << N << " nodes)\n";
+                    }
+                }
+            }
+
+            // Restore autobiography
+            (void)state_store_->load_autobiography(*autobiography_);
+            if (!autobiography_->events().empty()) {
+                std::cout << "[DecisionLoop] Restored "
+                          << autobiography_->events().size()
+                          << " autobiographical events\n";
+            }
+        } catch (const std::exception& e) {
+            std::cerr << "[DecisionLoop] State store open (first run?): "
+                      << e.what() << "\n";
+        }
+    }
+}
+
+// ============================================================================
+// Destructor — flush final state on shutdown
+// ============================================================================
+
+DecisionLoop::~DecisionLoop()
+{
+    if (state_store_) {
+        try {
+            state_store_->save_state(last_state_, tick_count_);
+            state_store_->save_checkpoint(torus_.wave_function(), tick_count_);
+            state_store_->save_autobiography(*autobiography_);
+        } catch (const std::exception& e) {
+            std::cerr << "[DecisionLoop] ~DecisionLoop state flush failed: "
+                      << e.what() << "\n";
+        }
+    }
+}
+
+// ============================================================================
+// Accessor — autobiography
+// ============================================================================
+
+const interior::AutobiographicalMemory& DecisionLoop::autobiography() const noexcept
+{
+    return *autobiography_;
+}
+
+interior::AutobiographicalMemory& DecisionLoop::autobiography() noexcept
+{
+    return *autobiography_;
 }
 
 // ============================================================================
@@ -611,6 +697,20 @@ DecisionResult DecisionLoop::tick()
     if (on_tick)   on_tick(s);
     if (on_action && winner != ActionType::SILENT) on_action(result);
 
+    // ── 9. Phase 137 — persist state to LMDB ────────────────────────────────
+    if (state_store_) {
+        try {
+            state_store_->save_state(s, tick_count_);
+            // Checkpoint Ψ every cfg_.checkpoint_interval ticks
+            if (cfg_.checkpoint_interval > 0 &&
+                (tick_count_ % static_cast<uint64_t>(cfg_.checkpoint_interval)) == 0) {
+                state_store_->save_checkpoint(torus_.wave_function(), tick_count_);
+            }
+        } catch (const std::exception& e) {
+            std::cerr << "[DecisionLoop] state persist failed: " << e.what() << "\n";
+        }
+    }
+
     return result;
 }
 
@@ -957,6 +1057,57 @@ void DecisionLoop::save_memory() const
         memory_.save(cfg_.memory_path);
     } catch (const std::exception& e) {
         std::cerr << "[DecisionLoop] save_memory failed: " << e.what() << "\n";
+    }
+}
+
+// ============================================================================
+// Phase 137 — full state persistence helpers
+// ============================================================================
+
+void DecisionLoop::save_full_state(bool force_checkpoint)
+{
+    if (!state_store_) return;
+    try {
+        state_store_->save_state(last_state_, tick_count_);
+        if (force_checkpoint)
+            state_store_->save_checkpoint(torus_.wave_function(), tick_count_);
+        state_store_->save_autobiography(*autobiography_);
+    } catch (const std::exception& e) {
+        std::cerr << "[DecisionLoop] save_full_state failed: " << e.what() << "\n";
+    }
+}
+
+void DecisionLoop::load_full_state()
+{
+    if (!state_store_) return;
+    try {
+        {
+            NikolaState restored;
+            uint64_t restored_tick = 0;
+            if (state_store_->load_latest_state(restored, restored_tick)) {
+                last_state_ = restored;
+                tick_count_ = restored_tick;
+            }
+        }
+
+        {
+            physics::WaveFunction wf;
+            persistence::detail::CheckpointHeader chdr{};
+            if (state_store_->load_latest_checkpoint(wf, chdr)) {
+                auto& grid = torus_.wave_function().grid();
+                const size_t N = grid.num_active_nodes();
+                if (wf.num_nodes() == N) {
+                    std::memcpy(grid.psi_real(), wf.grid().psi_real(), N * sizeof(float));
+                    std::memcpy(grid.psi_imag(), wf.grid().psi_imag(), N * sizeof(float));
+                    std::memcpy(grid.vel_real(), wf.grid().vel_real(), N * sizeof(float));
+                    std::memcpy(grid.vel_imag(), wf.grid().vel_imag(), N * sizeof(float));
+                }
+            }
+        }
+
+        (void)state_store_->load_autobiography(*autobiography_);
+    } catch (const std::exception& e) {
+        std::cerr << "[DecisionLoop] load_full_state failed: " << e.what() << "\n";
     }
 }
 

@@ -60,9 +60,15 @@
 
 #include <chrono>
 #include <functional>
+#include <memory>
 #include <string>
 #include <unordered_map>
 #include <vector>
+
+// Forward declarations — avoid circular includes with autobiography.hpp
+namespace nikola::interior { class AutobiographicalMemory; }
+// Forward declaration — avoid pulling lmdb.h into every translation unit
+namespace nikola::persistence { class LmdbStateStore; }
 
 namespace nikola::autonomy {
 
@@ -239,6 +245,19 @@ struct DecisionLoopConfig {
     /// When both memory_path and lmdb_memory_path are set, lmdb_memory_path
     /// takes precedence.
     std::string lmdb_memory_path;
+
+    /// Path to the LMDB state database directory (Phase 137).
+    /// When non-empty, full NikolaState snapshots, Ψ wavefunction checkpoints,
+    /// and autobiographical memory are persisted to LMDB.  Provides complete
+    /// cross-session continuity.
+    ///   - State saved every tick (latest snapshot for restore)
+    ///   - Ψ checkpoint saved every checkpoint_interval ticks
+    ///   - Autobiography events saved as they are recorded
+    std::string state_db_path;
+
+    /// Ticks between Ψ wavefunction checkpoints (default: 100).
+    /// Only used when state_db_path is non-empty.
+    int checkpoint_interval = 100;
 };
 
 // ============================================================================
@@ -287,6 +306,10 @@ public:
                  AutonomyEngine&                    engine,
                  DecisionLoopConfig                 cfg = {});
 
+    /// Destructor — required for unique_ptr<LmdbStateStore> forward declaration.
+    /// Saves final state if state_db_path is configured.
+    ~DecisionLoop();
+
     // ------------------------------------------------------------------ main API
 
     /**
@@ -334,6 +357,10 @@ public:
     uint64_t                                  tick_count()      const noexcept { return tick_count_; }
     /// Most recent NPT forward-pass output (Phase 42).  Zero-initialised until REASON fires.
     const nikola::cognitive::AttentionResult& last_npt_result() const noexcept { return npt_last_result_; }
+
+    /// Phase 137: autobiographical memory (events, skills, values).
+    const interior::AutobiographicalMemory& autobiography() const noexcept;
+    interior::AutobiographicalMemory&       autobiography()       noexcept;
 
     // ------------------------------------------------------------------ state injection
 
@@ -523,6 +550,20 @@ private:
 
     /// Persist in-RAM SemanticMemory to cfg_.memory_path (no-op if path empty).
     void save_memory() const;
+
+    // -- Phase 137: full state persistence --
+
+    /// Autobiographical memory — identity, events, skills, values.
+    std::unique_ptr<interior::AutobiographicalMemory> autobiography_;
+
+    /// LMDB state store for cross-session persistence (nullptr if no state_db_path).
+    std::unique_ptr<nikola::persistence::LmdbStateStore> state_store_;
+
+    /// Save full state (NikolaState + optional Ψ checkpoint + autobiography).
+    void save_full_state(bool force_checkpoint = false);
+
+    /// Load full state from LMDB on startup.
+    void load_full_state();
 };
 
 } // namespace nikola::autonomy

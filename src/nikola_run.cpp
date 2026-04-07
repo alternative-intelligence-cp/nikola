@@ -42,6 +42,7 @@
 #include <nikola/cognitive/cognitive_torus.hpp>
 #include <nikola/autonomy/autonomy_engine.hpp>
 #include <nikola/autonomy/decision_loop.hpp>
+#include <nikola/persistence/lmdb_state_store.hpp>
 #include <nikola/cli/stream_emitter.hpp>
 #include <nikola/telemetry/nikola_tracer.hpp>
 #include <nikola/diag/scope_profiler.hpp>
@@ -117,6 +118,9 @@ struct CliConfig {
     bool                     stream        = false;  ///< --stream: line-buffered EMIT_THOUGHT during tick loop
     bool                     trace_otel    = false;  ///< --trace: emit OTel spans to stderr per tick
     bool                     profile       = false;  ///< --profile: print ScopeProfiler report after run
+    std::string              state_db_path;           ///< --state-db: LMDB state persistence dir (Phase 137)
+    int                      checkpoint_interval = 100; ///< --checkpoint-interval: Ψ checkpoint every N ticks
+    bool                     state_dump    = false;  ///< --state-dump: dump latest state and exit
 };
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -213,6 +217,9 @@ static void print_help(const char* argv0) {
         << "  --stream             Print each EMIT_THOUGHT immediately (line-buffered)\n"
         << "  --trace              Emit OpenTelemetry tick spans to stderr\n"
         << "  --profile            Print scope profiler report to stderr after run\n"
+        << "  --state-db <dir>     Persist full state via LMDB (Phase 137)\n"
+        << "  --checkpoint-interval <N>  Ψ checkpoint every N ticks [100]\n"
+        << "  --state-dump         Dump latest persisted state and exit\n"
         << "  --no-color           Disable ANSI colour\n"
         << "  --quiet              Suppress status headers\n"
         << "  --json               Machine-readable JSON output\n"
@@ -248,6 +255,9 @@ static std::optional<CliConfig> parse_args(int argc, char** argv) {
         else if (a == "--vocab")        cfg.vocab_path       = next();
         else if (a == "--ticks")        cfg.max_ticks        = std::stoi(next());
         else if (a == "--steps")        cfg.steps_per_tick   = std::stoi(next());
+        else if (a == "--state-db")     cfg.state_db_path    = next();
+        else if (a == "--checkpoint-interval") cfg.checkpoint_interval = std::stoi(next());
+        else if (a == "--state-dump")   cfg.state_dump       = true;
         else {
             std::cerr << "Unknown option: " << a << "  (try --help)\n";
             std::exit(1);
@@ -439,7 +449,7 @@ int main(int argc, char** argv) {
     if (!cfg.quiet && !cfg.json_out) {
         std::cerr << ansi::c(ansi::bold) << ansi::c(ansi::blue)
                   << "nikola-run" << ansi::c(ansi::rst)
-                  << ansi::c(ansi::dim) << "  v0.0.4  |  9D Toroidal Waveform Intelligence\n"
+                  << ansi::c(ansi::dim) << "  v0.0.5  |  9D Toroidal Waveform Intelligence\n"
                   << ansi::c(ansi::rst);
 
         if (!cfg.model_path.empty())
@@ -468,6 +478,8 @@ int main(int argc, char** argv) {
     loop_cfg.transformer_model_path= cfg.model_path;
     loop_cfg.memory_path           = cfg.memory_path;
     loop_cfg.lmdb_memory_path      = cfg.lmdb_memory_path;
+    loop_cfg.state_db_path         = cfg.state_db_path;
+    loop_cfg.checkpoint_interval   = cfg.checkpoint_interval;
     loop_cfg.min_emit_interval_s   = 0.0f;  // CLI: no rate limit between prompts
 
     // ── Vocabulary ──────────────────────────────────────────────────────────
@@ -529,6 +541,23 @@ int main(int argc, char** argv) {
         }
     };
     const ProfilePrinter _prof_print{cfg};
+
+    // ── Phase 137: --state-dump early exit ────────────────────────────────────
+    // Dump the latest persisted state and exit without running any ticks.
+    if (cfg.state_dump) {
+        if (cfg.state_db_path.empty()) {
+            std::cerr << "Error: --state-dump requires --state-db <dir>\n";
+            return 1;
+        }
+        try {
+            nikola::persistence::LmdbStateStore store(cfg.state_db_path);
+            std::cout << store.dump_latest();
+        } catch (const std::exception& e) {
+            std::cerr << "Error: " << e.what() << "\n";
+            return 1;
+        }
+        return 0;
+    }
 
     // ── Dispatch ─────────────────────────────────────────────────────────────
 
