@@ -121,6 +121,7 @@ struct CliConfig {
     std::string              state_db_path;           ///< --state-db: LMDB state persistence dir (Phase 137)
     int                      checkpoint_interval = 100; ///< --checkpoint-interval: Ψ checkpoint every N ticks
     bool                     state_dump    = false;  ///< --state-dump: dump latest state and exit
+    bool                     gpu           = true;   ///< --gpu / --no-gpu: runtime GPU toggle (Phase 138)
 };
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -220,6 +221,8 @@ static void print_help(const char* argv0) {
         << "  --state-db <dir>     Persist full state via LMDB (Phase 137)\n"
         << "  --checkpoint-interval <N>  Ψ checkpoint every N ticks [100]\n"
         << "  --state-dump         Dump latest persisted state and exit\n"
+        << "  --gpu                Force GPU propagation (default when CUDA available)\n"
+        << "  --no-gpu             Force CPU propagation (disable CUDA)\n"
         << "  --no-color           Disable ANSI colour\n"
         << "  --quiet              Suppress status headers\n"
         << "  --json               Machine-readable JSON output\n"
@@ -258,6 +261,8 @@ static std::optional<CliConfig> parse_args(int argc, char** argv) {
         else if (a == "--state-db")     cfg.state_db_path    = next();
         else if (a == "--checkpoint-interval") cfg.checkpoint_interval = std::stoi(next());
         else if (a == "--state-dump")   cfg.state_dump       = true;
+        else if (a == "--gpu")          cfg.gpu              = true;
+        else if (a == "--no-gpu")       cfg.gpu              = false;
         else {
             std::cerr << "Unknown option: " << a << "  (try --help)\n";
             std::exit(1);
@@ -449,7 +454,7 @@ int main(int argc, char** argv) {
     if (!cfg.quiet && !cfg.json_out) {
         std::cerr << ansi::c(ansi::bold) << ansi::c(ansi::blue)
                   << "nikola-run" << ansi::c(ansi::rst)
-                  << ansi::c(ansi::dim) << "  v0.0.5  |  9D Toroidal Waveform Intelligence\n"
+                  << ansi::c(ansi::dim) << "  v0.0.7  |  9D Toroidal Waveform Intelligence\n"
                   << ansi::c(ansi::rst);
 
         if (!cfg.model_path.empty())
@@ -469,6 +474,13 @@ int main(int argc, char** argv) {
     nikola::cognitive::CognitiveTorus torus(3,
                                             cfg.tokenizer_path,
                                             cfg.model_path);
+    torus.set_gpu(cfg.gpu);
+
+    if (!cfg.quiet && !cfg.json_out) {
+        std::cerr << ansi::c(ansi::gray)
+                  << "  propagator: " << (torus.gpu_enabled() ? "GPU (CUDA)" : "CPU")
+                  << "\n" << ansi::c(ansi::rst);
+    }
 
     nikola::autonomy::AutonomyEngine engine;
 

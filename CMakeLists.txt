@@ -943,7 +943,24 @@ if(NIKOLA_BUILD_TESTS)
             INSTALL_RPATH "/usr/local/cuda/lib64")
         add_test(NAME Phase135CognitiveToruscuda COMMAND test_phase135_cognitive_torus_cuda)
 
-        message(STATUS "CUDA ${CUDAToolkit_VERSION} found — nikola_cuda (torus_cuda.cu + propagator.cu), Phase 105, 110, 111, 135 targets enabled")
+        # Phase 138 — GPU Propagator Validation Suite (v0.0.7).
+        #   Standard Candle energy conservation (α=0), undamped reversibility,
+        #   CPU vs GPU Hamiltonian parity, drift monitoring, energy decomposition.
+        add_executable(test_phase138_gpu_propagator_validation
+            tests/unit/phase138_gpu_propagator_validation_test.cpp)
+        target_include_directories(test_phase138_gpu_propagator_validation PRIVATE
+            ${CMAKE_SOURCE_DIR}/include
+            /usr/local/cuda/include)
+        target_link_directories(test_phase138_gpu_propagator_validation PRIVATE
+            /usr/local/cuda/lib64)
+        target_link_libraries(test_phase138_gpu_propagator_validation PRIVATE
+            nikola_core nikola_cuda Catch2::Catch2WithMain)
+        set_target_properties(test_phase138_gpu_propagator_validation PROPERTIES
+            BUILD_RPATH  "/usr/local/cuda/lib64"
+            INSTALL_RPATH "/usr/local/cuda/lib64")
+        add_test(NAME Phase138GpuPropagatorValidation COMMAND test_phase138_gpu_propagator_validation)
+
+        message(STATUS "CUDA ${CUDAToolkit_VERSION} found — nikola_cuda (torus_cuda.cu + propagator.cu), Phase 105, 110, 111, 135, 138 targets enabled")
     else()
         message(STATUS "CUDAToolkit not found — nikola_cuda and CUDA tests skipped")
     endif()
