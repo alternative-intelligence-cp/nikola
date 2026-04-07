@@ -28,6 +28,7 @@
 #include <nikola/cognitive/holographic_injector.hpp>
 #include <nikola/cognitive/relevance_gate.hpp>
 #include <nikola/foundation/toroidal_grid.hpp>
+#include <nikola/diag/scope_profiler.hpp>
 #include <nikola/foundation/nit.hpp>
 
 #include <algorithm>
@@ -317,6 +318,7 @@ public:
      * @param dt  Timestep.  Should satisfy CFL: dt ≤ max_dt().
      */
     void step(float dt) {
+        NIKOLA_PROFILE("torus::step");
 #ifdef NIKOLA_HAS_CUDA_KERNELS
         if (use_gpu_) {
             gpu_prop_.step_synced(wf_, dt);

@@ -41,6 +41,7 @@
 #include <nikola/physics/hamiltonian.hpp>
 #include <nikola/physics/wave_function.hpp>
 #include <nikola/foundation/complex_field.hpp>
+#include <nikola/diag/scope_profiler.hpp>
 
 #include <vector>
 #include <cmath>
@@ -120,6 +121,7 @@ public:
      * @param dt  Timestep.  Should satisfy CFL: dt ≤ max_stable_dt().
      */
     void step(WaveFunction& wf, float dt) {
+        NIKOLA_PROFILE("propagator::step");
         // Ensure adjacency is precomputed for O(1) neighbour access
         if (!wf.grid().adjacency_valid()) {
             wf.grid().precompute_adjacency();

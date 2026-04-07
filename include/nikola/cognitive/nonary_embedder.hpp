@@ -17,6 +17,7 @@
 #include <nikola/cognitive/bpe_tokenizer.hpp>
 #include <nikola/cognitive/tiny_transformer.hpp>
 #include <nikola/foundation/nit.hpp>    // for Nit type
+#include <nikola/diag/scope_profiler.hpp>
 
 namespace nikola::cognitive {
 
@@ -37,6 +38,7 @@ public:
 
     // text → 128 Nit balanced-nonary wave vector
     std::vector<Nit> embed(const std::string& text) const {
+        NIKOLA_PROFILE("embed::nonary");
         if (text.empty()) {
             return std::vector<Nit>(EMBEDDING_DIM, 0);
         }

@@ -28,6 +28,7 @@
 #include <nikola/autonomy/decision_loop.hpp>
 #include <nikola/interior/autobiography.hpp>
 #include <nikola/physics/wave_function.hpp>
+#include <nikola/diag/scope_profiler.hpp>
 
 #include <cstdint>
 #include <cstring>
@@ -458,6 +459,7 @@ public:
      */
     void save_state(const autonomy::NikolaState& state, uint64_t tick)
     {
+        NIKOLA_PROFILE("lmdb::save_state");
         auto buf = detail::pack_state(state, tick);
         put_record("state", tick, buf.data(), buf.size());
     }
@@ -469,6 +471,7 @@ public:
     [[nodiscard]] bool load_latest_state(autonomy::NikolaState& state,
                                           uint64_t& tick_out)
     {
+        NIKOLA_PROFILE("lmdb::load_state");
         MDB_val mkey{}, mval{};
         if (!get_last_record("state", mkey, mval, tick_out))
             return false;
@@ -492,6 +495,7 @@ public:
      */
     void save_checkpoint(const physics::WaveFunction& wf, uint64_t tick)
     {
+        NIKOLA_PROFILE("lmdb::save_checkpoint");
         auto buf = detail::pack_checkpoint(wf, tick);
         put_record("checkpoint", tick, buf.data(), buf.size());
     }
@@ -504,6 +508,7 @@ public:
     [[nodiscard]] bool load_latest_checkpoint(physics::WaveFunction& wf,
                                                detail::CheckpointHeader& hdr)
     {
+        NIKOLA_PROFILE("lmdb::load_checkpoint");
         uint64_t tick = 0;
         MDB_val mkey{}, mval{};
         if (!get_last_record("checkpoint", mkey, mval, tick))
@@ -791,6 +796,7 @@ private:
     void put_record(const char* db_name, uint64_t tick,
                     const void* data, std::size_t size)
     {
+        NIKOLA_PROFILE("lmdb::put");
         MDB_txn* txn = nullptr;
         check(mdb_txn_begin(env_, nullptr, 0, &txn), "txn_begin(put)");
         MDB_dbi dbi = open_named_dbi(txn, db_name);

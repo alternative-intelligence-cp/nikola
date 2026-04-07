@@ -561,7 +561,10 @@ DecisionResult DecisionLoop::tick()
 
     // ── 0b. Field liveness check ─────────────────────────────────────────────
     // Reseed before scoring so the autonomy engine has a live field to read.
-    const bool reseeded = maybe_reseed_field();
+    const bool reseeded = [&]{
+        NIKOLA_PROFILE("torus::reseed_check");
+        return maybe_reseed_field();
+    }();
     (void)reseeded;  // logged via torus energy shift; not surfaced as action
 
     // ── 1. Advance torus physics ─────────────────────────────────────────────
@@ -588,23 +591,28 @@ DecisionResult DecisionLoop::tick()
     }
 
     // ── 3. Snapshot internal state ──────────────────────────────────────────
-    NikolaState s = read_state();
+    NikolaState s = [&]{
+        NIKOLA_PROFILE("autonomy::read_state");
+        return read_state();
+    }();
 
     // ── 4. Score all candidates ─────────────────────────────────────────────
     static constexpr float SILENT_SCORE = 0.3f;
 
     struct Candidate { ActionType type; float score; };
-    const Candidate candidates[] = {
-        { ActionType::NAP,            score_nap(s)            },
-        { ActionType::REFUSE,         score_refuse(s)         },
-        { ActionType::ESCALATE,       score_escalate(s)       },
-        { ActionType::EXPLORE,        score_explore(s)        },
-        { ActionType::EMIT_THOUGHT,   score_emit_thought(s)   },
-        { ActionType::STORE_MEMORY,   score_store_memory(s)   },
-        { ActionType::REQUEST_LOOKUP, score_request_lookup(s) },
-        { ActionType::RECALL_MEMORY,  score_recall_memory(s)  },
-        { ActionType::REASON,         score_reason(s)         },
-    };
+    Candidate candidates[9];
+    {
+        NIKOLA_PROFILE("autonomy::score_candidates");
+        candidates[0] = { ActionType::NAP,            score_nap(s)            };
+        candidates[1] = { ActionType::REFUSE,         score_refuse(s)         };
+        candidates[2] = { ActionType::ESCALATE,       score_escalate(s)       };
+        candidates[3] = { ActionType::EXPLORE,        score_explore(s)        };
+        candidates[4] = { ActionType::EMIT_THOUGHT,   score_emit_thought(s)   };
+        candidates[5] = { ActionType::STORE_MEMORY,   score_store_memory(s)   };
+        candidates[6] = { ActionType::REQUEST_LOOKUP, score_request_lookup(s) };
+        candidates[7] = { ActionType::RECALL_MEMORY,  score_recall_memory(s)  };
+        candidates[8] = { ActionType::REASON,         score_reason(s)         };
+    }
 
     // Find best non-silent candidate
     const Candidate* best = nullptr;

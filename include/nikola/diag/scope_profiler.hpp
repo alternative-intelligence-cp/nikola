@@ -271,16 +271,19 @@ private:
 // ─────────────────────────────────────────────────────────────────────────────
 //  Convenience macro — NIKOLA_PROFILE("scope_name")
 // ─────────────────────────────────────────────────────────────────────────────
+/// Helper macros for token-pasting with __LINE__ expansion
+#define NIKOLA_PROF_CONCAT_(a, b) a##b
+#define NIKOLA_PROF_CONCAT(a, b) NIKOLA_PROF_CONCAT_(a, b)
 
 /// RAII scope profiler guard using the global singleton.
 /// Declares a local variable so multiple uses in the same scope need unique names.
 #define NIKOLA_PROFILE(name) \
-    ::nikola::diag::ScopeProfiler::Guard _nikola_prof_##__LINE__{ \
+    ::nikola::diag::ScopeProfiler::Guard NIKOLA_PROF_CONCAT(_nikola_prof_, __LINE__){ \
         ::nikola::diag::ScopeProfiler::global(), (name) }
 
 /// Profile with explicit profiler instance (for unit-testable code)
 #define NIKOLA_PROFILE_ON(profiler, name) \
-    ::nikola::diag::ScopeProfiler::Guard _nikola_prof_##__LINE__{ \
+    ::nikola::diag::ScopeProfiler::Guard NIKOLA_PROF_CONCAT(_nikola_prof_, __LINE__){ \
         (profiler), (name) }
 
 } // namespace nikola::diag

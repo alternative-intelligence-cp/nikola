@@ -1351,6 +1351,15 @@ if(NIKOLA_BUILD_TESTS)
         nikola_core Catch2::Catch2WithMain)
     add_test(NAME Phase133PeerRegistry COMMAND test_phase133_peer_registry)
 
+    # -------------------------------------------------------------------------
+    # Phase 139 — v0.0.8 Observability Wiring
+    # -------------------------------------------------------------------------
+    add_executable(test_phase139_observability_wiring
+        tests/unit/phase139_observability_wiring_test.cpp)
+    target_link_libraries(test_phase139_observability_wiring PRIVATE
+        nikola_core Catch2::Catch2WithMain)
+    add_test(NAME Phase139ObservabilityWiring COMMAND test_phase139_observability_wiring)
+
     message(STATUS "Tests configured - run with: make test")
 endif()
 

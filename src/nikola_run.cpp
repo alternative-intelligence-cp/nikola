@@ -46,6 +46,7 @@
 #include <nikola/cli/stream_emitter.hpp>
 #include <nikola/telemetry/nikola_tracer.hpp>
 #include <nikola/diag/scope_profiler.hpp>
+#include <nikola/diag/telemetry_daemon.hpp>
 
 #include <algorithm>
 #include <array>
@@ -122,6 +123,7 @@ struct CliConfig {
     int                      checkpoint_interval = 100; ///< --checkpoint-interval: Ψ checkpoint every N ticks
     bool                     state_dump    = false;  ///< --state-dump: dump latest state and exit
     bool                     gpu           = true;   ///< --gpu / --no-gpu: runtime GPU toggle (Phase 138)
+    bool                     telemetry     = false;  ///< --telemetry: emit per-tick metrics to FD 3 (stddbg)
 };
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -223,6 +225,7 @@ static void print_help(const char* argv0) {
         << "  --state-dump         Dump latest persisted state and exit\n"
         << "  --gpu                Force GPU propagation (default when CUDA available)\n"
         << "  --no-gpu             Force CPU propagation (disable CUDA)\n"
+        << "  --telemetry          Emit per-tick metrics to stddbg (FD 3) as JSON Lines\n"
         << "  --no-color           Disable ANSI colour\n"
         << "  --quiet              Suppress status headers\n"
         << "  --json               Machine-readable JSON output\n"
@@ -263,6 +266,7 @@ static std::optional<CliConfig> parse_args(int argc, char** argv) {
         else if (a == "--state-dump")   cfg.state_dump       = true;
         else if (a == "--gpu")          cfg.gpu              = true;
         else if (a == "--no-gpu")       cfg.gpu              = false;
+        else if (a == "--telemetry")     cfg.telemetry        = true;
         else {
             std::cerr << "Unknown option: " << a << "  (try --help)\n";
             std::exit(1);
@@ -454,7 +458,7 @@ int main(int argc, char** argv) {
     if (!cfg.quiet && !cfg.json_out) {
         std::cerr << ansi::c(ansi::bold) << ansi::c(ansi::blue)
                   << "nikola-run" << ansi::c(ansi::rst)
-                  << ansi::c(ansi::dim) << "  v0.0.7  |  9D Toroidal Waveform Intelligence\n"
+                  << ansi::c(ansi::dim) << "  v0.0.8  |  9D Toroidal Waveform Intelligence\n"
                   << ansi::c(ansi::rst);
 
         if (!cfg.model_path.empty())
@@ -480,6 +484,11 @@ int main(int argc, char** argv) {
         std::cerr << ansi::c(ansi::gray)
                   << "  propagator: " << (torus.gpu_enabled() ? "GPU (CUDA)" : "CPU")
                   << "\n" << ansi::c(ansi::rst);
+        if (cfg.telemetry) {
+            std::cerr << ansi::c(ansi::gray)
+                      << "  telemetry:  FD 3 (stddbg) JSON Lines\n"
+                      << ansi::c(ansi::rst);
+        }
     }
 
     nikola::autonomy::AutonomyEngine engine;
@@ -517,15 +526,44 @@ int main(int argc, char** argv) {
 
     nikola::autonomy::DecisionLoop loop(torus, engine, loop_cfg);
 
+    // ── TelemetryDaemon (optional — per-tick metrics to FD 3) ────────────────
+    // When --telemetry is active, start the background drain thread and hook
+    // gauge emissions into the on_tick callback.  The daemon writes JSON Lines
+    // to stddbg (FD 3) per TASKS.md spec.  No-ops silently if FD 3 is not open.
+    auto& telem = nikola::diag::TelemetryDaemon::global();
+    if (cfg.telemetry) {
+        telem.start();  // default: FD 3 (STDDBG_FD)
+    }
+
     // ── OpenTelemetry tracing (optional) ─────────────────────────────────────
     // When --trace is active, wire a TickTracer into loop.on_tick so that every
     // tick emits a "nikola.tick" span with state attributes to stderr.
     // The callback is only installed when requested; zero overhead otherwise.
     nikola::telemetry::TickTracer tick_tracer;
-    if (cfg.trace_otel) {
-        nikola::telemetry::setup_ostream_tracer(std::cerr);
-        loop.on_tick = [&tick_tracer, &loop](const nikola::autonomy::NikolaState& s) {
-            tick_tracer.trace_tick(s, static_cast<int64_t>(loop.tick_count()));
+
+    // Combined on_tick callback supporting --trace and/or --telemetry
+    if (cfg.trace_otel || cfg.telemetry) {
+        if (cfg.trace_otel)
+            nikola::telemetry::setup_ostream_tracer(std::cerr);
+
+        loop.on_tick = [&](const nikola::autonomy::NikolaState& s) {
+            if (cfg.trace_otel)
+                tick_tracer.trace_tick(s, static_cast<int64_t>(loop.tick_count()));
+
+            if (cfg.telemetry) {
+                // Read tick duration from ScopeProfiler if available
+                auto tick_snap = nikola::diag::ScopeProfiler::global()
+                                     .report_one("DecisionLoop::tick");
+                const double tick_us = (tick_snap.count > 0) ? tick_snap.mean_us() : 0.0;
+
+                telem.gauge("tick.energy",     static_cast<double>(s.torus_energy),  "J");
+                telem.gauge("tick.dopamine",   static_cast<double>(s.dopamine));
+                telem.gauge("tick.atp",        static_cast<double>(s.atp));
+                telem.gauge("tick.boredom",    static_cast<double>(s.boredom));
+                telem.gauge("tick.entropy",    static_cast<double>(s.entropy),       "nat");
+                telem.gauge("tick.duration",   tick_us,                              "us");
+                telem.counter("tick.count");
+            }
         };
     }
 
@@ -553,6 +591,14 @@ int main(int argc, char** argv) {
         }
     };
     const ProfilePrinter _prof_print{cfg};
+
+    // ── TelemetryDaemon RAII stop (fires on any return path) ─────────────────
+    struct TelemStopper {
+        nikola::diag::TelemetryDaemon& d;
+        bool active;
+        ~TelemStopper() { if (active) d.stop(); }
+    };
+    const TelemStopper _telem_stop{telem, cfg.telemetry};
 
     // ── Phase 137: --state-dump early exit ────────────────────────────────────
     // Dump the latest persisted state and exit without running any ticks.
