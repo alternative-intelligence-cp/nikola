@@ -43,7 +43,6 @@ static const char* CYAN   = "\033[36m";
 static const char* GREEN  = "\033[32m";
 static const char* YELLOW = "\033[33m";
 static const char* BLUE   = "\033[34m";
-static const char* MAGENTA= "\033[35m";
 static const char* RED    = "\033[31m";
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -251,7 +250,6 @@ int main() {
     propagator.set_beta(BETA);
     propagator.set_c0(C0);
 
-    double H_prev      = H0;
     double H_max_drift = 0.0;
     auto   t_start     = std::chrono::steady_clock::now();
 
@@ -291,8 +289,6 @@ int main() {
                       engine.dopamine(),
                       engine.atp(),
                       engine.boredom());
-
-            H_prev = H_curr;
         }
     }
 

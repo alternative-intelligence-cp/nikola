@@ -388,7 +388,7 @@ static void print_result(const std::string& prompt,
 // ─────────────────────────────────────────────────────────────────────────────
 // Interactive REPL
 // ─────────────────────────────────────────────────────────────────────────────
-static void run_repl(nikola::cognitive::CognitiveTorus& torus,
+static void run_repl(nikola::cognitive::CognitiveTorus& /*torus*/,
                      nikola::autonomy::DecisionLoop&    loop,
                      const CliConfig&                   cfg)
 {
