@@ -18,10 +18,14 @@
 
 #include <nikola/autonomy/decision_loop.hpp>
 #include <nikola/cognitive/lmdb_memory_store.hpp>    // Phase 136 — LMDB persistence
+#include <nikola/persistence/lmdb_state_store.hpp>   // Phase 137 — full state persistence
+#include <nikola/interior/autobiography.hpp>         // Phase 137 — autobiography member
 
 #include <algorithm>
+#include <cctype>
 #include <complex>
 #include <cmath>
+#include <cstring>
 #include <numeric>
 #include <random>
 #include <span>
@@ -64,8 +68,9 @@ DecisionLoop::DecisionLoop(nikola::cognitive::CognitiveTorus& torus,
     : torus_(torus)
     , engine_(engine)
     , cfg_(std::move(cfg))
-    , npt_(static_cast<int>(torus.grid().grid_n()))
+    , npt_(static_cast<int>(torus.grid().grid_n()), 0.5f, 0.3f)  // v0.0.9: τ=0.5 (sharper), α=0.3
     , npt_last_result_(static_cast<int>(torus.grid().grid_n()))
+    , autobiography_(std::make_unique<interior::AutobiographicalMemory>())
 {
     const auto now = std::chrono::steady_clock::now();
     start_time_     = now;
@@ -157,6 +162,88 @@ DecisionLoop::DecisionLoop(nikola::cognitive::CognitiveTorus& torus,
             std::cout << "[DecisionLoop] Loaded " << loaded
                       << " memory records from " << cfg_.memory_path << "\n";
     }
+
+    // Phase 137 — open state store and load prior session state.
+    if (!cfg_.state_db_path.empty()) {
+        try {
+            state_store_ = std::make_unique<nikola::persistence::LmdbStateStore>(
+                cfg_.state_db_path);
+
+            // Restore NikolaState
+            {
+                NikolaState restored_state;
+                uint64_t restored_tick = 0;
+                if (state_store_->load_latest_state(restored_state, restored_tick)) {
+                    last_state_ = restored_state;
+                    tick_count_ = restored_tick;
+                    std::cout << "[DecisionLoop] Restored NikolaState from "
+                              << cfg_.state_db_path << " (tick "
+                              << restored_tick << ")\n";
+                }
+            }
+
+            // Restore Ψ checkpoint
+            {
+                physics::WaveFunction wf;
+                persistence::detail::CheckpointHeader chdr{};
+                if (state_store_->load_latest_checkpoint(wf, chdr)) {
+                    auto& grid = torus_.wave_function().grid();
+                    const size_t N = grid.num_active_nodes();
+                    if (wf.num_nodes() == N) {
+                        std::memcpy(grid.psi_real(), wf.grid().psi_real(), N * sizeof(float));
+                        std::memcpy(grid.psi_imag(), wf.grid().psi_imag(), N * sizeof(float));
+                        std::memcpy(grid.vel_real(), wf.grid().vel_real(), N * sizeof(float));
+                        std::memcpy(grid.vel_imag(), wf.grid().vel_imag(), N * sizeof(float));
+                        std::cout << "[DecisionLoop] Restored Ψ checkpoint ("
+                                  << N << " nodes)\n";
+                    }
+                }
+            }
+
+            // Restore autobiography
+            (void)state_store_->load_autobiography(*autobiography_);
+            if (!autobiography_->events().empty()) {
+                std::cout << "[DecisionLoop] Restored "
+                          << autobiography_->events().size()
+                          << " autobiographical events\n";
+            }
+        } catch (const std::exception& e) {
+            std::cerr << "[DecisionLoop] State store open (first run?): "
+                      << e.what() << "\n";
+        }
+    }
+}
+
+// ============================================================================
+// Destructor — flush final state on shutdown
+// ============================================================================
+
+DecisionLoop::~DecisionLoop()
+{
+    if (state_store_) {
+        try {
+            state_store_->save_state(last_state_, tick_count_);
+            state_store_->save_checkpoint(torus_.wave_function(), tick_count_);
+            state_store_->save_autobiography(*autobiography_);
+        } catch (const std::exception& e) {
+            std::cerr << "[DecisionLoop] ~DecisionLoop state flush failed: "
+                      << e.what() << "\n";
+        }
+    }
+}
+
+// ============================================================================
+// Accessor — autobiography
+// ============================================================================
+
+const interior::AutobiographicalMemory& DecisionLoop::autobiography() const noexcept
+{
+    return *autobiography_;
+}
+
+interior::AutobiographicalMemory& DecisionLoop::autobiography() noexcept
+{
+    return *autobiography_;
 }
 
 // ============================================================================
@@ -194,7 +281,37 @@ void DecisionLoop::inject_stimulus(const std::string& text)
             last_stimulus_seed_ = best_tok;
         }
     }
+
+    // ── v0.0.9: Extract vocabulary words directly from prompt text ────────
+    // BERT-Tiny's cosine similarity can be imprecise for philosophical/abstract
+    // prompts.  Supplement the embedding seed with literal vocabulary matches
+    // in the prompt text — these are guaranteed to be prompt-relevant.
+    stimulus_seeds_.clear();
+    {
+        // Build lowercase copy of prompt for case-insensitive matching
+        std::string prompt_lower = text;
+        for (char& c : prompt_lower) c = static_cast<char>(std::tolower(static_cast<unsigned char>(c)));
+        for (const auto& word : cfg_.vocabulary) {
+            std::string word_lower = word;
+            for (char& c : word_lower) c = static_cast<char>(std::tolower(static_cast<unsigned char>(c)));
+            if (prompt_lower.find(word_lower) != std::string::npos) {
+                stimulus_seeds_.push_back(word);
+            }
+        }
+        // Add BERT nearest-word as fallback if not already present
+        if (!last_stimulus_seed_.empty()) {
+            bool found = false;
+            for (const auto& s : stimulus_seeds_)
+                if (s == last_stimulus_seed_) { found = true; break; }
+            if (!found)
+                stimulus_seeds_.push_back(last_stimulus_seed_);
+        }
+    }
+
     stimulus_explore_count_ = 0;   // reset so the new seed gets first use
+    // v0.0.9: clear accumulated tokens so the new prompt starts fresh
+    accumulated_tokens_.clear();
+    accumulated_unique_.clear();
 #else
     // Without ORT we cannot embed text — the stimulus still perturbs the
     // torus by injecting a uniform low-amplitude Nit excitation.
@@ -313,15 +430,23 @@ float DecisionLoop::score_explore(const NikolaState& s) const noexcept
 
 float DecisionLoop::score_emit_thought(const NikolaState& s) const noexcept
 {
-    // Speaking requires dopamine (something happened), boredom (seeking
+    // v0.0.9: Speaking requires dopamine (something happened), boredom (seeking
     // expression), and energy (costs ATP).  Cooldown enforces a minimum gap.
+    // Multiplier raised from 1.5 → 3.0 to beat RECALL/SILENT more reliably.
+    // Token-count bonus rewards accumulation: more context → richer thought.
     if (seconds_since(last_emit_time_) < cfg_.min_emit_interval_s) return 0.f;
     // Allow EMIT_THOUGHT when *any* token source is available:
-    //   1. Cold decoded tokens from the evolved field (Phase 27 improvement)
-    //   2. Warm decoded tokens from the last EXPLORE inject (Phase 27 #1)
-    //   3. Most-recent seed token (Phase 26 scaffold, belt-and-suspenders)
-    if (s.tokens.empty() && last_ex_tokens_.empty() && last_seed_token_.empty()) return 0.f;
-    return s.dopamine * s.boredom * s.atp * 1.5f;
+    //   1. Accumulated tokens from prior ticks (v0.0.9 multi-word path)
+    //   2. Cold decoded tokens from the evolved field
+    //   3. Warm decoded tokens from the last EXPLORE inject
+    //   4. Most-recent seed token (belt-and-suspenders)
+    if (accumulated_tokens_.empty() && s.tokens.empty()
+        && last_ex_tokens_.empty() && last_seed_token_.empty()) return 0.f;
+    const float base = s.dopamine * s.boredom * s.atp * 2.0f;
+    // Bonus for having accumulated multi-word context (up to +0.5)
+    const float token_bonus = std::min(1.0f,
+        static_cast<float>(accumulated_tokens_.size()) / 4.0f) * 0.5f;
+    return base + token_bonus;
 }
 
 float DecisionLoop::score_store_memory(const NikolaState& s) const noexcept
@@ -345,8 +470,10 @@ float DecisionLoop::score_request_lookup(const NikolaState& s) const noexcept
 
 float DecisionLoop::score_recall_memory(const NikolaState& s) const
 {
-    // Recall only fires if there is something in memory to draw on.
+    // v0.0.9: Recall only fires if there is something in memory to draw on.
+    // Added cooldown to prevent RECALL from dominating the action budget.
     if (memory_.empty()) return 0.f;
+    if (seconds_since(last_recall_time_) < cfg_.min_recall_interval_s) return 0.f;
     // Don't recall when exhausted — retrieval has a metabolic cost.
     if (s.is_exhausted()) return 0.f;
     // When dopamine is spiking, STORE_MEMORY should win; don't compete.
@@ -357,9 +484,10 @@ float DecisionLoop::score_recall_memory(const NikolaState& s) const
     const auto hits = memory_.recall(torus_.wave_function(), 1);
     if (hits.empty()) return 0.f;
 
-    // Score = resonance quality × metabolic headroom.
-    // High resonance + good ATP → recall fires; weak echo or exhaustion → silent.
-    return hits[0].score * s.atp * 1.5f;
+    // v0.0.9: Multiplier reduced from 1.5 → 0.6 so RECALL doesn't outcompete
+    // EMIT_THOUGHT.  RECALL still fires when resonance is strong but gives
+    // EMIT more tick budget for producing actual output.
+    return hits[0].score * s.atp * 0.6f;
 }
 
 // ============================================================================
@@ -386,7 +514,11 @@ float DecisionLoop::score_reason(const NikolaState& s) const noexcept
     //   • cooldown < 3s:     prevent back-to-back REASON ticks consuming all cycles
     if (s.entropy < 0.05f) return 0.f;
     if (s.atp    < 0.25f) return 0.f;
-    if (seconds_since(last_reason_time_) < 3.0f) return 0.f;
+    // v0.0.9: Cooldown reduced from 3.0s to 0.5s.  The NPT structures the
+    // field so decoded tokens carry multi-band spectral coherence.  Letting
+    // REASON fire more often (up to 4× per prompt) dramatically improves the
+    // quality of subsequent EMIT_THOUGHT output.
+    if (seconds_since(last_reason_time_) < 0.5f) return 0.f;
     return s.entropy * s.atp * 1.0f;
 }
 
@@ -401,11 +533,14 @@ std::string DecisionLoop::build_payload(ActionType type, const NikolaState& s) c
             // Route through ThoughtComposer — selects the template that best
             // matches current state drives and fills it with decoded content.
             nikola::cognitive::ThoughtContext ctx;
-            // Priority order for token content:
-            //   1. Cold-decoded tokens from evolved field (most informative)
-            //   2. Warm-decoded tokens from most recent EXPLORE (Phase 27 path)
-            //   3. Seed token from Phase 26 scaffold (guaranteed fallback)
-            if (!s.tokens.empty()) {
+            // v0.0.9 — Priority order for token content:
+            //   1. Accumulated tokens across prior ticks (multi-word buffer)
+            //   2. Cold-decoded tokens from evolved field
+            //   3. Warm-decoded tokens from most recent EXPLORE
+            //   4. Seed token (guaranteed fallback)
+            if (!accumulated_tokens_.empty()) {
+                ctx.tokens = accumulated_tokens_;
+            } else if (!s.tokens.empty()) {
                 ctx.tokens = s.tokens;
             } else if (!last_ex_tokens_.empty()) {
                 ctx.tokens = last_ex_tokens_;
@@ -475,7 +610,10 @@ DecisionResult DecisionLoop::tick()
 
     // ── 0b. Field liveness check ─────────────────────────────────────────────
     // Reseed before scoring so the autonomy engine has a live field to read.
-    const bool reseeded = maybe_reseed_field();
+    const bool reseeded = [&]{
+        NIKOLA_PROFILE("torus::reseed_check");
+        return maybe_reseed_field();
+    }();
     (void)reseeded;  // logged via torus energy shift; not surfaced as action
 
     // ── 1. Advance torus physics ─────────────────────────────────────────────
@@ -502,23 +640,46 @@ DecisionResult DecisionLoop::tick()
     }
 
     // ── 3. Snapshot internal state ──────────────────────────────────────────
-    NikolaState s = read_state();
+    NikolaState s = [&]{
+        NIKOLA_PROFILE("autonomy::read_state");
+        return read_state();
+    }();
+
+    // ── 3b. v0.0.9 — Accumulate decoded tokens across ticks ─────────────────
+    // Collect unique tokens from cold decode (s.tokens) and warm decode
+    // (last_ex_tokens_) into a persistent buffer.  When EMIT_THOUGHT fires,
+    // it consumes this buffer to produce multi-word thoughts instead of
+    // single-word template fills.  Capped at max_accumulated_tokens to
+    // prevent unbounded growth.
+    {
+        const auto max_acc = static_cast<size_t>(cfg_.max_accumulated_tokens);
+        auto try_add = [&](const std::string& tok) {
+            if (tok.empty() || accumulated_tokens_.size() >= max_acc) return;
+            if (accumulated_unique_.insert(tok).second)
+                accumulated_tokens_.push_back(tok);
+        };
+        for (const auto& tok : s.tokens)    try_add(tok);
+        for (const auto& tok : last_ex_tokens_) try_add(tok);
+        if (!last_seed_token_.empty())       try_add(last_seed_token_);
+    }
 
     // ── 4. Score all candidates ─────────────────────────────────────────────
     static constexpr float SILENT_SCORE = 0.3f;
 
     struct Candidate { ActionType type; float score; };
-    const Candidate candidates[] = {
-        { ActionType::NAP,            score_nap(s)            },
-        { ActionType::REFUSE,         score_refuse(s)         },
-        { ActionType::ESCALATE,       score_escalate(s)       },
-        { ActionType::EXPLORE,        score_explore(s)        },
-        { ActionType::EMIT_THOUGHT,   score_emit_thought(s)   },
-        { ActionType::STORE_MEMORY,   score_store_memory(s)   },
-        { ActionType::REQUEST_LOOKUP, score_request_lookup(s) },
-        { ActionType::RECALL_MEMORY,  score_recall_memory(s)  },
-        { ActionType::REASON,         score_reason(s)         },
-    };
+    Candidate candidates[9];
+    {
+        NIKOLA_PROFILE("autonomy::score_candidates");
+        candidates[0] = { ActionType::NAP,            score_nap(s)            };
+        candidates[1] = { ActionType::REFUSE,         score_refuse(s)         };
+        candidates[2] = { ActionType::ESCALATE,       score_escalate(s)       };
+        candidates[3] = { ActionType::EXPLORE,        score_explore(s)        };
+        candidates[4] = { ActionType::EMIT_THOUGHT,   score_emit_thought(s)   };
+        candidates[5] = { ActionType::STORE_MEMORY,   score_store_memory(s)   };
+        candidates[6] = { ActionType::REQUEST_LOOKUP, score_request_lookup(s) };
+        candidates[7] = { ActionType::RECALL_MEMORY,  score_recall_memory(s)  };
+        candidates[8] = { ActionType::REASON,         score_reason(s)         };
+    }
 
     // Find best non-silent candidate
     const Candidate* best = nullptr;
@@ -540,6 +701,7 @@ DecisionResult DecisionLoop::tick()
     if (winner == ActionType::EMIT_THOUGHT)  last_emit_time_   = now;
     if (winner == ActionType::STORE_MEMORY)  last_store_time_  = now;
     if (winner == ActionType::REASON)        last_reason_time_ = now;
+    if (winner == ActionType::RECALL_MEMORY) last_recall_time_ = now;  // v0.0.9
 
     // ── 6a. Execute side-effects for actions that modify the torus ───────────
     // EXPLORE: inject stochastic novelty into the field NOW (after scoring,
@@ -605,11 +767,32 @@ DecisionResult DecisionLoop::tick()
     result.payload = (winner == ActionType::EXPLORE && !explore_payload.empty())
                      ? explore_payload
                      : build_payload(winner, s);
+
+    // ── 7a. v0.0.9 — consume accumulated tokens AFTER build_payload reads them
+    if (winner == ActionType::EMIT_THOUGHT) {
+        accumulated_tokens_.clear();
+        accumulated_unique_.clear();
+    }
+
     result.state   = s;
 
     // ── 8. Fire callbacks ────────────────────────────────────────────────────
     if (on_tick)   on_tick(s);
     if (on_action && winner != ActionType::SILENT) on_action(result);
+
+    // ── 9. Phase 137 — persist state to LMDB ────────────────────────────────
+    if (state_store_) {
+        try {
+            state_store_->save_state(s, tick_count_);
+            // Checkpoint Ψ every cfg_.checkpoint_interval ticks
+            if (cfg_.checkpoint_interval > 0 &&
+                (tick_count_ % static_cast<uint64_t>(cfg_.checkpoint_interval)) == 0) {
+                state_store_->save_checkpoint(torus_.wave_function(), tick_count_);
+            }
+        } catch (const std::exception& e) {
+            std::cerr << "[DecisionLoop] state persist failed: " << e.what() << "\n";
+        }
+    }
 
     return result;
 }
@@ -632,22 +815,28 @@ std::string DecisionLoop::execute_explore(const NikolaState& s)
 
     std::string seed_token;
 
-    // Try to get a token from whatever the field is already resonating on
-    const auto hot = torus_.hot_nodes(3);
-    for (size_t idx : hot) {
-        const auto wave9d = torus_.node_wave9d(idx);
-        if (wave9d.empty()) continue;
-        auto maybe = decoder_.lexicon().decode(wave9d);
-        if (maybe.has_value()) { seed_token = *maybe; break; }
+    // v0.0.9: Stimulus-seeded explore comes FIRST — keep early thoughts
+    // orbiting the prompt's semantic neighbourhood instead of whatever the
+    // field happened to collapse to.  Rotate through stimulus_seeds_ (literal
+    // vocab words found in the prompt text) for diversity.
+    if (!stimulus_seeds_.empty()
+            && stimulus_explore_count_ < static_cast<uint64_t>(cfg_.max_stimulus_explores)) {
+        const size_t idx = stimulus_explore_count_ % stimulus_seeds_.size();
+        seed_token = stimulus_seeds_[idx];
+    } else if (!last_stimulus_seed_.empty()
+            && stimulus_explore_count_ < static_cast<uint64_t>(cfg_.max_stimulus_explores)) {
+        seed_token = last_stimulus_seed_;
     }
 
-    // Stimulus-seeded explore: for the first 3 EXPLOREs after a new user
-    // prompt, bias the seed toward the vocabulary word closest to the
-    // prompt's embedding.  This makes Nikola's initial thoughts orbit the
-    // semantic neighbourhood of what the user actually said.
-    if (seed_token.empty() && !last_stimulus_seed_.empty()
-            && stimulus_explore_count_ < 3) {
-        seed_token = last_stimulus_seed_;
+    // Try to get a token from whatever the field is already resonating on
+    if (seed_token.empty()) {
+        const auto hot = torus_.hot_nodes(3);
+        for (size_t idx : hot) {
+            const auto wave9d = torus_.node_wave9d(idx);
+            if (wave9d.empty()) continue;
+            auto maybe = decoder_.lexicon().decode(wave9d);
+            if (maybe.has_value()) { seed_token = *maybe; break; }
+        }
     }
     ++stimulus_explore_count_;
 
@@ -957,6 +1146,57 @@ void DecisionLoop::save_memory() const
         memory_.save(cfg_.memory_path);
     } catch (const std::exception& e) {
         std::cerr << "[DecisionLoop] save_memory failed: " << e.what() << "\n";
+    }
+}
+
+// ============================================================================
+// Phase 137 — full state persistence helpers
+// ============================================================================
+
+void DecisionLoop::save_full_state(bool force_checkpoint)
+{
+    if (!state_store_) return;
+    try {
+        state_store_->save_state(last_state_, tick_count_);
+        if (force_checkpoint)
+            state_store_->save_checkpoint(torus_.wave_function(), tick_count_);
+        state_store_->save_autobiography(*autobiography_);
+    } catch (const std::exception& e) {
+        std::cerr << "[DecisionLoop] save_full_state failed: " << e.what() << "\n";
+    }
+}
+
+void DecisionLoop::load_full_state()
+{
+    if (!state_store_) return;
+    try {
+        {
+            NikolaState restored;
+            uint64_t restored_tick = 0;
+            if (state_store_->load_latest_state(restored, restored_tick)) {
+                last_state_ = restored;
+                tick_count_ = restored_tick;
+            }
+        }
+
+        {
+            physics::WaveFunction wf;
+            persistence::detail::CheckpointHeader chdr{};
+            if (state_store_->load_latest_checkpoint(wf, chdr)) {
+                auto& grid = torus_.wave_function().grid();
+                const size_t N = grid.num_active_nodes();
+                if (wf.num_nodes() == N) {
+                    std::memcpy(grid.psi_real(), wf.grid().psi_real(), N * sizeof(float));
+                    std::memcpy(grid.psi_imag(), wf.grid().psi_imag(), N * sizeof(float));
+                    std::memcpy(grid.vel_real(), wf.grid().vel_real(), N * sizeof(float));
+                    std::memcpy(grid.vel_imag(), wf.grid().vel_imag(), N * sizeof(float));
+                }
+            }
+        }
+
+        (void)state_store_->load_autobiography(*autobiography_);
+    } catch (const std::exception& e) {
+        std::cerr << "[DecisionLoop] load_full_state failed: " << e.what() << "\n";
     }
 }
 

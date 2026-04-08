@@ -39,6 +39,7 @@
 #include <nikola/physics/wave_function.hpp>
 #include <nikola/foundation/toroidal_grid.hpp>
 #include <nikola/spatial/topology_manager.hpp>
+#include <nikola/diag/scope_profiler.hpp>
 
 #include <vector>
 #include <array>
@@ -467,6 +468,7 @@ public:
     Coord9DInt map(const std::vector<float>& embed,
                    int                       current_time_idx = 0) const
     {
+        NIKOLA_PROFILE("mapper::token_to_coord");
         if (static_cast<int>(embed.size()) != E_)
             throw std::invalid_argument("TokenMapper::map: embed dimension mismatch");
 

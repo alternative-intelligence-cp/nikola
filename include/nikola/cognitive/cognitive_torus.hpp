@@ -28,6 +28,7 @@
 #include <nikola/cognitive/holographic_injector.hpp>
 #include <nikola/cognitive/relevance_gate.hpp>
 #include <nikola/foundation/toroidal_grid.hpp>
+#include <nikola/diag/scope_profiler.hpp>
 #include <nikola/foundation/nit.hpp>
 
 #include <algorithm>
@@ -282,18 +283,50 @@ public:
     // Physics step API
     // ------------------------------------------------------------------
 
+    // ------------------------------------------------------------------
+    // GPU runtime toggle
+    // ------------------------------------------------------------------
+
+    /**
+     * @brief Enable or disable GPU propagation at runtime.
+     *
+     * When compiled with NIKOLA_HAS_CUDA_KERNELS and a GPU is present,
+     * set_gpu(true) routes step()/run() through CudaPropagator.
+     * set_gpu(false) forces the CPU propagator regardless of compilation.
+     * Has no effect on builds without CUDA support.
+     *
+     * @param enable  true = GPU (default), false = CPU fallback.
+     */
+    void set_gpu(bool enable) noexcept { use_gpu_ = enable; }
+
+    /// Whether GPU propagation is currently enabled.
+    [[nodiscard]] bool gpu_enabled() const noexcept {
+#ifdef NIKOLA_HAS_CUDA_KERNELS
+        return use_gpu_;
+#else
+        return false;
+#endif
+    }
+
+    // ------------------------------------------------------------------
+    // Physics step API
+    // ------------------------------------------------------------------
+
     /**
      * @brief Advance the wavefunction by one Strang-split step.
      *
      * @param dt  Timestep.  Should satisfy CFL: dt ≤ max_dt().
      */
     void step(float dt) {
+        NIKOLA_PROFILE("torus::step");
 #ifdef NIKOLA_HAS_CUDA_KERNELS
-        gpu_prop_.step_synced(wf_, dt);
-        wf_.advance_time(dt);            // CUDA path doesn't call advance_time internally
-#else
-        propagator_.step(wf_, dt);
+        if (use_gpu_) {
+            gpu_prop_.step_synced(wf_, dt);
+            wf_.advance_time(dt);
+            return;
+        }
 #endif
+        propagator_.step(wf_, dt);
     }
 
     /**
@@ -309,13 +342,15 @@ public:
      */
     void run(int steps, float dt) {
 #ifdef NIKOLA_HAS_CUDA_KERNELS
-        gpu_prop_.upload(wf_);                  // H→D  (~0.47 MB, ~15 µs)
-        gpu_prop_.run(steps, dt);               // pure-GPU Strang-Verlet
-        gpu_prop_.download(wf_);                // D→H  (~15 µs)
-        wf_.advance_time(static_cast<float>(steps) * dt);  // CUDA path doesn't call advance_time internally
-#else
-        for (int i = 0; i < steps; ++i) step(dt);
+        if (use_gpu_) {
+            gpu_prop_.upload(wf_);                  // H→D  (~0.47 MB, ~15 µs)
+            gpu_prop_.run(steps, dt);               // pure-GPU Strang-Verlet
+            gpu_prop_.download(wf_);                // D→H  (~15 µs)
+            wf_.advance_time(static_cast<float>(steps) * dt);
+            return;
+        }
 #endif
+        for (int i = 0; i < steps; ++i) step(dt);
     }
 
     /**
@@ -458,6 +493,7 @@ private:
     physics::WaveFunction wf_;
     physics::Propagator   propagator_;   ///< CPU fallback (always constructed)
     std::unique_ptr<HolographicInjector<foundation::TorusGrid>> injector_;
+    bool use_gpu_ = true;                ///< Runtime GPU toggle (default: on when available)
 
 #ifdef NIKOLA_HAS_CUDA_KERNELS
     physics::CudaPropagator gpu_prop_;   ///< GPU propagator (lazy-inited on first upload)

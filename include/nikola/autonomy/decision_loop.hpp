@@ -60,9 +60,16 @@
 
 #include <chrono>
 #include <functional>
+#include <memory>
 #include <string>
 #include <unordered_map>
+#include <unordered_set>
 #include <vector>
+
+// Forward declarations — avoid circular includes with autobiography.hpp
+namespace nikola::interior { class AutobiographicalMemory; }
+// Forward declaration — avoid pulling lmdb.h into every translation unit
+namespace nikola::persistence { class LmdbStateStore; }
 
 namespace nikola::autonomy {
 
@@ -197,13 +204,22 @@ struct DecisionLoopConfig {
     int   steps_per_tick       = 50;
 
     /// A candidate must score this much above SILENT to be chosen.
-    float action_threshold     = 0.05f;
+    float action_threshold     = 0.02f;
 
     /// Minimum seconds between consecutive EMIT_THOUGHT actions (rate limiting).
     float min_emit_interval_s  = 5.0f;
 
     /// Minimum seconds between STORE_MEMORY consolidations.
     float min_store_interval_s = 30.0f;
+
+    /// Minimum seconds between RECALL_MEMORY actions (v0.0.9 — anti-domination).
+    float min_recall_interval_s = 0.3f;
+
+    /// Max stimulus-biased explores after inject_stimulus() (v0.0.9).
+    int   max_stimulus_explores = 15;
+
+    /// Maximum tokens to accumulate across ticks for multi-word EMIT (v0.0.9).
+    int   max_accumulated_tokens = 8;
 
     /// Number of hot nodes to decode per tick.
     size_t decode_top_k        = 20;
@@ -239,6 +255,19 @@ struct DecisionLoopConfig {
     /// When both memory_path and lmdb_memory_path are set, lmdb_memory_path
     /// takes precedence.
     std::string lmdb_memory_path;
+
+    /// Path to the LMDB state database directory (Phase 137).
+    /// When non-empty, full NikolaState snapshots, Ψ wavefunction checkpoints,
+    /// and autobiographical memory are persisted to LMDB.  Provides complete
+    /// cross-session continuity.
+    ///   - State saved every tick (latest snapshot for restore)
+    ///   - Ψ checkpoint saved every checkpoint_interval ticks
+    ///   - Autobiography events saved as they are recorded
+    std::string state_db_path;
+
+    /// Ticks between Ψ wavefunction checkpoints (default: 100).
+    /// Only used when state_db_path is non-empty.
+    int checkpoint_interval = 100;
 };
 
 // ============================================================================
@@ -287,6 +316,10 @@ public:
                  AutonomyEngine&                    engine,
                  DecisionLoopConfig                 cfg = {});
 
+    /// Destructor — required for unique_ptr<LmdbStateStore> forward declaration.
+    /// Saves final state if state_db_path is configured.
+    ~DecisionLoop();
+
     // ------------------------------------------------------------------ main API
 
     /**
@@ -334,6 +367,10 @@ public:
     uint64_t                                  tick_count()      const noexcept { return tick_count_; }
     /// Most recent NPT forward-pass output (Phase 42).  Zero-initialised until REASON fires.
     const nikola::cognitive::AttentionResult& last_npt_result() const noexcept { return npt_last_result_; }
+
+    /// Phase 137: autobiographical memory (events, skills, values).
+    const interior::AutobiographicalMemory& autobiography() const noexcept;
+    interior::AutobiographicalMemory&       autobiography()       noexcept;
 
     // ------------------------------------------------------------------ state injection
 
@@ -503,7 +540,14 @@ private:
     std::chrono::steady_clock::time_point last_emit_time_;
     std::chrono::steady_clock::time_point last_store_time_;
     std::chrono::steady_clock::time_point last_reason_time_;
+    std::chrono::steady_clock::time_point last_recall_time_;  ///< v0.0.9
     std::chrono::steady_clock::time_point start_time_;
+
+    /// v0.0.9 — token accumulation buffer across ticks for multi-word thoughts.
+    /// Tokens are collected from cold decode + warm decode + seed tokens.
+    /// Cleared when EMIT_THOUGHT fires (consumed into the thought payload).
+    std::vector<std::string> accumulated_tokens_;
+    std::unordered_set<std::string> accumulated_unique_;  ///< dedup guard
 
     /// Last stimulus text received via inject_stimulus().
     /// Included in ESCALATE payload so the evidence record captures what
@@ -516,13 +560,34 @@ private:
     /// first few explores toward the semantic neighbourhood of the prompt.
     std::string last_stimulus_seed_;
 
+    /// v0.0.9 — Multiple stimulus seeds extracted from prompt text.
+    /// Contains vocabulary words that literally appear in the prompt (case-
+    /// insensitive match), plus the BERT closest-word seed.  execute_explore()
+    /// rotates through these for diverse prompt-grounded exploration.
+    std::vector<std::string> stimulus_seeds_;
+
     /// Number of EXPLORE ticks fired since the most recent inject_stimulus().
     /// Resets on each inject_stimulus() call.  Used so the stimulus seed is
-    /// consumed for the first 2 explores, then cycling resumes for variety.
+    /// consumed for the first max_stimulus_explores explores (v0.0.9: 15),
+    /// then cycling resumes for variety.
     uint64_t stimulus_explore_count_ = 0;
 
     /// Persist in-RAM SemanticMemory to cfg_.memory_path (no-op if path empty).
     void save_memory() const;
+
+    // -- Phase 137: full state persistence --
+
+    /// Autobiographical memory — identity, events, skills, values.
+    std::unique_ptr<interior::AutobiographicalMemory> autobiography_;
+
+    /// LMDB state store for cross-session persistence (nullptr if no state_db_path).
+    std::unique_ptr<nikola::persistence::LmdbStateStore> state_store_;
+
+    /// Save full state (NikolaState + optional Ψ checkpoint + autobiography).
+    void save_full_state(bool force_checkpoint = false);
+
+    /// Load full state from LMDB on startup.
+    void load_full_state();
 };
 
 } // namespace nikola::autonomy

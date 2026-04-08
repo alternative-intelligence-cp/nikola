@@ -943,7 +943,24 @@ if(NIKOLA_BUILD_TESTS)
             INSTALL_RPATH "/usr/local/cuda/lib64")
         add_test(NAME Phase135CognitiveToruscuda COMMAND test_phase135_cognitive_torus_cuda)
 
-        message(STATUS "CUDA ${CUDAToolkit_VERSION} found — nikola_cuda (torus_cuda.cu + propagator.cu), Phase 105, 110, 111, 135 targets enabled")
+        # Phase 138 — GPU Propagator Validation Suite (v0.0.7).
+        #   Standard Candle energy conservation (α=0), undamped reversibility,
+        #   CPU vs GPU Hamiltonian parity, drift monitoring, energy decomposition.
+        add_executable(test_phase138_gpu_propagator_validation
+            tests/unit/phase138_gpu_propagator_validation_test.cpp)
+        target_include_directories(test_phase138_gpu_propagator_validation PRIVATE
+            ${CMAKE_SOURCE_DIR}/include
+            /usr/local/cuda/include)
+        target_link_directories(test_phase138_gpu_propagator_validation PRIVATE
+            /usr/local/cuda/lib64)
+        target_link_libraries(test_phase138_gpu_propagator_validation PRIVATE
+            nikola_core nikola_cuda Catch2::Catch2WithMain)
+        set_target_properties(test_phase138_gpu_propagator_validation PROPERTIES
+            BUILD_RPATH  "/usr/local/cuda/lib64"
+            INSTALL_RPATH "/usr/local/cuda/lib64")
+        add_test(NAME Phase138GpuPropagatorValidation COMMAND test_phase138_gpu_propagator_validation)
+
+        message(STATUS "CUDA ${CUDAToolkit_VERSION} found — nikola_cuda (torus_cuda.cu + propagator.cu), Phase 105, 110, 111, 135, 138 targets enabled")
     else()
         message(STATUS "CUDAToolkit not found — nikola_cuda and CUDA tests skipped")
     endif()
@@ -1075,6 +1092,17 @@ if(NIKOLA_BUILD_TESTS)
     target_link_libraries(test_phase136_lmdb_memory_store PRIVATE
         nikola_core Catch2::Catch2WithMain lmdb)
     add_test(NAME Phase136LmdbMemoryStore COMMAND test_phase136_lmdb_memory_store)
+
+    # ── Phase 137: LMDB state persistence (NikolaState, Ψ checkpoints, autobiography)
+    #   Header: include/nikola/persistence/lmdb_state_store.hpp
+    #   Requires liblmdb (linked explicitly).
+    add_executable(test_phase137_state_persistence
+        tests/unit/phase137_state_persistence_test.cpp)
+    target_include_directories(test_phase137_state_persistence PRIVATE
+        ${CMAKE_SOURCE_DIR}/include)
+    target_link_libraries(test_phase137_state_persistence PRIVATE
+        nikola_core Catch2::Catch2WithMain lmdb)
+    add_test(NAME Phase137StatePersistence COMMAND test_phase137_state_persistence)
 
     # ── Phase 112: ModuleSwapper hot-swap engine ────────────────────────────
     # Shared library plugin used as a dlopen target by the test suite.
@@ -1322,6 +1350,15 @@ if(NIKOLA_BUILD_TESTS)
     target_link_libraries(test_phase133_peer_registry PRIVATE
         nikola_core Catch2::Catch2WithMain)
     add_test(NAME Phase133PeerRegistry COMMAND test_phase133_peer_registry)
+
+    # -------------------------------------------------------------------------
+    # Phase 139 — v0.0.8 Observability Wiring
+    # -------------------------------------------------------------------------
+    add_executable(test_phase139_observability_wiring
+        tests/unit/phase139_observability_wiring_test.cpp)
+    target_link_libraries(test_phase139_observability_wiring PRIVATE
+        nikola_core Catch2::Catch2WithMain)
+    add_test(NAME Phase139ObservabilityWiring COMMAND test_phase139_observability_wiring)
 
     message(STATUS "Tests configured - run with: make test")
 endif()

@@ -224,6 +224,9 @@ private:
 
     // Capitalise first character of a string (in-place helper)
     static void capitalise(std::string& s) noexcept;
+
+    // v0.0.9 — template diversity: penalise repeating the same template
+    mutable Template last_template_ = Template::SOMETHING;
 };
 
 } // namespace nikola::cognitive
