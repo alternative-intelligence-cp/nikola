@@ -24,3 +24,7 @@ __pycache__/
 
 # Test artifacts
 baseline_results.txt
+
+# Training artifacts
+*.bin
+*.lmdb/

@@ -1,10 +1,19 @@
-# chemistry corpus — 86 items
+# chemistry corpus — 162 items
 hydrogen has atomic number 1
 the symbol for hydrogen is H
 hydrogen is the lightest element and most abundant in the universe
 helium has atomic number 2
 the symbol for helium is He
 helium is a noble gas that does not react chemically
+lithium has atomic number 3
+the symbol for lithium is Li
+lithium is the lightest metal used in batteries
+beryllium has atomic number 4
+the symbol for beryllium is Be
+beryllium is a lightweight metal used in aerospace
+boron has atomic number 5
+the symbol for boron is B
+boron is a metalloid used in glass and ceramics
 carbon has atomic number 6
 the symbol for carbon is C
 carbon is the basis of organic chemistry and life
@@ -14,30 +23,63 @@ nitrogen is makes up about seventy eight percent of air
 oxygen has atomic number 8
 the symbol for oxygen is O
 oxygen is essential for respiration and combustion
+fluorine has atomic number 9
+the symbol for fluorine is F
+fluorine is the most reactive element
+neon has atomic number 10
+the symbol for neon is Ne
+neon is a noble gas used in illuminated signs
 sodium has atomic number 11
 the symbol for sodium is Na
 sodium is a reactive metal that forms table salt with chlorine
 magnesium has atomic number 12
 the symbol for magnesium is Mg
 magnesium is a light metal used in alloys
+aluminum has atomic number 13
+the symbol for aluminum is Al
+aluminum is the most abundant metal in earth's crust
 silicon has atomic number 14
 the symbol for silicon is Si
 silicon is the basis of most computer chips
+phosphorus has atomic number 15
+the symbol for phosphorus is P
+phosphorus is essential for DNA and energy metabolism
 sulfur has atomic number 16
 the symbol for sulfur is S
 sulfur is a yellow solid involved in many chemical reactions
 chlorine has atomic number 17
 the symbol for chlorine is Cl
 chlorine is a reactive gas used in disinfection
+argon has atomic number 18
+the symbol for argon is Ar
+argon is a noble gas used in welding and lighting
+potassium has atomic number 19
+the symbol for potassium is K
+potassium is a reactive metal essential for nerve function
+calcium has atomic number 20
+the symbol for calcium is Ca
+calcium is a metal essential for bones and teeth
 iron has atomic number 26
 the symbol for iron is Fe
 iron is a common metal and major component of steel
 copper has atomic number 29
 the symbol for copper is Cu
 copper is a good conductor of electricity
+zinc has atomic number 30
+the symbol for zinc is Zn
+zinc is a metal used in galvanization
+silver has atomic number 47
+the symbol for silver is Ag
+silver is a precious metal and the best conductor of electricity
+tin has atomic number 50
+the symbol for tin is Sn
+tin is a metal used in food can coatings
 gold has atomic number 79
 the symbol for gold is Au
 gold is a noble metal that resists corrosion
+mercury has atomic number 80
+the symbol for mercury is Hg
+mercury is the only metal that is liquid at room temperature
 lead has atomic number 82
 the symbol for lead is Pb
 lead is a dense soft metal
@@ -85,3 +127,37 @@ nuclear fission splits heavy nuclei releasing energy
 nuclear fusion combines light nuclei releasing energy
 matter is conserved in chemical reactions
 energy is conserved in chemical reactions
+an alloy is a mixture of metals
+steel is an alloy of iron and carbon
+bronze is an alloy of copper and tin
+brass is an alloy of copper and zinc
+a solution is a homogeneous mixture of two or more substances
+the solvent dissolves the solute
+solubility measures how much solute dissolves in a given solvent
+saturated solutions contain the maximum dissolved solute
+distillation separates mixtures by boiling point differences
+chromatography separates substances by their affinity for a medium
+electrolysis splits compounds using electric current
+avogadro number is approximately six point zero two times ten to the twenty three
+one mole of any substance contains avogadro number of particles
+the ideal gas law relates pressure volume temperature and amount of gas
+daltons law states total pressure equals the sum of partial pressures
+an exothermic reaction releases heat to surroundings
+an endothermic reaction absorbs heat from surroundings
+chemical equilibrium occurs when forward and reverse reaction rates are equal
+le chatelier principle says a system at equilibrium resists change
+rate of reaction depends on concentration temperature and catalysts
+activation energy is the minimum energy required to start a reaction
+entropy favors disorder and drives many spontaneous reactions
+gibbs free energy determines whether a reaction is spontaneous
+a negative gibbs free energy means the reaction is spontaneous
+electrochemistry studies the relationship between electricity and chemical reactions
+a battery converts chemical energy to electrical energy
+corrosion is the gradual degradation of a metal by chemical reaction
+polymers are large molecules made of repeating subunits
+plastics are synthetic polymers
+proteins are biological polymers made of amino acids
+carbon forms four covalent bonds enabling complex molecules
+organic chemistry focuses on carbon containing compounds
+inorganic chemistry studies compounds not primarily based on carbon
+isomers have the same formula but different structural arrangements

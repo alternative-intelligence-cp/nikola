@@ -1,0 +1,109 @@
+# aria corpus — 108 items
+aria is a compiled programming language
+aria compiles to native machine code through LLVM
+aria uses fixed for immutable bindings
+aria uses let for mutable bindings
+aria supports integer types int8 int16 int32 int64
+aria supports unsigned integer types uint8 uint16 uint32 uint64
+aria supports floating point types flt32 and flt64
+aria uses string as the text type
+aria uses bool for boolean values true and false
+aria uses fn to declare functions
+functions in aria use pass to return values
+the main function is the entry point to an aria program
+failsafe runs when the main function fails
+main and failsafe use exit instead of pass
+aria uses loop for iteration with start end and step
+loop takes three parameters start value end value and step size
+aria does not have while loops or for loops
+aria uses if else for conditional branching
+aria uses match for pattern matching
+aria has traits which define shared behavior
+traits use dollar i and dollar m for borrows
+aria modules use dot notation for access
+the use keyword imports modules in aria
+dot star imports all public symbols from a module
+aria strings pass as const char pointer in the ABI
+aria string return type is an AriaString struct with pointer and length
+flt32 and flt64 both pass as double in the calling convention
+the free keyword is reserved in aria use release or destroy instead
+aria has no garbage collector memory is manually managed
+arena allocators provide fast bump allocation in aria
+pool allocators manage fixed size blocks efficiently
+aria packages are modules that extend the standard library
+the aria standard library includes arena pool hashmap and signal modules
+aria supports foreign function interface for calling C code
+extern blocks declare C functions available to aria
+aria compiles with ariac the aria compiler
+ariac generates LLVM IR then compiles to native code
+aria package imports use the use keyword with a file path
+a hello world program prints hello world to standard output
+error handling in aria uses failsafe blocks
+fixed bindings cannot be reassigned after initialization
+functions return their result with the pass keyword
+string concatenation in aria uses the plus operator
+integer arithmetic uses plus minus times and divide operators
+comparison operators return bool values
+logical operators and or not combine boolean expressions
+arrays store sequences of values of the same type
+structs group related data into a single type
+enums define a type with a fixed set of possible values
+type casting converts between compatible types
+pointer arithmetic accesses memory at computed offsets
+null represents the absence of a valid pointer
+buffer overflow occurs when writing beyond allocated memory
+stack allocation is faster than heap allocation
+heap allocation allows dynamic memory sizes
+aria build uses cmake for project configuration
+make compiles aria projects after cmake configuration
+linker errors occur when symbols are not found
+header files declare interfaces without implementation
+source files contain implementation code
+static libraries are linked at compile time
+shared libraries are loaded at runtime
+compilation turns source code into object files
+linking combines object files into an executable
+in aria the loop construct replaces while and for loops
+aria loop syntax is loop start end step followed by a block
+aria uses semicolons to terminate statements
+aria function return types are declared after the parameter list
+aria supports operator overloading for custom types
+the aria standard library includes hashmap for key value storage
+the arena module provides region based memory allocation
+the pool module provides fixed size block allocation
+the signal module provides unix signal handling
+aria packages are imported using use with a file path and dot star
+aria supports inline assembly for low level operations
+aria extern C blocks declare foreign function interfaces
+the aria compiler generates LLVM intermediate representation
+LLVM optimizes the intermediate representation before native code generation
+aria supports constant folding at compile time
+aria supports dead code elimination during optimization
+aria supports whole program optimization through link time optimization
+the aria type system prevents common memory safety errors
+aria traits define interfaces that types can implement
+generic programming in aria uses trait bounds to constrain types
+aria enums can carry associated data in each variant
+aria match expressions must be exhaustive covering all possible cases
+aria sizeof returns the size of a type in bytes
+aria alignof returns the alignment requirement of a type
+the aria compiler reports errors with file name and line number
+aria supports conditional compilation with feature flags
+aria modules can be organized into nested namespaces
+the dot notation in aria accesses module members
+aria supports both stack and heap allocated arrays
+aria closures capture variables from their enclosing scope
+aria supports function pointers for callback patterns
+aria binary operations include bitwise and shift operators
+aria supports hexadecimal and binary integer literals
+aria string literals are null terminated for C compatibility
+aria supports multiline string literals
+aria comments use double slash for single line
+aria block comments use slash star and star slash
+the aria runtime provides a minimal startup stub
+aria programs link against libc for system calls
+aria supports cross compilation to different target architectures
+the aria package manager resolves dependencies automatically
+aria test files verify correct behavior of modules
+the aria compiler supports debug information for gdb
+aria supports profile guided optimization

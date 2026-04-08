@@ -22,12 +22,14 @@
  *   --json-out          Structured JSON per item
  *   --dry-run           Parse corpus, skip injection (count items)
  *
- * Phase: NIK-TR-01 (Training Pipeline, Phase 138)
+ * Phase: NIK-TR-02 (Training Pipeline v2 — EqProp + Metrics)
  */
 
 #include <nikola/cognitive/cognitive_torus.hpp>
 #include <nikola/autonomy/autonomy_engine.hpp>
 #include <nikola/autonomy/decision_loop.hpp>
+#include <nikola/cognitive/plasticity.hpp>
+#include <nikola/spatial/topology_manager.hpp>
 
 #include <chrono>
 #include <cstring>
@@ -60,11 +62,15 @@ namespace ansi {
 struct TrainConfig {
     std::string corpus_path;
     std::string memory_lmdb  = "nikola_train.lmdb";
+    std::string metric_out   = "nikola_metric.bin";
+    std::string metric_in;
     std::string vocab_path;
     std::string model_path;
     std::string tokenizer_path;
     int max_ticks            = 200;
     int steps_per_tick       = 50;
+    int epochs               = 1;
+    int limit                = 0;      // 0 = no limit
     bool no_emit             = false;
     bool quiet               = false;
     bool json_out            = false;
@@ -79,7 +85,10 @@ static void print_help(const char* argv0)
         << "  --corpus  <file>    Training corpus (plain text or JSONL)  [required]\n"
         << "  --ticks   <N>       Max decision ticks per item            [200]\n"
         << "  --steps   <N>       Physics steps per tick                 [50]\n"
+        << "  --epochs  <N>       Training epochs over full corpus       [1]\n"
         << "  --memory-lmdb <p>   LMDB memory output path               [nikola_train.lmdb]\n"
+        << "  --metric-out <p>    Save trained metric to file            [nikola_metric.bin]\n"
+        << "  --metric-in  <p>    Load initial metric from file          []\n"
         << "  --vocab   <file>    Extra vocabulary words (one per line)  []\n"
         << "  --no-emit           Suppress thought output during training\n"
         << "  --dry-run           Count corpus items without running\n"
@@ -92,7 +101,7 @@ static void print_help(const char* argv0)
         << "  JSONL:       one JSON object per line, field \"text\" is used\n\n"
         << "Example:\n"
         << "  " << argv0 << " --corpus corpus/basic_math.txt"
-               " --memory-lmdb ~/.nikola/math.lmdb --ticks 300\n\n";
+               " --memory-lmdb ~/.nikola/math.lmdb --ticks 300 --epochs 3\n\n";
 }
 
 static std::optional<TrainConfig> parse_args(int argc, char** argv)
@@ -124,7 +133,11 @@ static std::optional<TrainConfig> parse_args(int argc, char** argv)
         else if (a == "--ticks")        cfg.max_ticks      = std::stoi(next());
         else if (a == "--steps")        cfg.steps_per_tick = std::stoi(next());
         else if (a == "--memory-lmdb")  cfg.memory_lmdb    = next();
+        else if (a == "--metric-out")   cfg.metric_out     = next();
+        else if (a == "--metric-in")    cfg.metric_in      = next();
         else if (a == "--vocab")        cfg.vocab_path     = next();
+        else if (a == "--epochs")       cfg.epochs         = std::stoi(next());
+        else if (a == "--limit")        cfg.limit          = std::stoi(next());
         else if (a == "--no-emit")      cfg.no_emit        = true;
         else if (a == "--quiet")        cfg.quiet          = true;
         else if (a == "--json-out")     cfg.json_out       = true;
@@ -315,6 +328,46 @@ static std::string json_escape(const std::string& s)
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
+// Training metrics
+// ─────────────────────────────────────────────────────────────────────────────
+struct TrainingMetrics {
+    double loss       = 0.0;  ///< EqProp energy diff E⁺ − E⁻
+    double energy_pos = 0.0;  ///< Free phase energy
+    double energy_neg = 0.0;  ///< Clamped phase energy
+    bool   converged  = false;///< E⁻ < E⁺ (physics prefers clamped state)
+    float  dopamine   = 0.5f; ///< Post-item dopamine level
+    float  atp        = 1.0f; ///< Post-item ATP level
+    float  entropy    = 0.0f; ///< Post-item field entropy
+    int    memories_stored = 0;
+    double elapsed_ms = 0.0;
+};
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Metric persistence (9×9 = 81 floats)
+// ─────────────────────────────────────────────────────────────────────────────
+static bool save_metric(const nikola::spatial::TopologyManager& topo,
+                        const std::string& path)
+{
+    std::ofstream f(path, std::ios::binary);
+    if (!f.is_open()) return false;
+    f.write(reinterpret_cast<const char*>(topo.metric()), 81 * sizeof(float));
+    return f.good();
+}
+
+static bool load_metric(nikola::spatial::TopologyManager& topo,
+                        const std::string& path)
+{
+    std::ifstream f(path, std::ios::binary);
+    if (!f.is_open()) return false;
+    float g[81];
+    f.read(reinterpret_cast<char*>(g), 81 * sizeof(float));
+    if (!f.good()) return false;
+    topo.set_metric(g);
+    topo.validate_metric();
+    return true;
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
 // Training loop for one corpus item
 // ─────────────────────────────────────────────────────────────────────────────
 struct ItemResult {
@@ -326,8 +379,13 @@ struct ItemResult {
 };
 
 static ItemResult train_item(nikola::autonomy::DecisionLoop& loop,
+                              nikola::cognitive::CognitiveTorus& torus,
+                              nikola::autonomy::AutonomyEngine& engine,
+                              nikola::cognitive::PlasticityEngine& plasticity,
                               const std::string& text,
-                              const TrainConfig& cfg)
+                              const std::string& contrastive_text,
+                              const TrainConfig& cfg,
+                              TrainingMetrics& metrics)
 {
     using namespace nikola::autonomy;
 
@@ -338,9 +396,16 @@ static ItemResult train_item(nikola::autonomy::DecisionLoop& loop,
 
     auto t0 = std::chrono::steady_clock::now();
 
+    // ── Inject corpus text + spike dopamine for STORE_MEMORY ─────────────
     loop.inject_stimulus(text);
 
     for (int t = 0; t < cfg.max_ticks; ++t) {
+        // Spike dopamine each tick until a memory is stored.
+        // The POSITIVE reward is consumed by engine_.tick() inside loop.tick()
+        // and resets to NEUTRAL, so we re-arm it every iteration.
+        if (res.memories_stored == 0)
+            loop.set_pending_reward(Reward::POSITIVE);
+
         auto r = loop.tick();
         ++res.ticks_used;
 
@@ -352,15 +417,47 @@ static ItemResult train_item(nikola::autonomy::DecisionLoop& loop,
         }
 
         // Once we've stored at least one memory AND emitted at least one
-        // thought (or no_emit is set), training for this item is done.
+        // thought (or no_emit is set), cognitive pass for this item is done.
         if (res.memories_stored >= 1 &&
             (cfg.no_emit || !res.thought.empty())) {
             break;
         }
     }
 
+    // ── Force-store memory if the scoring loop didn't get to it ──────────
+    // EMIT_THOUGHT frequently outcompetes STORE_MEMORY because its score
+    // scales with boredom × dopamine × atp.  For training we guarantee
+    // every corpus item produces a durable memory record.
+    if (res.memories_stored == 0) {
+        loop.force_store_wavefield();
+        ++res.memories_stored;
+    }
+
+    // ── EqProp training step — update the 9×9 Riemannian metric ──────────
+    auto inject_input = [&](nikola::physics::WaveFunction& /*w*/) {
+        torus.inject_text(text);
+    };
+    auto inject_target = [&](nikola::physics::WaveFunction& /*w*/) {
+        torus.inject_text(contrastive_text);  // Different text → different spatial pattern
+    };
+
+    bool conv = plasticity.eqprop().train_step(
+        torus.wave_function(), inject_input, inject_target);
+
+    // ── Record metrics ───────────────────────────────────────────────────
+    metrics.loss       = plasticity.eqprop().last_energy_diff();
+    metrics.energy_pos = plasticity.eqprop().last_energy_positive();
+    metrics.energy_neg = plasticity.eqprop().last_energy_negative();
+    metrics.converged  = conv;
+    metrics.dopamine   = engine.dopamine();
+    metrics.atp        = engine.atp();
+    metrics.entropy    = engine.entropy();
+    metrics.memories_stored = res.memories_stored;
+
     auto t1 = std::chrono::steady_clock::now();
     res.elapsed_ms = std::chrono::duration<double, std::milli>(t1 - t0).count();
+    metrics.elapsed_ms = res.elapsed_ms;
+
     return res;
 }
 
@@ -385,13 +482,15 @@ int main(int argc, char** argv)
     if (!cfg.quiet) {
         std::cerr << ansi::c(ansi::bold) << ansi::c(ansi::cyan)
                   << "nikola-train" << ansi::c(ansi::rst)
-                  << ansi::c(ansi::dim) << "  v0.0.1  |  Corpus → Holographic Memory\n"
+                  << ansi::c(ansi::dim) << "  v0.2.0  |  Corpus → EqProp + Holographic Memory\n"
                   << ansi::c(ansi::rst);
         std::cerr << ansi::c(ansi::gray)
                   << "  corpus:  " << cfg.corpus_path
                   << " (" << corpus.size() << " items)\n"
                   << "  memory:  " << cfg.memory_lmdb << "\n"
+                  << "  metric:  " << cfg.metric_out << "\n"
                   << "  ticks:   " << cfg.max_ticks << " per item\n"
+                  << "  epochs:  " << cfg.epochs << "\n"
                   << ansi::c(ansi::rst) << "\n";
     }
 
@@ -405,6 +504,22 @@ int main(int argc, char** argv)
                                              cfg.tokenizer_path,
                                              cfg.model_path);
     nikola::autonomy::AutonomyEngine engine;
+
+    // Topology manager + plasticity engine (EqProp + Hebbian)
+    nikola::spatial::TopologyManager topo;
+    if (!cfg.metric_in.empty()) {
+        if (load_metric(topo, cfg.metric_in)) {
+            if (!cfg.quiet)
+                std::cerr << ansi::c(ansi::gray) << "  metric loaded from: "
+                          << cfg.metric_in << "\n" << ansi::c(ansi::rst);
+        } else {
+            std::cerr << "Warning: could not load metric from "
+                      << cfg.metric_in << ", using identity\n";
+        }
+    }
+    nikola::cognitive::EqPropConfig eq_cfg;
+    eq_cfg.phase_steps = cfg.steps_per_tick;  // Match physics steps
+    nikola::cognitive::PlasticityEngine plasticity(topo, eq_cfg);
 
     nikola::autonomy::DecisionLoopConfig loop_cfg;
     loop_cfg.steps_per_tick          = cfg.steps_per_tick;
@@ -435,68 +550,162 @@ int main(int argc, char** argv)
 
     nikola::autonomy::DecisionLoop loop(torus, engine, loop_cfg);
 
-    // ── Training loop ────────────────────────────────────────────────────────
-    int total_memories = 0;
-    int items_with_memory = 0;
-    int items_with_thought = 0;
-    double total_ms = 0.0;
+    // ── Training loop (with epochs) ──────────────────────────────────────────
+    int    grand_total_memories   = 0;
+    int    grand_items_with_mem   = 0;
+    int    grand_items_with_tht   = 0;
+    int    grand_converged_items  = 0;
+    double grand_total_ms         = 0.0;
+    double grand_total_loss       = 0.0;
 
-    for (size_t i = 0; i < corpus.size(); ++i) {
-        const auto res = train_item(loop, corpus[i], cfg);
+    const size_t n_items = (cfg.limit > 0)
+        ? std::min(static_cast<size_t>(cfg.limit), corpus.size())
+        : corpus.size();
 
-        total_memories      += res.memories_stored;
-        total_ms            += res.elapsed_ms;
-        if (res.memories_stored > 0) ++items_with_memory;
-        if (!res.thought.empty())    ++items_with_thought;
+    for (int epoch = 0; epoch < cfg.epochs; ++epoch) {
+        int    epoch_memories     = 0;
+        int    epoch_with_mem     = 0;
+        int    epoch_with_tht     = 0;
+        int    epoch_converged    = 0;
+        double epoch_total_ms     = 0.0;
+        double epoch_total_loss   = 0.0;
 
-        if (cfg.json_out) {
-            std::cout << "{"
-                      << "\"i\":" << i
-                      << ",\"text\":\"" << json_escape(res.text) << "\""
-                      << ",\"thought\":\"" << json_escape(res.thought) << "\""
-                      << ",\"memories\":" << res.memories_stored
-                      << ",\"ticks\":" << res.ticks_used
-                      << ",\"ms\":" << std::fixed << std::setprecision(1)
-                                    << res.elapsed_ms
-                      << "}\n";
-        } else if (!cfg.quiet) {
-            // Progress: [001/050] text... → thought  (Nm, Xt)
-            const std::string trunc_text =
-                res.text.size() > 48 ? res.text.substr(0, 45) + "..." : res.text;
+        if (!cfg.quiet && !cfg.json_out && cfg.epochs > 1) {
+            std::cerr << ansi::c(ansi::bold) << "\n── Epoch "
+                      << (epoch + 1) << "/" << cfg.epochs
+                      << " ──" << ansi::c(ansi::rst) << "\n";
+        }
+
+        for (size_t i = 0; i < n_items; ++i) {
+            TrainingMetrics metrics;
+            // Contrastive: pair each item with the next (wrap-around)
+            const std::string& contrastive =
+                corpus[(i + 1) % n_items];
+            const auto res = train_item(loop, torus, engine, plasticity,
+                                        corpus[i], contrastive, cfg, metrics);
+
+            epoch_memories     += res.memories_stored;
+            epoch_total_ms     += res.elapsed_ms;
+            epoch_total_loss   += metrics.loss;
+            if (res.memories_stored > 0) ++epoch_with_mem;
+            if (!res.thought.empty())    ++epoch_with_tht;
+            if (metrics.converged)       ++epoch_converged;
+
+            if (cfg.json_out) {
+                std::cout << "{"
+                          << "\"epoch\":" << epoch
+                          << ",\"i\":" << i
+                          << ",\"text\":\"" << json_escape(res.text) << "\""
+                          << ",\"thought\":\"" << json_escape(res.thought) << "\""
+                          << ",\"memories\":" << res.memories_stored
+                          << ",\"ticks\":" << res.ticks_used
+                          << ",\"loss\":" << std::scientific << std::setprecision(6)
+                                          << metrics.loss
+                          << ",\"E_pos\":" << metrics.energy_pos
+                          << ",\"E_neg\":" << metrics.energy_neg
+                          << ",\"converged\":" << (metrics.converged ? "true" : "false")
+                          << ",\"dopamine\":" << std::fixed << std::setprecision(4)
+                                              << metrics.dopamine
+                          << ",\"atp\":" << metrics.atp
+                          << ",\"entropy\":" << metrics.entropy
+                          << ",\"ms\":" << std::fixed << std::setprecision(1)
+                                        << res.elapsed_ms
+                          << "}\n";
+            } else if (!cfg.quiet) {
+                // Progress: [001/050] text... → thought  (+1m, L=1.2e-3)
+                const size_t global_idx = static_cast<size_t>(epoch) * n_items + i;
+                const size_t total_items = static_cast<size_t>(cfg.epochs) * n_items;
+                const std::string trunc_text =
+                    res.text.size() > 40 ? res.text.substr(0, 37) + "..." : res.text;
+                std::cerr << ansi::c(ansi::gray)
+                          << "[" << std::setfill('0') << std::setw(4) << (global_idx + 1)
+                          << "/" << std::setw(4) << total_items << "] "
+                          << ansi::c(ansi::rst)
+                          << trunc_text;
+                if (!res.thought.empty()) {
+                    std::cerr << ansi::c(ansi::green)
+                              << " → " << res.thought
+                              << ansi::c(ansi::rst);
+                }
+                if (res.memories_stored > 0) {
+                    std::cerr << ansi::c(ansi::cyan)
+                              << " [+" << res.memories_stored << "m]"
+                              << ansi::c(ansi::rst);
+                }
+                // Compact loss indicator
+                std::cerr << ansi::c(ansi::dim)
+                          << " L=" << std::scientific << std::setprecision(1)
+                          << metrics.loss
+                          << (metrics.converged ? "*" : "")
+                          << ansi::c(ansi::rst)
+                          << "\n";
+            }
+        }
+
+        // ── Per-epoch summary ────────────────────────────────────────────────
+        grand_total_memories  += epoch_memories;
+        grand_items_with_mem  += epoch_with_mem;
+        grand_items_with_tht  += epoch_with_tht;
+        grand_converged_items += epoch_converged;
+        grand_total_ms        += epoch_total_ms;
+        grand_total_loss      += epoch_total_loss;
+
+        if (!cfg.quiet && !cfg.json_out && cfg.epochs > 1) {
+            const double avg_loss = n_items == 0 ? 0.0 : epoch_total_loss / static_cast<double>(n_items);
+            const double avg_ms   = n_items == 0 ? 0.0 : epoch_total_ms / static_cast<double>(n_items);
+            const double conv_pct = n_items == 0 ? 0.0
+                : 100.0 * static_cast<double>(epoch_converged) / static_cast<double>(n_items);
             std::cerr << ansi::c(ansi::gray)
-                      << "[" << std::setfill('0') << std::setw(3) << (i + 1)
-                      << "/" << std::setw(3) << corpus.size() << "] "
-                      << ansi::c(ansi::rst)
-                      << trunc_text;
-            if (!res.thought.empty()) {
-                std::cerr << ansi::c(ansi::green)
-                          << " → " << res.thought
-                          << ansi::c(ansi::rst);
-            }
-            if (res.memories_stored > 0) {
-                std::cerr << ansi::c(ansi::cyan)
-                          << " [+" << res.memories_stored << "m]"
-                          << ansi::c(ansi::rst);
-            }
-            std::cerr << "\n";
+                      << "  epoch " << (epoch + 1) << ": "
+                      << epoch_with_mem << "/" << n_items << " stored, "
+                      << epoch_converged << "/" << n_items << " converged ("
+                      << std::fixed << std::setprecision(1) << conv_pct << "%), "
+                      << "avg loss=" << std::scientific << std::setprecision(2) << avg_loss
+                      << ", avg " << std::fixed << std::setprecision(1) << avg_ms << "ms/item\n"
+                      << ansi::c(ansi::rst);
         }
     }
 
-    // ── Summary ──────────────────────────────────────────────────────────────
+    // ── Save trained metric ──────────────────────────────────────────────────
+    if (!cfg.metric_out.empty()) {
+        if (save_metric(topo, cfg.metric_out)) {
+            if (!cfg.quiet)
+                std::cerr << ansi::c(ansi::gray)
+                          << "\n  metric saved to: " << cfg.metric_out << "\n"
+                          << ansi::c(ansi::rst);
+        } else {
+            std::cerr << "Warning: could not save metric to " << cfg.metric_out << "\n";
+        }
+    }
+
+    // ── Final summary ────────────────────────────────────────────────────────
+    const size_t total_item_passes = static_cast<size_t>(cfg.epochs) * n_items;
     if (!cfg.quiet && !cfg.json_out) {
-        const double avg_ms = corpus.empty() ? 0.0 : total_ms / corpus.size();
+        const double avg_ms   = total_item_passes == 0 ? 0.0
+            : grand_total_ms / static_cast<double>(total_item_passes);
+        const double avg_loss = total_item_passes == 0 ? 0.0
+            : grand_total_loss / static_cast<double>(total_item_passes);
+        const double conv_pct = total_item_passes == 0 ? 0.0
+            : 100.0 * static_cast<double>(grand_converged_items) / static_cast<double>(total_item_passes);
         std::cerr << "\n" << ansi::c(ansi::bold) << "Training complete" << ansi::c(ansi::rst) << "\n"
                   << ansi::c(ansi::gray)
-                  << "  items:    " << corpus.size() << "\n"
-                  << "  memories: " << total_memories
-                  << " (" << items_with_memory << "/" << corpus.size() << " items stored)\n"
-                  << "  thoughts: " << items_with_thought << "/" << corpus.size() << " items emitted\n"
-                  << "  avg time: " << std::fixed << std::setprecision(1) << avg_ms << "ms/item\n"
-                  << "  lmdb:     " << cfg.memory_lmdb << "\n"
+                  << "  corpus:     " << n_items << " items × "
+                  << cfg.epochs << " epoch" << (cfg.epochs > 1 ? "s" : "")
+                  << " = " << total_item_passes << " passes\n"
+                  << "  memories:   " << grand_total_memories
+                  << " (" << grand_items_with_mem << "/" << total_item_passes << " stored)\n"
+                  << "  thoughts:   " << grand_items_with_tht << "/" << total_item_passes << " emitted\n"
+                  << "  converged:  " << grand_converged_items << "/" << total_item_passes
+                  << " (" << std::fixed << std::setprecision(1) << conv_pct << "%)\n"
+                  << "  avg loss:   " << std::scientific << std::setprecision(4) << avg_loss << "\n"
+                  << "  avg time:   " << std::fixed << std::setprecision(1) << avg_ms << "ms/item\n"
+                  << "  metric:     " << cfg.metric_out << "\n"
+                  << "  lmdb:       " << cfg.memory_lmdb << "\n"
                   << ansi::c(ansi::rst);
     } else if (!cfg.json_out) {
-        std::cout << corpus.size() << " items  "
-                  << total_memories << " memories  "
+        std::cout << total_item_passes << " passes  "
+                  << grand_total_memories << " memories  "
+                  << grand_converged_items << " converged  "
                   << cfg.memory_lmdb << "\n";
     }
 

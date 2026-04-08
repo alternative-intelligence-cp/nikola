@@ -1,0 +1,94 @@
+# philosophy corpus — 93 items
+epistemology is the study of knowledge and justified belief
+knowledge requires justification truth and belief
+empiricism holds that knowledge comes from sensory experience
+rationalism holds that knowledge comes from reason
+skepticism questions whether certain knowledge is possible
+the socratic method uses questions to examine assumptions
+an axiom is a statement accepted without proof
+a theorem is proven from axioms and previously proven theorems
+induction generalizes from specific observations to broad principles
+deduction derives specific conclusions from general principles
+abduction infers the most likely explanation for observations
+falsifiability means a claim can be proved wrong by evidence
+a paradigm is a framework of assumptions guiding inquiry
+paradigm shifts occur when evidence overwhelms the current framework
+ethics studies what is right and wrong in human conduct
+consequentialism judges actions by their outcomes
+deontology judges actions by whether they follow moral rules
+virtue ethics focuses on the character of the moral agent
+the golden rule says treat others as you would like to be treated
+autonomy is the right of individuals to make their own decisions
+responsibility means being accountable for one's actions
+fairness means treating similar cases similarly
+transparency means actions and reasons are open to inspection
+the social contract is an implicit agreement to cooperate for mutual benefit
+consciousness is subjective experience
+the hard problem of consciousness asks why physical processes produce experience
+qualia are the subjective qualities of conscious experience
+functionalism defines mind by what it does not what it is made of
+materialism holds that everything including mind is physical
+dualism holds that mind and body are separate substances
+emergence means complex properties arise from simpler components
+reductionism explains complex systems by analyzing their parts
+holism holds that systems have properties their parts do not
+intentionality is the mind's ability to represent or be about things
+free will is the capacity to choose between possible actions
+determinism holds that all events are caused by prior events
+compatibilism holds that free will and determinism are not contradictory
+information reduces uncertainty about the state of a system
+entropy in information theory measures uncertainty
+redundancy protects information against noise and errors
+compression removes redundancy to reduce data size
+a bit is the fundamental unit of information
+the church turing thesis says any computable function can be computed by a turing machine
+the halting problem is undecidable no algorithm can solve it for all programs
+computational complexity classifies problems by required resources
+NP problems have solutions that can be verified quickly
+P equals NP asks whether quickly verifiable problems are also quickly solvable
+godel incompleteness theorem says consistent formal systems cannot prove all truths
+an oracle provides answers to questions beyond a system's deductive reach
+self reference occurs when a system refers to itself
+strange loops arise from self referential hierarchical systems
+recursion in nature appears in fractals coastlines and branching trees
+ontology studies what exists and the categories of being
+substance is that which persists through change
+properties are characteristics that things have
+relations connect two or more entities
+causation is the relationship between cause and effect
+necessity means something must be the case
+contingency means something could be otherwise
+identity asks what makes something the same over time
+the ship of theseus asks whether an object with all parts replaced is the same object
+time can be understood as a series of moments or as a continuous flow
+space provides the framework within which objects are located
+possible worlds are ways reality might have been
+abstract objects exist outside space and time
+concrete objects exist in space and time
+universals are properties shared by multiple particulars
+nominalism denies the existence of universals
+realism asserts that universals exist independently of particular things
+models simplify reality to make predictions
+idealization removes irrelevant details from a model
+explanation answers why questions about phenomena
+prediction uses theory to anticipate future observations
+theory testing compares predictions with observations
+a hypothesis is provisional until supported by strong evidence
+replicability strengthens confidence in scientific results
+operationalization defines abstract concepts through measurable procedures
+the demarcation problem asks what distinguishes science from non science
+scientific progress accumulates knowledge through observation and revision
+the turing test evaluates whether a machine exhibits intelligent behavior
+the chinese room argument claims syntax alone is insufficient for understanding
+strong AI asserts that a sufficiently complex program has genuine understanding
+weak AI holds that machines simulate but do not genuinely think
+artificial general intelligence aims to match human cognitive flexibility
+alignment asks how to ensure AI systems pursue beneficial goals
+value alignment means an AI system's goals match human values
+instrumental convergence means many goals share certain subgoals
+interpretability enables humans to understand why an AI made a decision
+robustness means an AI system behaves correctly under new conditions
+a reward function specifies what an agent should optimize
+reward hacking occurs when an agent exploits loopholes in the reward function
+corrigibility means an AI system allows itself to be corrected
+an oracle AI answers questions without taking actions in the world

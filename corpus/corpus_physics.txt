@@ -1,4 +1,4 @@
-# physics corpus — 92 items
+# physics corpus — 193 items
 force equals mass times acceleration
 acceleration is the rate of change of velocity
 velocity is the rate of change of position
@@ -18,6 +18,18 @@ pressure equals force divided by area
 buoyancy is the upward force exerted by a fluid
 objects float when their density is less than the fluid
 centripetal force points toward the center of circular motion
+angular momentum is conserved in a closed system
+torque is the rotational equivalent of force
+moment of inertia depends on mass distribution about the axis
+elastic collisions conserve both momentum and kinetic energy
+inelastic collisions conserve momentum but not kinetic energy
+the center of mass moves as if all forces act on it
+gravitational potential energy depends on height and mass
+spring force is proportional to displacement from equilibrium
+hookes law states force equals negative spring constant times displacement
+simple harmonic motion has constant frequency and amplitude
+pendulum period depends on length and gravitational acceleration
+terminal velocity is reached when drag equals gravitational force
 a wave carries energy through space or matter
 frequency is the number of oscillations per unit time
 wavelength is the distance between successive wave crests
@@ -36,6 +48,14 @@ destructive interference decreases amplitude
 sound is a longitudinal pressure wave
 sound travels faster in solids than in gases
 the doppler effect changes observed frequency due to relative motion
+a standing wave has fixed nodes and antinodes
+superposition states that overlapping waves combine linearly
+the phase of a wave determines its position in the cycle
+amplitude determines the energy carried by a wave
+wave packets carry localized energy through dispersive media
+group velocity describes how the envelope of a wave packet moves
+phase velocity describes how the crests of a wave move
+polarization describes the direction of oscillation of a transverse wave
 temperature measures average kinetic energy of particles
 heat flows from hot regions to cold regions
 entropy measures the disorder of a system
@@ -51,6 +71,16 @@ evaporation converts liquid to gas
 condensation converts gas to liquid
 melting converts solid to liquid
 freezing converts liquid to solid
+the first law of thermodynamics is conservation of energy
+the second law says entropy of an isolated system never decreases
+the third law says entropy approaches zero as temperature approaches absolute zero
+the zeroth law establishes thermal equilibrium as transitive
+specific heat measures energy needed to raise temperature of a unit mass
+latent heat is energy absorbed during a phase change without temperature change
+an adiabatic process exchanges no heat with surroundings
+an isothermal process occurs at constant temperature
+the carnot cycle defines the maximum efficiency of a heat engine
+boltzmann constant relates temperature to energy at the molecular scale
 electric charge comes in positive and negative varieties
 opposite charges attract and like charges repel
 electric current is the flow of electric charge
@@ -61,6 +91,15 @@ power in a circuit equals voltage times current
 magnetic fields are produced by moving charges
 electric and magnetic fields are aspects of one electromagnetic field
 electromagnetic waves are created by accelerating charges
+capacitance measures the ability to store electric charge
+inductance measures opposition to changes in current
+faraday law says a changing magnetic field induces an electric field
+maxwell equations unify electricity magnetism and light
+coulombs law describes force between two point charges
+electric field lines point from positive to negative charges
+a conductor allows free flow of electric charge
+an insulator resists the flow of electric charge
+superconductors have zero electrical resistance below a critical temperature
 quantum mechanics describes the behavior of very small particles
 an electron has negative charge and quantum spin
 atoms consist of protons neutrons and electrons
@@ -74,6 +113,18 @@ the uncertainty principle states position and momentum cannot both be precisely 
 quantum entanglement links particles across distance
 a photon carries exactly one quantum of electromagnetic energy
 energy is quantized not continuous at small scales
+the wave function describes the probability amplitude of a quantum state
+the schrodinger equation governs quantum state evolution
+quantum tunneling allows particles to pass through energy barriers
+the pauli exclusion principle prevents identical fermions from sharing a state
+bosons can share a quantum state while fermions cannot
+quantum superposition means a system exists in multiple states simultaneously
+measurement collapses the wave function to a definite state
+quantum decoherence explains the transition from quantum to classical behavior
+the planck constant sets the scale of quantum effects
+quantum spin is an intrinsic angular momentum of particles
+the hydrogen atom has the simplest quantum spectrum
+quantum field theory combines quantum mechanics and special relativity
 nothing with mass can reach the speed of light
 mass and energy are equivalent described by e equals mc squared
 gravity curves the geometry of spacetime
@@ -82,6 +133,15 @@ the universe is expanding
 a black hole is a region where gravity is so strong nothing escapes
 stars produce energy through nuclear fusion
 the sun fuses hydrogen into helium
+time dilation means clocks run slower in stronger gravity
+length contraction means objects shorten along the direction of motion
+the twin paradox illustrates time dilation in special relativity
+dark matter interacts gravitationally but does not emit light
+dark energy drives the accelerating expansion of the universe
+cosmic microwave background is radiation from the early universe
+gravitational waves are ripples in spacetime caused by accelerating masses
+neutron stars are extremely dense remnants of massive stars
+the hubble constant measures the rate of cosmic expansion
 a field assigns a value to every point in space
 a scalar field assigns a single number to each point
 a vector field assigns a direction and magnitude to each point
@@ -91,3 +151,44 @@ symmetry means a system is unchanged by a transformation
 resonance occurs when energy is added at the natural frequency
 a harmonic oscillator produces sinusoidal motion
 entropy is related to the number of possible microstates
+a manifold is a space that locally resembles flat space
+curvature measures how a manifold deviates from flatness
+the riemann tensor encodes the full curvature of a manifold
+a metric defines distances and angles on a manifold
+the riemannian metric generalizes the dot product to curved spaces
+geodesics are the shortest paths on a curved surface
+a gauge symmetry describes redundant degrees of freedom in a field
+noether theorem links each continuous symmetry to a conservation law
+hamiltonian mechanics describes dynamics using energy
+the hamiltonian is the total energy of a system
+lagrangian mechanics uses the principle of least action
+phase space describes all possible states of a system
+a symplectic structure preserves volume in phase space
+symplectic integration preserves energy conservation in numerical simulation
+a hilbert space is a complete inner product space used in quantum mechanics
+the fourier transform decomposes signals into frequency components
+convolution combines two functions by sliding one over the other
+a differential equation relates a function to its derivatives
+a partial differential equation involves multiple independent variables
+the wave equation describes propagation of waves
+the diffusion equation describes spreading of a quantity over time
+a nine dimensional torus has three toroidal and six poloidal dimensions
+the cognitive torus maps thought patterns to nine dimensional wave fields
+holographic encoding distributes information across all nodes of the torus
+a split operator integrator alternates between kinetic and potential steps
+symplectic integration conserves the energy of a hamiltonian system
+the psi field represents the probability amplitude on the cognitive grid
+total probability is the integral of the absolute square of psi over the grid
+energy conservation means the total probability is preserved during evolution
+a nit is the smallest unit of information on a nonary grid
+nonary means base nine each dimension has nine discrete levels
+the hilbert curve maps a one dimensional index to a multi dimensional grid
+hilbert curve indexing preserves spatial locality in the torus
+neuroplastic attention correlates wave patterns across frequency bands
+dopamine signals prediction error in a temporal difference framework
+hebbian learning strengthens connections between coactive nodes
+equilibrium propagation updates weights without backpropagation
+free energy minimization drives the system toward stable configurations
+a state space model propagates hidden states through learned dynamics
+selective state space models gate input to control information flow
+the mamba architecture uses selective scan for efficient sequence modeling

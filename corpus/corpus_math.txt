@@ -1,4 +1,4 @@
-# math corpus — 689 items
+# math corpus — 3859 items
 zero plus zero equals zero
 zero plus one equals one
 zero plus two equals two
@@ -12,6 +12,24 @@ zero plus nine equals nine
 zero plus ten equals ten
 zero plus eleven equals eleven
 zero plus twelve equals twelve
+zero plus thirteen equals thirteen
+zero plus fourteen equals fourteen
+zero plus fifteen equals fifteen
+zero plus sixteen equals sixteen
+zero plus seventeen equals seventeen
+zero plus eighteen equals eighteen
+zero plus nineteen equals nineteen
+zero plus twenty equals twenty
+zero plus twenty one equals twenty one
+zero plus twenty two equals twenty two
+zero plus twenty three equals twenty three
+zero plus twenty four equals twenty four
+zero plus twenty five equals twenty five
+zero plus twenty six equals twenty six
+zero plus twenty seven equals twenty seven
+zero plus twenty eight equals twenty eight
+zero plus twenty nine equals twenty nine
+zero plus thirty equals thirty
 one plus one equals two
 one plus two equals three
 one plus three equals four
@@ -24,6 +42,24 @@ one plus nine equals ten
 one plus ten equals eleven
 one plus eleven equals twelve
 one plus twelve equals thirteen
+one plus thirteen equals fourteen
+one plus fourteen equals fifteen
+one plus fifteen equals sixteen
+one plus sixteen equals seventeen
+one plus seventeen equals eighteen
+one plus eighteen equals nineteen
+one plus nineteen equals twenty
+one plus twenty equals twenty one
+one plus twenty one equals twenty two
+one plus twenty two equals twenty three
+one plus twenty three equals twenty four
+one plus twenty four equals twenty five
+one plus twenty five equals twenty six
+one plus twenty six equals twenty seven
+one plus twenty seven equals twenty eight
+one plus twenty eight equals twenty nine
+one plus twenty nine equals thirty
+one plus thirty equals thirty one
 two plus two equals four
 two plus three equals five
 two plus four equals six
@@ -35,6 +71,24 @@ two plus nine equals eleven
 two plus ten equals twelve
 two plus eleven equals thirteen
 two plus twelve equals fourteen
+two plus thirteen equals fifteen
+two plus fourteen equals sixteen
+two plus fifteen equals seventeen
+two plus sixteen equals eighteen
+two plus seventeen equals nineteen
+two plus eighteen equals twenty
+two plus nineteen equals twenty one
+two plus twenty equals twenty two
+two plus twenty one equals twenty three
+two plus twenty two equals twenty four
+two plus twenty three equals twenty five
+two plus twenty four equals twenty six
+two plus twenty five equals twenty seven
+two plus twenty six equals twenty eight
+two plus twenty seven equals twenty nine
+two plus twenty eight equals thirty
+two plus twenty nine equals thirty one
+two plus thirty equals thirty two
 three plus three equals six
 three plus four equals seven
 three plus five equals eight
@@ -45,6 +99,24 @@ three plus nine equals twelve
 three plus ten equals thirteen
 three plus eleven equals fourteen
 three plus twelve equals fifteen
+three plus thirteen equals sixteen
+three plus fourteen equals seventeen
+three plus fifteen equals eighteen
+three plus sixteen equals nineteen
+three plus seventeen equals twenty
+three plus eighteen equals twenty one
+three plus nineteen equals twenty two
+three plus twenty equals twenty three
+three plus twenty one equals twenty four
+three plus twenty two equals twenty five
+three plus twenty three equals twenty six
+three plus twenty four equals twenty seven
+three plus twenty five equals twenty eight
+three plus twenty six equals twenty nine
+three plus twenty seven equals thirty
+three plus twenty eight equals thirty one
+three plus twenty nine equals thirty two
+three plus thirty equals thirty three
 four plus four equals eight
 four plus five equals nine
 four plus six equals ten
@@ -54,6 +126,24 @@ four plus nine equals thirteen
 four plus ten equals fourteen
 four plus eleven equals fifteen
 four plus twelve equals sixteen
+four plus thirteen equals seventeen
+four plus fourteen equals eighteen
+four plus fifteen equals nineteen
+four plus sixteen equals twenty
+four plus seventeen equals twenty one
+four plus eighteen equals twenty two
+four plus nineteen equals twenty three
+four plus twenty equals twenty four
+four plus twenty one equals twenty five
+four plus twenty two equals twenty six
+four plus twenty three equals twenty seven
+four plus twenty four equals twenty eight
+four plus twenty five equals twenty nine
+four plus twenty six equals thirty
+four plus twenty seven equals thirty one
+four plus twenty eight equals thirty two
+four plus twenty nine equals thirty three
+four plus thirty equals thirty four
 five plus five equals ten
 five plus six equals eleven
 five plus seven equals twelve
@@ -62,6 +152,24 @@ five plus nine equals fourteen
 five plus ten equals fifteen
 five plus eleven equals sixteen
 five plus twelve equals seventeen
+five plus thirteen equals eighteen
+five plus fourteen equals nineteen
+five plus fifteen equals twenty
+five plus sixteen equals twenty one
+five plus seventeen equals twenty two
+five plus eighteen equals twenty three
+five plus nineteen equals twenty four
+five plus twenty equals twenty five
+five plus twenty one equals twenty six
+five plus twenty two equals twenty seven
+five plus twenty three equals twenty eight
+five plus twenty four equals twenty nine
+five plus twenty five equals thirty
+five plus twenty six equals thirty one
+five plus twenty seven equals thirty two
+five plus twenty eight equals thirty three
+five plus twenty nine equals thirty four
+five plus thirty equals thirty five
 six plus six equals twelve
 six plus seven equals thirteen
 six plus eight equals fourteen
@@ -69,27 +177,324 @@ six plus nine equals fifteen
 six plus ten equals sixteen
 six plus eleven equals seventeen
 six plus twelve equals eighteen
+six plus thirteen equals nineteen
+six plus fourteen equals twenty
+six plus fifteen equals twenty one
+six plus sixteen equals twenty two
+six plus seventeen equals twenty three
+six plus eighteen equals twenty four
+six plus nineteen equals twenty five
+six plus twenty equals twenty six
+six plus twenty one equals twenty seven
+six plus twenty two equals twenty eight
+six plus twenty three equals twenty nine
+six plus twenty four equals thirty
+six plus twenty five equals thirty one
+six plus twenty six equals thirty two
+six plus twenty seven equals thirty three
+six plus twenty eight equals thirty four
+six plus twenty nine equals thirty five
+six plus thirty equals thirty six
 seven plus seven equals fourteen
 seven plus eight equals fifteen
 seven plus nine equals sixteen
 seven plus ten equals seventeen
 seven plus eleven equals eighteen
 seven plus twelve equals nineteen
+seven plus thirteen equals twenty
+seven plus fourteen equals twenty one
+seven plus fifteen equals twenty two
+seven plus sixteen equals twenty three
+seven plus seventeen equals twenty four
+seven plus eighteen equals twenty five
+seven plus nineteen equals twenty six
+seven plus twenty equals twenty seven
+seven plus twenty one equals twenty eight
+seven plus twenty two equals twenty nine
+seven plus twenty three equals thirty
+seven plus twenty four equals thirty one
+seven plus twenty five equals thirty two
+seven plus twenty six equals thirty three
+seven plus twenty seven equals thirty four
+seven plus twenty eight equals thirty five
+seven plus twenty nine equals thirty six
+seven plus thirty equals thirty seven
 eight plus eight equals sixteen
 eight plus nine equals seventeen
 eight plus ten equals eighteen
 eight plus eleven equals nineteen
 eight plus twelve equals twenty
+eight plus thirteen equals twenty one
+eight plus fourteen equals twenty two
+eight plus fifteen equals twenty three
+eight plus sixteen equals twenty four
+eight plus seventeen equals twenty five
+eight plus eighteen equals twenty six
+eight plus nineteen equals twenty seven
+eight plus twenty equals twenty eight
+eight plus twenty one equals twenty nine
+eight plus twenty two equals thirty
+eight plus twenty three equals thirty one
+eight plus twenty four equals thirty two
+eight plus twenty five equals thirty three
+eight plus twenty six equals thirty four
+eight plus twenty seven equals thirty five
+eight plus twenty eight equals thirty six
+eight plus twenty nine equals thirty seven
+eight plus thirty equals thirty eight
 nine plus nine equals eighteen
 nine plus ten equals nineteen
 nine plus eleven equals twenty
 nine plus twelve equals twenty one
+nine plus thirteen equals twenty two
+nine plus fourteen equals twenty three
+nine plus fifteen equals twenty four
+nine plus sixteen equals twenty five
+nine plus seventeen equals twenty six
+nine plus eighteen equals twenty seven
+nine plus nineteen equals twenty eight
+nine plus twenty equals twenty nine
+nine plus twenty one equals thirty
+nine plus twenty two equals thirty one
+nine plus twenty three equals thirty two
+nine plus twenty four equals thirty three
+nine plus twenty five equals thirty four
+nine plus twenty six equals thirty five
+nine plus twenty seven equals thirty six
+nine plus twenty eight equals thirty seven
+nine plus twenty nine equals thirty eight
+nine plus thirty equals thirty nine
 ten plus ten equals twenty
 ten plus eleven equals twenty one
 ten plus twelve equals twenty two
+ten plus thirteen equals twenty three
+ten plus fourteen equals twenty four
+ten plus fifteen equals twenty five
+ten plus sixteen equals twenty six
+ten plus seventeen equals twenty seven
+ten plus eighteen equals twenty eight
+ten plus nineteen equals twenty nine
+ten plus twenty equals thirty
+ten plus twenty one equals thirty one
+ten plus twenty two equals thirty two
+ten plus twenty three equals thirty three
+ten plus twenty four equals thirty four
+ten plus twenty five equals thirty five
+ten plus twenty six equals thirty six
+ten plus twenty seven equals thirty seven
+ten plus twenty eight equals thirty eight
+ten plus twenty nine equals thirty nine
+ten plus thirty equals forty
 eleven plus eleven equals twenty two
 eleven plus twelve equals twenty three
+eleven plus thirteen equals twenty four
+eleven plus fourteen equals twenty five
+eleven plus fifteen equals twenty six
+eleven plus sixteen equals twenty seven
+eleven plus seventeen equals twenty eight
+eleven plus eighteen equals twenty nine
+eleven plus nineteen equals thirty
+eleven plus twenty equals thirty one
+eleven plus twenty one equals thirty two
+eleven plus twenty two equals thirty three
+eleven plus twenty three equals thirty four
+eleven plus twenty four equals thirty five
+eleven plus twenty five equals thirty six
+eleven plus twenty six equals thirty seven
+eleven plus twenty seven equals thirty eight
+eleven plus twenty eight equals thirty nine
+eleven plus twenty nine equals forty
+eleven plus thirty equals forty one
 twelve plus twelve equals twenty four
+twelve plus thirteen equals twenty five
+twelve plus fourteen equals twenty six
+twelve plus fifteen equals twenty seven
+twelve plus sixteen equals twenty eight
+twelve plus seventeen equals twenty nine
+twelve plus eighteen equals thirty
+twelve plus nineteen equals thirty one
+twelve plus twenty equals thirty two
+twelve plus twenty one equals thirty three
+twelve plus twenty two equals thirty four
+twelve plus twenty three equals thirty five
+twelve plus twenty four equals thirty six
+twelve plus twenty five equals thirty seven
+twelve plus twenty six equals thirty eight
+twelve plus twenty seven equals thirty nine
+twelve plus twenty eight equals forty
+twelve plus twenty nine equals forty one
+twelve plus thirty equals forty two
+thirteen plus thirteen equals twenty six
+thirteen plus fourteen equals twenty seven
+thirteen plus fifteen equals twenty eight
+thirteen plus sixteen equals twenty nine
+thirteen plus seventeen equals thirty
+thirteen plus eighteen equals thirty one
+thirteen plus nineteen equals thirty two
+thirteen plus twenty equals thirty three
+thirteen plus twenty one equals thirty four
+thirteen plus twenty two equals thirty five
+thirteen plus twenty three equals thirty six
+thirteen plus twenty four equals thirty seven
+thirteen plus twenty five equals thirty eight
+thirteen plus twenty six equals thirty nine
+thirteen plus twenty seven equals forty
+thirteen plus twenty eight equals forty one
+thirteen plus twenty nine equals forty two
+thirteen plus thirty equals forty three
+fourteen plus fourteen equals twenty eight
+fourteen plus fifteen equals twenty nine
+fourteen plus sixteen equals thirty
+fourteen plus seventeen equals thirty one
+fourteen plus eighteen equals thirty two
+fourteen plus nineteen equals thirty three
+fourteen plus twenty equals thirty four
+fourteen plus twenty one equals thirty five
+fourteen plus twenty two equals thirty six
+fourteen plus twenty three equals thirty seven
+fourteen plus twenty four equals thirty eight
+fourteen plus twenty five equals thirty nine
+fourteen plus twenty six equals forty
+fourteen plus twenty seven equals forty one
+fourteen plus twenty eight equals forty two
+fourteen plus twenty nine equals forty three
+fourteen plus thirty equals forty four
+fifteen plus fifteen equals thirty
+fifteen plus sixteen equals thirty one
+fifteen plus seventeen equals thirty two
+fifteen plus eighteen equals thirty three
+fifteen plus nineteen equals thirty four
+fifteen plus twenty equals thirty five
+fifteen plus twenty one equals thirty six
+fifteen plus twenty two equals thirty seven
+fifteen plus twenty three equals thirty eight
+fifteen plus twenty four equals thirty nine
+fifteen plus twenty five equals forty
+fifteen plus twenty six equals forty one
+fifteen plus twenty seven equals forty two
+fifteen plus twenty eight equals forty three
+fifteen plus twenty nine equals forty four
+fifteen plus thirty equals forty five
+sixteen plus sixteen equals thirty two
+sixteen plus seventeen equals thirty three
+sixteen plus eighteen equals thirty four
+sixteen plus nineteen equals thirty five
+sixteen plus twenty equals thirty six
+sixteen plus twenty one equals thirty seven
+sixteen plus twenty two equals thirty eight
+sixteen plus twenty three equals thirty nine
+sixteen plus twenty four equals forty
+sixteen plus twenty five equals forty one
+sixteen plus twenty six equals forty two
+sixteen plus twenty seven equals forty three
+sixteen plus twenty eight equals forty four
+sixteen plus twenty nine equals forty five
+sixteen plus thirty equals forty six
+seventeen plus seventeen equals thirty four
+seventeen plus eighteen equals thirty five
+seventeen plus nineteen equals thirty six
+seventeen plus twenty equals thirty seven
+seventeen plus twenty one equals thirty eight
+seventeen plus twenty two equals thirty nine
+seventeen plus twenty three equals forty
+seventeen plus twenty four equals forty one
+seventeen plus twenty five equals forty two
+seventeen plus twenty six equals forty three
+seventeen plus twenty seven equals forty four
+seventeen plus twenty eight equals forty five
+seventeen plus twenty nine equals forty six
+seventeen plus thirty equals forty seven
+eighteen plus eighteen equals thirty six
+eighteen plus nineteen equals thirty seven
+eighteen plus twenty equals thirty eight
+eighteen plus twenty one equals thirty nine
+eighteen plus twenty two equals forty
+eighteen plus twenty three equals forty one
+eighteen plus twenty four equals forty two
+eighteen plus twenty five equals forty three
+eighteen plus twenty six equals forty four
+eighteen plus twenty seven equals forty five
+eighteen plus twenty eight equals forty six
+eighteen plus twenty nine equals forty seven
+eighteen plus thirty equals forty eight
+nineteen plus nineteen equals thirty eight
+nineteen plus twenty equals thirty nine
+nineteen plus twenty one equals forty
+nineteen plus twenty two equals forty one
+nineteen plus twenty three equals forty two
+nineteen plus twenty four equals forty three
+nineteen plus twenty five equals forty four
+nineteen plus twenty six equals forty five
+nineteen plus twenty seven equals forty six
+nineteen plus twenty eight equals forty seven
+nineteen plus twenty nine equals forty eight
+nineteen plus thirty equals forty nine
+twenty plus twenty equals forty
+twenty plus twenty one equals forty one
+twenty plus twenty two equals forty two
+twenty plus twenty three equals forty three
+twenty plus twenty four equals forty four
+twenty plus twenty five equals forty five
+twenty plus twenty six equals forty six
+twenty plus twenty seven equals forty seven
+twenty plus twenty eight equals forty eight
+twenty plus twenty nine equals forty nine
+twenty plus thirty equals fifty
+twenty one plus twenty one equals forty two
+twenty one plus twenty two equals forty three
+twenty one plus twenty three equals forty four
+twenty one plus twenty four equals forty five
+twenty one plus twenty five equals forty six
+twenty one plus twenty six equals forty seven
+twenty one plus twenty seven equals forty eight
+twenty one plus twenty eight equals forty nine
+twenty one plus twenty nine equals fifty
+twenty one plus thirty equals fifty one
+twenty two plus twenty two equals forty four
+twenty two plus twenty three equals forty five
+twenty two plus twenty four equals forty six
+twenty two plus twenty five equals forty seven
+twenty two plus twenty six equals forty eight
+twenty two plus twenty seven equals forty nine
+twenty two plus twenty eight equals fifty
+twenty two plus twenty nine equals fifty one
+twenty two plus thirty equals fifty two
+twenty three plus twenty three equals forty six
+twenty three plus twenty four equals forty seven
+twenty three plus twenty five equals forty eight
+twenty three plus twenty six equals forty nine
+twenty three plus twenty seven equals fifty
+twenty three plus twenty eight equals fifty one
+twenty three plus twenty nine equals fifty two
+twenty three plus thirty equals fifty three
+twenty four plus twenty four equals forty eight
+twenty four plus twenty five equals forty nine
+twenty four plus twenty six equals fifty
+twenty four plus twenty seven equals fifty one
+twenty four plus twenty eight equals fifty two
+twenty four plus twenty nine equals fifty three
+twenty four plus thirty equals fifty four
+twenty five plus twenty five equals fifty
+twenty five plus twenty six equals fifty one
+twenty five plus twenty seven equals fifty two
+twenty five plus twenty eight equals fifty three
+twenty five plus twenty nine equals fifty four
+twenty five plus thirty equals fifty five
+twenty six plus twenty six equals fifty two
+twenty six plus twenty seven equals fifty three
+twenty six plus twenty eight equals fifty four
+twenty six plus twenty nine equals fifty five
+twenty six plus thirty equals fifty six
+twenty seven plus twenty seven equals fifty four
+twenty seven plus twenty eight equals fifty five
+twenty seven plus twenty nine equals fifty six
+twenty seven plus thirty equals fifty seven
+twenty eight plus twenty eight equals fifty six
+twenty eight plus twenty nine equals fifty seven
+twenty eight plus thirty equals fifty eight
+twenty nine plus twenty nine equals fifty eight
+twenty nine plus thirty equals fifty nine
+thirty plus thirty equals sixty
 one minus zero equals one
 one minus one equals zero
 two minus zero equals two
@@ -320,6 +725,1101 @@ twenty minus seventeen equals three
 twenty minus eighteen equals two
 twenty minus nineteen equals one
 twenty minus twenty equals zero
+twenty one minus zero equals twenty one
+twenty one minus one equals twenty
+twenty one minus two equals nineteen
+twenty one minus three equals eighteen
+twenty one minus four equals seventeen
+twenty one minus five equals sixteen
+twenty one minus six equals fifteen
+twenty one minus seven equals fourteen
+twenty one minus eight equals thirteen
+twenty one minus nine equals twelve
+twenty one minus ten equals eleven
+twenty one minus eleven equals ten
+twenty one minus twelve equals nine
+twenty one minus thirteen equals eight
+twenty one minus fourteen equals seven
+twenty one minus fifteen equals six
+twenty one minus sixteen equals five
+twenty one minus seventeen equals four
+twenty one minus eighteen equals three
+twenty one minus nineteen equals two
+twenty one minus twenty equals one
+twenty one minus twenty one equals zero
+twenty two minus zero equals twenty two
+twenty two minus one equals twenty one
+twenty two minus two equals twenty
+twenty two minus three equals nineteen
+twenty two minus four equals eighteen
+twenty two minus five equals seventeen
+twenty two minus six equals sixteen
+twenty two minus seven equals fifteen
+twenty two minus eight equals fourteen
+twenty two minus nine equals thirteen
+twenty two minus ten equals twelve
+twenty two minus eleven equals eleven
+twenty two minus twelve equals ten
+twenty two minus thirteen equals nine
+twenty two minus fourteen equals eight
+twenty two minus fifteen equals seven
+twenty two minus sixteen equals six
+twenty two minus seventeen equals five
+twenty two minus eighteen equals four
+twenty two minus nineteen equals three
+twenty two minus twenty equals two
+twenty two minus twenty one equals one
+twenty two minus twenty two equals zero
+twenty three minus zero equals twenty three
+twenty three minus one equals twenty two
+twenty three minus two equals twenty one
+twenty three minus three equals twenty
+twenty three minus four equals nineteen
+twenty three minus five equals eighteen
+twenty three minus six equals seventeen
+twenty three minus seven equals sixteen
+twenty three minus eight equals fifteen
+twenty three minus nine equals fourteen
+twenty three minus ten equals thirteen
+twenty three minus eleven equals twelve
+twenty three minus twelve equals eleven
+twenty three minus thirteen equals ten
+twenty three minus fourteen equals nine
+twenty three minus fifteen equals eight
+twenty three minus sixteen equals seven
+twenty three minus seventeen equals six
+twenty three minus eighteen equals five
+twenty three minus nineteen equals four
+twenty three minus twenty equals three
+twenty three minus twenty one equals two
+twenty three minus twenty two equals one
+twenty three minus twenty three equals zero
+twenty four minus zero equals twenty four
+twenty four minus one equals twenty three
+twenty four minus two equals twenty two
+twenty four minus three equals twenty one
+twenty four minus four equals twenty
+twenty four minus five equals nineteen
+twenty four minus six equals eighteen
+twenty four minus seven equals seventeen
+twenty four minus eight equals sixteen
+twenty four minus nine equals fifteen
+twenty four minus ten equals fourteen
+twenty four minus eleven equals thirteen
+twenty four minus twelve equals twelve
+twenty four minus thirteen equals eleven
+twenty four minus fourteen equals ten
+twenty four minus fifteen equals nine
+twenty four minus sixteen equals eight
+twenty four minus seventeen equals seven
+twenty four minus eighteen equals six
+twenty four minus nineteen equals five
+twenty four minus twenty equals four
+twenty four minus twenty one equals three
+twenty four minus twenty two equals two
+twenty four minus twenty three equals one
+twenty four minus twenty four equals zero
+twenty five minus zero equals twenty five
+twenty five minus one equals twenty four
+twenty five minus two equals twenty three
+twenty five minus three equals twenty two
+twenty five minus four equals twenty one
+twenty five minus five equals twenty
+twenty five minus six equals nineteen
+twenty five minus seven equals eighteen
+twenty five minus eight equals seventeen
+twenty five minus nine equals sixteen
+twenty five minus ten equals fifteen
+twenty five minus eleven equals fourteen
+twenty five minus twelve equals thirteen
+twenty five minus thirteen equals twelve
+twenty five minus fourteen equals eleven
+twenty five minus fifteen equals ten
+twenty five minus sixteen equals nine
+twenty five minus seventeen equals eight
+twenty five minus eighteen equals seven
+twenty five minus nineteen equals six
+twenty five minus twenty equals five
+twenty five minus twenty one equals four
+twenty five minus twenty two equals three
+twenty five minus twenty three equals two
+twenty five minus twenty four equals one
+twenty five minus twenty five equals zero
+twenty six minus zero equals twenty six
+twenty six minus one equals twenty five
+twenty six minus two equals twenty four
+twenty six minus three equals twenty three
+twenty six minus four equals twenty two
+twenty six minus five equals twenty one
+twenty six minus six equals twenty
+twenty six minus seven equals nineteen
+twenty six minus eight equals eighteen
+twenty six minus nine equals seventeen
+twenty six minus ten equals sixteen
+twenty six minus eleven equals fifteen
+twenty six minus twelve equals fourteen
+twenty six minus thirteen equals thirteen
+twenty six minus fourteen equals twelve
+twenty six minus fifteen equals eleven
+twenty six minus sixteen equals ten
+twenty six minus seventeen equals nine
+twenty six minus eighteen equals eight
+twenty six minus nineteen equals seven
+twenty six minus twenty equals six
+twenty six minus twenty one equals five
+twenty six minus twenty two equals four
+twenty six minus twenty three equals three
+twenty six minus twenty four equals two
+twenty six minus twenty five equals one
+twenty six minus twenty six equals zero
+twenty seven minus zero equals twenty seven
+twenty seven minus one equals twenty six
+twenty seven minus two equals twenty five
+twenty seven minus three equals twenty four
+twenty seven minus four equals twenty three
+twenty seven minus five equals twenty two
+twenty seven minus six equals twenty one
+twenty seven minus seven equals twenty
+twenty seven minus eight equals nineteen
+twenty seven minus nine equals eighteen
+twenty seven minus ten equals seventeen
+twenty seven minus eleven equals sixteen
+twenty seven minus twelve equals fifteen
+twenty seven minus thirteen equals fourteen
+twenty seven minus fourteen equals thirteen
+twenty seven minus fifteen equals twelve
+twenty seven minus sixteen equals eleven
+twenty seven minus seventeen equals ten
+twenty seven minus eighteen equals nine
+twenty seven minus nineteen equals eight
+twenty seven minus twenty equals seven
+twenty seven minus twenty one equals six
+twenty seven minus twenty two equals five
+twenty seven minus twenty three equals four
+twenty seven minus twenty four equals three
+twenty seven minus twenty five equals two
+twenty seven minus twenty six equals one
+twenty seven minus twenty seven equals zero
+twenty eight minus zero equals twenty eight
+twenty eight minus one equals twenty seven
+twenty eight minus two equals twenty six
+twenty eight minus three equals twenty five
+twenty eight minus four equals twenty four
+twenty eight minus five equals twenty three
+twenty eight minus six equals twenty two
+twenty eight minus seven equals twenty one
+twenty eight minus eight equals twenty
+twenty eight minus nine equals nineteen
+twenty eight minus ten equals eighteen
+twenty eight minus eleven equals seventeen
+twenty eight minus twelve equals sixteen
+twenty eight minus thirteen equals fifteen
+twenty eight minus fourteen equals fourteen
+twenty eight minus fifteen equals thirteen
+twenty eight minus sixteen equals twelve
+twenty eight minus seventeen equals eleven
+twenty eight minus eighteen equals ten
+twenty eight minus nineteen equals nine
+twenty eight minus twenty equals eight
+twenty eight minus twenty one equals seven
+twenty eight minus twenty two equals six
+twenty eight minus twenty three equals five
+twenty eight minus twenty four equals four
+twenty eight minus twenty five equals three
+twenty eight minus twenty six equals two
+twenty eight minus twenty seven equals one
+twenty eight minus twenty eight equals zero
+twenty nine minus zero equals twenty nine
+twenty nine minus one equals twenty eight
+twenty nine minus two equals twenty seven
+twenty nine minus three equals twenty six
+twenty nine minus four equals twenty five
+twenty nine minus five equals twenty four
+twenty nine minus six equals twenty three
+twenty nine minus seven equals twenty two
+twenty nine minus eight equals twenty one
+twenty nine minus nine equals twenty
+twenty nine minus ten equals nineteen
+twenty nine minus eleven equals eighteen
+twenty nine minus twelve equals seventeen
+twenty nine minus thirteen equals sixteen
+twenty nine minus fourteen equals fifteen
+twenty nine minus fifteen equals fourteen
+twenty nine minus sixteen equals thirteen
+twenty nine minus seventeen equals twelve
+twenty nine minus eighteen equals eleven
+twenty nine minus nineteen equals ten
+twenty nine minus twenty equals nine
+twenty nine minus twenty one equals eight
+twenty nine minus twenty two equals seven
+twenty nine minus twenty three equals six
+twenty nine minus twenty four equals five
+twenty nine minus twenty five equals four
+twenty nine minus twenty six equals three
+twenty nine minus twenty seven equals two
+twenty nine minus twenty eight equals one
+twenty nine minus twenty nine equals zero
+thirty minus zero equals thirty
+thirty minus one equals twenty nine
+thirty minus two equals twenty eight
+thirty minus three equals twenty seven
+thirty minus four equals twenty six
+thirty minus five equals twenty five
+thirty minus six equals twenty four
+thirty minus seven equals twenty three
+thirty minus eight equals twenty two
+thirty minus nine equals twenty one
+thirty minus ten equals twenty
+thirty minus eleven equals nineteen
+thirty minus twelve equals eighteen
+thirty minus thirteen equals seventeen
+thirty minus fourteen equals sixteen
+thirty minus fifteen equals fifteen
+thirty minus sixteen equals fourteen
+thirty minus seventeen equals thirteen
+thirty minus eighteen equals twelve
+thirty minus nineteen equals eleven
+thirty minus twenty equals ten
+thirty minus twenty one equals nine
+thirty minus twenty two equals eight
+thirty minus twenty three equals seven
+thirty minus twenty four equals six
+thirty minus twenty five equals five
+thirty minus twenty six equals four
+thirty minus twenty seven equals three
+thirty minus twenty eight equals two
+thirty minus twenty nine equals one
+thirty minus thirty equals zero
+thirty one minus zero equals thirty one
+thirty one minus one equals thirty
+thirty one minus two equals twenty nine
+thirty one minus three equals twenty eight
+thirty one minus four equals twenty seven
+thirty one minus five equals twenty six
+thirty one minus six equals twenty five
+thirty one minus seven equals twenty four
+thirty one minus eight equals twenty three
+thirty one minus nine equals twenty two
+thirty one minus ten equals twenty one
+thirty one minus eleven equals twenty
+thirty one minus twelve equals nineteen
+thirty one minus thirteen equals eighteen
+thirty one minus fourteen equals seventeen
+thirty one minus fifteen equals sixteen
+thirty one minus sixteen equals fifteen
+thirty one minus seventeen equals fourteen
+thirty one minus eighteen equals thirteen
+thirty one minus nineteen equals twelve
+thirty one minus twenty equals eleven
+thirty one minus twenty one equals ten
+thirty one minus twenty two equals nine
+thirty one minus twenty three equals eight
+thirty one minus twenty four equals seven
+thirty one minus twenty five equals six
+thirty one minus twenty six equals five
+thirty one minus twenty seven equals four
+thirty one minus twenty eight equals three
+thirty one minus twenty nine equals two
+thirty one minus thirty equals one
+thirty one minus thirty one equals zero
+thirty two minus zero equals thirty two
+thirty two minus one equals thirty one
+thirty two minus two equals thirty
+thirty two minus three equals twenty nine
+thirty two minus four equals twenty eight
+thirty two minus five equals twenty seven
+thirty two minus six equals twenty six
+thirty two minus seven equals twenty five
+thirty two minus eight equals twenty four
+thirty two minus nine equals twenty three
+thirty two minus ten equals twenty two
+thirty two minus eleven equals twenty one
+thirty two minus twelve equals twenty
+thirty two minus thirteen equals nineteen
+thirty two minus fourteen equals eighteen
+thirty two minus fifteen equals seventeen
+thirty two minus sixteen equals sixteen
+thirty two minus seventeen equals fifteen
+thirty two minus eighteen equals fourteen
+thirty two minus nineteen equals thirteen
+thirty two minus twenty equals twelve
+thirty two minus twenty one equals eleven
+thirty two minus twenty two equals ten
+thirty two minus twenty three equals nine
+thirty two minus twenty four equals eight
+thirty two minus twenty five equals seven
+thirty two minus twenty six equals six
+thirty two minus twenty seven equals five
+thirty two minus twenty eight equals four
+thirty two minus twenty nine equals three
+thirty two minus thirty equals two
+thirty two minus thirty one equals one
+thirty two minus thirty two equals zero
+thirty three minus zero equals thirty three
+thirty three minus one equals thirty two
+thirty three minus two equals thirty one
+thirty three minus three equals thirty
+thirty three minus four equals twenty nine
+thirty three minus five equals twenty eight
+thirty three minus six equals twenty seven
+thirty three minus seven equals twenty six
+thirty three minus eight equals twenty five
+thirty three minus nine equals twenty four
+thirty three minus ten equals twenty three
+thirty three minus eleven equals twenty two
+thirty three minus twelve equals twenty one
+thirty three minus thirteen equals twenty
+thirty three minus fourteen equals nineteen
+thirty three minus fifteen equals eighteen
+thirty three minus sixteen equals seventeen
+thirty three minus seventeen equals sixteen
+thirty three minus eighteen equals fifteen
+thirty three minus nineteen equals fourteen
+thirty three minus twenty equals thirteen
+thirty three minus twenty one equals twelve
+thirty three minus twenty two equals eleven
+thirty three minus twenty three equals ten
+thirty three minus twenty four equals nine
+thirty three minus twenty five equals eight
+thirty three minus twenty six equals seven
+thirty three minus twenty seven equals six
+thirty three minus twenty eight equals five
+thirty three minus twenty nine equals four
+thirty three minus thirty equals three
+thirty three minus thirty one equals two
+thirty three minus thirty two equals one
+thirty three minus thirty three equals zero
+thirty four minus zero equals thirty four
+thirty four minus one equals thirty three
+thirty four minus two equals thirty two
+thirty four minus three equals thirty one
+thirty four minus four equals thirty
+thirty four minus five equals twenty nine
+thirty four minus six equals twenty eight
+thirty four minus seven equals twenty seven
+thirty four minus eight equals twenty six
+thirty four minus nine equals twenty five
+thirty four minus ten equals twenty four
+thirty four minus eleven equals twenty three
+thirty four minus twelve equals twenty two
+thirty four minus thirteen equals twenty one
+thirty four minus fourteen equals twenty
+thirty four minus fifteen equals nineteen
+thirty four minus sixteen equals eighteen
+thirty four minus seventeen equals seventeen
+thirty four minus eighteen equals sixteen
+thirty four minus nineteen equals fifteen
+thirty four minus twenty equals fourteen
+thirty four minus twenty one equals thirteen
+thirty four minus twenty two equals twelve
+thirty four minus twenty three equals eleven
+thirty four minus twenty four equals ten
+thirty four minus twenty five equals nine
+thirty four minus twenty six equals eight
+thirty four minus twenty seven equals seven
+thirty four minus twenty eight equals six
+thirty four minus twenty nine equals five
+thirty four minus thirty equals four
+thirty four minus thirty one equals three
+thirty four minus thirty two equals two
+thirty four minus thirty three equals one
+thirty four minus thirty four equals zero
+thirty five minus zero equals thirty five
+thirty five minus one equals thirty four
+thirty five minus two equals thirty three
+thirty five minus three equals thirty two
+thirty five minus four equals thirty one
+thirty five minus five equals thirty
+thirty five minus six equals twenty nine
+thirty five minus seven equals twenty eight
+thirty five minus eight equals twenty seven
+thirty five minus nine equals twenty six
+thirty five minus ten equals twenty five
+thirty five minus eleven equals twenty four
+thirty five minus twelve equals twenty three
+thirty five minus thirteen equals twenty two
+thirty five minus fourteen equals twenty one
+thirty five minus fifteen equals twenty
+thirty five minus sixteen equals nineteen
+thirty five minus seventeen equals eighteen
+thirty five minus eighteen equals seventeen
+thirty five minus nineteen equals sixteen
+thirty five minus twenty equals fifteen
+thirty five minus twenty one equals fourteen
+thirty five minus twenty two equals thirteen
+thirty five minus twenty three equals twelve
+thirty five minus twenty four equals eleven
+thirty five minus twenty five equals ten
+thirty five minus twenty six equals nine
+thirty five minus twenty seven equals eight
+thirty five minus twenty eight equals seven
+thirty five minus twenty nine equals six
+thirty five minus thirty equals five
+thirty five minus thirty one equals four
+thirty five minus thirty two equals three
+thirty five minus thirty three equals two
+thirty five minus thirty four equals one
+thirty five minus thirty five equals zero
+thirty six minus zero equals thirty six
+thirty six minus one equals thirty five
+thirty six minus two equals thirty four
+thirty six minus three equals thirty three
+thirty six minus four equals thirty two
+thirty six minus five equals thirty one
+thirty six minus six equals thirty
+thirty six minus seven equals twenty nine
+thirty six minus eight equals twenty eight
+thirty six minus nine equals twenty seven
+thirty six minus ten equals twenty six
+thirty six minus eleven equals twenty five
+thirty six minus twelve equals twenty four
+thirty six minus thirteen equals twenty three
+thirty six minus fourteen equals twenty two
+thirty six minus fifteen equals twenty one
+thirty six minus sixteen equals twenty
+thirty six minus seventeen equals nineteen
+thirty six minus eighteen equals eighteen
+thirty six minus nineteen equals seventeen
+thirty six minus twenty equals sixteen
+thirty six minus twenty one equals fifteen
+thirty six minus twenty two equals fourteen
+thirty six minus twenty three equals thirteen
+thirty six minus twenty four equals twelve
+thirty six minus twenty five equals eleven
+thirty six minus twenty six equals ten
+thirty six minus twenty seven equals nine
+thirty six minus twenty eight equals eight
+thirty six minus twenty nine equals seven
+thirty six minus thirty equals six
+thirty six minus thirty one equals five
+thirty six minus thirty two equals four
+thirty six minus thirty three equals three
+thirty six minus thirty four equals two
+thirty six minus thirty five equals one
+thirty six minus thirty six equals zero
+thirty seven minus zero equals thirty seven
+thirty seven minus one equals thirty six
+thirty seven minus two equals thirty five
+thirty seven minus three equals thirty four
+thirty seven minus four equals thirty three
+thirty seven minus five equals thirty two
+thirty seven minus six equals thirty one
+thirty seven minus seven equals thirty
+thirty seven minus eight equals twenty nine
+thirty seven minus nine equals twenty eight
+thirty seven minus ten equals twenty seven
+thirty seven minus eleven equals twenty six
+thirty seven minus twelve equals twenty five
+thirty seven minus thirteen equals twenty four
+thirty seven minus fourteen equals twenty three
+thirty seven minus fifteen equals twenty two
+thirty seven minus sixteen equals twenty one
+thirty seven minus seventeen equals twenty
+thirty seven minus eighteen equals nineteen
+thirty seven minus nineteen equals eighteen
+thirty seven minus twenty equals seventeen
+thirty seven minus twenty one equals sixteen
+thirty seven minus twenty two equals fifteen
+thirty seven minus twenty three equals fourteen
+thirty seven minus twenty four equals thirteen
+thirty seven minus twenty five equals twelve
+thirty seven minus twenty six equals eleven
+thirty seven minus twenty seven equals ten
+thirty seven minus twenty eight equals nine
+thirty seven minus twenty nine equals eight
+thirty seven minus thirty equals seven
+thirty seven minus thirty one equals six
+thirty seven minus thirty two equals five
+thirty seven minus thirty three equals four
+thirty seven minus thirty four equals three
+thirty seven minus thirty five equals two
+thirty seven minus thirty six equals one
+thirty seven minus thirty seven equals zero
+thirty eight minus zero equals thirty eight
+thirty eight minus one equals thirty seven
+thirty eight minus two equals thirty six
+thirty eight minus three equals thirty five
+thirty eight minus four equals thirty four
+thirty eight minus five equals thirty three
+thirty eight minus six equals thirty two
+thirty eight minus seven equals thirty one
+thirty eight minus eight equals thirty
+thirty eight minus nine equals twenty nine
+thirty eight minus ten equals twenty eight
+thirty eight minus eleven equals twenty seven
+thirty eight minus twelve equals twenty six
+thirty eight minus thirteen equals twenty five
+thirty eight minus fourteen equals twenty four
+thirty eight minus fifteen equals twenty three
+thirty eight minus sixteen equals twenty two
+thirty eight minus seventeen equals twenty one
+thirty eight minus eighteen equals twenty
+thirty eight minus nineteen equals nineteen
+thirty eight minus twenty equals eighteen
+thirty eight minus twenty one equals seventeen
+thirty eight minus twenty two equals sixteen
+thirty eight minus twenty three equals fifteen
+thirty eight minus twenty four equals fourteen
+thirty eight minus twenty five equals thirteen
+thirty eight minus twenty six equals twelve
+thirty eight minus twenty seven equals eleven
+thirty eight minus twenty eight equals ten
+thirty eight minus twenty nine equals nine
+thirty eight minus thirty equals eight
+thirty eight minus thirty one equals seven
+thirty eight minus thirty two equals six
+thirty eight minus thirty three equals five
+thirty eight minus thirty four equals four
+thirty eight minus thirty five equals three
+thirty eight minus thirty six equals two
+thirty eight minus thirty seven equals one
+thirty eight minus thirty eight equals zero
+thirty nine minus zero equals thirty nine
+thirty nine minus one equals thirty eight
+thirty nine minus two equals thirty seven
+thirty nine minus three equals thirty six
+thirty nine minus four equals thirty five
+thirty nine minus five equals thirty four
+thirty nine minus six equals thirty three
+thirty nine minus seven equals thirty two
+thirty nine minus eight equals thirty one
+thirty nine minus nine equals thirty
+thirty nine minus ten equals twenty nine
+thirty nine minus eleven equals twenty eight
+thirty nine minus twelve equals twenty seven
+thirty nine minus thirteen equals twenty six
+thirty nine minus fourteen equals twenty five
+thirty nine minus fifteen equals twenty four
+thirty nine minus sixteen equals twenty three
+thirty nine minus seventeen equals twenty two
+thirty nine minus eighteen equals twenty one
+thirty nine minus nineteen equals twenty
+thirty nine minus twenty equals nineteen
+thirty nine minus twenty one equals eighteen
+thirty nine minus twenty two equals seventeen
+thirty nine minus twenty three equals sixteen
+thirty nine minus twenty four equals fifteen
+thirty nine minus twenty five equals fourteen
+thirty nine minus twenty six equals thirteen
+thirty nine minus twenty seven equals twelve
+thirty nine minus twenty eight equals eleven
+thirty nine minus twenty nine equals ten
+thirty nine minus thirty equals nine
+thirty nine minus thirty one equals eight
+thirty nine minus thirty two equals seven
+thirty nine minus thirty three equals six
+thirty nine minus thirty four equals five
+thirty nine minus thirty five equals four
+thirty nine minus thirty six equals three
+thirty nine minus thirty seven equals two
+thirty nine minus thirty eight equals one
+thirty nine minus thirty nine equals zero
+forty minus zero equals forty
+forty minus one equals thirty nine
+forty minus two equals thirty eight
+forty minus three equals thirty seven
+forty minus four equals thirty six
+forty minus five equals thirty five
+forty minus six equals thirty four
+forty minus seven equals thirty three
+forty minus eight equals thirty two
+forty minus nine equals thirty one
+forty minus ten equals thirty
+forty minus eleven equals twenty nine
+forty minus twelve equals twenty eight
+forty minus thirteen equals twenty seven
+forty minus fourteen equals twenty six
+forty minus fifteen equals twenty five
+forty minus sixteen equals twenty four
+forty minus seventeen equals twenty three
+forty minus eighteen equals twenty two
+forty minus nineteen equals twenty one
+forty minus twenty equals twenty
+forty minus twenty one equals nineteen
+forty minus twenty two equals eighteen
+forty minus twenty three equals seventeen
+forty minus twenty four equals sixteen
+forty minus twenty five equals fifteen
+forty minus twenty six equals fourteen
+forty minus twenty seven equals thirteen
+forty minus twenty eight equals twelve
+forty minus twenty nine equals eleven
+forty minus thirty equals ten
+forty minus thirty one equals nine
+forty minus thirty two equals eight
+forty minus thirty three equals seven
+forty minus thirty four equals six
+forty minus thirty five equals five
+forty minus thirty six equals four
+forty minus thirty seven equals three
+forty minus thirty eight equals two
+forty minus thirty nine equals one
+forty minus forty equals zero
+forty one minus zero equals forty one
+forty one minus one equals forty
+forty one minus two equals thirty nine
+forty one minus three equals thirty eight
+forty one minus four equals thirty seven
+forty one minus five equals thirty six
+forty one minus six equals thirty five
+forty one minus seven equals thirty four
+forty one minus eight equals thirty three
+forty one minus nine equals thirty two
+forty one minus ten equals thirty one
+forty one minus eleven equals thirty
+forty one minus twelve equals twenty nine
+forty one minus thirteen equals twenty eight
+forty one minus fourteen equals twenty seven
+forty one minus fifteen equals twenty six
+forty one minus sixteen equals twenty five
+forty one minus seventeen equals twenty four
+forty one minus eighteen equals twenty three
+forty one minus nineteen equals twenty two
+forty one minus twenty equals twenty one
+forty one minus twenty one equals twenty
+forty one minus twenty two equals nineteen
+forty one minus twenty three equals eighteen
+forty one minus twenty four equals seventeen
+forty one minus twenty five equals sixteen
+forty one minus twenty six equals fifteen
+forty one minus twenty seven equals fourteen
+forty one minus twenty eight equals thirteen
+forty one minus twenty nine equals twelve
+forty one minus thirty equals eleven
+forty one minus thirty one equals ten
+forty one minus thirty two equals nine
+forty one minus thirty three equals eight
+forty one minus thirty four equals seven
+forty one minus thirty five equals six
+forty one minus thirty six equals five
+forty one minus thirty seven equals four
+forty one minus thirty eight equals three
+forty one minus thirty nine equals two
+forty one minus forty equals one
+forty one minus forty one equals zero
+forty two minus zero equals forty two
+forty two minus one equals forty one
+forty two minus two equals forty
+forty two minus three equals thirty nine
+forty two minus four equals thirty eight
+forty two minus five equals thirty seven
+forty two minus six equals thirty six
+forty two minus seven equals thirty five
+forty two minus eight equals thirty four
+forty two minus nine equals thirty three
+forty two minus ten equals thirty two
+forty two minus eleven equals thirty one
+forty two minus twelve equals thirty
+forty two minus thirteen equals twenty nine
+forty two minus fourteen equals twenty eight
+forty two minus fifteen equals twenty seven
+forty two minus sixteen equals twenty six
+forty two minus seventeen equals twenty five
+forty two minus eighteen equals twenty four
+forty two minus nineteen equals twenty three
+forty two minus twenty equals twenty two
+forty two minus twenty one equals twenty one
+forty two minus twenty two equals twenty
+forty two minus twenty three equals nineteen
+forty two minus twenty four equals eighteen
+forty two minus twenty five equals seventeen
+forty two minus twenty six equals sixteen
+forty two minus twenty seven equals fifteen
+forty two minus twenty eight equals fourteen
+forty two minus twenty nine equals thirteen
+forty two minus thirty equals twelve
+forty two minus thirty one equals eleven
+forty two minus thirty two equals ten
+forty two minus thirty three equals nine
+forty two minus thirty four equals eight
+forty two minus thirty five equals seven
+forty two minus thirty six equals six
+forty two minus thirty seven equals five
+forty two minus thirty eight equals four
+forty two minus thirty nine equals three
+forty two minus forty equals two
+forty two minus forty one equals one
+forty two minus forty two equals zero
+forty three minus zero equals forty three
+forty three minus one equals forty two
+forty three minus two equals forty one
+forty three minus three equals forty
+forty three minus four equals thirty nine
+forty three minus five equals thirty eight
+forty three minus six equals thirty seven
+forty three minus seven equals thirty six
+forty three minus eight equals thirty five
+forty three minus nine equals thirty four
+forty three minus ten equals thirty three
+forty three minus eleven equals thirty two
+forty three minus twelve equals thirty one
+forty three minus thirteen equals thirty
+forty three minus fourteen equals twenty nine
+forty three minus fifteen equals twenty eight
+forty three minus sixteen equals twenty seven
+forty three minus seventeen equals twenty six
+forty three minus eighteen equals twenty five
+forty three minus nineteen equals twenty four
+forty three minus twenty equals twenty three
+forty three minus twenty one equals twenty two
+forty three minus twenty two equals twenty one
+forty three minus twenty three equals twenty
+forty three minus twenty four equals nineteen
+forty three minus twenty five equals eighteen
+forty three minus twenty six equals seventeen
+forty three minus twenty seven equals sixteen
+forty three minus twenty eight equals fifteen
+forty three minus twenty nine equals fourteen
+forty three minus thirty equals thirteen
+forty three minus thirty one equals twelve
+forty three minus thirty two equals eleven
+forty three minus thirty three equals ten
+forty three minus thirty four equals nine
+forty three minus thirty five equals eight
+forty three minus thirty six equals seven
+forty three minus thirty seven equals six
+forty three minus thirty eight equals five
+forty three minus thirty nine equals four
+forty three minus forty equals three
+forty three minus forty one equals two
+forty three minus forty two equals one
+forty three minus forty three equals zero
+forty four minus zero equals forty four
+forty four minus one equals forty three
+forty four minus two equals forty two
+forty four minus three equals forty one
+forty four minus four equals forty
+forty four minus five equals thirty nine
+forty four minus six equals thirty eight
+forty four minus seven equals thirty seven
+forty four minus eight equals thirty six
+forty four minus nine equals thirty five
+forty four minus ten equals thirty four
+forty four minus eleven equals thirty three
+forty four minus twelve equals thirty two
+forty four minus thirteen equals thirty one
+forty four minus fourteen equals thirty
+forty four minus fifteen equals twenty nine
+forty four minus sixteen equals twenty eight
+forty four minus seventeen equals twenty seven
+forty four minus eighteen equals twenty six
+forty four minus nineteen equals twenty five
+forty four minus twenty equals twenty four
+forty four minus twenty one equals twenty three
+forty four minus twenty two equals twenty two
+forty four minus twenty three equals twenty one
+forty four minus twenty four equals twenty
+forty four minus twenty five equals nineteen
+forty four minus twenty six equals eighteen
+forty four minus twenty seven equals seventeen
+forty four minus twenty eight equals sixteen
+forty four minus twenty nine equals fifteen
+forty four minus thirty equals fourteen
+forty four minus thirty one equals thirteen
+forty four minus thirty two equals twelve
+forty four minus thirty three equals eleven
+forty four minus thirty four equals ten
+forty four minus thirty five equals nine
+forty four minus thirty six equals eight
+forty four minus thirty seven equals seven
+forty four minus thirty eight equals six
+forty four minus thirty nine equals five
+forty four minus forty equals four
+forty four minus forty one equals three
+forty four minus forty two equals two
+forty four minus forty three equals one
+forty four minus forty four equals zero
+forty five minus zero equals forty five
+forty five minus one equals forty four
+forty five minus two equals forty three
+forty five minus three equals forty two
+forty five minus four equals forty one
+forty five minus five equals forty
+forty five minus six equals thirty nine
+forty five minus seven equals thirty eight
+forty five minus eight equals thirty seven
+forty five minus nine equals thirty six
+forty five minus ten equals thirty five
+forty five minus eleven equals thirty four
+forty five minus twelve equals thirty three
+forty five minus thirteen equals thirty two
+forty five minus fourteen equals thirty one
+forty five minus fifteen equals thirty
+forty five minus sixteen equals twenty nine
+forty five minus seventeen equals twenty eight
+forty five minus eighteen equals twenty seven
+forty five minus nineteen equals twenty six
+forty five minus twenty equals twenty five
+forty five minus twenty one equals twenty four
+forty five minus twenty two equals twenty three
+forty five minus twenty three equals twenty two
+forty five minus twenty four equals twenty one
+forty five minus twenty five equals twenty
+forty five minus twenty six equals nineteen
+forty five minus twenty seven equals eighteen
+forty five minus twenty eight equals seventeen
+forty five minus twenty nine equals sixteen
+forty five minus thirty equals fifteen
+forty five minus thirty one equals fourteen
+forty five minus thirty two equals thirteen
+forty five minus thirty three equals twelve
+forty five minus thirty four equals eleven
+forty five minus thirty five equals ten
+forty five minus thirty six equals nine
+forty five minus thirty seven equals eight
+forty five minus thirty eight equals seven
+forty five minus thirty nine equals six
+forty five minus forty equals five
+forty five minus forty one equals four
+forty five minus forty two equals three
+forty five minus forty three equals two
+forty five minus forty four equals one
+forty five minus forty five equals zero
+forty six minus zero equals forty six
+forty six minus one equals forty five
+forty six minus two equals forty four
+forty six minus three equals forty three
+forty six minus four equals forty two
+forty six minus five equals forty one
+forty six minus six equals forty
+forty six minus seven equals thirty nine
+forty six minus eight equals thirty eight
+forty six minus nine equals thirty seven
+forty six minus ten equals thirty six
+forty six minus eleven equals thirty five
+forty six minus twelve equals thirty four
+forty six minus thirteen equals thirty three
+forty six minus fourteen equals thirty two
+forty six minus fifteen equals thirty one
+forty six minus sixteen equals thirty
+forty six minus seventeen equals twenty nine
+forty six minus eighteen equals twenty eight
+forty six minus nineteen equals twenty seven
+forty six minus twenty equals twenty six
+forty six minus twenty one equals twenty five
+forty six minus twenty two equals twenty four
+forty six minus twenty three equals twenty three
+forty six minus twenty four equals twenty two
+forty six minus twenty five equals twenty one
+forty six minus twenty six equals twenty
+forty six minus twenty seven equals nineteen
+forty six minus twenty eight equals eighteen
+forty six minus twenty nine equals seventeen
+forty six minus thirty equals sixteen
+forty six minus thirty one equals fifteen
+forty six minus thirty two equals fourteen
+forty six minus thirty three equals thirteen
+forty six minus thirty four equals twelve
+forty six minus thirty five equals eleven
+forty six minus thirty six equals ten
+forty six minus thirty seven equals nine
+forty six minus thirty eight equals eight
+forty six minus thirty nine equals seven
+forty six minus forty equals six
+forty six minus forty one equals five
+forty six minus forty two equals four
+forty six minus forty three equals three
+forty six minus forty four equals two
+forty six minus forty five equals one
+forty six minus forty six equals zero
+forty seven minus zero equals forty seven
+forty seven minus one equals forty six
+forty seven minus two equals forty five
+forty seven minus three equals forty four
+forty seven minus four equals forty three
+forty seven minus five equals forty two
+forty seven minus six equals forty one
+forty seven minus seven equals forty
+forty seven minus eight equals thirty nine
+forty seven minus nine equals thirty eight
+forty seven minus ten equals thirty seven
+forty seven minus eleven equals thirty six
+forty seven minus twelve equals thirty five
+forty seven minus thirteen equals thirty four
+forty seven minus fourteen equals thirty three
+forty seven minus fifteen equals thirty two
+forty seven minus sixteen equals thirty one
+forty seven minus seventeen equals thirty
+forty seven minus eighteen equals twenty nine
+forty seven minus nineteen equals twenty eight
+forty seven minus twenty equals twenty seven
+forty seven minus twenty one equals twenty six
+forty seven minus twenty two equals twenty five
+forty seven minus twenty three equals twenty four
+forty seven minus twenty four equals twenty three
+forty seven minus twenty five equals twenty two
+forty seven minus twenty six equals twenty one
+forty seven minus twenty seven equals twenty
+forty seven minus twenty eight equals nineteen
+forty seven minus twenty nine equals eighteen
+forty seven minus thirty equals seventeen
+forty seven minus thirty one equals sixteen
+forty seven minus thirty two equals fifteen
+forty seven minus thirty three equals fourteen
+forty seven minus thirty four equals thirteen
+forty seven minus thirty five equals twelve
+forty seven minus thirty six equals eleven
+forty seven minus thirty seven equals ten
+forty seven minus thirty eight equals nine
+forty seven minus thirty nine equals eight
+forty seven minus forty equals seven
+forty seven minus forty one equals six
+forty seven minus forty two equals five
+forty seven minus forty three equals four
+forty seven minus forty four equals three
+forty seven minus forty five equals two
+forty seven minus forty six equals one
+forty seven minus forty seven equals zero
+forty eight minus zero equals forty eight
+forty eight minus one equals forty seven
+forty eight minus two equals forty six
+forty eight minus three equals forty five
+forty eight minus four equals forty four
+forty eight minus five equals forty three
+forty eight minus six equals forty two
+forty eight minus seven equals forty one
+forty eight minus eight equals forty
+forty eight minus nine equals thirty nine
+forty eight minus ten equals thirty eight
+forty eight minus eleven equals thirty seven
+forty eight minus twelve equals thirty six
+forty eight minus thirteen equals thirty five
+forty eight minus fourteen equals thirty four
+forty eight minus fifteen equals thirty three
+forty eight minus sixteen equals thirty two
+forty eight minus seventeen equals thirty one
+forty eight minus eighteen equals thirty
+forty eight minus nineteen equals twenty nine
+forty eight minus twenty equals twenty eight
+forty eight minus twenty one equals twenty seven
+forty eight minus twenty two equals twenty six
+forty eight minus twenty three equals twenty five
+forty eight minus twenty four equals twenty four
+forty eight minus twenty five equals twenty three
+forty eight minus twenty six equals twenty two
+forty eight minus twenty seven equals twenty one
+forty eight minus twenty eight equals twenty
+forty eight minus twenty nine equals nineteen
+forty eight minus thirty equals eighteen
+forty eight minus thirty one equals seventeen
+forty eight minus thirty two equals sixteen
+forty eight minus thirty three equals fifteen
+forty eight minus thirty four equals fourteen
+forty eight minus thirty five equals thirteen
+forty eight minus thirty six equals twelve
+forty eight minus thirty seven equals eleven
+forty eight minus thirty eight equals ten
+forty eight minus thirty nine equals nine
+forty eight minus forty equals eight
+forty eight minus forty one equals seven
+forty eight minus forty two equals six
+forty eight minus forty three equals five
+forty eight minus forty four equals four
+forty eight minus forty five equals three
+forty eight minus forty six equals two
+forty eight minus forty seven equals one
+forty eight minus forty eight equals zero
+forty nine minus zero equals forty nine
+forty nine minus one equals forty eight
+forty nine minus two equals forty seven
+forty nine minus three equals forty six
+forty nine minus four equals forty five
+forty nine minus five equals forty four
+forty nine minus six equals forty three
+forty nine minus seven equals forty two
+forty nine minus eight equals forty one
+forty nine minus nine equals forty
+forty nine minus ten equals thirty nine
+forty nine minus eleven equals thirty eight
+forty nine minus twelve equals thirty seven
+forty nine minus thirteen equals thirty six
+forty nine minus fourteen equals thirty five
+forty nine minus fifteen equals thirty four
+forty nine minus sixteen equals thirty three
+forty nine minus seventeen equals thirty two
+forty nine minus eighteen equals thirty one
+forty nine minus nineteen equals thirty
+forty nine minus twenty equals twenty nine
+forty nine minus twenty one equals twenty eight
+forty nine minus twenty two equals twenty seven
+forty nine minus twenty three equals twenty six
+forty nine minus twenty four equals twenty five
+forty nine minus twenty five equals twenty four
+forty nine minus twenty six equals twenty three
+forty nine minus twenty seven equals twenty two
+forty nine minus twenty eight equals twenty one
+forty nine minus twenty nine equals twenty
+forty nine minus thirty equals nineteen
+forty nine minus thirty one equals eighteen
+forty nine minus thirty two equals seventeen
+forty nine minus thirty three equals sixteen
+forty nine minus thirty four equals fifteen
+forty nine minus thirty five equals fourteen
+forty nine minus thirty six equals thirteen
+forty nine minus thirty seven equals twelve
+forty nine minus thirty eight equals eleven
+forty nine minus thirty nine equals ten
+forty nine minus forty equals nine
+forty nine minus forty one equals eight
+forty nine minus forty two equals seven
+forty nine minus forty three equals six
+forty nine minus forty four equals five
+forty nine minus forty five equals four
+forty nine minus forty six equals three
+forty nine minus forty seven equals two
+forty nine minus forty eight equals one
+forty nine minus forty nine equals zero
+fifty minus zero equals fifty
+fifty minus one equals forty nine
+fifty minus two equals forty eight
+fifty minus three equals forty seven
+fifty minus four equals forty six
+fifty minus five equals forty five
+fifty minus six equals forty four
+fifty minus seven equals forty three
+fifty minus eight equals forty two
+fifty minus nine equals forty one
+fifty minus ten equals forty
+fifty minus eleven equals thirty nine
+fifty minus twelve equals thirty eight
+fifty minus thirteen equals thirty seven
+fifty minus fourteen equals thirty six
+fifty minus fifteen equals thirty five
+fifty minus sixteen equals thirty four
+fifty minus seventeen equals thirty three
+fifty minus eighteen equals thirty two
+fifty minus nineteen equals thirty one
+fifty minus twenty equals thirty
+fifty minus twenty one equals twenty nine
+fifty minus twenty two equals twenty eight
+fifty minus twenty three equals twenty seven
+fifty minus twenty four equals twenty six
+fifty minus twenty five equals twenty five
+fifty minus twenty six equals twenty four
+fifty minus twenty seven equals twenty three
+fifty minus twenty eight equals twenty two
+fifty minus twenty nine equals twenty one
+fifty minus thirty equals twenty
+fifty minus thirty one equals nineteen
+fifty minus thirty two equals eighteen
+fifty minus thirty three equals seventeen
+fifty minus thirty four equals sixteen
+fifty minus thirty five equals fifteen
+fifty minus thirty six equals fourteen
+fifty minus thirty seven equals thirteen
+fifty minus thirty eight equals twelve
+fifty minus thirty nine equals eleven
+fifty minus forty equals ten
+fifty minus forty one equals nine
+fifty minus forty two equals eight
+fifty minus forty three equals seven
+fifty minus forty four equals six
+fifty minus forty five equals five
+fifty minus forty six equals four
+fifty minus forty seven equals three
+fifty minus forty eight equals two
+fifty minus forty nine equals one
+fifty minus fifty equals zero
 one times one equals one
 one times two equals two
 one times three equals three
@@ -332,6 +1832,14 @@ one times nine equals nine
 one times ten equals ten
 one times eleven equals eleven
 one times twelve equals twelve
+one times thirteen equals thirteen
+one times fourteen equals fourteen
+one times fifteen equals fifteen
+one times sixteen equals sixteen
+one times seventeen equals seventeen
+one times eighteen equals eighteen
+one times nineteen equals nineteen
+one times twenty equals twenty
 two times two equals four
 two times three equals six
 two times four equals eight
@@ -343,6 +1851,14 @@ two times nine equals eighteen
 two times ten equals twenty
 two times eleven equals twenty two
 two times twelve equals twenty four
+two times thirteen equals twenty six
+two times fourteen equals twenty eight
+two times fifteen equals thirty
+two times sixteen equals thirty two
+two times seventeen equals thirty four
+two times eighteen equals thirty six
+two times nineteen equals thirty eight
+two times twenty equals forty
 three times three equals nine
 three times four equals twelve
 three times five equals fifteen
@@ -353,6 +1869,14 @@ three times nine equals twenty seven
 three times ten equals thirty
 three times eleven equals thirty three
 three times twelve equals thirty six
+three times thirteen equals thirty nine
+three times fourteen equals forty two
+three times fifteen equals forty five
+three times sixteen equals forty eight
+three times seventeen equals fifty one
+three times eighteen equals fifty four
+three times nineteen equals fifty seven
+three times twenty equals sixty
 four times four equals sixteen
 four times five equals twenty
 four times six equals twenty four
@@ -362,6 +1886,14 @@ four times nine equals thirty six
 four times ten equals forty
 four times eleven equals forty four
 four times twelve equals forty eight
+four times thirteen equals fifty two
+four times fourteen equals fifty six
+four times fifteen equals sixty
+four times sixteen equals sixty four
+four times seventeen equals sixty eight
+four times eighteen equals seventy two
+four times nineteen equals seventy six
+four times twenty equals eighty
 five times five equals twenty five
 five times six equals thirty
 five times seven equals thirty five
@@ -370,6 +1902,14 @@ five times nine equals forty five
 five times ten equals fifty
 five times eleven equals fifty five
 five times twelve equals sixty
+five times thirteen equals sixty five
+five times fourteen equals seventy
+five times fifteen equals seventy five
+five times sixteen equals eighty
+five times seventeen equals eighty five
+five times eighteen equals ninety
+five times nineteen equals ninety five
+five times twenty equals one hundred
 six times six equals thirty six
 six times seven equals forty two
 six times eight equals forty eight
@@ -377,27 +1917,119 @@ six times nine equals fifty four
 six times ten equals sixty
 six times eleven equals sixty six
 six times twelve equals seventy two
+six times thirteen equals seventy eight
+six times fourteen equals eighty four
+six times fifteen equals ninety
+six times sixteen equals ninety six
+six times seventeen equals one hundred two
+six times eighteen equals one hundred eight
+six times nineteen equals one hundred fourteen
+six times twenty equals one hundred twenty
 seven times seven equals forty nine
 seven times eight equals fifty six
 seven times nine equals sixty three
 seven times ten equals seventy
 seven times eleven equals seventy seven
 seven times twelve equals eighty four
+seven times thirteen equals ninety one
+seven times fourteen equals ninety eight
+seven times fifteen equals one hundred five
+seven times sixteen equals one hundred twelve
+seven times seventeen equals one hundred nineteen
+seven times eighteen equals one hundred twenty six
+seven times nineteen equals one hundred thirty three
+seven times twenty equals one hundred forty
 eight times eight equals sixty four
 eight times nine equals seventy two
 eight times ten equals eighty
 eight times eleven equals eighty eight
 eight times twelve equals ninety six
+eight times thirteen equals one hundred four
+eight times fourteen equals one hundred twelve
+eight times fifteen equals one hundred twenty
+eight times sixteen equals one hundred twenty eight
+eight times seventeen equals one hundred thirty six
+eight times eighteen equals one hundred forty four
+eight times nineteen equals one hundred fifty two
+eight times twenty equals one hundred sixty
 nine times nine equals eighty one
 nine times ten equals ninety
 nine times eleven equals ninety nine
 nine times twelve equals one hundred eight
+nine times thirteen equals one hundred seventeen
+nine times fourteen equals one hundred twenty six
+nine times fifteen equals one hundred thirty five
+nine times sixteen equals one hundred forty four
+nine times seventeen equals one hundred fifty three
+nine times eighteen equals one hundred sixty two
+nine times nineteen equals one hundred seventy one
+nine times twenty equals one hundred eighty
 ten times ten equals one hundred
 ten times eleven equals one hundred ten
 ten times twelve equals one hundred twenty
+ten times thirteen equals one hundred thirty
+ten times fourteen equals one hundred forty
+ten times fifteen equals one hundred fifty
+ten times sixteen equals one hundred sixty
+ten times seventeen equals one hundred seventy
+ten times eighteen equals one hundred eighty
+ten times nineteen equals one hundred ninety
+ten times twenty equals two hundred
 eleven times eleven equals one hundred twenty one
 eleven times twelve equals one hundred thirty two
+eleven times thirteen equals one hundred forty three
+eleven times fourteen equals one hundred fifty four
+eleven times fifteen equals one hundred sixty five
+eleven times sixteen equals one hundred seventy six
+eleven times seventeen equals one hundred eighty seven
+eleven times eighteen equals one hundred ninety eight
+eleven times nineteen equals two hundred nine
+eleven times twenty equals two hundred twenty
 twelve times twelve equals one hundred forty four
+twelve times thirteen equals one hundred fifty six
+twelve times fourteen equals one hundred sixty eight
+twelve times fifteen equals one hundred eighty
+twelve times sixteen equals one hundred ninety two
+twelve times seventeen equals two hundred four
+twelve times eighteen equals two hundred sixteen
+twelve times nineteen equals two hundred twenty eight
+twelve times twenty equals two hundred forty
+thirteen times thirteen equals one hundred sixty nine
+thirteen times fourteen equals one hundred eighty two
+thirteen times fifteen equals one hundred ninety five
+thirteen times sixteen equals two hundred eight
+thirteen times seventeen equals two hundred twenty one
+thirteen times eighteen equals two hundred thirty four
+thirteen times nineteen equals two hundred forty seven
+thirteen times twenty equals two hundred sixty
+fourteen times fourteen equals one hundred ninety six
+fourteen times fifteen equals two hundred ten
+fourteen times sixteen equals two hundred twenty four
+fourteen times seventeen equals two hundred thirty eight
+fourteen times eighteen equals two hundred fifty two
+fourteen times nineteen equals two hundred sixty six
+fourteen times twenty equals two hundred eighty
+fifteen times fifteen equals two hundred twenty five
+fifteen times sixteen equals two hundred forty
+fifteen times seventeen equals two hundred fifty five
+fifteen times eighteen equals two hundred seventy
+fifteen times nineteen equals two hundred eighty five
+fifteen times twenty equals three hundred
+sixteen times sixteen equals two hundred fifty six
+sixteen times seventeen equals two hundred seventy two
+sixteen times eighteen equals two hundred eighty eight
+sixteen times nineteen equals three hundred four
+sixteen times twenty equals three hundred twenty
+seventeen times seventeen equals two hundred eighty nine
+seventeen times eighteen equals three hundred six
+seventeen times nineteen equals three hundred twenty three
+seventeen times twenty equals three hundred forty
+eighteen times eighteen equals three hundred twenty four
+eighteen times nineteen equals three hundred forty two
+eighteen times twenty equals three hundred sixty
+nineteen times nineteen equals three hundred sixty one
+nineteen times twenty equals three hundred eighty
+twenty times twenty equals four hundred
 one divided by one equals one
 two divided by one equals two
 three divided by one equals three
@@ -410,6 +2042,14 @@ nine divided by one equals nine
 ten divided by one equals ten
 eleven divided by one equals eleven
 twelve divided by one equals twelve
+thirteen divided by one equals thirteen
+fourteen divided by one equals fourteen
+fifteen divided by one equals fifteen
+sixteen divided by one equals sixteen
+seventeen divided by one equals seventeen
+eighteen divided by one equals eighteen
+nineteen divided by one equals nineteen
+twenty divided by one equals twenty
 two divided by two equals one
 four divided by two equals two
 six divided by two equals three
@@ -422,6 +2062,14 @@ eighteen divided by two equals nine
 twenty divided by two equals ten
 twenty two divided by two equals eleven
 twenty four divided by two equals twelve
+twenty six divided by two equals thirteen
+twenty eight divided by two equals fourteen
+thirty divided by two equals fifteen
+thirty two divided by two equals sixteen
+thirty four divided by two equals seventeen
+thirty six divided by two equals eighteen
+thirty eight divided by two equals nineteen
+forty divided by two equals twenty
 three divided by three equals one
 six divided by three equals two
 nine divided by three equals three
@@ -434,6 +2082,14 @@ twenty seven divided by three equals nine
 thirty divided by three equals ten
 thirty three divided by three equals eleven
 thirty six divided by three equals twelve
+thirty nine divided by three equals thirteen
+forty two divided by three equals fourteen
+forty five divided by three equals fifteen
+forty eight divided by three equals sixteen
+fifty one divided by three equals seventeen
+fifty four divided by three equals eighteen
+fifty seven divided by three equals nineteen
+sixty divided by three equals twenty
 four divided by four equals one
 eight divided by four equals two
 twelve divided by four equals three
@@ -446,6 +2102,14 @@ thirty six divided by four equals nine
 forty divided by four equals ten
 forty four divided by four equals eleven
 forty eight divided by four equals twelve
+fifty two divided by four equals thirteen
+fifty six divided by four equals fourteen
+sixty divided by four equals fifteen
+sixty four divided by four equals sixteen
+sixty eight divided by four equals seventeen
+seventy two divided by four equals eighteen
+seventy six divided by four equals nineteen
+eighty divided by four equals twenty
 five divided by five equals one
 ten divided by five equals two
 fifteen divided by five equals three
@@ -458,6 +2122,14 @@ forty five divided by five equals nine
 fifty divided by five equals ten
 fifty five divided by five equals eleven
 sixty divided by five equals twelve
+sixty five divided by five equals thirteen
+seventy divided by five equals fourteen
+seventy five divided by five equals fifteen
+eighty divided by five equals sixteen
+eighty five divided by five equals seventeen
+ninety divided by five equals eighteen
+ninety five divided by five equals nineteen
+one hundred divided by five equals twenty
 six divided by six equals one
 twelve divided by six equals two
 eighteen divided by six equals three
@@ -470,6 +2142,14 @@ fifty four divided by six equals nine
 sixty divided by six equals ten
 sixty six divided by six equals eleven
 seventy two divided by six equals twelve
+seventy eight divided by six equals thirteen
+eighty four divided by six equals fourteen
+ninety divided by six equals fifteen
+ninety six divided by six equals sixteen
+one hundred two divided by six equals seventeen
+one hundred eight divided by six equals eighteen
+one hundred fourteen divided by six equals nineteen
+one hundred twenty divided by six equals twenty
 seven divided by seven equals one
 fourteen divided by seven equals two
 twenty one divided by seven equals three
@@ -482,6 +2162,14 @@ sixty three divided by seven equals nine
 seventy divided by seven equals ten
 seventy seven divided by seven equals eleven
 eighty four divided by seven equals twelve
+ninety one divided by seven equals thirteen
+ninety eight divided by seven equals fourteen
+one hundred five divided by seven equals fifteen
+one hundred twelve divided by seven equals sixteen
+one hundred nineteen divided by seven equals seventeen
+one hundred twenty six divided by seven equals eighteen
+one hundred thirty three divided by seven equals nineteen
+one hundred forty divided by seven equals twenty
 eight divided by eight equals one
 sixteen divided by eight equals two
 twenty four divided by eight equals three
@@ -494,6 +2182,14 @@ seventy two divided by eight equals nine
 eighty divided by eight equals ten
 eighty eight divided by eight equals eleven
 ninety six divided by eight equals twelve
+one hundred four divided by eight equals thirteen
+one hundred twelve divided by eight equals fourteen
+one hundred twenty divided by eight equals fifteen
+one hundred twenty eight divided by eight equals sixteen
+one hundred thirty six divided by eight equals seventeen
+one hundred forty four divided by eight equals eighteen
+one hundred fifty two divided by eight equals nineteen
+one hundred sixty divided by eight equals twenty
 nine divided by nine equals one
 eighteen divided by nine equals two
 twenty seven divided by nine equals three
@@ -506,6 +2202,14 @@ eighty one divided by nine equals nine
 ninety divided by nine equals ten
 ninety nine divided by nine equals eleven
 one hundred eight divided by nine equals twelve
+one hundred seventeen divided by nine equals thirteen
+one hundred twenty six divided by nine equals fourteen
+one hundred thirty five divided by nine equals fifteen
+one hundred forty four divided by nine equals sixteen
+one hundred fifty three divided by nine equals seventeen
+one hundred sixty two divided by nine equals eighteen
+one hundred seventy one divided by nine equals nineteen
+one hundred eighty divided by nine equals twenty
 ten divided by ten equals one
 twenty divided by ten equals two
 thirty divided by ten equals three
@@ -518,6 +2222,14 @@ ninety divided by ten equals nine
 one hundred divided by ten equals ten
 one hundred ten divided by ten equals eleven
 one hundred twenty divided by ten equals twelve
+one hundred thirty divided by ten equals thirteen
+one hundred forty divided by ten equals fourteen
+one hundred fifty divided by ten equals fifteen
+one hundred sixty divided by ten equals sixteen
+one hundred seventy divided by ten equals seventeen
+one hundred eighty divided by ten equals eighteen
+one hundred ninety divided by ten equals nineteen
+two hundred divided by ten equals twenty
 eleven divided by eleven equals one
 twenty two divided by eleven equals two
 thirty three divided by eleven equals three
@@ -530,6 +2242,14 @@ ninety nine divided by eleven equals nine
 one hundred ten divided by eleven equals ten
 one hundred twenty one divided by eleven equals eleven
 one hundred thirty two divided by eleven equals twelve
+one hundred forty three divided by eleven equals thirteen
+one hundred fifty four divided by eleven equals fourteen
+one hundred sixty five divided by eleven equals fifteen
+one hundred seventy six divided by eleven equals sixteen
+one hundred eighty seven divided by eleven equals seventeen
+one hundred ninety eight divided by eleven equals eighteen
+two hundred nine divided by eleven equals nineteen
+two hundred twenty divided by eleven equals twenty
 twelve divided by twelve equals one
 twenty four divided by twelve equals two
 thirty six divided by twelve equals three
@@ -542,6 +2262,174 @@ one hundred eight divided by twelve equals nine
 one hundred twenty divided by twelve equals ten
 one hundred thirty two divided by twelve equals eleven
 one hundred forty four divided by twelve equals twelve
+one hundred fifty six divided by twelve equals thirteen
+one hundred sixty eight divided by twelve equals fourteen
+one hundred eighty divided by twelve equals fifteen
+one hundred ninety two divided by twelve equals sixteen
+two hundred four divided by twelve equals seventeen
+two hundred sixteen divided by twelve equals eighteen
+two hundred twenty eight divided by twelve equals nineteen
+two hundred forty divided by twelve equals twenty
+thirteen divided by thirteen equals one
+twenty six divided by thirteen equals two
+thirty nine divided by thirteen equals three
+fifty two divided by thirteen equals four
+sixty five divided by thirteen equals five
+seventy eight divided by thirteen equals six
+ninety one divided by thirteen equals seven
+one hundred four divided by thirteen equals eight
+one hundred seventeen divided by thirteen equals nine
+one hundred thirty divided by thirteen equals ten
+one hundred forty three divided by thirteen equals eleven
+one hundred fifty six divided by thirteen equals twelve
+one hundred sixty nine divided by thirteen equals thirteen
+one hundred eighty two divided by thirteen equals fourteen
+one hundred ninety five divided by thirteen equals fifteen
+two hundred eight divided by thirteen equals sixteen
+two hundred twenty one divided by thirteen equals seventeen
+two hundred thirty four divided by thirteen equals eighteen
+two hundred forty seven divided by thirteen equals nineteen
+two hundred sixty divided by thirteen equals twenty
+fourteen divided by fourteen equals one
+twenty eight divided by fourteen equals two
+forty two divided by fourteen equals three
+fifty six divided by fourteen equals four
+seventy divided by fourteen equals five
+eighty four divided by fourteen equals six
+ninety eight divided by fourteen equals seven
+one hundred twelve divided by fourteen equals eight
+one hundred twenty six divided by fourteen equals nine
+one hundred forty divided by fourteen equals ten
+one hundred fifty four divided by fourteen equals eleven
+one hundred sixty eight divided by fourteen equals twelve
+one hundred eighty two divided by fourteen equals thirteen
+one hundred ninety six divided by fourteen equals fourteen
+two hundred ten divided by fourteen equals fifteen
+two hundred twenty four divided by fourteen equals sixteen
+two hundred thirty eight divided by fourteen equals seventeen
+two hundred fifty two divided by fourteen equals eighteen
+two hundred sixty six divided by fourteen equals nineteen
+two hundred eighty divided by fourteen equals twenty
+fifteen divided by fifteen equals one
+thirty divided by fifteen equals two
+forty five divided by fifteen equals three
+sixty divided by fifteen equals four
+seventy five divided by fifteen equals five
+ninety divided by fifteen equals six
+one hundred five divided by fifteen equals seven
+one hundred twenty divided by fifteen equals eight
+one hundred thirty five divided by fifteen equals nine
+one hundred fifty divided by fifteen equals ten
+one hundred sixty five divided by fifteen equals eleven
+one hundred eighty divided by fifteen equals twelve
+one hundred ninety five divided by fifteen equals thirteen
+two hundred ten divided by fifteen equals fourteen
+two hundred twenty five divided by fifteen equals fifteen
+two hundred forty divided by fifteen equals sixteen
+two hundred fifty five divided by fifteen equals seventeen
+two hundred seventy divided by fifteen equals eighteen
+two hundred eighty five divided by fifteen equals nineteen
+three hundred divided by fifteen equals twenty
+sixteen divided by sixteen equals one
+thirty two divided by sixteen equals two
+forty eight divided by sixteen equals three
+sixty four divided by sixteen equals four
+eighty divided by sixteen equals five
+ninety six divided by sixteen equals six
+one hundred twelve divided by sixteen equals seven
+one hundred twenty eight divided by sixteen equals eight
+one hundred forty four divided by sixteen equals nine
+one hundred sixty divided by sixteen equals ten
+one hundred seventy six divided by sixteen equals eleven
+one hundred ninety two divided by sixteen equals twelve
+two hundred eight divided by sixteen equals thirteen
+two hundred twenty four divided by sixteen equals fourteen
+two hundred forty divided by sixteen equals fifteen
+two hundred fifty six divided by sixteen equals sixteen
+two hundred seventy two divided by sixteen equals seventeen
+two hundred eighty eight divided by sixteen equals eighteen
+three hundred four divided by sixteen equals nineteen
+three hundred twenty divided by sixteen equals twenty
+seventeen divided by seventeen equals one
+thirty four divided by seventeen equals two
+fifty one divided by seventeen equals three
+sixty eight divided by seventeen equals four
+eighty five divided by seventeen equals five
+one hundred two divided by seventeen equals six
+one hundred nineteen divided by seventeen equals seven
+one hundred thirty six divided by seventeen equals eight
+one hundred fifty three divided by seventeen equals nine
+one hundred seventy divided by seventeen equals ten
+one hundred eighty seven divided by seventeen equals eleven
+two hundred four divided by seventeen equals twelve
+two hundred twenty one divided by seventeen equals thirteen
+two hundred thirty eight divided by seventeen equals fourteen
+two hundred fifty five divided by seventeen equals fifteen
+two hundred seventy two divided by seventeen equals sixteen
+two hundred eighty nine divided by seventeen equals seventeen
+three hundred six divided by seventeen equals eighteen
+three hundred twenty three divided by seventeen equals nineteen
+three hundred forty divided by seventeen equals twenty
+eighteen divided by eighteen equals one
+thirty six divided by eighteen equals two
+fifty four divided by eighteen equals three
+seventy two divided by eighteen equals four
+ninety divided by eighteen equals five
+one hundred eight divided by eighteen equals six
+one hundred twenty six divided by eighteen equals seven
+one hundred forty four divided by eighteen equals eight
+one hundred sixty two divided by eighteen equals nine
+one hundred eighty divided by eighteen equals ten
+one hundred ninety eight divided by eighteen equals eleven
+two hundred sixteen divided by eighteen equals twelve
+two hundred thirty four divided by eighteen equals thirteen
+two hundred fifty two divided by eighteen equals fourteen
+two hundred seventy divided by eighteen equals fifteen
+two hundred eighty eight divided by eighteen equals sixteen
+three hundred six divided by eighteen equals seventeen
+three hundred twenty four divided by eighteen equals eighteen
+three hundred forty two divided by eighteen equals nineteen
+three hundred sixty divided by eighteen equals twenty
+nineteen divided by nineteen equals one
+thirty eight divided by nineteen equals two
+fifty seven divided by nineteen equals three
+seventy six divided by nineteen equals four
+ninety five divided by nineteen equals five
+one hundred fourteen divided by nineteen equals six
+one hundred thirty three divided by nineteen equals seven
+one hundred fifty two divided by nineteen equals eight
+one hundred seventy one divided by nineteen equals nine
+one hundred ninety divided by nineteen equals ten
+two hundred nine divided by nineteen equals eleven
+two hundred twenty eight divided by nineteen equals twelve
+two hundred forty seven divided by nineteen equals thirteen
+two hundred sixty six divided by nineteen equals fourteen
+two hundred eighty five divided by nineteen equals fifteen
+three hundred four divided by nineteen equals sixteen
+three hundred twenty three divided by nineteen equals seventeen
+three hundred forty two divided by nineteen equals eighteen
+three hundred sixty one divided by nineteen equals nineteen
+three hundred eighty divided by nineteen equals twenty
+twenty divided by twenty equals one
+forty divided by twenty equals two
+sixty divided by twenty equals three
+eighty divided by twenty equals four
+one hundred divided by twenty equals five
+one hundred twenty divided by twenty equals six
+one hundred forty divided by twenty equals seven
+one hundred sixty divided by twenty equals eight
+one hundred eighty divided by twenty equals nine
+two hundred divided by twenty equals ten
+two hundred twenty divided by twenty equals eleven
+two hundred forty divided by twenty equals twelve
+two hundred sixty divided by twenty equals thirteen
+two hundred eighty divided by twenty equals fourteen
+three hundred divided by twenty equals fifteen
+three hundred twenty divided by twenty equals sixteen
+three hundred forty divided by twenty equals seventeen
+three hundred sixty divided by twenty equals eighteen
+three hundred eighty divided by twenty equals nineteen
+four hundred divided by twenty equals twenty
 two to the power of two equals four
 two to the power of three equals eight
 two to the power of four equals sixteen
@@ -554,6 +2442,20 @@ four to the power of four equals two hundred fifty six
 five to the power of two equals twenty five
 five to the power of three equals one hundred twenty five
 five to the power of four equals six hundred twenty five
+six to the power of two equals thirty six
+six to the power of three equals two hundred sixteen
+seven to the power of two equals forty nine
+seven to the power of three equals three hundred forty three
+the cube of one is one
+the cube of two is eight
+the cube of three is twenty seven
+the cube of four is sixty four
+the cube of five is one hundred twenty five
+the cube of six is two hundred sixteen
+the cube of seven is three hundred forty three
+the cube of eight is five hundred twelve
+the cube of nine is seven hundred twenty nine
+the cube of ten is 1000
 the square of one is one
 the square of two is four
 the square of three is nine
@@ -569,6 +2471,16 @@ the square of twelve is one hundred forty four
 the square of thirteen is one hundred sixty nine
 the square of fourteen is one hundred ninety six
 the square of fifteen is two hundred twenty five
+the square of sixteen is two hundred fifty six
+the square of seventeen is two hundred eighty nine
+the square of eighteen is three hundred twenty four
+the square of nineteen is three hundred sixty one
+the square of twenty is four hundred
+the square of twenty one is four hundred forty one
+the square of twenty two is four hundred eighty four
+the square of twenty three is five hundred twenty nine
+the square of twenty four is five hundred seventy six
+the square of twenty five is six hundred twenty five
 the square root of one is one
 the square root of four is two
 the square root of nine is three
@@ -584,6 +2496,16 @@ the square root of one hundred forty four is twelve
 the square root of one hundred sixty nine is thirteen
 the square root of one hundred ninety six is fourteen
 the square root of two hundred twenty five is fifteen
+the square root of two hundred fifty six is sixteen
+the square root of two hundred eighty nine is seventeen
+the square root of three hundred twenty four is eighteen
+the square root of three hundred sixty one is nineteen
+the square root of four hundred is twenty
+the square root of four hundred forty one is twenty one
+the square root of four hundred eighty four is twenty two
+the square root of five hundred twenty nine is twenty three
+the square root of five hundred seventy six is twenty four
+the square root of six hundred twenty five is twenty five
 two is a prime number
 three is a prime number
 five is a prime number
@@ -599,6 +2521,16 @@ thirty seven is a prime number
 forty one is a prime number
 forty three is a prime number
 forty seven is a prime number
+fifty three is a prime number
+fifty nine is a prime number
+sixty one is a prime number
+sixty seven is a prime number
+seventy one is a prime number
+seventy three is a prime number
+seventy nine is a prime number
+eighty three is a prime number
+eighty nine is a prime number
+ninety seven is a prime number
 four is a composite number
 six is a composite number
 eight is a composite number
@@ -617,6 +2549,22 @@ twenty five is a composite number
 twenty six is a composite number
 twenty seven is a composite number
 twenty eight is a composite number
+thirty is a composite number
+thirty two is a composite number
+thirty three is a composite number
+thirty four is a composite number
+thirty five is a composite number
+thirty six is a composite number
+thirty eight is a composite number
+thirty nine is a composite number
+forty is a composite number
+forty two is a composite number
+forty four is a composite number
+forty five is a composite number
+forty six is a composite number
+forty eight is a composite number
+forty nine is a composite number
+fifty is a composite number
 zero is an even number
 two is an even number
 four is an even number
@@ -628,6 +2576,26 @@ fourteen is an even number
 sixteen is an even number
 eighteen is an even number
 twenty is an even number
+twenty two is an even number
+twenty four is an even number
+twenty six is an even number
+twenty eight is an even number
+thirty is an even number
+thirty two is an even number
+thirty four is an even number
+thirty six is an even number
+thirty eight is an even number
+forty is an even number
+forty two is an even number
+forty four is an even number
+forty six is an even number
+forty eight is an even number
+fifty is an even number
+fifty two is an even number
+fifty four is an even number
+fifty six is an even number
+fifty eight is an even number
+sixty is an even number
 one is an odd number
 three is an odd number
 five is an odd number
@@ -638,12 +2606,484 @@ thirteen is an odd number
 fifteen is an odd number
 seventeen is an odd number
 nineteen is an odd number
+twenty one is an odd number
+twenty three is an odd number
+twenty five is an odd number
+twenty seven is an odd number
+twenty nine is an odd number
+thirty one is an odd number
+thirty three is an odd number
+thirty five is an odd number
+thirty seven is an odd number
+thirty nine is an odd number
+forty one is an odd number
+forty three is an odd number
+forty five is an odd number
+forty seven is an odd number
+forty nine is an odd number
+fifty one is an odd number
+fifty three is an odd number
+fifty five is an odd number
+fifty seven is an odd number
+fifty nine is an odd number
+one is less than two
+two is greater than one
+one is less than three
+three is greater than one
+one is less than four
+four is greater than one
+two is less than three
+three is greater than two
+two is less than four
+four is greater than two
+two is less than five
+five is greater than two
+three is less than four
+four is greater than three
+three is less than five
+five is greater than three
+three is less than six
+six is greater than three
+four is less than five
+five is greater than four
+four is less than six
+six is greater than four
+four is less than seven
+seven is greater than four
+five is less than six
+six is greater than five
+five is less than seven
+seven is greater than five
+five is less than eight
+eight is greater than five
+six is less than seven
+seven is greater than six
+six is less than eight
+eight is greater than six
+six is less than nine
+nine is greater than six
+seven is less than eight
+eight is greater than seven
+seven is less than nine
+nine is greater than seven
+seven is less than ten
+ten is greater than seven
+eight is less than nine
+nine is greater than eight
+eight is less than ten
+ten is greater than eight
+eight is less than eleven
+eleven is greater than eight
+nine is less than ten
+ten is greater than nine
+nine is less than eleven
+eleven is greater than nine
+nine is less than twelve
+twelve is greater than nine
+ten is less than eleven
+eleven is greater than ten
+ten is less than twelve
+twelve is greater than ten
+ten is less than thirteen
+thirteen is greater than ten
+eleven is less than twelve
+twelve is greater than eleven
+eleven is less than thirteen
+thirteen is greater than eleven
+eleven is less than fourteen
+fourteen is greater than eleven
+twelve is less than thirteen
+thirteen is greater than twelve
+twelve is less than fourteen
+fourteen is greater than twelve
+twelve is less than fifteen
+fifteen is greater than twelve
+thirteen is less than fourteen
+fourteen is greater than thirteen
+thirteen is less than fifteen
+fifteen is greater than thirteen
+thirteen is less than sixteen
+sixteen is greater than thirteen
+fourteen is less than fifteen
+fifteen is greater than fourteen
+fourteen is less than sixteen
+sixteen is greater than fourteen
+fourteen is less than seventeen
+seventeen is greater than fourteen
+fifteen is less than sixteen
+sixteen is greater than fifteen
+fifteen is less than seventeen
+seventeen is greater than fifteen
+fifteen is less than eighteen
+eighteen is greater than fifteen
+sixteen is less than seventeen
+seventeen is greater than sixteen
+sixteen is less than eighteen
+eighteen is greater than sixteen
+sixteen is less than nineteen
+nineteen is greater than sixteen
+seventeen is less than eighteen
+eighteen is greater than seventeen
+seventeen is less than nineteen
+nineteen is greater than seventeen
+seventeen is less than twenty
+twenty is greater than seventeen
+eighteen is less than nineteen
+nineteen is greater than eighteen
+eighteen is less than twenty
+twenty is greater than eighteen
+eighteen is less than twenty one
+twenty one is greater than eighteen
+nineteen is less than twenty
+twenty is greater than nineteen
+nineteen is less than twenty one
+twenty one is greater than nineteen
+nineteen is less than twenty two
+twenty two is greater than nineteen
+twenty is less than twenty one
+twenty one is greater than twenty
+twenty is less than twenty two
+twenty two is greater than twenty
+twenty is less than twenty three
+twenty three is greater than twenty
+twenty one is less than twenty two
+twenty two is greater than twenty one
+twenty one is less than twenty three
+twenty three is greater than twenty one
+twenty one is less than twenty four
+twenty four is greater than twenty one
+twenty two is less than twenty three
+twenty three is greater than twenty two
+twenty two is less than twenty four
+twenty four is greater than twenty two
+twenty two is less than twenty five
+twenty five is greater than twenty two
+twenty three is less than twenty four
+twenty four is greater than twenty three
+twenty three is less than twenty five
+twenty five is greater than twenty three
+twenty three is less than twenty six
+twenty six is greater than twenty three
+twenty four is less than twenty five
+twenty five is greater than twenty four
+twenty four is less than twenty six
+twenty six is greater than twenty four
+twenty four is less than twenty seven
+twenty seven is greater than twenty four
+twenty five is less than twenty six
+twenty six is greater than twenty five
+twenty five is less than twenty seven
+twenty seven is greater than twenty five
+twenty five is less than twenty eight
+twenty eight is greater than twenty five
+twenty six is less than twenty seven
+twenty seven is greater than twenty six
+twenty six is less than twenty eight
+twenty eight is greater than twenty six
+twenty six is less than twenty nine
+twenty nine is greater than twenty six
+twenty seven is less than twenty eight
+twenty eight is greater than twenty seven
+twenty seven is less than twenty nine
+twenty nine is greater than twenty seven
+twenty seven is less than thirty
+thirty is greater than twenty seven
+twenty eight is less than twenty nine
+twenty nine is greater than twenty eight
+twenty eight is less than thirty
+thirty is greater than twenty eight
+twenty nine is less than thirty
+thirty is greater than twenty nine
+the factorial of zero is one
+the factorial of one is one
+the factorial of two is two
+the factorial of three is six
+the factorial of four is twenty four
+the factorial of five is one hundred twenty
+the factorial of six is seven hundred twenty
+in the fibonacci sequence zero is followed by one
+in the fibonacci sequence one is followed by one
+in the fibonacci sequence one is followed by two
+in the fibonacci sequence two is followed by three
+in the fibonacci sequence three is followed by five
+in the fibonacci sequence five is followed by eight
+in the fibonacci sequence eight is followed by thirteen
+in the fibonacci sequence thirteen is followed by twenty one
+in the fibonacci sequence twenty one is followed by thirty four
+in the fibonacci sequence thirty four is followed by fifty five
+in the fibonacci sequence fifty five is followed by eighty nine
+in the fibonacci sequence eighty nine is followed by one hundred forty four
+the greatest common divisor of two and four is two
+the greatest common divisor of two and six is two
+the greatest common divisor of two and eight is two
+the greatest common divisor of two and ten is two
+the greatest common divisor of two and twelve is two
+the greatest common divisor of two and fourteen is two
+the greatest common divisor of three and six is three
+the greatest common divisor of three and nine is three
+the greatest common divisor of three and twelve is three
+the greatest common divisor of three and fifteen is three
+the greatest common divisor of four and six is two
+the greatest common divisor of four and eight is four
+the greatest common divisor of four and ten is two
+the greatest common divisor of four and twelve is four
+the greatest common divisor of four and fourteen is two
+the greatest common divisor of five and ten is five
+the greatest common divisor of five and fifteen is five
+the greatest common divisor of six and eight is two
+the greatest common divisor of six and nine is three
+the greatest common divisor of six and ten is two
+the greatest common divisor of six and twelve is six
+the greatest common divisor of six and fourteen is two
+the greatest common divisor of six and fifteen is three
+the greatest common divisor of seven and fourteen is seven
+the greatest common divisor of eight and ten is two
+the greatest common divisor of eight and twelve is four
+the greatest common divisor of eight and fourteen is two
+the greatest common divisor of nine and twelve is three
+the greatest common divisor of nine and fifteen is three
+the greatest common divisor of ten and twelve is two
+the greatest common divisor of ten and fourteen is two
+the greatest common divisor of ten and fifteen is five
+the greatest common divisor of twelve and fourteen is two
+the greatest common divisor of twelve and fifteen is three
+two modulo two equals zero
+two modulo three equals two
+two modulo five equals two
+two modulo seven equals two
+two modulo ten equals two
+three modulo two equals one
+three modulo three equals zero
+three modulo five equals three
+three modulo seven equals three
+three modulo ten equals three
+four modulo two equals zero
+four modulo three equals one
+four modulo five equals four
+four modulo seven equals four
+four modulo ten equals four
+five modulo two equals one
+five modulo three equals two
+five modulo five equals zero
+five modulo seven equals five
+five modulo ten equals five
+six modulo two equals zero
+six modulo three equals zero
+six modulo five equals one
+six modulo seven equals six
+six modulo ten equals six
+seven modulo two equals one
+seven modulo three equals one
+seven modulo five equals two
+seven modulo seven equals zero
+seven modulo ten equals seven
+eight modulo two equals zero
+eight modulo three equals two
+eight modulo five equals three
+eight modulo seven equals one
+eight modulo ten equals eight
+nine modulo two equals one
+nine modulo three equals zero
+nine modulo five equals four
+nine modulo seven equals two
+nine modulo ten equals nine
+ten modulo two equals zero
+ten modulo three equals one
+ten modulo five equals zero
+ten modulo seven equals three
+ten modulo ten equals zero
+eleven modulo two equals one
+eleven modulo three equals two
+eleven modulo five equals one
+eleven modulo seven equals four
+eleven modulo ten equals one
+twelve modulo two equals zero
+twelve modulo three equals zero
+twelve modulo five equals two
+twelve modulo seven equals five
+twelve modulo ten equals two
+thirteen modulo two equals one
+thirteen modulo three equals one
+thirteen modulo five equals three
+thirteen modulo seven equals six
+thirteen modulo ten equals three
+fourteen modulo two equals zero
+fourteen modulo three equals two
+fourteen modulo five equals four
+fourteen modulo seven equals zero
+fourteen modulo ten equals four
+fifteen modulo two equals one
+fifteen modulo three equals zero
+fifteen modulo five equals zero
+fifteen modulo seven equals one
+fifteen modulo ten equals five
+sixteen modulo two equals zero
+sixteen modulo three equals one
+sixteen modulo five equals one
+sixteen modulo seven equals two
+sixteen modulo ten equals six
+seventeen modulo two equals one
+seventeen modulo three equals two
+seventeen modulo five equals two
+seventeen modulo seven equals three
+seventeen modulo ten equals seven
+eighteen modulo two equals zero
+eighteen modulo three equals zero
+eighteen modulo five equals three
+eighteen modulo seven equals four
+eighteen modulo ten equals eight
+nineteen modulo two equals one
+nineteen modulo three equals one
+nineteen modulo five equals four
+nineteen modulo seven equals five
+nineteen modulo ten equals nine
+twenty modulo two equals zero
+twenty modulo three equals two
+twenty modulo five equals zero
+twenty modulo seven equals six
+twenty modulo ten equals zero
+twenty one modulo two equals one
+twenty one modulo three equals zero
+twenty one modulo five equals one
+twenty one modulo seven equals zero
+twenty one modulo ten equals one
+twenty two modulo two equals zero
+twenty two modulo three equals one
+twenty two modulo five equals two
+twenty two modulo seven equals one
+twenty two modulo ten equals two
+twenty three modulo two equals one
+twenty three modulo three equals two
+twenty three modulo five equals three
+twenty three modulo seven equals two
+twenty three modulo ten equals three
+twenty four modulo two equals zero
+twenty four modulo three equals zero
+twenty four modulo five equals four
+twenty four modulo seven equals three
+twenty four modulo ten equals four
+twenty five modulo two equals one
+twenty five modulo three equals one
+twenty five modulo five equals zero
+twenty five modulo seven equals four
+twenty five modulo ten equals five
+twenty six modulo two equals zero
+twenty six modulo three equals two
+twenty six modulo five equals one
+twenty six modulo seven equals five
+twenty six modulo ten equals six
+twenty seven modulo two equals one
+twenty seven modulo three equals zero
+twenty seven modulo five equals two
+twenty seven modulo seven equals six
+twenty seven modulo ten equals seven
+twenty eight modulo two equals zero
+twenty eight modulo three equals one
+twenty eight modulo five equals three
+twenty eight modulo seven equals zero
+twenty eight modulo ten equals eight
+twenty nine modulo two equals one
+twenty nine modulo three equals two
+twenty nine modulo five equals four
+twenty nine modulo seven equals one
+twenty nine modulo ten equals nine
+thirty modulo two equals zero
+thirty modulo three equals zero
+thirty modulo five equals zero
+thirty modulo seven equals two
+thirty modulo ten equals zero
+double one is two
+double two is four
+double three is six
+double four is eight
+double five is ten
+double six is twelve
+double seven is fourteen
+double eight is sixteen
+double nine is eighteen
+double ten is twenty
+double eleven is twenty two
+double twelve is twenty four
+double thirteen is twenty six
+double fourteen is twenty eight
+double fifteen is thirty
+double sixteen is thirty two
+double seventeen is thirty four
+double eighteen is thirty six
+double nineteen is thirty eight
+double twenty is forty
+double twenty one is forty two
+double twenty two is forty four
+double twenty three is forty six
+double twenty four is forty eight
+double twenty five is fifty
+double twenty six is fifty two
+double twenty seven is fifty four
+double twenty eight is fifty six
+double twenty nine is fifty eight
+double thirty is sixty
+half of two is one
+half of four is two
+half of six is three
+half of eight is four
+half of ten is five
+half of twelve is six
+half of fourteen is seven
+half of sixteen is eight
+half of eighteen is nine
+half of twenty is ten
+half of twenty two is eleven
+half of twenty four is twelve
+half of twenty six is thirteen
+half of twenty eight is fourteen
+half of thirty is fifteen
+half of thirty two is sixteen
+half of thirty four is seventeen
+half of thirty six is eighteen
+half of thirty eight is nineteen
+half of forty is twenty
+half of forty two is twenty one
+half of forty four is twenty two
+half of forty six is twenty three
+half of forty eight is twenty four
+half of fifty is twenty five
+half of fifty two is twenty six
+half of fifty four is twenty seven
+half of fifty six is twenty eight
+half of fifty eight is twenty nine
+half of sixty is thirty
 one half equals zero point five
 one third equals approximately zero point three three
 one quarter equals zero point two five
 three quarters equals zero point seven five
 one fifth equals zero point two
+two fifths equals zero point four
+three fifths equals zero point six
+four fifths equals zero point eight
 two thirds equals approximately zero point six seven
+one sixth equals approximately zero point one seven
+one eighth equals zero point one two five
+one tenth equals zero point one
+three tenths equals zero point three
+seven tenths equals zero point seven
+nine tenths equals zero point nine
+the natural numbers are zero one two three and so on
+the integers include negative numbers zero and positive numbers
+a rational number can be expressed as a fraction
+an irrational number cannot be expressed as a fraction
+the square root of two is irrational
+e is approximately two point seven one eight
+e is the base of the natural logarithm
+the golden ratio phi equals approximately one point six one eight
+phi equals one plus the square root of five divided by two
+the golden ratio appears in the fibonacci sequence
+a perfect number equals the sum of its proper divisors
+six is a perfect number because one plus two plus three equals six
+twenty eight is a perfect number
+a fibonacci number is the sum of the two preceding fibonacci numbers
+the fibonacci sequence starts with zero and one
+the triangular numbers are one three six ten fifteen twenty one
+the nth triangular number equals n times n plus one divided by two
 addition combines two numbers into a sum
 subtraction finds the difference between two numbers
 multiplication is repeated addition
@@ -688,3 +3128,733 @@ algebra uses variables to solve equations
 the mean is the sum of values divided by the count
 the median is the middle value when sorted
 the mode is the most frequently occurring value
+the range is the difference between the largest and smallest values
+standard deviation measures the spread of data around the mean
+a function maps each input to exactly one output
+a linear function has the form y equals mx plus b
+the slope of a line measures its steepness
+a quadratic function has the form y equals ax squared plus bx plus c
+the quadratic formula solves ax squared plus bx plus c equals zero
+a polynomial is a sum of terms with variable powers
+the degree of a polynomial is the highest power
+logarithm is the inverse of exponentiation
+log base ten of one hundred equals two
+the natural logarithm uses base e
+a matrix is a rectangular array of numbers
+matrix multiplication combines rows and columns
+the determinant of a matrix indicates if it is invertible
+a vector has both magnitude and direction
+the dot product measures alignment between vectors
+the cross product produces a perpendicular vector
+calculus studies continuous change
+a derivative measures instantaneous rate of change
+an integral measures accumulated quantity
+the fundamental theorem of calculus connects derivatives and integrals
+a limit describes the value a function approaches
+a series is the sum of terms of a sequence
+a convergent series has a finite sum
+a divergent series does not have a finite sum
+the geometric series one half plus one quarter plus one eighth converges to one
+negative twenty plus one equals negative nineteen
+negative twenty plus two equals negative eighteen
+negative twenty plus three equals negative seventeen
+negative twenty plus four equals negative sixteen
+negative twenty plus five equals negative fifteen
+negative twenty plus six equals negative fourteen
+negative twenty plus seven equals negative thirteen
+negative twenty plus eight equals negative twelve
+negative twenty plus nine equals negative eleven
+negative twenty plus ten equals negative ten
+negative twenty plus eleven equals negative nine
+negative twenty plus twelve equals negative eight
+negative twenty plus thirteen equals negative seven
+negative twenty plus fourteen equals negative six
+negative twenty plus fifteen equals negative five
+negative twenty plus sixteen equals negative four
+negative twenty plus seventeen equals negative three
+negative twenty plus eighteen equals negative two
+negative twenty plus nineteen equals negative one
+negative twenty plus twenty equals zero
+negative nineteen plus one equals negative eighteen
+negative nineteen plus two equals negative seventeen
+negative nineteen plus three equals negative sixteen
+negative nineteen plus four equals negative fifteen
+negative nineteen plus five equals negative fourteen
+negative nineteen plus six equals negative thirteen
+negative nineteen plus seven equals negative twelve
+negative nineteen plus eight equals negative eleven
+negative nineteen plus nine equals negative ten
+negative nineteen plus ten equals negative nine
+negative nineteen plus eleven equals negative eight
+negative nineteen plus twelve equals negative seven
+negative nineteen plus thirteen equals negative six
+negative nineteen plus fourteen equals negative five
+negative nineteen plus fifteen equals negative four
+negative nineteen plus sixteen equals negative three
+negative nineteen plus seventeen equals negative two
+negative nineteen plus eighteen equals negative one
+negative nineteen plus nineteen equals zero
+negative nineteen plus twenty equals one
+negative eighteen plus one equals negative seventeen
+negative eighteen plus two equals negative sixteen
+negative eighteen plus three equals negative fifteen
+negative eighteen plus four equals negative fourteen
+negative eighteen plus five equals negative thirteen
+negative eighteen plus six equals negative twelve
+negative eighteen plus seven equals negative eleven
+negative eighteen plus eight equals negative ten
+negative eighteen plus nine equals negative nine
+negative eighteen plus ten equals negative eight
+negative eighteen plus eleven equals negative seven
+negative eighteen plus twelve equals negative six
+negative eighteen plus thirteen equals negative five
+negative eighteen plus fourteen equals negative four
+negative eighteen plus fifteen equals negative three
+negative eighteen plus sixteen equals negative two
+negative eighteen plus seventeen equals negative one
+negative eighteen plus eighteen equals zero
+negative eighteen plus nineteen equals one
+negative eighteen plus twenty equals two
+negative seventeen plus one equals negative sixteen
+negative seventeen plus two equals negative fifteen
+negative seventeen plus three equals negative fourteen
+negative seventeen plus four equals negative thirteen
+negative seventeen plus five equals negative twelve
+negative seventeen plus six equals negative eleven
+negative seventeen plus seven equals negative ten
+negative seventeen plus eight equals negative nine
+negative seventeen plus nine equals negative eight
+negative seventeen plus ten equals negative seven
+negative seventeen plus eleven equals negative six
+negative seventeen plus twelve equals negative five
+negative seventeen plus thirteen equals negative four
+negative seventeen plus fourteen equals negative three
+negative seventeen plus fifteen equals negative two
+negative seventeen plus sixteen equals negative one
+negative seventeen plus seventeen equals zero
+negative seventeen plus eighteen equals one
+negative seventeen plus nineteen equals two
+negative seventeen plus twenty equals three
+negative sixteen plus one equals negative fifteen
+negative sixteen plus two equals negative fourteen
+negative sixteen plus three equals negative thirteen
+negative sixteen plus four equals negative twelve
+negative sixteen plus five equals negative eleven
+negative sixteen plus six equals negative ten
+negative sixteen plus seven equals negative nine
+negative sixteen plus eight equals negative eight
+negative sixteen plus nine equals negative seven
+negative sixteen plus ten equals negative six
+negative sixteen plus eleven equals negative five
+negative sixteen plus twelve equals negative four
+negative sixteen plus thirteen equals negative three
+negative sixteen plus fourteen equals negative two
+negative sixteen plus fifteen equals negative one
+negative sixteen plus sixteen equals zero
+negative sixteen plus seventeen equals one
+negative sixteen plus eighteen equals two
+negative sixteen plus nineteen equals three
+negative sixteen plus twenty equals four
+negative fifteen plus one equals negative fourteen
+negative fifteen plus two equals negative thirteen
+negative fifteen plus three equals negative twelve
+negative fifteen plus four equals negative eleven
+negative fifteen plus five equals negative ten
+negative fifteen plus six equals negative nine
+negative fifteen plus seven equals negative eight
+negative fifteen plus eight equals negative seven
+negative fifteen plus nine equals negative six
+negative fifteen plus ten equals negative five
+negative fifteen plus eleven equals negative four
+negative fifteen plus twelve equals negative three
+negative fifteen plus thirteen equals negative two
+negative fifteen plus fourteen equals negative one
+negative fifteen plus fifteen equals zero
+negative fifteen plus sixteen equals one
+negative fifteen plus seventeen equals two
+negative fifteen plus eighteen equals three
+negative fifteen plus nineteen equals four
+negative fifteen plus twenty equals five
+negative fourteen plus one equals negative thirteen
+negative fourteen plus two equals negative twelve
+negative fourteen plus three equals negative eleven
+negative fourteen plus four equals negative ten
+negative fourteen plus five equals negative nine
+negative fourteen plus six equals negative eight
+negative fourteen plus seven equals negative seven
+negative fourteen plus eight equals negative six
+negative fourteen plus nine equals negative five
+negative fourteen plus ten equals negative four
+negative fourteen plus eleven equals negative three
+negative fourteen plus twelve equals negative two
+negative fourteen plus thirteen equals negative one
+negative fourteen plus fourteen equals zero
+negative fourteen plus fifteen equals one
+negative fourteen plus sixteen equals two
+negative fourteen plus seventeen equals three
+negative fourteen plus eighteen equals four
+negative fourteen plus nineteen equals five
+negative fourteen plus twenty equals six
+negative thirteen plus one equals negative twelve
+negative thirteen plus two equals negative eleven
+negative thirteen plus three equals negative ten
+negative thirteen plus four equals negative nine
+negative thirteen plus five equals negative eight
+negative thirteen plus six equals negative seven
+negative thirteen plus seven equals negative six
+negative thirteen plus eight equals negative five
+negative thirteen plus nine equals negative four
+negative thirteen plus ten equals negative three
+negative thirteen plus eleven equals negative two
+negative thirteen plus twelve equals negative one
+negative thirteen plus thirteen equals zero
+negative thirteen plus fourteen equals one
+negative thirteen plus fifteen equals two
+negative thirteen plus sixteen equals three
+negative thirteen plus seventeen equals four
+negative thirteen plus eighteen equals five
+negative thirteen plus nineteen equals six
+negative thirteen plus twenty equals seven
+negative twelve plus one equals negative eleven
+negative twelve plus two equals negative ten
+negative twelve plus three equals negative nine
+negative twelve plus four equals negative eight
+negative twelve plus five equals negative seven
+negative twelve plus six equals negative six
+negative twelve plus seven equals negative five
+negative twelve plus eight equals negative four
+negative twelve plus nine equals negative three
+negative twelve plus ten equals negative two
+negative twelve plus eleven equals negative one
+negative twelve plus twelve equals zero
+negative twelve plus thirteen equals one
+negative twelve plus fourteen equals two
+negative twelve plus fifteen equals three
+negative twelve plus sixteen equals four
+negative twelve plus seventeen equals five
+negative twelve plus eighteen equals six
+negative twelve plus nineteen equals seven
+negative twelve plus twenty equals eight
+negative eleven plus one equals negative ten
+negative eleven plus two equals negative nine
+negative eleven plus three equals negative eight
+negative eleven plus four equals negative seven
+negative eleven plus five equals negative six
+negative eleven plus six equals negative five
+negative eleven plus seven equals negative four
+negative eleven plus eight equals negative three
+negative eleven plus nine equals negative two
+negative eleven plus ten equals negative one
+negative eleven plus eleven equals zero
+negative eleven plus twelve equals one
+negative eleven plus thirteen equals two
+negative eleven plus fourteen equals three
+negative eleven plus fifteen equals four
+negative eleven plus sixteen equals five
+negative eleven plus seventeen equals six
+negative eleven plus eighteen equals seven
+negative eleven plus nineteen equals eight
+negative eleven plus twenty equals nine
+negative ten plus one equals negative nine
+negative ten plus two equals negative eight
+negative ten plus three equals negative seven
+negative ten plus four equals negative six
+negative ten plus five equals negative five
+negative ten plus six equals negative four
+negative ten plus seven equals negative three
+negative ten plus eight equals negative two
+negative ten plus nine equals negative one
+negative ten plus ten equals zero
+negative ten plus eleven equals one
+negative ten plus twelve equals two
+negative ten plus thirteen equals three
+negative ten plus fourteen equals four
+negative ten plus fifteen equals five
+negative ten plus sixteen equals six
+negative ten plus seventeen equals seven
+negative ten plus eighteen equals eight
+negative ten plus nineteen equals nine
+negative ten plus twenty equals ten
+negative nine plus one equals negative eight
+negative nine plus two equals negative seven
+negative nine plus three equals negative six
+negative nine plus four equals negative five
+negative nine plus five equals negative four
+negative nine plus six equals negative three
+negative nine plus seven equals negative two
+negative nine plus eight equals negative one
+negative nine plus nine equals zero
+negative nine plus ten equals one
+negative nine plus eleven equals two
+negative nine plus twelve equals three
+negative nine plus thirteen equals four
+negative nine plus fourteen equals five
+negative nine plus fifteen equals six
+negative nine plus sixteen equals seven
+negative nine plus seventeen equals eight
+negative nine plus eighteen equals nine
+negative nine plus nineteen equals ten
+negative nine plus twenty equals eleven
+negative eight plus one equals negative seven
+negative eight plus two equals negative six
+negative eight plus three equals negative five
+negative eight plus four equals negative four
+negative eight plus five equals negative three
+negative eight plus six equals negative two
+negative eight plus seven equals negative one
+negative eight plus eight equals zero
+negative eight plus nine equals one
+negative eight plus ten equals two
+negative eight plus eleven equals three
+negative eight plus twelve equals four
+negative eight plus thirteen equals five
+negative eight plus fourteen equals six
+negative eight plus fifteen equals seven
+negative eight plus sixteen equals eight
+negative eight plus seventeen equals nine
+negative eight plus eighteen equals ten
+negative eight plus nineteen equals eleven
+negative eight plus twenty equals twelve
+negative seven plus one equals negative six
+negative seven plus two equals negative five
+negative seven plus three equals negative four
+negative seven plus four equals negative three
+negative seven plus five equals negative two
+negative seven plus six equals negative one
+negative seven plus seven equals zero
+negative seven plus eight equals one
+negative seven plus nine equals two
+negative seven plus ten equals three
+negative seven plus eleven equals four
+negative seven plus twelve equals five
+negative seven plus thirteen equals six
+negative seven plus fourteen equals seven
+negative seven plus fifteen equals eight
+negative seven plus sixteen equals nine
+negative seven plus seventeen equals ten
+negative seven plus eighteen equals eleven
+negative seven plus nineteen equals twelve
+negative seven plus twenty equals thirteen
+negative six plus one equals negative five
+negative six plus two equals negative four
+negative six plus three equals negative three
+negative six plus four equals negative two
+negative six plus five equals negative one
+negative six plus six equals zero
+negative six plus seven equals one
+negative six plus eight equals two
+negative six plus nine equals three
+negative six plus ten equals four
+negative six plus eleven equals five
+negative six plus twelve equals six
+negative six plus thirteen equals seven
+negative six plus fourteen equals eight
+negative six plus fifteen equals nine
+negative six plus sixteen equals ten
+negative six plus seventeen equals eleven
+negative six plus eighteen equals twelve
+negative six plus nineteen equals thirteen
+negative six plus twenty equals fourteen
+negative five plus one equals negative four
+negative five plus two equals negative three
+negative five plus three equals negative two
+negative five plus four equals negative one
+negative five plus five equals zero
+negative five plus six equals one
+negative five plus seven equals two
+negative five plus eight equals three
+negative five plus nine equals four
+negative five plus ten equals five
+negative five plus eleven equals six
+negative five plus twelve equals seven
+negative five plus thirteen equals eight
+negative five plus fourteen equals nine
+negative five plus fifteen equals ten
+negative five plus sixteen equals eleven
+negative five plus seventeen equals twelve
+negative five plus eighteen equals thirteen
+negative five plus nineteen equals fourteen
+negative five plus twenty equals fifteen
+negative four plus one equals negative three
+negative four plus two equals negative two
+negative four plus three equals negative one
+negative four plus four equals zero
+negative four plus five equals one
+negative four plus six equals two
+negative four plus seven equals three
+negative four plus eight equals four
+negative four plus nine equals five
+negative four plus ten equals six
+negative four plus eleven equals seven
+negative four plus twelve equals eight
+negative four plus thirteen equals nine
+negative four plus fourteen equals ten
+negative four plus fifteen equals eleven
+negative four plus sixteen equals twelve
+negative four plus seventeen equals thirteen
+negative four plus eighteen equals fourteen
+negative four plus nineteen equals fifteen
+negative four plus twenty equals sixteen
+negative three plus one equals negative two
+negative three plus two equals negative one
+negative three plus three equals zero
+negative three plus four equals one
+negative three plus five equals two
+negative three plus six equals three
+negative three plus seven equals four
+negative three plus eight equals five
+negative three plus nine equals six
+negative three plus ten equals seven
+negative three plus eleven equals eight
+negative three plus twelve equals nine
+negative three plus thirteen equals ten
+negative three plus fourteen equals eleven
+negative three plus fifteen equals twelve
+negative three plus sixteen equals thirteen
+negative three plus seventeen equals fourteen
+negative three plus eighteen equals fifteen
+negative three plus nineteen equals sixteen
+negative three plus twenty equals seventeen
+negative two plus one equals negative one
+negative two plus two equals zero
+negative two plus three equals one
+negative two plus four equals two
+negative two plus five equals three
+negative two plus six equals four
+negative two plus seven equals five
+negative two plus eight equals six
+negative two plus nine equals seven
+negative two plus ten equals eight
+negative two plus eleven equals nine
+negative two plus twelve equals ten
+negative two plus thirteen equals eleven
+negative two plus fourteen equals twelve
+negative two plus fifteen equals thirteen
+negative two plus sixteen equals fourteen
+negative two plus seventeen equals fifteen
+negative two plus eighteen equals sixteen
+negative two plus nineteen equals seventeen
+negative two plus twenty equals eighteen
+negative one plus one equals zero
+negative one plus two equals one
+negative one plus three equals two
+negative one plus four equals three
+negative one plus five equals four
+negative one plus six equals five
+negative one plus seven equals six
+negative one plus eight equals seven
+negative one plus nine equals eight
+negative one plus ten equals nine
+negative one plus eleven equals ten
+negative one plus twelve equals eleven
+negative one plus thirteen equals twelve
+negative one plus fourteen equals thirteen
+negative one plus fifteen equals fourteen
+negative one plus sixteen equals fifteen
+negative one plus seventeen equals sixteen
+negative one plus eighteen equals seventeen
+negative one plus nineteen equals eighteen
+negative one plus twenty equals nineteen
+one percent of one hundred is one
+five percent of one hundred is five
+ten percent of one hundred is ten
+fifteen percent of one hundred is fifteen
+twenty percent of one hundred is twenty
+twenty five percent of one hundred is twenty five
+thirty percent of one hundred is thirty
+forty percent of one hundred is forty
+fifty percent of one hundred is fifty
+sixty percent of one hundred is sixty
+seventy percent of one hundred is seventy
+seventy five percent of one hundred is seventy five
+eighty percent of one hundred is eighty
+ninety percent of one hundred is ninety
+one hundred percent of one hundred is one hundred
+ten percent of fifty is five
+ten percent of two hundred is twenty
+ten percent of five hundred is fifty
+ten percent of 1000 is one hundred
+twenty percent of fifty is ten
+twenty percent of two hundred is forty
+twenty percent of five hundred is one hundred
+twenty percent of 1000 is two hundred
+twenty five percent of fifty is twelve
+twenty five percent of two hundred is fifty
+twenty five percent of five hundred is one hundred twenty five
+twenty five percent of 1000 is two hundred fifty
+fifty percent of fifty is twenty five
+fifty percent of two hundred is one hundred
+fifty percent of five hundred is two hundred fifty
+fifty percent of 1000 is five hundred
+the number after zero is one
+the number after one is two
+the number after two is three
+the number after three is four
+the number after four is five
+the number after five is six
+the number after six is seven
+the number after seven is eight
+the number after eight is nine
+the number after nine is ten
+the number after ten is eleven
+the number after eleven is twelve
+the number after twelve is thirteen
+the number after thirteen is fourteen
+the number after fourteen is fifteen
+the number after fifteen is sixteen
+the number after sixteen is seventeen
+the number after seventeen is eighteen
+the number after eighteen is nineteen
+the number after nineteen is twenty
+the number after twenty is twenty one
+the number after twenty one is twenty two
+the number after twenty two is twenty three
+the number after twenty three is twenty four
+the number after twenty four is twenty five
+the number after twenty five is twenty six
+the number after twenty six is twenty seven
+the number after twenty seven is twenty eight
+the number after twenty eight is twenty nine
+the number after twenty nine is thirty
+the number after thirty is thirty one
+the number after thirty one is thirty two
+the number after thirty two is thirty three
+the number after thirty three is thirty four
+the number after thirty four is thirty five
+the number after thirty five is thirty six
+the number after thirty six is thirty seven
+the number after thirty seven is thirty eight
+the number after thirty eight is thirty nine
+the number after thirty nine is forty
+the number after forty is forty one
+the number after forty one is forty two
+the number after forty two is forty three
+the number after forty three is forty four
+the number after forty four is forty five
+the number after forty five is forty six
+the number after forty six is forty seven
+the number after forty seven is forty eight
+the number after forty eight is forty nine
+the number after forty nine is fifty
+the number after fifty is fifty one
+the number after fifty one is fifty two
+the number after fifty two is fifty three
+the number after fifty three is fifty four
+the number after fifty four is fifty five
+the number after fifty five is fifty six
+the number after fifty six is fifty seven
+the number after fifty seven is fifty eight
+the number after fifty eight is fifty nine
+the number after fifty nine is sixty
+the number after sixty is sixty one
+the number after sixty one is sixty two
+the number after sixty two is sixty three
+the number after sixty three is sixty four
+the number after sixty four is sixty five
+the number after sixty five is sixty six
+the number after sixty six is sixty seven
+the number after sixty seven is sixty eight
+the number after sixty eight is sixty nine
+the number after sixty nine is seventy
+the number after seventy is seventy one
+the number after seventy one is seventy two
+the number after seventy two is seventy three
+the number after seventy three is seventy four
+the number after seventy four is seventy five
+the number after seventy five is seventy six
+the number after seventy six is seventy seven
+the number after seventy seven is seventy eight
+the number after seventy eight is seventy nine
+the number after seventy nine is eighty
+the number after eighty is eighty one
+the number after eighty one is eighty two
+the number after eighty two is eighty three
+the number after eighty three is eighty four
+the number after eighty four is eighty five
+the number after eighty five is eighty six
+the number after eighty six is eighty seven
+the number after eighty seven is eighty eight
+the number after eighty eight is eighty nine
+the number after eighty nine is ninety
+the number after ninety is ninety one
+the number after ninety one is ninety two
+the number after ninety two is ninety three
+the number after ninety three is ninety four
+the number after ninety four is ninety five
+the number after ninety five is ninety six
+the number after ninety six is ninety seven
+the number after ninety seven is ninety eight
+the number after ninety eight is ninety nine
+the number after ninety nine is one hundred
+the sum of the first one natural numbers is one
+the sum of the first two natural numbers is three
+the sum of the first three natural numbers is six
+the sum of the first four natural numbers is ten
+the sum of the first five natural numbers is fifteen
+the sum of the first six natural numbers is twenty one
+the sum of the first seven natural numbers is twenty eight
+the sum of the first eight natural numbers is thirty six
+the sum of the first nine natural numbers is forty five
+the sum of the first ten natural numbers is fifty five
+the sum of the first eleven natural numbers is sixty six
+the sum of the first twelve natural numbers is seventy eight
+the sum of the first thirteen natural numbers is ninety one
+the sum of the first fourteen natural numbers is one hundred five
+the sum of the first fifteen natural numbers is one hundred twenty
+the sum of the first sixteen natural numbers is one hundred thirty six
+the sum of the first seventeen natural numbers is one hundred fifty three
+the sum of the first eighteen natural numbers is one hundred seventy one
+the sum of the first nineteen natural numbers is one hundred ninety
+the sum of the first twenty natural numbers is two hundred ten
+the absolute value of negative twenty is twenty
+the absolute value of negative nineteen is nineteen
+the absolute value of negative eighteen is eighteen
+the absolute value of negative seventeen is seventeen
+the absolute value of negative sixteen is sixteen
+the absolute value of negative fifteen is fifteen
+the absolute value of negative fourteen is fourteen
+the absolute value of negative thirteen is thirteen
+the absolute value of negative twelve is twelve
+the absolute value of negative eleven is eleven
+the absolute value of negative ten is ten
+the absolute value of negative nine is nine
+the absolute value of negative eight is eight
+the absolute value of negative seven is seven
+the absolute value of negative six is six
+the absolute value of negative five is five
+the absolute value of negative four is four
+the absolute value of negative three is three
+the absolute value of negative two is two
+the absolute value of negative one is one
+two is a multiple of two
+four is a multiple of two
+six is a multiple of two
+eight is a multiple of two
+ten is a multiple of two
+twelve is a multiple of two
+fourteen is a multiple of two
+sixteen is a multiple of two
+eighteen is a multiple of two
+twenty is a multiple of two
+twenty two is a multiple of two
+twenty four is a multiple of two
+three is a multiple of three
+six is a multiple of three
+nine is a multiple of three
+twelve is a multiple of three
+fifteen is a multiple of three
+eighteen is a multiple of three
+twenty one is a multiple of three
+twenty four is a multiple of three
+twenty seven is a multiple of three
+thirty is a multiple of three
+thirty three is a multiple of three
+thirty six is a multiple of three
+four is a multiple of four
+eight is a multiple of four
+twelve is a multiple of four
+sixteen is a multiple of four
+twenty is a multiple of four
+twenty four is a multiple of four
+twenty eight is a multiple of four
+thirty two is a multiple of four
+thirty six is a multiple of four
+forty is a multiple of four
+forty four is a multiple of four
+forty eight is a multiple of four
+five is a multiple of five
+ten is a multiple of five
+fifteen is a multiple of five
+twenty is a multiple of five
+twenty five is a multiple of five
+thirty is a multiple of five
+thirty five is a multiple of five
+forty is a multiple of five
+forty five is a multiple of five
+fifty is a multiple of five
+fifty five is a multiple of five
+sixty is a multiple of five
+six is a multiple of six
+twelve is a multiple of six
+eighteen is a multiple of six
+twenty four is a multiple of six
+thirty is a multiple of six
+thirty six is a multiple of six
+forty two is a multiple of six
+forty eight is a multiple of six
+fifty four is a multiple of six
+sixty is a multiple of six
+sixty six is a multiple of six
+seventy two is a multiple of six
+seven is a multiple of seven
+fourteen is a multiple of seven
+twenty one is a multiple of seven
+twenty eight is a multiple of seven
+thirty five is a multiple of seven
+forty two is a multiple of seven
+forty nine is a multiple of seven
+fifty six is a multiple of seven
+sixty three is a multiple of seven
+seventy is a multiple of seven
+seventy seven is a multiple of seven
+eighty four is a multiple of seven
+eight is a multiple of eight
+sixteen is a multiple of eight
+twenty four is a multiple of eight
+thirty two is a multiple of eight
+forty is a multiple of eight
+forty eight is a multiple of eight
+fifty six is a multiple of eight
+sixty four is a multiple of eight
+seventy two is a multiple of eight
+eighty is a multiple of eight
+eighty eight is a multiple of eight
+ninety six is a multiple of eight
+nine is a multiple of nine
+eighteen is a multiple of nine
+twenty seven is a multiple of nine
+thirty six is a multiple of nine
+forty five is a multiple of nine
+fifty four is a multiple of nine
+sixty three is a multiple of nine
+seventy two is a multiple of nine
+eighty one is a multiple of nine
+ninety is a multiple of nine
+ninety nine is a multiple of nine
+one hundred eight is a multiple of nine
+ten is a multiple of ten
+twenty is a multiple of ten
+thirty is a multiple of ten
+forty is a multiple of ten
+fifty is a multiple of ten
+sixty is a multiple of ten
+seventy is a multiple of ten
+eighty is a multiple of ten
+ninety is a multiple of ten
+one hundred is a multiple of ten
+one hundred ten is a multiple of ten
+one hundred twenty is a multiple of ten
+eleven is a multiple of eleven
+twenty two is a multiple of eleven
+thirty three is a multiple of eleven
+forty four is a multiple of eleven
+fifty five is a multiple of eleven
+sixty six is a multiple of eleven
+seventy seven is a multiple of eleven
+eighty eight is a multiple of eleven
+ninety nine is a multiple of eleven
+one hundred ten is a multiple of eleven
+one hundred twenty one is a multiple of eleven
+one hundred thirty two is a multiple of eleven
+twelve is a multiple of twelve
+twenty four is a multiple of twelve
+thirty six is a multiple of twelve
+forty eight is a multiple of twelve
+sixty is a multiple of twelve
+seventy two is a multiple of twelve
+eighty four is a multiple of twelve
+ninety six is a multiple of twelve
+one hundred eight is a multiple of twelve
+one hundred twenty is a multiple of twelve
+one hundred thirty two is a multiple of twelve
+one hundred forty four is a multiple of twelve
