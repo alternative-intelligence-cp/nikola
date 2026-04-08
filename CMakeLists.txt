@@ -1413,8 +1413,59 @@ if(TARGET nikola_cuda)
 endif()
 message(STATUS "Training CLI: nikola-train")
 
+# ============================================================================
+# NIKOLA-STATE-DUMP — System state inspector
+# ============================================================================
+add_executable(nikola_state_dump src/nikola_state_dump.cpp)
+target_compile_definitions(nikola_state_dump PRIVATE NIKOLA_AUTONOMY_ENGINE_IMPL)
+target_link_libraries(nikola_state_dump PRIVATE nikola_core)
+set_target_properties(nikola_state_dump PROPERTIES OUTPUT_NAME "nikola-state-dump")
+if(TARGET nikola_cuda)
+    target_link_libraries(nikola_state_dump PRIVATE nikola_cuda)
+    target_link_directories(nikola_state_dump PRIVATE /usr/local/cuda/lib64)
+    set_target_properties(nikola_state_dump PROPERTIES
+        BUILD_RPATH  "/usr/local/cuda/lib64"
+        INSTALL_RPATH "/usr/local/cuda/lib64")
+endif()
+message(STATUS "State dump CLI: nikola-state-dump")
+
+# ============================================================================
+# NIKOLA-DAP — Debug Adapter Protocol server (VS Code integration)
+# ============================================================================
+add_executable(nikola_dap_server src/nikola_dap_server.cpp)
+target_compile_definitions(nikola_dap_server PRIVATE
+    NIKOLA_AUTONOMY_ENGINE_IMPL
+    NIKOLA_DIAG_INCLUDE_PHYSICS)
+target_link_libraries(nikola_dap_server PRIVATE nikola_core)
+set_target_properties(nikola_dap_server PROPERTIES OUTPUT_NAME "nikola-dap")
+if(TARGET nikola_cuda)
+    target_link_libraries(nikola_dap_server PRIVATE nikola_cuda)
+    target_link_directories(nikola_dap_server PRIVATE /usr/local/cuda/lib64)
+    set_target_properties(nikola_dap_server PROPERTIES
+        BUILD_RPATH  "/usr/local/cuda/lib64"
+        INSTALL_RPATH "/usr/local/cuda/lib64")
+endif()
+message(STATUS "DAP server: nikola-dap")
+
+# ============================================================================
+# NIKOLA-DIAG — Diagnostic CLI (health, benchmark, physics checks)
+# ============================================================================
+add_executable(nikola_diag src/nikola_diag.cpp)
+target_compile_definitions(nikola_diag PRIVATE NIKOLA_AUTONOMY_ENGINE_IMPL)
+target_link_libraries(nikola_diag PRIVATE nikola_core)
+set_target_properties(nikola_diag PROPERTIES OUTPUT_NAME "nikola-diag")
+if(TARGET nikola_cuda)
+    target_link_libraries(nikola_diag PRIVATE nikola_cuda)
+    target_link_directories(nikola_diag PRIVATE /usr/local/cuda/lib64)
+    set_target_properties(nikola_diag PROPERTIES
+        BUILD_RPATH  "/usr/local/cuda/lib64"
+        INSTALL_RPATH "/usr/local/cuda/lib64")
+endif()
+message(STATUS "Diagnostic CLI: nikola-diag")
+
 # Installation
 install(TARGETS nikola_core nikola_run nikola_train
+    nikola_state_dump nikola_dap_server nikola_diag
     LIBRARY DESTINATION lib
     ARCHIVE DESTINATION lib
     RUNTIME DESTINATION bin
@@ -1429,7 +1480,7 @@ install(DIRECTORY include/nikola
 # BUILD STATUS
 # ============================================================================
 message(STATUS "")
-message(STATUS "Nikola v0.0.4 - AGI Architecture Implementation")
+message(STATUS "Nikola v0.0.12 - AGI Architecture Implementation")
 message(STATUS "================================================")
 message(STATUS "Phase 0: Critical Blockers")
 message(STATUS "  ✓ CF-04: Transactional Metabolic Lock")

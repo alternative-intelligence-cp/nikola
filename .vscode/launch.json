@@ -1,0 +1,57 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Nikola DAP — Physics Debugger",
+            "type": "nikola-dap",
+            "request": "launch",
+            "program": "${workspaceFolder}/build/nikola-dap",
+            "args": ["--ticks", "1000", "--steps", "50"],
+            "stopOnEntry": true
+        },
+        {
+            "name": "Nikola Run (GDB)",
+            "type": "cppdbg",
+            "request": "launch",
+            "program": "${workspaceFolder}/build/nikola-run",
+            "args": [],
+            "stopAtEntry": false,
+            "cwd": "${workspaceFolder}",
+            "environment": [],
+            "MIMode": "gdb"
+        },
+        {
+            "name": "Nikola Train (GDB)",
+            "type": "cppdbg",
+            "request": "launch",
+            "program": "${workspaceFolder}/build/nikola-train",
+            "args": [],
+            "stopAtEntry": false,
+            "cwd": "${workspaceFolder}",
+            "environment": [],
+            "MIMode": "gdb"
+        },
+        {
+            "name": "Nikola State Dump",
+            "type": "cppdbg",
+            "request": "launch",
+            "program": "${workspaceFolder}/build/nikola-state-dump",
+            "args": ["--ticks", "20", "--steps", "50"],
+            "stopAtEntry": false,
+            "cwd": "${workspaceFolder}",
+            "environment": [],
+            "MIMode": "gdb"
+        },
+        {
+            "name": "Nikola Diagnostics — All",
+            "type": "cppdbg",
+            "request": "launch",
+            "program": "${workspaceFolder}/build/nikola-diag",
+            "args": ["--all"],
+            "stopAtEntry": false,
+            "cwd": "${workspaceFolder}",
+            "environment": [],
+            "MIMode": "gdb"
+        }
+    ]
+}
