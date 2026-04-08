@@ -48,6 +48,7 @@
  */
 
 #include <nikola/autonomy/autonomy_engine.hpp>
+#include <nikola/cognitive/cognitive_core.hpp>
 #include <nikola/cognitive/cognitive_torus.hpp>
 #include <nikola/cognitive/resonance_decoder.hpp>
 #include <nikola/cognitive/semantic_memory.hpp>
@@ -365,6 +366,10 @@ public:
     const DecisionLoopConfig&                 config()          const noexcept { return cfg_; }
     const NikolaState&                        last_state()      const noexcept { return last_state_; }
     uint64_t                                  tick_count()      const noexcept { return tick_count_; }
+
+    /// Phase 16.1: Convert flat torus node index to normalised 9D float coordinate in [−1, +1].
+    /// Uses modular decomposition for grid resolution n.  Static for testability.
+    static std::array<float, 9> grid_coord_to_float(size_t flat_idx, int n);
     /// Most recent NPT forward-pass output (Phase 42).  Zero-initialised until REASON fires.
     const nikola::cognitive::AttentionResult& last_npt_result() const noexcept { return npt_last_result_; }
 
@@ -510,6 +515,10 @@ private:
     nikola::cognitive::SemanticMemory             memory_;          ///< Phase 33 — wave-field memory store
     nikola::cognitive::NeuroplasticTransformer    npt_;             ///< Phase 42 — multi-head wave attention
     nikola::cognitive::AttentionResult            npt_last_result_; ///< Most recent NPT forward output
+
+    // Phase 16.1 — SSM (Mamba S6) learned control layer
+    nikola::cognitive::CognitiveCore             cognitive_core_;  ///< SSM + SequenceManager + Sampler
+    nikola::cognitive::SSMLayer::State           ssm_state_;       ///< Persistent hidden state across ticks
 
     NikolaState  last_state_;
     uint64_t     tick_count_  = 0;

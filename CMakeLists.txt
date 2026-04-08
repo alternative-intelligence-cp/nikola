@@ -1416,6 +1416,20 @@ if(NIKOLA_BUILD_TESTS)
     add_test(NAME Phase143CuriosityExploration_LongSession
         COMMAND test_phase143_curiosity_exploration "[longsession]")
 
+    # -------------------------------------------------------------------------
+    # Phase 144 — v0.0.16.1 SSM Integration into Live Pipeline
+    # -------------------------------------------------------------------------
+    add_executable(test_phase144_ssm_pipeline
+        tests/unit/phase144_ssm_pipeline_test.cpp)
+    target_link_libraries(test_phase144_ssm_pipeline PRIVATE
+        nikola_core Catch2::Catch2WithMain)
+    add_test(NAME Phase144SSMPipeline COMMAND test_phase144_ssm_pipeline)
+    # Long-session validation runs separately:
+    add_test(NAME Phase144SSMPipeline_Quick
+        COMMAND test_phase144_ssm_pipeline "~[longsession]")
+    add_test(NAME Phase144SSMPipeline_LongSession
+        COMMAND test_phase144_ssm_pipeline "[longsession]")
+
     message(STATUS "Tests configured - run with: make test")
 endif()
 
