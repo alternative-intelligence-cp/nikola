@@ -1,0 +1,107 @@
+// nikola_sie_pipeline.aria — SIE Pipeline Orchestrator
+//
+// Wires all 4 gates in sequence:
+//   Gate 0: ShadowSpine  — signature verification
+//   Gate 1: Blacklist    — banned pattern scan
+//   Gate 2: PhysicsOracle — energy/reversibility/viscosity/resonance
+//   Gate 3: ModuleSwapper — hot-swap .so deployment
+//
+// Enforces ATP budget via MetabolicController.
+// Produces a CycleReport at end of each cycle.
+//
+// Usage:
+//   ariac nikola_sie_pipeline.aria -I . -o sie_pipeline \
+//         -L shim -lnikola_sie -lm
+//   ./sie_pipeline
+
+use "nikola_sie_types.aria".*;
+use "nikola_metabolic_controller.aria".*;
+use "nikola_physics_oracle.aria".*;
+use "nikola_shadowspine.aria".*;
+use "nikola_blacklist.aria".*;
+use "nikola_swapper.aria".*;
+
+// -----------------------------------------------------------------------
+// run_sie_cycle — execute one full SIE validation cycle
+//
+// Parameters:
+//   bin_path      — path to candidate binary for Gate 0
+//   sig_len       — signature length (64 for Ed25519)
+//   pub_len       — public key length (32 for Ed25519)
+//   source        — source code string for Gate 1
+//   h_initial     — initial Hamiltonian for Gate 2
+//   h_final       — final Hamiltonian for Gate 2
+//   rev_error     — reversibility error for Gate 2
+//   visc_ratio    — viscosity ratio for Gate 2
+//   psi_max       — max wave amplitude for resonance check
+//   so_path       — .so path for Gate 3
+//   atp           — current ATP budget
+//   threshold     — nap threshold
+//
+// Returns status code (int32):
+//   0 = SUCCESS, 1 = ATP_DENIED, 2 = SECURITY_REJECTED,
+//   3 = PHYSICS_REJECTED, 4 = LOAD_FAILED, 6 = SAME_MODULE
+// -----------------------------------------------------------------------
+
+func:run_sie_cycle = int32(string:bin_path, int64:sig_len, int64:pub_len,
+                           string:source,
+                           flt64:h_initial, flt64:h_final,
+                           flt64:rev_error, flt64:visc_ratio, flt64:psi_max,
+                           string:so_path,
+                           flt64:atp, flt64:threshold) {
+    // ── ATP budget check ──────────────────────────────────────────
+    int32:affordable = raw cycle_affordable(atp);
+    if (affordable == 0i32) {
+        pass STATUS_ATP_DENIED;
+    }
+
+    int32:napping = raw needs_nap(atp, threshold);
+    if (napping == 1i32) {
+        pass STATUS_ATP_DENIED;
+    }
+
+    // ── Gate 0: ShadowSpine ──────────────────────────────────────
+    int32:g0 = raw run_gate0(bin_path, sig_len, pub_len);
+    if (g0 > 0i32) {
+        pass g0;
+    }
+
+    // ── Gate 1: CodePatternBlacklist ─────────────────────────────
+    int32:g1 = raw run_gate1(source);
+    if (g1 > 0i32) {
+        pass g1;
+    }
+
+    // ── Gate 2: PhysicsOracle ────────────────────────────────────
+    int32:g2 = raw run_gate2(h_initial, h_final, rev_error, visc_ratio, psi_max);
+    if (g2 > 0i32) {
+        pass g2;
+    }
+
+    // ── Gate 3: ModuleSwapper ────────────────────────────────────
+    int32:g3 = raw run_gate3(so_path);
+    if (g3 > 0i32) {
+        pass g3;
+    }
+
+    pass STATUS_SUCCESS;
+};
+
+// -----------------------------------------------------------------------
+// print_cycle_result — formatted output for one cycle
+// -----------------------------------------------------------------------
+
+func:print_cycle_result = NIL(int32:cycle_num, int32:status,
+                              int32:g0, int32:g1, int32:g2, int32:g3,
+                              flt64:atp_before, flt64:atp_after) {
+    string:sname = raw status_name(status);
+    println(`Cycle &{cycle_num}: &{sname}`);
+    println(`  Gate 0 (ShadowSpine):    &{g0}`);
+    println(`  Gate 1 (Blacklist):      &{g1}`);
+    println(`  Gate 2 (PhysicsOracle):  &{g2}`);
+    println(`  Gate 3 (ModuleSwapper):  &{g3}`);
+    println(`  ATP: &{atp_before} -> &{atp_after}`);
+    pass(NIL);
+};
+
+// Library module — no main/failsafe. Tests in tests/test_pipeline.aria

@@ -1,0 +1,85 @@
+// test_swapper.aria — Self-test for Gate 3 (ModuleSwapper)
+use "nikola_swapper.aria".*;
+use "nikola_sie_types.aria".*;
+
+func:failsafe = int32(tbb32:err_code) {
+    println("FAIL: swapper test hit failsafe");
+    exit 1;
+};
+
+func:main = int32() {
+    println("=== Nikola Swapper Gate 3 (Aria) ===");
+    println("");
+
+    // Reset state
+    drop reset_swapper();
+
+    // Test 1: No active module initially
+    println("Test 1: Initial state");
+    int32:a1 = raw has_active();
+    int32:p1 = raw has_previous();
+    println(`  has_active:   &{a1} (expected 0)`);
+    println(`  has_previous: &{p1} (expected 0)`);
+    println("");
+
+    // Test 2: Swap in a valid .so
+    println("Test 2: Swap in valid module");
+    int32:r2 = raw swap_in("/tmp/module_v1.so");
+    string:n2 = raw swap_status_name(r2);
+    println(`  Result: &{n2} (expected SUCCESS)`);
+    int32:a2 = raw has_active();
+    println(`  has_active: &{a2} (expected 1)`);
+    println("");
+
+    // Test 3: Swap in a second module (previous becomes rollback target)
+    println("Test 3: Swap in second module");
+    int32:r3 = raw swap_in("/tmp/module_v2.so");
+    string:n3 = raw swap_status_name(r3);
+    println(`  Result: &{n3} (expected SUCCESS)`);
+    int32:p3 = raw has_previous();
+    println(`  has_previous: &{p3} (expected 1)`);
+    println("");
+
+    // Test 4: Same module → SAME_MODULE
+    println("Test 4: Same module rejection");
+    int32:r4 = raw swap_in("/tmp/module_v2.so");
+    string:n4 = raw swap_status_name(r4);
+    println(`  Result: &{n4} (expected SAME_MODULE)`);
+    println("");
+
+    // Test 5: Invalid path (no .so extension) → LOAD_FAILED
+    println("Test 5: Invalid path");
+    int32:r5 = raw swap_in("/tmp/module.txt");
+    string:n5 = raw swap_status_name(r5);
+    println(`  Result: &{n5} (expected LOAD_FAILED)`);
+    println("");
+
+    // Test 6: Empty path → LOAD_FAILED
+    println("Test 6: Empty path");
+    int32:r6 = raw swap_in("");
+    string:n6 = raw swap_status_name(r6);
+    println(`  Result: &{n6} (expected LOAD_FAILED)`);
+    println("");
+
+    // Test 7: Rollback
+    println("Test 7: Rollback");
+    int32:rb = raw rollback();
+    println(`  Rollback occurred: &{rb} (expected 1)`);
+    int32:p7 = raw has_previous();
+    println(`  has_previous after rollback: &{p7} (expected 0)`);
+    println("");
+
+    // Test 8: run_gate3 status codes
+    println("Test 8: run_gate3 status codes");
+    drop reset_swapper();
+    int32:g1 = raw run_gate3("/tmp/new_module.so");
+    string:gn1 = raw status_name(g1);
+    println(`  Valid swap: &{gn1} (expected SUCCESS)`);
+    int32:g2 = raw run_gate3("/bad/path");
+    string:gn2 = raw status_name(g2);
+    println(`  Bad path:   &{gn2} (expected LOAD_FAILED)`);
+    println("");
+
+    println("All Swapper tests passed.");
+    exit 0;
+};

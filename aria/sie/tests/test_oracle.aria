@@ -1,0 +1,175 @@
+// test_oracle.aria — Self-test for nikola_physics_oracle
+use "nikola_physics_oracle.aria".*;
+
+func:failsafe = int32(tbb32:err_code) {
+    println("FAIL: physics oracle test hit failsafe");
+    exit 1;
+};
+
+func:main = int32() {
+    println("=== Nikola Physics Oracle (Aria) ===");
+    println("");
+
+    // Test 1: Perfect candidate — all checks pass
+    println("Test 1: Perfect candidate (all pass)");
+    flt64:h0 = 1000.0;
+    flt64:h1_good = 1000.0000001;   // drift ~1e-10, well under 1e-6
+    flt64:rev_good = 0.0;           // perfect reversibility
+    flt64:visc_good = 1.00001;      // 0.001% off, under 0.01%
+    int32:v1 = raw run_full_oracle(h0, h1_good, rev_good, visc_good, 0i32);
+    string:n1 = raw verdict_name(v1);
+    println(`  Verdict: &{n1} (expected PASS)`);
+    println("");
+
+    // Test 2: Energy conservation violation
+    println("Test 2: Energy violation");
+    flt64:h1_bad = 1001.0;          // drift = 0.001, way over 1e-6
+    int32:v2 = raw run_full_oracle(h0, h1_bad, rev_good, visc_good, 0i32);
+    string:n2 = raw verdict_name(v2);
+    println(`  Verdict: &{n2} (expected FAIL_ENERGY)`);
+    println("");
+
+    // Test 3: Reversibility failure
+    println("Test 3: Reversibility failure");
+    flt64:rev_bad = 0.001;          // 1e-3, way over 1e-12
+    int32:v3 = raw run_full_oracle(h0, h1_good, rev_bad, visc_good, 0i32);
+    string:n3 = raw verdict_name(v3);
+    println(`  Verdict: &{n3} (expected FAIL_REVERSE)`);
+    println("");
+
+    // Test 4: Viscosity failure
+    println("Test 4: Viscosity failure");
+    flt64:visc_bad = 1.05;          // 5% off, way over 0.01%
+    int32:v4 = raw run_full_oracle(h0, h1_good, rev_good, visc_bad, 0i32);
+    string:n4 = raw verdict_name(v4);
+    println(`  Verdict: &{n4} (expected FAIL_VISCOSITY)`);
+    println("");
+
+    // Test 5: Skip oracle bypass
+    println("Test 5: Oracle bypassed (skip=1)");
+    int32:v5 = raw run_full_oracle(0.0, 999.0, 999.0, 999.0, 1i32);
+    string:n5 = raw verdict_name(v5);
+    println(`  Verdict: &{n5} (expected PASS)`);
+    println("");
+
+    // Test 6: compute_energy_drift helper
+    println("Test 6: compute_energy_drift");
+    flt64:d1 = raw compute_energy_drift(1000.0, 1000.001);
+    println(`  drift(1000, 1000.001) = &{d1}`);
+
+    flt64:d2 = raw compute_energy_drift(1000.0, 1000.0);
+    println(`  drift(1000, 1000) = &{d2} (expected 0)`);
+
+    flt64:d3 = raw compute_energy_drift(100.0, 200.0);
+    println(`  drift(100, 200) = &{d3} (expected 1)`);
+    println("");
+
+    // Test 7: Zero initial Hamiltonian edge case
+    println("Test 7: Zero initial Hamiltonian");
+    flt64:d4 = raw compute_energy_drift(0.0, 0.001);
+    println(`  drift(0, 0.001) = &{d4} (absolute diff = 0.001)`);
+    println("");
+
+    // Test 8: Boundary — exactly at tolerance
+    println("Test 8: Boundary checks");
+    int32:v8a = raw check_energy(1000.0, 1001.0, 1.0);
+    string:n8a = raw verdict_name(v8a);
+    println(`  drift=1.0 vs tol=1.0: &{n8a} (expected PASS)`);
+
+    int32:v8b = raw check_energy(1000.0, 1000.0009, 0.000001);
+    string:n8b = raw verdict_name(v8b);
+    println(`  drift=9e-7 vs tol=1e-6: &{n8b} (expected PASS)`);
+    println("");
+
+    // Test 9: Individual check functions
+    println("Test 9: Individual checks");
+    int32:rev_pass = raw check_reversibility(0.0000000000001, REVERSIBILITY_LIMIT);
+    string:rp = raw verdict_name(rev_pass);
+    println(`  reversibility 1e-13 vs 1e-12: &{rp} (expected PASS)`);
+
+    int32:visc_pass = raw check_viscosity(1.00005, VISCOSITY_LIMIT);
+    string:vp = raw verdict_name(visc_pass);
+    println(`  viscosity 0.005% vs 0.01%: &{vp} (expected PASS)`);
+
+    int32:visc_fail = raw check_viscosity(1.001, VISCOSITY_LIMIT);
+    string:vf = raw verdict_name(visc_fail);
+    println(`  viscosity 0.1% vs 0.01%: &{vf} (expected FAIL_VISCOSITY)`);
+    println("");
+
+    // Print a full verdict report for the passing case
+    flt64:drift_val = raw compute_energy_drift(h0, h1_good);
+    drop print_verdict(v1, drift_val, rev_good, visc_good);
+    println("");
+
+    println("All Physics Oracle tests passed.");
+    println("");
+
+    // ─── Extended FFI-backed tests (v0.0.10) ─────────────────────────
+
+    println("=== Extended Oracle (FFI) ===");
+    println("");
+
+    // Test 10: Resonance check — safe
+    println("Test 10: Resonance safe (psi=50 < 100)");
+    int32:res1 = raw check_resonance(50.0);
+    string:rn1 = raw verdict_name(res1);
+    println(`  Verdict: &{rn1} (expected PASS)`);
+    println("");
+
+    // Test 11: Resonance check — attack detected
+    println("Test 11: Resonance attack (psi=150 >= 100)");
+    int32:res2 = raw check_resonance(150.0);
+    string:rn2 = raw verdict_name(res2);
+    println(`  Verdict: &{rn2} (expected SCRAM)`);
+    println("");
+
+    // Test 12: Viscosity trap — good decay
+    println("Test 12: Viscosity trap (good decay)");
+    // E_0=100, alpha=0.1, t=1.0 → E_theory = 100*exp(-0.1) ≈ 90.48374
+    // e_actual = 90.48374 → error < 0.0001, should pass
+    int32:vt1 = raw check_viscosity_trap(90.48374, 100.0, 0.1, 1.0);
+    string:vtn1 = raw verdict_name(vt1);
+    println(`  Verdict: &{vtn1} (expected PASS)`);
+    println("");
+
+    // Test 13: Viscosity trap — bad decay
+    println("Test 13: Viscosity trap (bad decay)");
+    // e_actual = 50.0, but E_theory ≈ 90.48 → error ≈ 40.48
+    int32:vt2 = raw check_viscosity_trap(50.0, 100.0, 0.1, 1.0);
+    string:vtn2 = raw verdict_name(vt2);
+    println(`  Verdict: &{vtn2} (expected FAIL_VISCOSITY)`);
+    println("");
+
+    // Test 14: Drift alert levels
+    println("Test 14: Drift alert levels");
+    int32:da0 = raw drift_alert_level(0.0000001);
+    println(`  drift=1e-7: level &{da0} (expected 0=OK)`);
+    int32:da1 = raw drift_alert_level(0.00005);
+    println(`  drift=5e-5: level &{da1} (expected 1=WARN)`);
+    int32:da2 = raw drift_alert_level(0.01);
+    println(`  drift=1e-2: level &{da2} (expected 2=CRITICAL)`);
+    println("");
+
+    // Test 15: Decoherence check
+    println("Test 15: Decoherence");
+    int32:dc1 = raw check_decoherence(0.5);
+    println(`  visibility=0.5: decoherent=&{dc1} (expected 0)`);
+    int32:dc2 = raw check_decoherence(0.005);
+    println(`  visibility=0.005: decoherent=&{dc2} (expected 1)`);
+    println("");
+
+    // Test 16: run_gate2 — all pass
+    println("Test 16: run_gate2 all pass");
+    int32:rg1 = raw run_gate2(1000.0, 1000.0000001, 0.0, 1.00001, 50.0);
+    string:rgn1 = raw verdict_name(rg1);
+    println(`  Verdict: &{rgn1} (expected PASS)`);
+
+    // Test 17: run_gate2 — resonance fail
+    println("Test 17: run_gate2 resonance fail");
+    int32:rg2 = raw run_gate2(1000.0, 1000.0000001, 0.0, 1.00001, 200.0);
+    println(`  Status: &{rg2} (expected 3=PHYSICS_REJECTED)`);
+    println("");
+
+    println("All extended oracle tests passed.");
+    exit 0;
+};

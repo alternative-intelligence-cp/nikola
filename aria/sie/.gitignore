@@ -1,0 +1,12 @@
+# Compiled test binaries
+tests/test_types
+tests/test_metabolic
+tests/test_oracle
+tests/test_shadowspine
+tests/test_blacklist
+tests/test_swapper
+tests/test_pipeline
+
+# Built shim artifacts
+shim/*.o
+shim/*.a
