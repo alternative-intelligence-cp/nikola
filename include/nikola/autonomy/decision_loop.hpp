@@ -63,6 +63,7 @@
 #include <memory>
 #include <string>
 #include <unordered_map>
+#include <unordered_set>
 #include <vector>
 
 // Forward declarations — avoid circular includes with autobiography.hpp
@@ -203,13 +204,22 @@ struct DecisionLoopConfig {
     int   steps_per_tick       = 50;
 
     /// A candidate must score this much above SILENT to be chosen.
-    float action_threshold     = 0.05f;
+    float action_threshold     = 0.02f;
 
     /// Minimum seconds between consecutive EMIT_THOUGHT actions (rate limiting).
     float min_emit_interval_s  = 5.0f;
 
     /// Minimum seconds between STORE_MEMORY consolidations.
     float min_store_interval_s = 30.0f;
+
+    /// Minimum seconds between RECALL_MEMORY actions (v0.0.9 — anti-domination).
+    float min_recall_interval_s = 0.3f;
+
+    /// Max stimulus-biased explores after inject_stimulus() (v0.0.9).
+    int   max_stimulus_explores = 15;
+
+    /// Maximum tokens to accumulate across ticks for multi-word EMIT (v0.0.9).
+    int   max_accumulated_tokens = 8;
 
     /// Number of hot nodes to decode per tick.
     size_t decode_top_k        = 20;
@@ -530,7 +540,14 @@ private:
     std::chrono::steady_clock::time_point last_emit_time_;
     std::chrono::steady_clock::time_point last_store_time_;
     std::chrono::steady_clock::time_point last_reason_time_;
+    std::chrono::steady_clock::time_point last_recall_time_;  ///< v0.0.9
     std::chrono::steady_clock::time_point start_time_;
+
+    /// v0.0.9 — token accumulation buffer across ticks for multi-word thoughts.
+    /// Tokens are collected from cold decode + warm decode + seed tokens.
+    /// Cleared when EMIT_THOUGHT fires (consumed into the thought payload).
+    std::vector<std::string> accumulated_tokens_;
+    std::unordered_set<std::string> accumulated_unique_;  ///< dedup guard
 
     /// Last stimulus text received via inject_stimulus().
     /// Included in ESCALATE payload so the evidence record captures what
@@ -543,9 +560,16 @@ private:
     /// first few explores toward the semantic neighbourhood of the prompt.
     std::string last_stimulus_seed_;
 
+    /// v0.0.9 — Multiple stimulus seeds extracted from prompt text.
+    /// Contains vocabulary words that literally appear in the prompt (case-
+    /// insensitive match), plus the BERT closest-word seed.  execute_explore()
+    /// rotates through these for diverse prompt-grounded exploration.
+    std::vector<std::string> stimulus_seeds_;
+
     /// Number of EXPLORE ticks fired since the most recent inject_stimulus().
     /// Resets on each inject_stimulus() call.  Used so the stimulus seed is
-    /// consumed for the first 2 explores, then cycling resumes for variety.
+    /// consumed for the first max_stimulus_explores explores (v0.0.9: 15),
+    /// then cycling resumes for variety.
     uint64_t stimulus_explore_count_ = 0;
 
     /// Persist in-RAM SemanticMemory to cfg_.memory_path (no-op if path empty).

@@ -458,7 +458,7 @@ int main(int argc, char** argv) {
     if (!cfg.quiet && !cfg.json_out) {
         std::cerr << ansi::c(ansi::bold) << ansi::c(ansi::blue)
                   << "nikola-run" << ansi::c(ansi::rst)
-                  << ansi::c(ansi::dim) << "  v0.0.8  |  9D Toroidal Waveform Intelligence\n"
+                  << ansi::c(ansi::dim) << "  v0.0.9  |  9D Toroidal Waveform Intelligence\n"
                   << ansi::c(ansi::rst);
 
         if (!cfg.model_path.empty())
@@ -501,7 +501,7 @@ int main(int argc, char** argv) {
     loop_cfg.lmdb_memory_path      = cfg.lmdb_memory_path;
     loop_cfg.state_db_path         = cfg.state_db_path;
     loop_cfg.checkpoint_interval   = cfg.checkpoint_interval;
-    loop_cfg.min_emit_interval_s   = 0.0f;  // CLI: no rate limit between prompts
+    loop_cfg.min_emit_interval_s   = 0.1f;  // v0.0.9: allow 0.1s accumulation between emits
 
     // ── Vocabulary ──────────────────────────────────────────────────────────
     // Start with the built-in default (~200 words covering language/math/physics).

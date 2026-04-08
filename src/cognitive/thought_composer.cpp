@@ -149,8 +149,11 @@ ThoughtComposer::score_templates(const ThoughtContext& ctx) noexcept
         ctx.entropy < 2.0f ? (2.0f - ctx.entropy) / 2.0f : 0.f;
 
     // FEELS_OFF: something feels off about {content} — punishment signal
+    // v0.0.9: Raised threshold from 0 to -0.2 because natural field energy
+    // decay produces td_error of -0.05 to -0.15 continuously.  Only genuine
+    // punishment signals (td < -0.2) should trigger FEELS_OFF.
     scores[static_cast<size_t>(Template::FEELS_OFF)] =
-        ctx.td_error < 0.f ? std::min(1.f, -ctx.td_error * 2.0f) : 0.f;
+        ctx.td_error < -0.2f ? std::min(1.f, (-ctx.td_error - 0.2f) * 2.0f) : 0.f;
 
     // HARD_TO_HOLD: {content} is hard to hold — high entropy / scattered field
     scores[static_cast<size_t>(Template::HARD_TO_HOLD)] =
@@ -182,8 +185,9 @@ ThoughtComposer::select_template(const ThoughtContext& ctx) const
         }
     }
 #endif
-    // No-ORT: pick template with highest score
-    const auto scores = score_templates(ctx);
+    // No-ORT: pick template with highest score, penalise repeats (v0.0.9)
+    auto scores = score_templates(ctx);
+    scores[static_cast<size_t>(last_template_)] *= 0.5f; // diversity penalty
     const auto max_it  = std::max_element(scores.begin(), scores.end());
     return static_cast<Template>(std::distance(scores.begin(), max_it));
 }
@@ -195,6 +199,7 @@ ThoughtComposer::select_template(const ThoughtContext& ctx) const
 std::string ThoughtComposer::compose(const ThoughtContext& ctx) const
 {
     const Template tmpl     = select_template(ctx);
+    last_template_ = tmpl;  // v0.0.9: track for diversity penalty
     const std::string content = build_content(ctx.tokens);
     const size_t idx          = static_cast<size_t>(tmpl);
 
@@ -214,7 +219,9 @@ std::string ThoughtComposer::state_descriptor(const ThoughtContext& ctx)
     // Build a short phrase describing dominant drives.
     // The TinyTransformer will embed this to get the "mood vector".
 
-    if (ctx.td_error < -0.2f)
+    // v0.0.9: raised threshold from -0.2 to -0.3 so normal field decay
+    // (-0.05 to -0.15) doesn't produce the FEELS_OFF descriptor.
+    if (ctx.td_error < -0.3f)
         return "concerned unsettled something wrong";
     if (ctx.entropy > 4.5f)
         return "scattered confused many directions";
@@ -267,7 +274,10 @@ ThoughtComposer::select_template_ort(const ThoughtContext& ctx) const
         if (cand_ids.empty()) continue;
 
         const auto cand_emb = transformer_->forward(cand_ids);
-        const float sim = cosine_similarity(state_emb, cand_emb);
+        float sim = cosine_similarity(state_emb, cand_emb);
+
+        // v0.0.9: diversity penalty — discourage repeating the same template
+        if (i == static_cast<size_t>(last_template_)) sim -= 0.15f;
 
         if (sim > best_sim) {
             best_sim = sim;
