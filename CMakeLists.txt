@@ -103,6 +103,7 @@ set(COGNITIVE_SOURCES
 set(SOCIAL_SOURCES
     src/social/membrane.cpp         # Phase 132
     src/social/peer_registry.cpp    # Phase 133
+    src/social/peer_handshake.cpp   # Phase 141
 )
 
 # Genesis Module 3: Economic Layer
@@ -1377,6 +1378,15 @@ if(NIKOLA_BUILD_TESTS)
         nikola_core Catch2::Catch2WithMain sphincsplus_shake256f kyber768 ssl crypto ${CMAKE_DL_LIBS})
     add_dependencies(test_phase140_security_integration phase112_test_plugin)
     add_test(NAME Phase140SecurityIntegration COMMAND test_phase140_security_integration)
+
+    # -------------------------------------------------------------------------
+    # Phase 141 — v0.0.14 Social/Economic Integration (end-to-end)
+    # -------------------------------------------------------------------------
+    add_executable(test_phase141_social_economic_integration
+        tests/unit/phase141_social_economic_integration_test.cpp)
+    target_link_libraries(test_phase141_social_economic_integration PRIVATE
+        nikola_core Catch2::Catch2WithMain)
+    add_test(NAME Phase141SocialEconomicIntegration COMMAND test_phase141_social_economic_integration)
 
     message(STATUS "Tests configured - run with: make test")
 endif()
