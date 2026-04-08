@@ -1388,6 +1388,20 @@ if(NIKOLA_BUILD_TESTS)
         nikola_core Catch2::Catch2WithMain)
     add_test(NAME Phase141SocialEconomicIntegration COMMAND test_phase141_social_economic_integration)
 
+    # -------------------------------------------------------------------------
+    # Phase 142 — v0.0.15 GAP-030 Physics Oracle Calibration Suite
+    # -------------------------------------------------------------------------
+    add_executable(test_phase142_physics_calibration
+        tests/unit/phase142_physics_calibration_test.cpp)
+    target_link_libraries(test_phase142_physics_calibration PRIVATE
+        nikola_core Catch2::Catch2WithMain)
+    add_test(NAME Phase142PhysicsCalibration COMMAND test_phase142_physics_calibration)
+    # Long-term energy test (1M steps) can be run separately:
+    add_test(NAME Phase142PhysicsCalibration_Quick
+        COMMAND test_phase142_physics_calibration "~[longterm]")
+    add_test(NAME Phase142PhysicsCalibration_LongTerm
+        COMMAND test_phase142_physics_calibration "[longterm]")
+
     message(STATUS "Tests configured - run with: make test")
 endif()
 
