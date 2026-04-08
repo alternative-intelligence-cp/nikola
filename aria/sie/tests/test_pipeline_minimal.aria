@@ -1,0 +1,23 @@
+// test_pipeline_minimal.aria — Minimal pipeline test
+use "nikola_sie_pipeline.aria".*;
+
+func:failsafe = int32(tbb32:err_code) {
+    println("FAIL: minimal pipeline test hit failsafe");
+    exit 1;
+};
+
+func:main = int32() {
+    println("=== Minimal Pipeline Test ===");
+    drop reset_swapper();
+    println("Swapper reset done");
+    int32:status1 = raw run_sie_cycle(
+        "/tmp/module.so", 64i64, 32i64,
+        "int main() { return 0; }",
+        1000.0, 1000.0000001, 0.0, 1.00001, 50.0,
+        "/tmp/module_v1.so",
+        10000.0, 2000.0
+    );
+    string:name1 = raw status_name(status1);
+    println(`Status: &{name1}`);
+    exit 0;
+};
