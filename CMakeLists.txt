@@ -1402,6 +1402,20 @@ if(NIKOLA_BUILD_TESTS)
     add_test(NAME Phase142PhysicsCalibration_LongTerm
         COMMAND test_phase142_physics_calibration "[longterm]")
 
+    # -------------------------------------------------------------------------
+    # Phase 143 — v0.0.16 Curiosity Engine & Exploration Dynamics
+    # -------------------------------------------------------------------------
+    add_executable(test_phase143_curiosity_exploration
+        tests/unit/phase143_curiosity_exploration_test.cpp)
+    target_link_libraries(test_phase143_curiosity_exploration PRIVATE
+        nikola_core Catch2::Catch2WithMain)
+    add_test(NAME Phase143CuriosityExploration COMMAND test_phase143_curiosity_exploration)
+    # Long-session test (100k ticks) runs separately:
+    add_test(NAME Phase143CuriosityExploration_Quick
+        COMMAND test_phase143_curiosity_exploration "~[longsession]")
+    add_test(NAME Phase143CuriosityExploration_LongSession
+        COMMAND test_phase143_curiosity_exploration "[longsession]")
+
     message(STATUS "Tests configured - run with: make test")
 endif()
 
