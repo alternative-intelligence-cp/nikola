@@ -1150,6 +1150,16 @@ void DecisionLoop::save_memory() const
 }
 
 // ============================================================================
+// force_store_wavefield (training-mode bypass)
+// ============================================================================
+
+void DecisionLoop::force_store_wavefield()
+{
+    memory_.store(torus_.wave_function());
+    save_memory();
+}
+
+// ============================================================================
 // Phase 137 — full state persistence helpers
 // ============================================================================
 

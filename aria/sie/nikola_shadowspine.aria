@@ -1,0 +1,75 @@
+// nikola_shadowspine.aria — Gate 0: ShadowSpine Signature Verification
+//
+// Wraps the hybrid Ed25519+SPHINCS+ verification via FFI.
+// v0.0.10: structural stub — validates sig/key lengths, not crypto.
+// Full crypto wired when libsodium + PQC libs are linked.
+//
+// FFI bridge: shim/nikola_sie_bridge.c → libnikola_sie.a
+
+use "nikola_sie_types.aria".*;
+
+// -----------------------------------------------------------------------
+// FFI declarations — link with -L shim -lnikola_sie
+// -----------------------------------------------------------------------
+
+extern func:nk_verifier_verify = int32(string:bin_path, int64:sig_len, int64:pub_len);
+extern func:nk_verifier_last_failure = int32();
+
+// -----------------------------------------------------------------------
+// Failure reason codes (mirror C shim)
+// -----------------------------------------------------------------------
+
+fixed int32:SIG_OK              = 0i32;
+fixed int32:SIG_EMPTY_BINARY    = 1i32;
+fixed int32:SIG_INVALID_SIG_LEN = 2i32;
+fixed int32:SIG_INVALID_PUB_LEN = 3i32;
+
+// -----------------------------------------------------------------------
+// verify_signature — run Gate 0 check
+// Returns 1 if verification passed, 0 if failed.
+// -----------------------------------------------------------------------
+
+func:verify_signature = int32(string:bin_path, int64:sig_len, int64:pub_len) {
+    int32:result = nk_verifier_verify(bin_path, sig_len, pub_len);
+    pass result;
+};
+
+// -----------------------------------------------------------------------
+// get_failure_reason — human-readable failure after verify_signature returns 0
+// -----------------------------------------------------------------------
+
+func:get_failure_code = int32() {
+    int32:code = nk_verifier_last_failure();
+    pass code;
+};
+
+func:failure_name = string(int32:code) {
+    if (code == 0i32) {
+        pass "NONE";
+    }
+    if (code == 1i32) {
+        pass "EMPTY_BINARY";
+    }
+    if (code == 2i32) {
+        pass "INVALID_SIG_LENGTH";
+    }
+    if (code == 3i32) {
+        pass "INVALID_PUBKEY_LENGTH";
+    }
+    pass "UNKNOWN";
+};
+
+// -----------------------------------------------------------------------
+// run_gate0 — full Gate 0 with status code return
+// Returns STATUS_SUCCESS (0) or STATUS_SECURITY_REJECTED (2)
+// -----------------------------------------------------------------------
+
+func:run_gate0 = int32(string:bin_path, int64:sig_len, int64:pub_len) {
+    int32:passed = nk_verifier_verify(bin_path, sig_len, pub_len);
+    if (passed == 1i32) {
+        pass STATUS_SUCCESS;
+    }
+    pass STATUS_SECURITY_REJECTED;
+};
+
+// Library module — no main/failsafe. Tests in tests/test_shadowspine.aria

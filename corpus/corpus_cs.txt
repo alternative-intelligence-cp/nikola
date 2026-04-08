@@ -1,4 +1,4 @@
-# cs corpus — 62 items
+# cs corpus — 142 items
 a computer processes information according to a program
 a program is a sequence of instructions
 a CPU executes instructions
@@ -61,3 +61,83 @@ a transformer uses attention to process sequences
 an embedding maps symbols to dense vectors
 tokenization splits text into tokens for processing
 a language model predicts the next token given context
+an operating system kernel manages hardware resources
+virtual memory gives processes the illusion of a large contiguous address space
+a page fault occurs when memory is accessed that is not in RAM
+context switching saves and restores process state on the CPU
+scheduling determines which process runs next on the CPU
+deadlock occurs when processes block each other indefinitely
+mutual exclusion prevents concurrent modification of shared data
+a semaphore controls access to shared resources
+a mutex is a lock that allows only one thread to enter a critical section
+concurrency means tasks overlap in time
+parallelism means tasks execute simultaneously on separate processors
+a cache stores frequently accessed data close to the processor
+cache locality means accessing nearby memory addresses is fast
+a file system organizes data on storage media
+a relational database stores data in tables with rows and columns
+SQL is a language for querying relational databases
+a transaction groups database operations into an atomic unit
+ACID properties ensure reliable database transactions
+version control tracks changes to source code over time
+git is a distributed version control system
+a variable binds a name to a value
+a function takes inputs and produces outputs
+scope determines where a variable is accessible
+a pointer stores the memory address of a value
+memory allocation reserves space for data
+memory leaks occur when allocated memory is never freed
+garbage collection automatically reclaims unused memory
+reference counting tracks how many references point to an object
+static typing checks types at compile time
+dynamic typing checks types at runtime
+type inference deduces types without explicit annotations
+pattern matching selects behavior based on the structure of data
+recursion solves problems by reducing them to smaller subproblems
+iteration repeats a block of code using a loop
+abstraction hides implementation details behind an interface
+encapsulation bundles data with the operations that act on it
+polymorphism allows different types to be treated uniformly
+inheritance creates new types based on existing ones
+composition builds complex objects from simpler components
+quicksort partitions data around a pivot recursively
+mergesort divides data in half sorts each half and merges the results
+dynamic programming breaks problems into overlapping subproblems
+greedy algorithms make locally optimal choices at each step
+graph traversal visits nodes in a graph systematically
+breadth first search explores level by level
+depth first search explores as deep as possible before backtracking
+dijkstra algorithm finds shortest paths in a weighted graph
+hashing maps data to fixed size values for fast lookup
+a minimum spanning tree connects all nodes with minimum total edge weight
+a perceptron is a single layer neural network
+a convolutional neural network excels at image recognition
+a recurrent neural network processes sequences
+long short term memory networks address the vanishing gradient problem
+attention mechanisms allow models to focus on relevant input parts
+self attention computes relationships between all positions in a sequence
+a state space model propagates hidden states through time
+selective state space models dynamically gate information flow
+reinforcement learning trains agents through reward signals
+temporal difference learning updates value estimates based on prediction error
+the reward signal guides an agent toward beneficial actions
+exploration discovers new strategies while exploitation uses known good ones
+equilibrium propagation trains networks using physics rather than backpropagation
+hebbian learning strengthens weights between coactive neurons
+unsupervised learning finds patterns without labeled data
+supervised learning trains on labeled input output pairs
+overfitting occurs when a model memorizes training data instead of generalizing
+regularization prevents overfitting by penalizing model complexity
+dropout randomly disables neurons during training to improve generalization
+batch normalization stabilizes training by normalizing layer inputs
+gradient descent minimizes a function by following its negative gradient
+the learning rate controls the step size of gradient updates
+adam optimizer adapts learning rates per parameter
+a generative model learns the data distribution to produce new samples
+a discriminative model learns boundaries between classes
+transfer learning applies knowledge from one task to another
+fine tuning adjusts a pretrained model for a specific task
+tokenization splits text into subword units for model input
+byte pair encoding merges frequent character pairs into tokens
+cosine similarity measures the angle between two vectors
+embedding spaces place similar concepts near each other

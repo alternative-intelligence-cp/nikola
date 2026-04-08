@@ -1,4 +1,4 @@
-# language corpus — 55 items
+# language corpus — 93 items
 a noun names a person place thing or idea
 a verb expresses an action or state of being
 an adjective describes a noun
@@ -54,3 +54,41 @@ the negation of true is false and the negation of false is true
 and is true only when both parts are true
 or is true when at least one part is true
 not reverses the truth value of a statement
+modus ponens derives q from p and if p then q
+modus tollens derives not p from not q and if p then q
+a syllogism has a major premise a minor premise and a conclusion
+all men are mortal socrates is a man therefore socrates is mortal
+a fallacy is an error in reasoning
+the ad hominem fallacy attacks the person instead of the argument
+the straw man fallacy misrepresents the opponent position
+the appeal to authority relies on status rather than evidence
+the false dilemma presents only two options when more exist
+the slippery slope claims one event inevitably leads to a chain of events
+circular reasoning assumes the conclusion in the premise
+the burden of proof lies with the person making the claim
+anecdotal evidence is based on personal stories not systematic data
+a thought experiment tests ideas through imagination
+reductio ad absurdum proves a statement by showing its denial leads to contradiction
+soundness means an argument is valid and has true premises
+validity means if the premises are true the conclusion must be true
+connotation is the emotional association of a word beyond its literal meaning
+denotation is the literal dictionary definition of a word
+polysemy means a single word has multiple related meanings
+homonyms are words that sound alike but have different meanings
+syntax errors violate the structural rules of a language
+semantic errors produce grammatically correct but meaningless sentences
+a proposition is a statement that is either true or false
+reference is the relationship between a word and the thing it represents
+pragmatic implicature conveys meaning beyond what is literally said
+speech acts perform actions through language such as promising or requesting
+a performative utterance changes reality by being spoken
+translation preserves meaning across languages but rarely preserves form
+pidgin languages are simplified contact languages between groups
+creole languages are developed pidgins that become native languages
+linguistic relativity suggests language influences thought
+recursion in language allows sentences to be embedded within sentences
+universal grammar proposes all languages share deep structural features
+the complexity of natural language exceeds any formal grammar
+computational linguistics applies algorithms to language processing
+parsing analyzes sentence structure according to a grammar
+natural language processing enables computers to understand human text

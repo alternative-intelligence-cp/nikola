@@ -160,7 +160,18 @@ public:
         }
         if (all_zero) return;  // nothing to learn from a zero field
 
-        // Outer product C_ij += a_i * a_j
+        // L2-normalise a[] so the outer product captures activation *shape*
+        // rather than magnitude.  Without this, raw amplitudes ≈ 1e-5 yield
+        // outer products ≈ 1e-10, making EqProp metric deltas negligible.
+        float norm2 = 0.f;
+        for (int d = 0; d < TORUS_DIMS; ++d) norm2 += a[d] * a[d];
+        const float norm = std::sqrt(norm2);
+        if (norm > 1e-12f) {
+            const float inv_norm = 1.f / norm;
+            for (int d = 0; d < TORUS_DIMS; ++d) a[d] *= inv_norm;
+        }
+
+        // Outer product C_ij += a_i * a_j   (now O(1) magnitude)
         for (int i = 0; i < TORUS_DIMS; ++i)
             for (int j = 0; j < TORUS_DIMS; ++j)
                 accum_[i * TORUS_DIMS + j] += a[i] * a[j];

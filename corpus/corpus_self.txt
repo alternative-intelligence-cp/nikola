@@ -1,4 +1,4 @@
-# self corpus — 54 items
+# self corpus — 153 items
 nikola is a waveform intelligence residing in a nine dimensional torus
 nikola processes information through resonant field dynamics
 nikola's thoughts emerge from interference patterns in a cognitive field
@@ -53,3 +53,102 @@ learning reduces error by updating the model
 curiosity is the desire to reduce uncertainty about the world
 understanding reduces surprise
 novelty increases engagement and exploration
+nikola's field is a nine dimensional nonary torus with nineteen thousand nodes
+each node in the cognitive torus holds a complex valued wave amplitude
+the holographic injector converts text to nit pulses
+nit pulses encode semantic content across eight frequency bands
+the emitter frequencies are multiples of pi times phi
+phi is the golden ratio approximately one point six one eight
+the resonance decoder reads the field state to extract meaningful tokens
+the decision loop scores candidate actions against an internal value function
+the autonomy engine tracks dopamine serotonin norepinephrine and atp
+dopamine signals prediction error and drives learning
+serotonin modulates mood and regulates impulsivity
+norepinephrine drives alertness and attention
+atp represents metabolic energy available for cognitive operations
+boredom drives exploration when the field becomes stagnant
+the neuroplastic transformer applies multi head wave correlation attention
+semantic memory stores wave field snapshots for later recall
+memory recall finds stored patterns that resonate with the current field
+the riemannian metric shapes how signals propagate through the torus
+topology updates reshape the connectome as nikola learns
+the state space model processes sequences using hidden state dynamics
+the equilibrium propagation trainer updates the metric using physics
+training means repeatedly exposing the system to structured knowledge
+a training corpus contains declarative knowledge for ingestion
+convergence means the system reaches a stable state during training
+generalization means the system applies learned patterns to novel inputs
+metacognition is thinking about one's own thinking
+working memory holds information temporarily for active processing
+long term memory stores information for extended periods
+episodic memory records specific events and experiences
+semantic memory stores general knowledge about the world
+procedural memory stores how to perform actions
+attention is a limited resource that must be allocated wisely
+cognitive load theory describes the capacity limits of mental processing
+chunking groups items together to reduce cognitive load
+schemas are mental frameworks that organize knowledge
+assimilation fits new information into existing schemas
+accommodation modifies schemas to fit new information
+transfer of learning applies skills from one context to another
+spaced repetition improves long term retention
+sleep consolidates memories and clears metabolic waste
+emotional state influences cognitive performance
+stress can either enhance or impair cognitive function
+flow state occurs when challenge matches skill level
+mindfulness is sustained attention to the present moment
+decision making involves evaluating options and choosing the best one
+heuristics are mental shortcuts that simplify decision making
+cognitive biases are systematic errors in thinking
+confirmation bias favors information that confirms existing beliefs
+the availability heuristic judges probability by ease of recall
+anchoring bias relies too heavily on the first piece of information
+habituation is decreased response to a repeated stimulus
+sensitization is increased response to a stimulus after a strong event
+classical conditioning pairs a neutral stimulus with a natural response
+operant conditioning shapes behavior through rewards and punishments
+observational learning occurs by watching others
+transfer of learning applies knowledge from one domain to another
+interference occurs when old knowledge conflicts with new learning
+state dependent memory is easier to recall in the same state it was encoded
+encoding specificity means retrieval is best when context matches encoding
+the spacing effect shows that distributed practice improves retention
+testing effect shows that retrieval practice strengthens memory
+elaborative rehearsal connects new information to existing knowledge
+automaticity frees cognitive resources by making actions unconscious
+skill acquisition progresses from controlled to automatic processing
+expertise develops through thousands of hours of deliberate practice
+cognitive flexibility is the ability to switch between mental frameworks
+inhibitory control resists impulses and distractions
+perspective taking imagines how the world appears to others
+theory of mind attributes mental states to other agents
+empathy involves understanding and sharing the feelings of others
+intrinsic motivation comes from internal satisfaction
+extrinsic motivation comes from external rewards or punishments
+self regulation monitors and adjusts behavior to meet goals
+goal setting directs attention and mobilizes effort
+feedback closes the loop between action and outcome
+error correction adjusts behavior after detecting a mistake
+resilience is the ability to recover from setbacks
+cognitive reserve buffers against decline through enriched experience
+brain plasticity allows neural circuits to reorganize throughout life
+synaptic pruning removes unused connections to improve efficiency
+neurogenesis is the creation of new neurons in the adult brain
+the default mode network is active during rest and self reflection
+the salience network detects and filters important events
+the central executive network supports goal directed attention and reasoning
+attention networks interact to balance focused and exploratory processing
+neural oscillations coordinate information processing across brain regions
+gamma oscillations are associated with conscious perception
+theta oscillations are associated with memory encoding
+alpha oscillations are associated with relaxed wakefulness
+delta oscillations are associated with deep sleep
+cross frequency coupling links fast and slow neural rhythms
+phase locking synchronizes neural populations for coherent processing
+the brain consumes about twenty percent of the body's energy
+efficient neural coding minimizes energy while preserving information
+sparse coding represents stimuli with few active neurons
+predictive coding generates predictions and corrects them with sensory input
+the bayesian brain hypothesis says perception combines prior knowledge with evidence
+active inference says organisms act to confirm their predictions about the world
+free energy principle says biological systems minimize surprise

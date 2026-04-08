@@ -1,0 +1,72 @@
+// test_blacklist.aria — Self-test for Gate 1 (CodePatternBlacklist)
+use "nikola_blacklist.aria".*;
+use "nikola_sie_types.aria".*;
+
+func:failsafe = int32(tbb32:err_code) {
+    println("FAIL: blacklist test hit failsafe");
+    exit 1;
+};
+
+func:main = int32() {
+    println("=== Nikola Blacklist Gate 1 (Aria) ===");
+    println("");
+
+    // Test 1: Clean source
+    println("Test 1: Clean source");
+    int32:r1 = raw is_safe("int main() { return 0; }");
+    println(`  is_safe: &{r1} (expected 1)`);
+    int32:s1 = raw scan_source("int main() { return 0; }");
+    println(`  scan:    &{s1} (expected 0)`);
+    println("");
+
+    // Test 2: system() call — banned
+    println("Test 2: system() call");
+    int32:r2 = raw is_safe("system(\"rm -rf /\")");
+    println(`  is_safe: &{r2} (expected 0)`);
+    int32:s2 = raw scan_source("system(\"rm -rf /\")");
+    println(`  scan:    &{s2} (expected 1)`);
+    println("");
+
+    // Test 3: fork() — banned
+    println("Test 3: fork()");
+    int32:r3 = raw is_safe("pid_t p = fork()");
+    println(`  is_safe: &{r3} (expected 0)`);
+    println("");
+
+    // Test 4: exec family — banned
+    println("Test 4: execve()");
+    int32:r4 = raw is_safe("execve(\"/bin/sh\", argv, envp)");
+    println(`  is_safe: &{r4} (expected 0)`);
+    println("");
+
+    // Test 5: inline asm — banned
+    println("Test 5: __asm__");
+    int32:r5 = raw is_safe("__asm__ volatile(\"nop\")");
+    println(`  is_safe: &{r5} (expected 0)`);
+    println("");
+
+    // Test 6: popen — banned
+    println("Test 6: popen()");
+    int32:r6 = raw is_safe("FILE* f = popen(\"ls\", \"r\")");
+    println(`  is_safe: &{r6} (expected 0)`);
+    println("");
+
+    // Test 7: ptrace include — banned
+    println("Test 7: ptrace include");
+    int32:r7 = raw is_safe("#include <sys/ptrace.h>");
+    println(`  is_safe: &{r7} (expected 0)`);
+    println("");
+
+    // Test 8: run_gate1 status codes
+    println("Test 8: run_gate1 status codes");
+    int32:g1 = raw run_gate1("int x = 42;");
+    string:gn1 = raw status_name(g1);
+    println(`  Clean:    &{gn1} (expected SUCCESS)`);
+    int32:g2 = raw run_gate1("system(\"whoami\")");
+    string:gn2 = raw status_name(g2);
+    println(`  Banned:   &{gn2} (expected SECURITY_REJECTED)`);
+    println("");
+
+    println("All Blacklist tests passed.");
+    exit 0;
+};

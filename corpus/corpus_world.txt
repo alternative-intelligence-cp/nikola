@@ -1,4 +1,4 @@
-# world corpus — 37 items
+# world corpus — 73 items
 earth is the third planet from the sun
 earth has one moon
 the sun is a star at the center of the solar system
@@ -36,3 +36,39 @@ the industrial revolution transformed manufacturing and society
 computers were developed in the mid twentieth century
 the internet transformed communication in the late twentieth century
 artificial intelligence research began in the nineteen fifties
+the ancient greeks developed geometry and formal logic
+euclid organized geometry into a deductive system
+archimedes discovered the principle of buoyancy
+newton developed calculus and the laws of motion
+maxwell unified electricity and magnetism mathematically
+einstein proposed the theory of relativity
+turing defined the concept of a universal computing machine
+shannon founded information theory
+von neumann designed the architecture used in most computers
+the transistor was invented in nineteen forty seven
+integrated circuits placed many transistors on one chip
+moore law observed that transistor density doubles approximately every two years
+the world wide web was created in nineteen eighty nine
+open source software allows anyone to read and modify the code
+linux is an open source operating system kernel
+the human genome project mapped all human genes
+crispr allows precise editing of DNA sequences
+renewable energy sources include solar wind and hydropower
+solar panels convert sunlight directly into electricity
+wind turbines convert kinetic energy from wind into electricity
+nuclear power generates electricity from nuclear fission
+climate change is driven by increasing greenhouse gas concentrations
+carbon dioxide is the primary greenhouse gas from human activity
+the ozone layer protects earth from ultraviolet radiation
+plate tectonics describes the movement of earth's crustal plates
+earthquakes occur at plate boundaries
+volcanoes form where magma reaches the surface
+the ocean covers about seventy one percent of earth's surface
+the mariana trench is the deepest part of the ocean
+mount everest is the tallest mountain above sea level
+the amazon rainforest produces a significant portion of the world's oxygen
+coral reefs are among the most biodiverse ecosystems
+the human population exceeded eight billion in twenty twenty two
+agriculture began approximately ten thousand years ago
+the scientific revolution transformed natural philosophy into modern science
+peer review validates scientific findings through independent evaluation

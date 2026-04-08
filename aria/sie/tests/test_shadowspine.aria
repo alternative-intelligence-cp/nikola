@@ -1,0 +1,59 @@
+// test_shadowspine.aria — Self-test for Gate 0 (ShadowSpine)
+use "nikola_shadowspine.aria".*;
+use "nikola_sie_types.aria".*;
+
+func:failsafe = int32(tbb32:err_code) {
+    println("FAIL: shadowspine test hit failsafe");
+    exit 1;
+};
+
+func:main = int32() {
+    println("=== Nikola ShadowSpine Gate 0 (Aria) ===");
+    println("");
+
+    // Test 1: Valid signature params (64-byte sig, 32-byte pubkey)
+    println("Test 1: Valid signature structure");
+    int32:r1 = raw verify_signature("/tmp/module.so", 64i64, 32i64);
+    println(`  Result: &{r1} (expected 1)`);
+    println("");
+
+    // Test 2: Empty binary path
+    println("Test 2: Empty binary path");
+    int32:r2 = raw verify_signature("", 64i64, 32i64);
+    int32:f2 = raw get_failure_code();
+    string:fn2 = raw failure_name(f2);
+    println(`  Result: &{r2} (expected 0)`);
+    println(`  Failure: &{fn2} (expected EMPTY_BINARY)`);
+    println("");
+
+    // Test 3: Wrong signature length
+    println("Test 3: Invalid signature length");
+    int32:r3 = raw verify_signature("/tmp/module.so", 32i64, 32i64);
+    int32:f3 = raw get_failure_code();
+    string:fn3 = raw failure_name(f3);
+    println(`  Result: &{r3} (expected 0)`);
+    println(`  Failure: &{fn3} (expected INVALID_SIG_LENGTH)`);
+    println("");
+
+    // Test 4: Wrong pubkey length
+    println("Test 4: Invalid pubkey length");
+    int32:r4 = raw verify_signature("/tmp/module.so", 64i64, 64i64);
+    int32:f4 = raw get_failure_code();
+    string:fn4 = raw failure_name(f4);
+    println(`  Result: &{r4} (expected 0)`);
+    println(`  Failure: &{fn4} (expected INVALID_PUBKEY_LENGTH)`);
+    println("");
+
+    // Test 5: run_gate0 returning status codes
+    println("Test 5: run_gate0 status codes");
+    int32:g1 = raw run_gate0("/tmp/module.so", 64i64, 32i64);
+    string:gn1 = raw status_name(g1);
+    println(`  Valid:   &{gn1} (expected SUCCESS)`);
+    int32:g2 = raw run_gate0("", 64i64, 32i64);
+    string:gn2 = raw status_name(g2);
+    println(`  Invalid: &{gn2} (expected SECURITY_REJECTED)`);
+    println("");
+
+    println("All ShadowSpine tests passed.");
+    exit 0;
+};

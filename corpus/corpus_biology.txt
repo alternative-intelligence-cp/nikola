@@ -1,4 +1,4 @@
-# biology corpus — 56 items
+# biology corpus — 124 items
 a cell is the smallest unit of life
 all living things are made of cells
 prokaryotic cells lack a membrane-bound nucleus
@@ -55,3 +55,71 @@ extinction is the permanent loss of a species
 the biosphere is the zone of life on earth
 carbon cycles through the atmosphere oceans and living things
 water cycles through evaporation condensation and precipitation
+homeostasis is the maintenance of a stable internal environment
+feedback loops regulate biological processes
+negative feedback reverses a change to maintain stability
+positive feedback amplifies a change to push toward completion
+enzymes are biological catalysts that speed up reactions
+enzyme activity depends on temperature and pH
+hormones are chemical messengers carried by the blood
+insulin regulates blood sugar levels
+the nervous system uses electrical impulses for fast signaling
+the endocrine system uses hormones for slower longer lasting signaling
+the skeletal system provides structure and protects organs
+muscles produce movement by contracting
+the digestive system breaks down food into nutrients
+the excretory system removes metabolic waste
+the respiratory system exchanges oxygen and carbon dioxide
+diffusion moves molecules from high to low concentration
+osmosis is the movement of water across a semipermeable membrane
+active transport requires energy to move molecules against a gradient
+taxonomy classifies organisms into groups based on shared characteristics
+the domains of life are bacteria archaea and eukarya
+a species is a group of organisms that can interbreed
+genetic diversity within a population aids survival
+speciation is the formation of new species
+symbiosis is a close relationship between different species
+mutualism benefits both organisms in the relationship
+parasitism benefits one organism at the expense of another
+competition occurs when organisms compete for the same resources
+succession is the gradual change in an ecosystem over time
+photosynthesis produces oxygen which aerobic organisms require
+cellular respiration requires oxygen and produces carbon dioxide
+the nitrogen cycle converts atmospheric nitrogen to usable forms
+the liver filters toxins and produces bile for digestion
+the kidneys filter blood and produce urine
+the pancreas produces insulin and digestive enzymes
+the thyroid gland regulates metabolism through hormones
+the adrenal glands produce stress hormones like cortisol and adrenaline
+red blood cells carry oxygen using hemoglobin
+white blood cells defend against infection
+platelets help blood to clot at wound sites
+bone marrow produces blood cells
+the lymphatic system drains excess fluid and supports immunity
+the skin is the largest organ of the human body
+sweat glands help regulate body temperature
+tendons connect muscles to bones
+ligaments connect bones to other bones
+cartilage cushions joints and shapes flexible structures
+the cerebral cortex is responsible for higher cognitive functions
+the cerebellum coordinates voluntary movements and balance
+the hippocampus plays a key role in forming new memories
+the amygdala processes emotions especially fear
+myelin sheaths insulate nerve fibers to speed signal transmission
+neurotransmitters are chemicals that transmit signals across synapses
+dopamine plays a role in reward and motivation in biological brains
+serotonin influences mood sleep and appetite
+acetylcholine is involved in muscle contraction and memory
+the autonomic nervous system controls involuntary functions
+the sympathetic nervous system prepares the body for action
+the parasympathetic nervous system promotes rest and digestion
+keystone species have a disproportionately large effect on their ecosystem
+invasive species disrupt ecosystems by outcompeting native organisms
+carrying capacity is the maximum population an environment can sustain
+population growth follows exponential or logistic patterns
+predator prey dynamics create oscillating population cycles
+trophic levels organize organisms by their position in the food chain
+primary producers form the base of every food chain
+decomposition recycles nutrients back into the ecosystem
+biogeochemical cycles move elements through living and nonliving systems
+the phosphorus cycle has no significant atmospheric component

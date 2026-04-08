@@ -1,0 +1,49 @@
+// nikola_blacklist.aria — Gate 1: Code Pattern Blacklist
+//
+// Scans source code for banned syscall/asm patterns via FFI.
+// Banned: system(), exec*(), fork(), popen(), __asm__, asm(),
+//         #include <sys/ptrace.h>
+//
+// FFI bridge: shim/nikola_sie_bridge.c → libnikola_sie.a
+
+use "nikola_sie_types.aria".*;
+
+// -----------------------------------------------------------------------
+// FFI declarations — link with -L shim -lnikola_sie
+// -----------------------------------------------------------------------
+
+extern func:nk_blacklist_is_safe = int32(string:source);
+extern func:nk_blacklist_scan = int32(string:source);
+
+// -----------------------------------------------------------------------
+// is_safe — 1 if source has no banned patterns, 0 if unsafe
+// -----------------------------------------------------------------------
+
+func:is_safe = int32(string:source) {
+    int32:result = nk_blacklist_is_safe(source);
+    pass result;
+};
+
+// -----------------------------------------------------------------------
+// scan — return index (1-based) of first banned pattern, 0 if clean
+// -----------------------------------------------------------------------
+
+func:scan_source = int32(string:source) {
+    int32:idx = nk_blacklist_scan(source);
+    pass idx;
+};
+
+// -----------------------------------------------------------------------
+// run_gate1 — full Gate 1 with status code return
+// Returns STATUS_SUCCESS (0) or STATUS_SECURITY_REJECTED (2)
+// -----------------------------------------------------------------------
+
+func:run_gate1 = int32(string:source) {
+    int32:safe = nk_blacklist_is_safe(source);
+    if (safe == 1i32) {
+        pass STATUS_SUCCESS;
+    }
+    pass STATUS_SECURITY_REJECTED;
+};
+
+// Library module — no main/failsafe. Tests in tests/test_blacklist.aria

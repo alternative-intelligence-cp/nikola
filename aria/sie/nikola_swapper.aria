@@ -1,0 +1,95 @@
+// nikola_swapper.aria — Gate 3: Module Hot-Swap Coordination
+//
+// Wraps the dlopen-based module swapper via FFI.
+// v0.0.10: structural stub — validates .so paths, simulates swap.
+// Full dlopen wired when C++ ModuleSwapper is linked.
+//
+// FFI bridge: shim/nikola_sie_bridge.c → libnikola_sie.a
+
+use "nikola_sie_types.aria".*;
+
+// -----------------------------------------------------------------------
+// FFI declarations — link with -L shim -lnikola_sie
+// -----------------------------------------------------------------------
+
+extern func:nk_swapper_swap_in = int32(string:so_path);
+extern func:nk_swapper_rollback = int32();
+extern func:nk_swapper_has_active = int32();
+extern func:nk_swapper_has_previous = int32();
+extern func:nk_swapper_reset = NIL();
+
+// -----------------------------------------------------------------------
+// swap_in — attempt to load a new module
+// Returns CycleStatus code: 0=SUCCESS, 4=LOAD_FAILED, 6=SAME_MODULE
+// -----------------------------------------------------------------------
+
+func:swap_in = int32(string:so_path) {
+    int32:result = nk_swapper_swap_in(so_path);
+    pass result;
+};
+
+// -----------------------------------------------------------------------
+// rollback — revert to previous module
+// Returns 1 if rollback occurred, 0 if nothing to rollback
+// -----------------------------------------------------------------------
+
+func:rollback = int32() {
+    int32:result = nk_swapper_rollback();
+    pass result;
+};
+
+// -----------------------------------------------------------------------
+// has_active — 1 if a module is currently loaded
+// -----------------------------------------------------------------------
+
+func:has_active = int32() {
+    int32:result = nk_swapper_has_active();
+    pass result;
+};
+
+// -----------------------------------------------------------------------
+// has_previous — 1 if there's a rollback target
+// -----------------------------------------------------------------------
+
+func:has_previous = int32() {
+    int32:result = nk_swapper_has_previous();
+    pass result;
+};
+
+// -----------------------------------------------------------------------
+// reset — clear all swapper state
+// -----------------------------------------------------------------------
+
+func:reset_swapper = NIL() {
+    drop nk_swapper_reset();
+    pass(NIL);
+};
+
+// -----------------------------------------------------------------------
+// run_gate3 — full Gate 3 with status code return
+// Returns STATUS_SUCCESS, STATUS_LOAD_FAILED, or STATUS_SAME_MODULE
+// -----------------------------------------------------------------------
+
+func:run_gate3 = int32(string:so_path) {
+    int32:code = nk_swapper_swap_in(so_path);
+    pass code;
+};
+
+// -----------------------------------------------------------------------
+// swap_status_name — human-readable swap result
+// -----------------------------------------------------------------------
+
+func:swap_status_name = string(int32:code) {
+    if (code == 0i32) {
+        pass "SUCCESS";
+    }
+    if (code == 4i32) {
+        pass "LOAD_FAILED";
+    }
+    if (code == 6i32) {
+        pass "SAME_MODULE";
+    }
+    pass "UNKNOWN";
+};
+
+// Library module — no main/failsafe. Tests in tests/test_swapper.aria

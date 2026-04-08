@@ -405,6 +405,25 @@ public:
      */
     void inject_stimulus(const std::string& text, float credibility);
 
+    /**
+     * @brief Set the pending reward for the next tick (training mode).
+     *
+     * During corpus training, callers set POSITIVE before the first tick of
+     * each item to spike dopamine above baseline, enabling STORE_MEMORY to
+     * fire.  The reward is consumed by the next engine_.tick() call inside
+     * tick() and automatically reset to NEUTRAL.
+     */
+    void set_pending_reward(Reward r) noexcept { pending_reward_ = r; }
+
+    /**
+     * @brief Force-store the current torus wave-field into SemanticMemory.
+     *
+     * Bypasses action scoring — used by nikola-train to guarantee every
+     * corpus item produces a durable memory record regardless of which
+     * action the normal scoring loop would have picked.
+     */
+    void force_store_wavefield();
+
 private:
     // -- internal helpers --
 
