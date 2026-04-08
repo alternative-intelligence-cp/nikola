@@ -57,6 +57,32 @@ synthetic_wave9d(const std::string& token)
     return w;
 }
 
+// ── Phase 16.1: Grid-to-SSM bridge ──────────────────────────────────────────
+//
+// Converts a flat torus node index into a normalised 9D float coordinate
+// in [−1, +1] for feeding into SSMLayer::selective_step().
+//
+// Algorithm: modular decomposition for grid resolution n.
+//   For each of the 9 dimensions, extract digit d_i = (idx / n^i) % n,
+//   then normalise: coord_i = 2 * d_i / (n − 1) − 1   (maps [0, n-1] → [−1, +1]).
+//   Special case n=1: all coordinates = 0.
+
+std::array<float, 9>
+DecisionLoop::grid_coord_to_float(size_t flat_idx, int n)
+{
+    std::array<float, 9> coord{};
+    if (n <= 1) return coord;  // all zeros for trivial grid
+
+    const float inv = 2.f / static_cast<float>(n - 1);
+    size_t remaining = flat_idx;
+    for (int d = 0; d < 9; ++d) {
+        const int digit = static_cast<int>(remaining % static_cast<size_t>(n));
+        remaining /= static_cast<size_t>(n);
+        coord[static_cast<size_t>(d)] = static_cast<float>(digit) * inv - 1.f;
+    }
+    return coord;
+}
+
 
 // ============================================================================
 // Constructor
@@ -70,6 +96,11 @@ DecisionLoop::DecisionLoop(nikola::cognitive::CognitiveTorus& torus,
     , cfg_(std::move(cfg))
     , npt_(static_cast<int>(torus.grid().grid_n()), 0.5f, 0.3f)  // v0.0.9: τ=0.5 (sharper), α=0.3
     , npt_last_result_(static_cast<int>(torus.grid().grid_n()))
+    , cognitive_core_(nikola::cognitive::SSM_HIDDEN_DIM,
+                      nikola::cognitive::SSM_INPUT_DIM,
+                      std::max(1, static_cast<int>(cfg_.vocabulary.size())),
+                      42u)
+    , ssm_state_()
     , autobiography_(std::make_unique<interior::AutobiographicalMemory>())
 {
     const auto now = std::chrono::steady_clock::now();
@@ -77,6 +108,12 @@ DecisionLoop::DecisionLoop(nikola::cognitive::CognitiveTorus& torus,
     last_emit_time_   = now - std::chrono::seconds(60);  // allow immediate first emit
     last_store_time_  = now - std::chrono::seconds(60);
     last_reason_time_ = now - std::chrono::seconds(60);
+
+    // Phase 16.1 — initialise SSM (Mamba S6 selective scan) weights + state.
+    // Output dim matches vocabulary size so logits map 1:1 to tokens.
+    cognitive_core_.ssm().randomise(42);
+    cognitive_core_.ssm().randomise_selective(42);
+    ssm_state_ = cognitive_core_.ssm().make_zero_state();
 
     // Register decoder vocabulary.
     // ORT mode: use NonaryEmbedder for semantically accurate 9D waves.
@@ -639,6 +676,36 @@ DecisionResult DecisionLoop::tick()
                      tick_reward);
     }
 
+    // ── 2b. Phase 16.1 — SSM selective-step on hottest torus node ────────────
+    // Extract the highest-intensity node, convert its flat index to a
+    // normalised 9D coordinate, and run the Mamba S6 selective scan.
+    // The SSM reads the torus — it does NOT modify it.  Output tokens feed
+    // into the accumulation buffer alongside resonance-decoded tokens.
+    std::string ssm_token;
+    if (!cfg_.vocabulary.empty()) {
+        NIKOLA_PROFILE("ssm::selective_step");
+        const auto hot = torus_.hot_nodes(1);
+        if (!hot.empty()) {
+            const int gn = static_cast<int>(torus_.grid().grid_n());
+            auto coord = grid_coord_to_float(hot[0], gn);
+
+            // S6 selective-step (input-dependent gating, ZOH discretisation)
+            cognitive_core_.ssm().selective_step(ssm_state_, coord);
+            cognitive_core_.sequence().advance();
+
+            // Compute output logits and sample a token
+            std::vector<float> logits;
+            cognitive_core_.ssm().compute_output(ssm_state_, logits);
+            const size_t token_idx = cognitive_core_.sampler().sample_from_vector(
+                logits, 0.01f);  // low temperature — favour high-probability tokens
+
+            // Map to vocabulary word
+            if (token_idx < cfg_.vocabulary.size()) {
+                ssm_token = cfg_.vocabulary[token_idx];
+            }
+        }
+    }
+
     // ── 3. Snapshot internal state ──────────────────────────────────────────
     NikolaState s = [&]{
         NIKOLA_PROFILE("autonomy::read_state");
@@ -661,6 +728,8 @@ DecisionResult DecisionLoop::tick()
         for (const auto& tok : s.tokens)    try_add(tok);
         for (const auto& tok : last_ex_tokens_) try_add(tok);
         if (!last_seed_token_.empty())       try_add(last_seed_token_);
+        // Phase 16.1: SSM-generated token feeds into the same accumulator
+        if (!ssm_token.empty())              try_add(ssm_token);
     }
 
     // ── 4. Score all candidates ─────────────────────────────────────────────
