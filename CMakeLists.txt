@@ -1430,7 +1430,58 @@ if(NIKOLA_BUILD_TESTS)
     add_test(NAME Phase144SSMPipeline_LongSession
         COMMAND test_phase144_ssm_pipeline "[longsession]")
 
-    message(STATUS "Tests configured - run with: make test")
+    # =========================================================================
+    # INTEGRATION TESTS (v0.0.17)
+    # =========================================================================
+
+    # Integration: Physics Pipeline
+    add_executable(test_integration_physics
+        tests/integration/physics_integration_test.cpp)
+    target_include_directories(test_integration_physics PRIVATE
+        ${CMAKE_CURRENT_SOURCE_DIR}/tests/helpers)
+    target_link_libraries(test_integration_physics PRIVATE
+        nikola_core Catch2::Catch2WithMain)
+    add_test(NAME IntegrationPhysics COMMAND test_integration_physics)
+    add_test(NAME IntegrationPhysics_Quick
+        COMMAND test_integration_physics "~[longsession]")
+    add_test(NAME IntegrationPhysics_LongSession
+        COMMAND test_integration_physics "[longsession]")
+
+    # Integration: Cognitive Pipeline
+    add_executable(test_integration_cognitive
+        tests/integration/cognitive_integration_test.cpp)
+    target_include_directories(test_integration_cognitive PRIVATE
+        ${CMAKE_CURRENT_SOURCE_DIR}/tests/helpers)
+    target_link_libraries(test_integration_cognitive PRIVATE
+        nikola_core Catch2::Catch2WithMain)
+    add_test(NAME IntegrationCognitive COMMAND test_integration_cognitive)
+
+    # Integration: Autonomy Pipeline
+    add_executable(test_integration_autonomy
+        tests/integration/autonomy_integration_test.cpp)
+    target_include_directories(test_integration_autonomy PRIVATE
+        ${CMAKE_CURRENT_SOURCE_DIR}/tests/helpers)
+    target_link_libraries(test_integration_autonomy PRIVATE
+        nikola_core Catch2::Catch2WithMain)
+    add_test(NAME IntegrationAutonomy COMMAND test_integration_autonomy)
+    add_test(NAME IntegrationAutonomy_Quick
+        COMMAND test_integration_autonomy "~[longsession]")
+    add_test(NAME IntegrationAutonomy_LongSession
+        COMMAND test_integration_autonomy "[longsession]")
+
+    # =========================================================================
+    # END-TO-END TESTS (v0.0.17)
+    # =========================================================================
+
+    add_executable(test_e2e_pipeline
+        tests/end_to_end/e2e_pipeline_test.cpp)
+    target_include_directories(test_e2e_pipeline PRIVATE
+        ${CMAKE_CURRENT_SOURCE_DIR}/tests/helpers)
+    target_link_libraries(test_e2e_pipeline PRIVATE
+        nikola_core Catch2::Catch2WithMain)
+    add_test(NAME E2EPipeline COMMAND test_e2e_pipeline)
+
+    message(STATUS "Tests configured (unit + integration + e2e) - run with: make test")
 endif()
 
 # ============================================================================
