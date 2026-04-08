@@ -1360,6 +1360,24 @@ if(NIKOLA_BUILD_TESTS)
         nikola_core Catch2::Catch2WithMain)
     add_test(NAME Phase139ObservabilityWiring COMMAND test_phase139_observability_wiring)
 
+    # -------------------------------------------------------------------------
+    # Phase 140 — v0.0.13 Security Integration (end-to-end)
+    # -------------------------------------------------------------------------
+    add_executable(test_phase140_security_integration
+        tests/unit/phase140_security_integration_test.cpp)
+    target_include_directories(test_phase140_security_integration PRIVATE
+        ${CMAKE_SOURCE_DIR}/include
+        ${SPHINCS_REF}
+        ${KYBER_REF})
+    target_compile_definitions(test_phase140_security_integration PRIVATE
+        PARAMS=sphincs-shake-256f
+        KYBER_K=3
+        PHASE140_PLUGIN_DIR="${CMAKE_BINARY_DIR}/test_plugins")
+    target_link_libraries(test_phase140_security_integration PRIVATE
+        nikola_core Catch2::Catch2WithMain sphincsplus_shake256f kyber768 ssl crypto ${CMAKE_DL_LIBS})
+    add_dependencies(test_phase140_security_integration phase112_test_plugin)
+    add_test(NAME Phase140SecurityIntegration COMMAND test_phase140_security_integration)
+
     message(STATUS "Tests configured - run with: make test")
 endif()
 
