@@ -1435,6 +1435,15 @@ if(NIKOLA_BUILD_TESTS)
     add_test(NAME Phase144SSMPipeline_LongSession
         COMMAND test_phase144_ssm_pipeline "[longsession]")
 
+    # -------------------------------------------------------------------------
+    # Phase 145 — v0.0.19 Aria Specialist Integration (Unit Tests)
+    # -------------------------------------------------------------------------
+    add_executable(test_phase145_aria_specialist
+        tests/unit/phase145_aria_specialist_test.cpp)
+    target_link_libraries(test_phase145_aria_specialist PRIVATE
+        nikola_core Catch2::Catch2WithMain)
+    add_test(NAME Phase145AriaSpecialist COMMAND test_phase145_aria_specialist)
+
     # =========================================================================
     # INTEGRATION TESTS (v0.0.17)
     # =========================================================================
@@ -1482,6 +1491,15 @@ if(NIKOLA_BUILD_TESTS)
     target_link_libraries(test_integration_multimodal PRIVATE
         nikola_core Catch2::Catch2WithMain)
     add_test(NAME IntegrationMultimodal COMMAND test_integration_multimodal)
+
+    # Integration: Aria Specialist Pipeline (v0.0.19)
+    add_executable(test_integration_aria_specialist
+        tests/integration/aria_specialist_integration_test.cpp)
+    target_include_directories(test_integration_aria_specialist PRIVATE
+        ${CMAKE_CURRENT_SOURCE_DIR}/tests/helpers)
+    target_link_libraries(test_integration_aria_specialist PRIVATE
+        nikola_core Catch2::Catch2WithMain)
+    add_test(NAME IntegrationAriaSpecialist COMMAND test_integration_aria_specialist)
 
     # =========================================================================
     # END-TO-END TESTS (v0.0.17)

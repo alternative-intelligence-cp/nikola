@@ -138,6 +138,14 @@ enum class ActionType : uint8_t {
     /// imposing 8-band spectral structure and priming the next EMIT_THOUGHT
     /// with content organised across the NPT frequency bands.
     REASON        = 9,
+
+    /// Query the Aria Specialist model to generate code, compile-validate it,
+    /// and persist the proposal.  Fires when curiosity is high, ATP ≥ 0.30,
+    /// and the specialist interface is available.
+    /// Payload: the generated Aria source code (if compile succeeds) or
+    /// a compact error summary (if compile fails).
+    /// ATP cost: 500 (compile) + 50 (persist) = 550
+    GENERATE_CODE = 10,
 };
 
 /// Human-readable name for an ActionType (for logging).
@@ -153,6 +161,7 @@ inline const char* action_name(ActionType a) noexcept {
         case ActionType::ESCALATE:       return "ESCALATE";
         case ActionType::RECALL_MEMORY:  return "RECALL_MEMORY";
         case ActionType::REASON:         return "REASON";
+        case ActionType::GENERATE_CODE:  return "GENERATE_CODE";
         default:                         return "UNKNOWN";
     }
 }
@@ -269,6 +278,22 @@ struct DecisionLoopConfig {
     /// Ticks between Ψ wavefunction checkpoints (default: 100).
     /// Only used when state_db_path is non-empty.
     int checkpoint_interval = 100;
+
+    /// Minimum seconds between consecutive GENERATE_CODE actions (rate limiting).
+    /// Default: 30s — code generation is expensive (specialist inference + compile).
+    float min_generate_interval_s = 30.0f;
+
+    /// Path to the Aria specialist server.py script (v0.0.19).
+    /// When non-empty, enables GENERATE_CODE action.
+    std::string specialist_server_path;
+
+    /// Path to the ariac binary for compile validation (v0.0.19).
+    /// When non-empty, GENERATE_CODE verifies code before accepting.
+    std::string ariac_path;
+
+    /// Path to the LMDB code proposal store directory (v0.0.19).
+    /// When non-empty, code proposals are persisted for feedback loop.
+    std::string proposal_store_path;
 };
 
 // ============================================================================
@@ -442,6 +467,7 @@ private:
     float score_escalate(const NikolaState& s)       const noexcept;
     float score_recall_memory(const NikolaState& s)  const;  ///< no noexcept: calls recall() which allocates
     float score_reason(const NikolaState& s)         const noexcept;
+    float score_generate_code(const NikolaState& s)  const noexcept;
 
     /// Build payload string for chosen action.
     std::string build_payload(ActionType type, const NikolaState& s) const;
@@ -616,6 +642,14 @@ private:
 
     /// Load full state from LMDB on startup.
     void load_full_state();
+
+    // -- Phase 145: Aria Specialist Integration (v0.0.19) --
+
+    /// Cooldown for GENERATE_CODE action.
+    std::chrono::steady_clock::time_point last_generate_time_;
+
+    /// True when specialist + validator are configured and available.
+    bool aria_specialist_enabled_ = false;
 };
 
 } // namespace nikola::autonomy
