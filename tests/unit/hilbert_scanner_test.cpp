@@ -231,3 +231,67 @@ TEST_CASE("HilbertScanner integration with Vector9D", "[spatial][mem-04][integra
         REQUIRE(recovered == coords);
     }
 }
+
+TEST_CASE("HilbertScanner causal-foliated scan order", "[spatial][mem-04][phase0]") {
+    HilbertScanner scanner(1);  // Order 1: 2^9 = 512 points (fast)
+    
+    auto scan = scanner.generate_scan_order(2);  // time_dim = 2
+    
+    SECTION("Scan contains all points exactly once") {
+        REQUIRE(scan.size() == scanner.get_total_points());
+        
+        // Verify bijection: convert each coord to index and check uniqueness
+        std::set<uint64_t> seen;
+        for (const auto& c : scan) {
+            uint64_t idx = scanner.coords_to_index(c);
+            seen.insert(idx);
+        }
+        REQUIRE(seen.size() == scanner.get_total_points());
+    }
+    
+    SECTION("Time dimension is monotonically non-decreasing") {
+        bool monotonic = true;
+        for (size_t i = 1; i < scan.size(); ++i) {
+            if (scan[i][2] < scan[i - 1][2]) {
+                monotonic = false;
+                break;
+            }
+        }
+        REQUIRE(monotonic);
+    }
+    
+    SECTION("Locality preserved within time slices") {
+        // Within each time slice, consecutive points should be Hilbert-adjacent
+        // (i.e., the Hilbert index should generally increase, with locality)
+        uint32_t bins = (1 << scanner.get_order());
+        int close_pairs = 0;
+        int total_pairs = 0;
+        uint64_t total_points = scanner.get_total_points();
+        uint64_t threshold = total_points / 10;  // 10% of total
+        
+        for (size_t i = 1; i < scan.size(); ++i) {
+            // Only check pairs within the same time slice
+            if (scan[i][2] == scan[i - 1][2]) {
+                uint64_t idx_a = scanner.coords_to_index(scan[i - 1]);
+                uint64_t idx_b = scanner.coords_to_index(scan[i]);
+                uint64_t dist = (idx_a > idx_b) ? (idx_a - idx_b) : (idx_b - idx_a);
+                total_pairs++;
+                if (dist < threshold) {
+                    close_pairs++;
+                }
+            }
+        }
+        
+        // Hilbert ordering within slices should preserve locality
+        if (total_pairs > 0) {
+            double ratio = static_cast<double>(close_pairs) / total_pairs;
+            REQUIRE(ratio > 0.5);  // At least 50% locality within slices
+        }
+    }
+}
+
+TEST_CASE("HilbertScanner causal-foliated scan order (invalid time_dim)", "[spatial][mem-04][phase0]") {
+    HilbertScanner scanner(1);
+    REQUIRE_THROWS_AS(scanner.generate_scan_order(9), std::out_of_range);
+    REQUIRE_THROWS_AS(scanner.generate_scan_order(100), std::out_of_range);
+}

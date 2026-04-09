@@ -1459,6 +1459,18 @@ if(NIKOLA_BUILD_TESTS)
     add_test(NAME Phase146SelfImprovementEngine
         COMMAND test_phase146_self_improvement_engine)
 
+    # v0.1.2 UFIE Physics Validation Suite
+    add_executable(test_phase012_ufie_validation
+        tests/unit/phase012_ufie_validation_test.cpp)
+    target_link_libraries(test_phase012_ufie_validation PRIVATE
+        nikola_core Catch2::Catch2WithMain)
+    add_test(NAME Phase012UfieValidation
+        COMMAND test_phase012_ufie_validation "~[longsession]~[!benchmark]")
+    add_test(NAME Phase012UfieValidation_LongSession
+        COMMAND test_phase012_ufie_validation "[longsession]")
+    add_test(NAME Phase012UfieValidation_Benchmark
+        COMMAND test_phase012_ufie_validation "[!benchmark]")
+
     # =========================================================================
     # INTEGRATION TESTS (v0.0.17)
     # =========================================================================
