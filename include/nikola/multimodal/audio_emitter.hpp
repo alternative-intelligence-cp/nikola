@@ -19,6 +19,7 @@
 #include <vector>
 
 #include "nikola/spatial/topology_manager.hpp"
+#include "nikola/multimodal/cymatic_transduction.hpp"
 
 namespace nikola::multimodal {
 
@@ -30,7 +31,7 @@ using nikola::spatial::Coord9DInt;
 // ============================================================================
 
 inline constexpr int    NUM_EMITTERS          = 8;
-inline constexpr double GOLDEN_RATIO          = 1.6180339887498948482; // (1+√5)/2
+// GOLDEN_RATIO defined in cymatic_transduction.hpp
 inline constexpr double EMITTER_RADIAL_FRAC   = 0.8;  // r = 0.8 * Nr
 inline constexpr double AUDIO_RING_FRAC       = 0.5;  // R = Nx/2
 
