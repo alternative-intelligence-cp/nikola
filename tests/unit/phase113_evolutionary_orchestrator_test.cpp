@@ -36,6 +36,10 @@ static const std::string k_plugin =
 static const std::string k_bad_path =
     "/nonexistent/phase113/missing.so";
 
+/// Safe source code that passes Gate 1 security scan.
+static const std::string k_safe_source =
+    "void* nikola_module_factory() { return nullptr; }";
+
 // ── Convenience aliases ───────────────────────────────────────────────────────
 using nikola::autonomy::EvolutionaryOrchestrator;
 using nikola::autonomy::CycleStatus;
@@ -135,7 +139,7 @@ TEST_CASE("EO — ATP_DENIED when controller has insufficient energy", "[phase11
     CodePatternBlacklist bl;
     EvolutionaryOrchestrator eo{ctrl, bl};
 
-    CycleReport rep = eo.run_cycle(k_plugin);
+    CycleReport rep = eo.run_cycle(k_plugin, k_safe_source);
     CHECK(rep.status == CycleStatus::ATP_DENIED);
     CHECK_FALSE(eo.has_active());
 }
@@ -145,8 +149,8 @@ TEST_CASE("EO — ATP stats incremented on ATP_DENIED", "[phase113][eo]") {
     CodePatternBlacklist bl;
     EvolutionaryOrchestrator eo{ctrl, bl};
 
-    (void)eo.run_cycle(k_plugin);
-    (void)eo.run_cycle(k_plugin);
+    (void)eo.run_cycle(k_plugin, k_safe_source);
+    (void)eo.run_cycle(k_plugin, k_safe_source);
 
     const auto s = eo.stats();
     CHECK(s.total      == 2);
@@ -158,15 +162,15 @@ TEST_CASE("EO — ATP stats incremented on ATP_DENIED", "[phase113][eo]") {
 // Section 3 — Gate 1 (Security)
 // =============================================================================
 
-TEST_CASE("EO — Gate 1 skipped when no source code supplied", "[phase113][eo]") {
+TEST_CASE("EO — Gate 1 rejects empty source code", "[phase113][eo]") {
     require_plugin();
     MetabolicController  ctrl{10'000.0f, k_test_nap_threshold};
     CodePatternBlacklist bl;
     EvolutionaryOrchestrator eo{ctrl, bl};
 
     CycleReport rep = eo.run_cycle(k_plugin, "" /* empty source */);
-    CHECK(rep.gate1_security_passed);
-    // Gate 1 skip still allows further gates.
+    CHECK_FALSE(rep.gate1_security_passed);
+    CHECK(rep.status == CycleStatus::SECURITY_REJECTED);
 }
 
 TEST_CASE("EO — SECURITY_REJECTED on blacklisted source code", "[phase113][eo]") {
@@ -208,7 +212,7 @@ TEST_CASE("EO — Gate 2 skipped when no physics provider supplied", "[phase113]
     CodePatternBlacklist bl;
     EvolutionaryOrchestrator eo{ctrl, bl};
 
-    CycleReport rep = eo.run_cycle(k_plugin);
+    CycleReport rep = eo.run_cycle(k_plugin, k_safe_source);
     CHECK(rep.gate2_physics_passed);
     // Skipping gate 2 means SUCCESS is still reachable.
     CHECK(rep.status == CycleStatus::SUCCESS);
@@ -220,7 +224,7 @@ TEST_CASE("EO — PHYSICS_REJECTED on energy drift failure", "[phase113][eo]") {
     CodePatternBlacklist bl;
     EvolutionaryOrchestrator eo{ctrl, bl};
 
-    CycleReport rep = eo.run_cycle(k_plugin, {}, bad_energy_provider());
+    CycleReport rep = eo.run_cycle(k_plugin, k_safe_source, bad_energy_provider());
     CHECK(rep.status == CycleStatus::PHYSICS_REJECTED);
     CHECK_FALSE(rep.gate2_physics_passed);
     CHECK(rep.energy_drift_ratio > 0.0);
@@ -233,7 +237,7 @@ TEST_CASE("EO — PHYSICS_REJECTED on reversibility failure", "[phase113][eo]") 
     CodePatternBlacklist bl;
     EvolutionaryOrchestrator eo{ctrl, bl};
 
-    CycleReport rep = eo.run_cycle(k_plugin, {}, bad_reversibility_provider());
+    CycleReport rep = eo.run_cycle(k_plugin, k_safe_source, bad_reversibility_provider());
     CHECK(rep.status == CycleStatus::PHYSICS_REJECTED);
     CHECK_FALSE(rep.gate2_physics_passed);
 }
@@ -244,7 +248,7 @@ TEST_CASE("EO — PHYSICS_REJECTED when provider returns nullopt", "[phase113][e
     CodePatternBlacklist bl;
     EvolutionaryOrchestrator eo{ctrl, bl};
 
-    CycleReport rep = eo.run_cycle(k_plugin, {}, null_physics_provider());
+    CycleReport rep = eo.run_cycle(k_plugin, k_safe_source, null_physics_provider());
     CHECK(rep.status == CycleStatus::PHYSICS_REJECTED);
     CHECK_FALSE(eo.has_active());
 }
@@ -255,7 +259,7 @@ TEST_CASE("EO — physics gate passes with skip_oracle flag", "[phase113][eo]") 
     CodePatternBlacklist bl;
     EvolutionaryOrchestrator eo{ctrl, bl};
 
-    CycleReport rep = eo.run_cycle(k_plugin, {}, skip_oracle_provider());
+    CycleReport rep = eo.run_cycle(k_plugin, k_safe_source, skip_oracle_provider());
     CHECK(rep.gate2_physics_passed);
     CHECK(rep.status == CycleStatus::SUCCESS);
 }
@@ -266,7 +270,7 @@ TEST_CASE("EO — physics stats increment on rejection", "[phase113][eo]") {
     CodePatternBlacklist bl;
     EvolutionaryOrchestrator eo{ctrl, bl};
 
-    (void)eo.run_cycle(k_plugin, {}, bad_energy_provider());
+    (void)eo.run_cycle(k_plugin, k_safe_source, bad_energy_provider());
 
     const auto s = eo.stats();
     CHECK(s.physics_rejected == 1);
@@ -301,7 +305,7 @@ TEST_CASE("EO — LOAD_FAILED on bad .so path", "[phase113][eo]") {
     CodePatternBlacklist bl;
     EvolutionaryOrchestrator eo{ctrl, bl};
 
-    CycleReport rep = eo.run_cycle(k_bad_path);
+    CycleReport rep = eo.run_cycle(k_bad_path, k_safe_source);
     CHECK(rep.status == CycleStatus::LOAD_FAILED);
     CHECK_FALSE(eo.has_active());
 }
@@ -312,8 +316,8 @@ TEST_CASE("EO — SAME_MODULE on duplicate path", "[phase113][eo]") {
     CodePatternBlacklist bl;
     EvolutionaryOrchestrator eo{ctrl, bl};
 
-    REQUIRE(eo.run_cycle(k_plugin).status == CycleStatus::SUCCESS);
-    CycleReport rep = eo.run_cycle(k_plugin);
+    REQUIRE(eo.run_cycle(k_plugin, k_safe_source).status == CycleStatus::SUCCESS);
+    CycleReport rep = eo.run_cycle(k_plugin, k_safe_source);
     CHECK(rep.status == CycleStatus::SAME_MODULE);
 }
 
@@ -324,7 +328,7 @@ TEST_CASE("EO — ATP is deducted on SUCCESS", "[phase113][eo]") {
     EvolutionaryOrchestrator eo{ctrl, bl};
 
     const float before = ctrl.get_current_atp();
-    REQUIRE(eo.run_cycle(k_plugin).status == CycleStatus::SUCCESS);
+    REQUIRE(eo.run_cycle(k_plugin, k_safe_source).status == CycleStatus::SUCCESS);
     const float after  = ctrl.get_current_atp();
 
     CHECK(before - after == Catch::Approx(EvolutionaryOrchestrator::TOTAL_COST).epsilon(0.01));
@@ -336,7 +340,7 @@ TEST_CASE("EO — ATP is NOT deducted on failure (refunded)", "[phase113][eo]") 
     EvolutionaryOrchestrator eo{ctrl, bl};
 
     const float before = ctrl.get_current_atp();
-    (void)eo.run_cycle(k_bad_path);   // LOAD_FAILED — lock should refund
+    (void)eo.run_cycle(k_bad_path, k_safe_source);   // LOAD_FAILED — lock should refund
     const float after  = ctrl.get_current_atp();
 
     CHECK(before == Catch::Approx(after).epsilon(0.01));
@@ -367,8 +371,8 @@ TEST_CASE("EO — rollback after two successes restores first module", "[phase11
     CodePatternBlacklist bl;
     EvolutionaryOrchestrator eo{ctrl, bl};
 
-    REQUIRE(eo.run_cycle(k_plugin).status    == CycleStatus::SUCCESS);
-    REQUIRE(eo.run_cycle(copy_path).status   == CycleStatus::SUCCESS);
+    REQUIRE(eo.run_cycle(k_plugin, k_safe_source).status    == CycleStatus::SUCCESS);
+    REQUIRE(eo.run_cycle(copy_path, k_safe_source).status   == CycleStatus::SUCCESS);
 
     CHECK(eo.active_path() == copy_path);
     REQUIRE(eo.rollback());
@@ -388,10 +392,10 @@ TEST_CASE("EO — stats reflect mixed cycle outcomes", "[phase113][eo]") {
     CodePatternBlacklist bl;
     EvolutionaryOrchestrator eo{ctrl, bl};
 
-    (void)eo.run_cycle(k_bad_path);                              // LOAD_FAILED
+    (void)eo.run_cycle(k_bad_path, k_safe_source);                              // LOAD_FAILED
     (void)eo.run_cycle(k_plugin, "system(\"rm -rf /\");");       // SECURITY_REJECTED
-    (void)eo.run_cycle(k_plugin, {}, bad_energy_provider());     // PHYSICS_REJECTED
-    REQUIRE(eo.run_cycle(k_plugin).status == CycleStatus::SUCCESS);  // SUCCESS
+    (void)eo.run_cycle(k_plugin, k_safe_source, bad_energy_provider());     // PHYSICS_REJECTED
+    REQUIRE(eo.run_cycle(k_plugin, k_safe_source).status == CycleStatus::SUCCESS);  // SUCCESS
 
     const auto s = eo.stats();
     CHECK(s.total              == 4);
@@ -412,7 +416,7 @@ TEST_CASE("EO — CycleReport bool operator true on SUCCESS", "[phase113][eo]") 
     CodePatternBlacklist bl;
     EvolutionaryOrchestrator eo{ctrl, bl};
 
-    CycleReport rep = eo.run_cycle(k_plugin);
+    CycleReport rep = eo.run_cycle(k_plugin, k_safe_source);
     CHECK(static_cast<bool>(rep));
 }
 
@@ -460,7 +464,7 @@ TEST_CASE("EO — concurrent run_cycle calls do not crash", "[phase113][eo][thre
                 MetabolicController  ctrl{10'000.0f, k_test_nap_threshold};
                 CodePatternBlacklist bl;
                 EvolutionaryOrchestrator eo{ctrl, bl};
-                results[i] = eo.run_cycle(k_plugin).status;
+                results[i] = eo.run_cycle(k_plugin, k_safe_source).status;
             });
         }
         for (auto& t : threads) t.join();

@@ -44,6 +44,10 @@ static const std::string k_plugin =
     std::string(PHASE114_PLUGIN_DIR) + "/phase112_test_plugin.so";
 static const std::string k_bad_path = "/nonexistent/phase114/missing.so";
 
+/// Safe source code that passes Gate 1 security scan.
+static const std::string k_safe_source =
+    "void* nikola_module_factory() { return nullptr; }";
+
 // ── Aliases ───────────────────────────────────────────────────────────────────
 using nikola::security::HybridVerifier;
 using nikola::security::HybridSignature;
@@ -495,7 +499,7 @@ TEST_CASE("ShadowSpine: stage SUCCESS with valid dual signatures + plugin",
 
     HybridSignature sig = make_valid_sig(plugin_binary, f.ed_kp, f.sp_kp);
 
-    auto rep = f.spine.stage(k_plugin, "", sig, f.ed_kp.pk, f.sp_kp.pk);
+    auto rep = f.spine.stage(k_plugin, k_safe_source, sig, f.ed_kp.pk, f.sp_kp.pk);
 
     CHECK(rep.signature_passed);
     CHECK(rep.status == StageStatus::SUCCESS);
@@ -553,7 +557,7 @@ TEST_CASE("ShadowSpine: rollback after first SUCCESS returns false (no previous)
     HybridSignature sig = make_valid_sig(plugin_binary, f.ed_kp, f.sp_kp);
 
     // First ever stage: active = new module, previous = empty (nothing to roll back to)
-    auto rep = f.spine.stage(k_plugin, "", sig, f.ed_kp.pk, f.sp_kp.pk);
+    auto rep = f.spine.stage(k_plugin, k_safe_source, sig, f.ed_kp.pk, f.sp_kp.pk);
     REQUIRE(rep.status == StageStatus::SUCCESS);
     REQUIRE(f.spine.has_active());
 
@@ -582,7 +586,7 @@ TEST_CASE("ShadowSpine: stats reflect EO cycle counts",
     auto plugin_binary = read_file(k_plugin);
     HybridSignature sig = make_valid_sig(plugin_binary, f.ed_kp, f.sp_kp);
 
-    (void)f.spine.stage(k_plugin, "", sig, f.ed_kp.pk, f.sp_kp.pk);
+    (void)f.spine.stage(k_plugin, k_safe_source, sig, f.ed_kp.pk, f.sp_kp.pk);
 
     auto s = f.spine.stats();
     CHECK(s.total >= 1u);

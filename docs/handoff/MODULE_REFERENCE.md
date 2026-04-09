@@ -1,6 +1,6 @@
 # Nikola — Module Reference
 
-_Last updated: 2026-02-27_
+_Last updated: 2026-04-09_
 
 One entry per significant module in `include/nikola/`. For complete API docs
 see inline header comments. For ctest mapping see column "ctest #".
@@ -439,6 +439,85 @@ attributes when `--trace` flag is set.
 
 ---
 
+## Multimodal Namespace — `nikola::multimodal`
+
+### `audio_input.hpp`
+| Field | Value |
+|-------|-------|
+| Status | IMPL |
+| Phase | 144 |
+| Key types | `AudioInput`, `AudioBand` |
+
+PCM → Goertzel 8-band frequency analysis → phase-coded Nit[128] embedding.
+`process_samples(pcm, n)` → `get_embedding()`. Bands: sub-bass through
+brilliance (20Hz–20kHz). DC offset removal built-in.
+
+### `multimodal_engine.hpp`
+| Field | Value |
+|-------|-------|
+| Status | IMPL |
+| Phase | 144 |
+| Key types | `MultimodalEngine` |
+
+Top-level facade for audio/visual/text injection. `tick_audio_nits()`,
+`inject_visual()`, checkpoint management. Owns `CognitiveTorus` reference.
+
+### `audio_emitter.hpp`, `visual_frame_rate.hpp`
+Audio emission and visual frame-rate control for output modalities.
+
+### `log_polar_transform.hpp`, `cymatic_transduction.hpp`
+Visual input pipeline: pixel → log-polar → cymatic frequency domain.
+
+### `adaptive_quantizer.hpp`, `checkpoint_manager.hpp`, `gguf_exporter.hpp`
+Quantization, checkpoint persistence, and GGUF model export utilities.
+
+---
+
+## Aria Namespace — `nikola::aria`
+
+### `compile_validator.hpp`
+| Field | Value |
+|-------|-------|
+| Status | IMPL |
+| Phase | 145 |
+| Key types | `AriaCompileValidator`, `CompileResult` |
+
+C++ subprocess wrapper for `ariac` compiler. `validate(source_code)` writes
+to tempfile, invokes ariac, parses error/warning lines, returns
+`CompileResult{success, errors, warnings, raw_output, elapsed_ms}`.
+Also contains `extract_code_block()` for parsing model responses.
+
+### `specialist_interface.hpp`
+| Field | Value |
+|-------|-------|
+| Status | IMPL |
+| Phase | 145 |
+| Key types | `SpecialistInterface`, `SpecialistResult` |
+
+C++ client for aria-specialist Python server. Fork/exec `python3 server.py`,
+JSON-Lines protocol over stdin/stdout pipes. `start()`, `ask(instruction,
+context, timeout)` → `SpecialistResult{ok, response, error}`, `stop()`.
+
+### `code_proposal_store.hpp`
+| Field | Value |
+|-------|-------|
+| Status | IMPL |
+| Phase | 145 |
+| Key types | `CodeProposalStore`, `CodeProposal` |
+
+LMDB-backed persistence for code proposals. 128MB map size, `"proposals"`
+named database. `store(proposal)`, `load(id)`, `count()`,
+`count_successful()`, `export_successful()`, `success_rate()`. Magic
+prefix `0x4E50524F` ("NPRO").
+
+### `compiler.hpp`, `code_generator.hpp`, `interpreter.hpp`
+Aria language bridge modules for code generation and interpretation.
+
+### `metaprogramming.hpp`, `native_interface.hpp`
+Aria metaprogramming support and native FFI interface.
+
+---
+
 ## `NikolaState` Quick Reference
 
 ```cpp
@@ -465,9 +544,12 @@ struct NikolaState {
 | autonomy | ~12 | 0 | ~18 |
 | security | ~10 | 0 | ~12 |
 | economy | 3 | 0 | 3 |
-| social | 2 | 0 | 2 |
+| social | 3 | 0 | 3 |
 | interior | ~6 | 0 | ~6 |
 | spatial/math | ~5 | 0 | ~5 |
 | memory/core | ~4 | 0 | ~4 |
+| multimodal | 8 | 0 | 8 |
+| aria | 8 | 0 | 8 |
 
-*As of Phase 133 — all stubs promoted to IMPL. No remaining stubs.
+*As of Phase 145 — all stubs promoted to IMPL. No remaining stubs.
+**Total public headers: 158.**

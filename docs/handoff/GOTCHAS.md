@@ -1,6 +1,6 @@
 # Nikola — Gotchas and Known Traps
 
-_Last updated: 2026-02-27_
+_Last updated: 2026-04-09_
 
 This document captures the non-obvious problems that will bite you if you
 don't know about them. Read this before the first build.
@@ -180,11 +180,15 @@ If they consistently fail, it is a regression.
 
 ---
 
-### `docs/architecture/` exists but is empty
+### `docs/architecture/` has 4 specification docs
 
-The directory `/docs/architecture/` was created but never populated. The
-architecture documentation lives in `/docs/handoff/ARCHITECTURE.md`.
-Don't be confused by the empty directory.
+The directory `/docs/architecture/` contains:
+- `memory_schema.md` — LMDB persistence layout (Phase 137)
+- `metrics_schema.md` — JSON-Lines telemetry wire format
+- `peer_protocol.md` — CurveZMQ peer discovery & handshake
+- `physics_calibration_protocol.md` — GAP-030 calibration test spec
+
+The primary architecture documentation lives in `/docs/handoff/ARCHITECTURE.md`.
 
 ---
 
@@ -271,3 +275,29 @@ wrong in any script or documentation.
 `REPOS/aria/` and `REPOS/aria_community/` contain a different project (the
 Aria language). They share the workspace but are not dependencies of Nikola.
 Don't confuse them.
+
+---
+
+### Phase142 calibration tests need 300s timeout
+
+The full and long-term physics calibration tests (Phase142PhysicsCalibration,
+Phase142PhysicsCalibration_LongTerm) take ~215s. Always use `--timeout 300`
+or rely on the CMakeLists.txt `TIMEOUT` property. The quick variant
+(Phase142PhysicsCalibration_Quick) completes in ~22s.
+
+---
+
+### Aria SIE library files need `-c` flag
+
+The 7 Aria SIE library files (`aria/sie/nikola_*.aria`) are compilation units
+without `failsafe` functions. Compile them with `ariac -c` (library mode).
+The 8 test files need `-I aria/sie/ -L aria/sie/shim/ -lnikola_sie` for
+module resolution and FFI shim linking.
+
+---
+
+### LMDB environments use directory mode
+
+`CodeProposalStore`, `LmdbMemoryStore`, and `LmdbStateStore` all use LMDB in
+directory mode (not `MDB_NOSUBDIR`). Pass a directory path, not a file path.
+The directory must be writable and will be created if it doesn't exist.

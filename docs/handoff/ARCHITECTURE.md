@@ -1,6 +1,6 @@
 # Nikola — Architecture Reference
 
-_Last updated: 2026-02-27_
+_Last updated: 2026-04-09_
 
 ---
 
@@ -241,7 +241,67 @@ Nikola has a post-quantum cryptographic identity layer:
 
 ---
 
-## 8. Social / Economic Layer (Simulated)
+## 8. Multimodal Input (v0.0.18)
+
+Nikola accepts audio and visual input alongside text:
+
+### Audio Pipeline
+
+```
+PCM samples → Goertzel filter (8 bands) → phase-coded Nit[128] embedding
+             → inject_audio() / inject_audio_scaled() → Ψ field
+```
+
+`AudioInput` (`include/nikola/multimodal/audio_input.hpp`) converts raw PCM
+samples into an 8-band frequency decomposition using the Goertzel algorithm.
+Each band maps to a group of Nits in a 128-element embedding which is then
+injected into the torus field via `CognitiveTorus::inject_audio()`.
+
+### Visual Pipeline
+
+```
+Pixel grid → log-polar transform → cymatic transduction → Nit[128]
+           → inject_visual() → Ψ field
+```
+
+`LogPolarTransform` + `CymaticTransduction` convert raw pixel data into a
+frequency-domain representation compatible with the torus field.
+
+### MultimodalEngine
+
+`MultimodalEngine` (`include/nikola/multimodal/multimodal_engine.hpp`) is the
+top-level facade wrapping audio/visual/text injection, checkpoint management,
+and tick coordination.
+
+---
+
+## 9. Aria Specialist Integration (v0.0.19)
+
+Nikola can invoke an external Aria language specialist model to generate code
+proposals as part of its self-improvement loop:
+
+### Pipeline
+
+```
+DecisionLoop (GENERATE_CODE action)
+  → SpecialistInterface (JSON-Lines over stdin/stdout to specialist server)
+  → extract_code_block() (parse model response)
+  → AriaCompileValidator (invoke ariac subprocess)
+  → CodeProposalStore (LMDB persistence, 128MB)
+```
+
+- **GENERATE_CODE** action fires when boredom > 0.4, ATP ≥ 0.30, and cooldown
+  (30s) expired. Score = boredom × ATP × 0.5.
+- **SpecialistInterface** forks `python3 server.py` (aria-specialist repo),
+  communicates via JSON-Lines protocol.
+- **AriaCompileValidator** writes code to a temp file, invokes `ariac`, parses
+  errors/warnings.
+- **CodeProposalStore** persists proposals in LMDB with compile results,
+  enabling iterative improvement tracking.
+
+---
+
+## 10. Social / Economic Layer (Simulated)
 
 These modules exist as a design commitment to the multi-agent future:
 
@@ -256,7 +316,7 @@ designed so a real wallet implementation is a drop-in replacement for
 
 ---
 
-## 9. Invariants — Do Not Break These
+## 11. Invariants — Do Not Break These
 
 1. **Emitter frequencies must be `π·φⁿ`** — changing to rational values
    causes mode-locking (silent failure over ~1000 ticks).

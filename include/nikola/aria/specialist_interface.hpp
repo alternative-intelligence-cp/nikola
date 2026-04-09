@@ -340,10 +340,20 @@ private:
                 switch (c) {
                     case '"':  value += '"';  break;
                     case '\\': value += '\\'; break;
+                    case '/':  value += '/';  break;
+                    case 'b':  value += '\b'; break;
+                    case 'f':  value += '\f'; break;
                     case 'n':  value += '\n'; break;
                     case 'r':  value += '\r'; break;
                     case 't':  value += '\t'; break;
-                    default:   value += c;    break;
+                    case 'u':
+                        // \uXXXX — consume 4 hex digits, skip the sequence.
+                        // We don't need full Unicode; just don't pass it through raw.
+                        if (i + 4 < json.size()) {
+                            i += 4;  // skip the hex digits
+                        }
+                        break;
+                    default:   break;  // drop invalid escapes
                 }
                 escaped = false;
             } else if (c == '\\') {
