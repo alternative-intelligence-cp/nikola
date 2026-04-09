@@ -97,6 +97,22 @@ public:
      */
     std::vector<uint64_t> get_neighbors(uint64_t index, uint32_t radius = 1) const;
 
+    /**
+     * @brief Generate a causal-foliated scan order over the full 9D grid.
+     *
+     * Causal foliation: iterates the time dimension (dim 2) monotonically,
+     * and within each time slice, traverses the remaining 8D subspace using
+     * a Hilbert curve for spatial locality. This guarantees:
+     *   - Time monotonicity (causal ordering)
+     *   - Spatial locality within each time slice
+     *
+     * T⁹ dimension semantics: r(0) s(1) t(2) u(3) v(4) w(5) x(6) y(7) z(8)
+     *
+     * @param time_dim The dimension index to treat as time (default: 2)
+     * @return Vector of Coord9D in causal-foliated scan order
+     */
+    std::vector<Coord9D> generate_scan_order(size_t time_dim = 2) const;
+
 private:
     uint32_t order_;  // Bits per dimension
     static void rotate_left(Coord9D& coords, uint32_t rotation) noexcept;

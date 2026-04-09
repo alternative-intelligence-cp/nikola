@@ -13,6 +13,7 @@
 
 #include "nikola/spatial/hilbert_scanner.hpp"
 #include <stdexcept>
+#include <algorithm>
 
 namespace nikola::spatial {
 
@@ -157,6 +158,82 @@ std::vector<uint64_t> HilbertScanner::get_neighbors(uint64_t center_index, uint3
 
 void HilbertScanner::rotate_left(Coord9D&, uint32_t) noexcept {
     // Not needed for Skilling's algorithm
+}
+
+std::vector<HilbertScanner::Coord9D> HilbertScanner::generate_scan_order(size_t time_dim) const {
+    if (time_dim >= DIMENSIONS) {
+        throw std::out_of_range("time_dim must be < 9");
+    }
+
+    const uint32_t bins = 1U << order_;
+    
+    // Build an 8D Hilbert scanner for the spatial subspace (one order lower
+    // would change resolution, so we use the same order and manually pack/unpack
+    // the 8 non-time dimensions into an auxiliary Coord9D with dim[time_dim]=0).
+    //
+    // For each time slice t:
+    //   1. Enumerate all 8D spatial points via Hilbert curve (locality within slice)
+    //   2. Reconstruct full 9D coord by inserting t at time_dim position
+    //
+    // This gives us time-monotonic ordering with spatial locality per slice.
+
+    // Total points in the 8D spatial subspace per time slice
+    const uint64_t spatial_points = 1ULL << (8 * order_);
+    // Total scan size
+    const uint64_t total = static_cast<uint64_t>(bins) * spatial_points;
+    
+    std::vector<Coord9D> scan_order;
+    scan_order.reserve(total);
+
+    // We iterate the 8D subspace by iterating all Hilbert indices [0, 2^(9*order))
+    // and grouping by the time coordinate. Instead, we directly iterate time slices
+    // and within each slice, iterate spatial coords in a cache-friendly order.
+    //
+    // Since we don't have a separate 8D Hilbert implementation, we use the existing
+    // 9D scanner: for each time slice t, we scan the full 9D curve and pick only
+    // the points where coord[time_dim] == t. This preserves Hilbert locality within
+    // each slice but is O(bins * total_9d_points) which is too expensive.
+    //
+    // Better approach: iterate all possible 8D coordinates in Hilbert order by
+    // mapping them through a synthetic 9D index with dim[time_dim] fixed.
+    // We enumerate all (bins^8) points per time slice by looping through 
+    // 8D multi-index space in standard order, then Hilbert-rank each.
+    // Then sort within each slice by Hilbert rank.
+    
+    // Most practical approach for correctness: iterate all points, sort by
+    // (time_coord, hilbert_index). This is O(N log N) where N = bins^9.
+    // For order ≤ 2 this is fine (262K points). For higher orders, this
+    // function would need the 8D sub-scanner optimization.
+    
+    // Collect all points with their time coordinate and Hilbert index
+    struct ScanEntry {
+        uint32_t time_val;
+        uint64_t hilbert_idx;
+        Coord9D coords;
+    };
+    
+    std::vector<ScanEntry> entries;
+    entries.reserve(total);
+    
+    // Iterate all 9D Hilbert indices in curve order
+    const uint64_t total_points = get_total_points();
+    for (uint64_t h = 0; h < total_points; ++h) {
+        Coord9D c = index_to_coords(h);
+        entries.push_back({c[time_dim], h, c});
+    }
+    
+    // Stable sort by time coordinate — preserves Hilbert order within each time slice
+    std::stable_sort(entries.begin(), entries.end(),
+        [](const ScanEntry& a, const ScanEntry& b) {
+            return a.time_val < b.time_val;
+        });
+    
+    // Extract coordinates in causal-foliated order
+    for (const auto& e : entries) {
+        scan_order.push_back(e.coords);
+    }
+    
+    return scan_order;
 }
 
 } // namespace nikola::spatial

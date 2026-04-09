@@ -11,6 +11,7 @@
 #include <nikola/autonomy/metabolic_controller.hpp>
 #include <thread>
 #include <vector>
+#include <chrono>
 
 using namespace nikola::autonomy;
 
@@ -184,4 +185,84 @@ TEST_CASE("MetabolicLock edge cases", "[metabolic][cf-04]") {
         }
         REQUIRE(controller.get_current_atp() == 100.0);
     }
+}
+
+TEST_CASE("MetabolicLock CF-04 stress: 16 threads, non-negative invariant", "[metabolic][cf-04][phase0]") {
+    // CF-04 acceptance criterion: ATP budget provably non-negative under 16-thread concurrent access
+    MetabolicController controller(10000.0, 10.0);
+    std::atomic<int> acquired_locks{0};
+    std::atomic<int> failed_locks{0};
+    std::atomic<bool> invariant_violated{false};
+    
+    // 16 threads, each running 100 reserve/commit cycles with random costs
+    constexpr int NUM_THREADS = 16;
+    constexpr int OPS_PER_THREAD = 100;
+    
+    std::vector<std::thread> threads;
+    for (int i = 0; i < NUM_THREADS; ++i) {
+        threads.emplace_back([&, i]() {
+            // Per-thread deterministic RNG (avoid data races on shared rand state)
+            unsigned seed = static_cast<unsigned>(i * 7919 + 42);
+            for (int op = 0; op < OPS_PER_THREAD; ++op) {
+                // LCG: deterministic, no shared state
+                seed = seed * 1103515245 + 12345;
+                float cost = 1.0f + (seed % 100);  // 1.0 to 100.0
+                
+                try {
+                    MetabolicLock lock(controller, cost);
+                    acquired_locks.fetch_add(1, std::memory_order_relaxed);
+                    
+                    // Check invariant WHILE holding lock
+                    float current = controller.get_current_atp();
+                    if (current < 0.0f) {
+                        invariant_violated.store(true, std::memory_order_relaxed);
+                    }
+                    
+                    // Commit roughly half the time, rollback the other half
+                    seed = seed * 1103515245 + 12345;
+                    if (seed % 2 == 0) {
+                        lock.commit();
+                    }
+                    // else: destructor rolls back
+                } catch (const MetabolicExhaustionException&) {
+                    failed_locks.fetch_add(1, std::memory_order_relaxed);
+                }
+            }
+        });
+    }
+    
+    for (auto& t : threads) {
+        t.join();
+    }
+    
+    // Primary CF-04 invariant: ATP NEVER went negative
+    REQUIRE_FALSE(invariant_violated.load());
+    
+    // ATP must be non-negative at rest
+    float final_atp = controller.get_current_atp();
+    REQUIRE(final_atp >= 0.0f);
+    REQUIRE(final_atp <= 10000.0f);
+    
+    // Sanity: all operations accounted for
+    REQUIRE(acquired_locks + failed_locks == NUM_THREADS * OPS_PER_THREAD);
+}
+
+TEST_CASE("MetabolicLock CF-04 contention benchmark", "[metabolic][cf-04][phase0][!benchmark]") {
+    // Benchmark: lock contention target <1μs per acquire
+    MetabolicController controller(1000000.0, 10.0);
+    constexpr int ITERATIONS = 10000;
+    
+    auto start = std::chrono::high_resolution_clock::now();
+    
+    for (int i = 0; i < ITERATIONS; ++i) {
+        MetabolicLock lock(controller, 1.0);
+        lock.commit();
+    }
+    
+    auto end = std::chrono::high_resolution_clock::now();
+    auto ns = std::chrono::duration_cast<std::chrono::nanoseconds>(end - start).count();
+    double ns_per_op = static_cast<double>(ns) / ITERATIONS;
+    
+    // Target: <1μs (1000ns) per acquire
+    REQUIRE(ns_per_op < 1000.0);
 }
