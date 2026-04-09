@@ -108,6 +108,11 @@ DecisionLoop::DecisionLoop(nikola::cognitive::CognitiveTorus& torus,
     last_emit_time_   = now - std::chrono::seconds(60);  // allow immediate first emit
     last_store_time_  = now - std::chrono::seconds(60);
     last_reason_time_ = now - std::chrono::seconds(60);
+    last_generate_time_ = now - std::chrono::seconds(60);  // v0.0.19: allow immediate
+
+    // v0.0.19 — check if Aria specialist integration is configured
+    aria_specialist_enabled_ = !cfg_.specialist_server_path.empty()
+                             || !cfg_.ariac_path.empty();
 
     // Phase 16.1 — initialise SSM (Mamba S6 selective scan) weights + state.
     // Output dim matches vocabulary size so logits map 1:1 to tokens.
@@ -560,6 +565,27 @@ float DecisionLoop::score_reason(const NikolaState& s) const noexcept
 }
 
 // ============================================================================
+// score_generate_code
+// ============================================================================
+
+float DecisionLoop::score_generate_code(const NikolaState& s) const noexcept
+{
+    // GENERATE_CODE fires when:
+    //  - Aria specialist integration is enabled (specialist_server_path set)
+    //  - ATP ≥ 0.30 (code generation + compile costs ~550 ATP)
+    //  - Curiosity (boredom) is moderate (> 0.4) — Nikola wants to create
+    //  - Cooldown satisfied (default 30s between generates)
+    if (!aria_specialist_enabled_) return 0.f;
+    if (s.atp < 0.30f) return 0.f;
+    if (s.boredom < 0.4f) return 0.f;
+    if (seconds_since(last_generate_time_) < cfg_.min_generate_interval_s) return 0.f;
+    // Score proportional to boredom × ATP × 0.5
+    // Typically: boredom=0.6, ATP=0.7 → 0.21 (needs to beat SILENT=0.3+threshold)
+    // At high boredom: boredom=0.9, ATP=0.8 → 0.36 (wins over SILENT)
+    return s.boredom * s.atp * 0.5f;
+}
+
+// ============================================================================
 // build_payload
 // ============================================================================
 
@@ -629,6 +655,11 @@ std::string DecisionLoop::build_payload(ActionType type, const NikolaState& s) c
             return "reasoning (entropy=" + std::to_string(s.entropy).substr(0, 4) +
                    " top_head=" + std::to_string(top).substr(0, 4) + ")";
         }
+
+        case ActionType::GENERATE_CODE:
+            return "generating aria code (boredom=" +
+                   std::to_string(s.boredom).substr(0, 4) +
+                   " atp=" + std::to_string(s.atp).substr(0, 4) + ")";
 
         default:
             return "";
@@ -736,7 +767,7 @@ DecisionResult DecisionLoop::tick()
     static constexpr float SILENT_SCORE = 0.3f;
 
     struct Candidate { ActionType type; float score; };
-    Candidate candidates[9];
+    Candidate candidates[10];
     {
         NIKOLA_PROFILE("autonomy::score_candidates");
         candidates[0] = { ActionType::NAP,            score_nap(s)            };
@@ -748,6 +779,7 @@ DecisionResult DecisionLoop::tick()
         candidates[6] = { ActionType::REQUEST_LOOKUP, score_request_lookup(s) };
         candidates[7] = { ActionType::RECALL_MEMORY,  score_recall_memory(s)  };
         candidates[8] = { ActionType::REASON,         score_reason(s)         };
+        candidates[9] = { ActionType::GENERATE_CODE,  score_generate_code(s)  };
     }
 
     // Find best non-silent candidate
@@ -771,6 +803,7 @@ DecisionResult DecisionLoop::tick()
     if (winner == ActionType::STORE_MEMORY)  last_store_time_  = now;
     if (winner == ActionType::REASON)        last_reason_time_ = now;
     if (winner == ActionType::RECALL_MEMORY) last_recall_time_ = now;  // v0.0.9
+    if (winner == ActionType::GENERATE_CODE) last_generate_time_ = now;  // v0.0.19
 
     // ── 6a. Execute side-effects for actions that modify the torus ───────────
     // EXPLORE: inject stochastic novelty into the field NOW (after scoring,
