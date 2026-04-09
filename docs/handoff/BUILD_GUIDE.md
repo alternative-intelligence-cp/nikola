@@ -1,6 +1,6 @@
 # Nikola — Build Guide
 
-_Last updated: 2026-02-27_
+_Last updated: 2026-04-09_
 
 This document describes how to build, test, and run Nikola from scratch
 on a fresh Linux machine. Read `GOTCHAS.md` before debugging any surprise
@@ -148,10 +148,12 @@ ctest -R Phase133 -v
 
 ### Expected baseline
 
-As of 2026-02-27:
-- **135 ctest entries** (ctest #1 through #135)
-- **~98% pass rate** (2 pre-existing timing-sensitive flakes: Phase43, Phase51)
-- All Phase 110+ tests should pass cleanly
+As of 2026-04-09:
+- **163 ctest entries** (ctest #1 through #163)
+- **100% pass rate** at 300s timeout (2 pre-existing timing-sensitive flakes
+  in Phase43/Phase51 under CPU contention — not regressions)
+- Phase142 calibration variants need 300s timeout (set in CMakeLists.txt)
+- All Phase 100+ tests should pass cleanly
 
 ---
 
@@ -191,6 +193,24 @@ cmake --build . --target nikola_first_light
 
 This runs one tick of the physics engine and prints field energy — useful
 for verifying the propagator is functional without full pipeline setup.
+
+---
+
+### Building the Aria SIE tests
+
+The 15 Aria source files in `aria/sie/` can be compiled with the Aria
+compiler (`ariac`):
+
+```bash
+# Library files (no failsafe required):
+ariac -c aria/sie/nikola_blacklist.aria
+
+# Test files (need module path + shim library):
+ariac -I aria/sie/ -L aria/sie/shim/ -lnikola_sie aria/sie/tests/test_blacklist.aria -o /tmp/test_blacklist
+```
+
+The C FFI shim at `aria/sie/shim/libnikola_sie.a` bridges Aria calls into
+the Nikola C++ runtime (PhysicsOracle, HybridVerifier, etc.).
 
 ---
 

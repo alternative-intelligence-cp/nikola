@@ -118,8 +118,10 @@ CycleReport EvolutionaryOrchestrator::run_cycle(
             return report;   // lock destructs → auto-refund
         }
     } else {
-        // No source provided — skip Gate 1 (treat as passed).
-        report.gate1_security_passed = true;
+        // No source provided — cannot verify safety.  Reject.
+        report.gate1_security_passed = false;
+        finish(CycleStatus::SECURITY_REJECTED);
+        return report;
     }
 
     // ── Step 3: Gate 2 — Physics Oracle + Gate 3 swap_in (combined) ─────────

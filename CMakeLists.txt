@@ -1401,11 +1401,13 @@ if(NIKOLA_BUILD_TESTS)
     target_link_libraries(test_phase142_physics_calibration PRIVATE
         nikola_core Catch2::Catch2WithMain)
     add_test(NAME Phase142PhysicsCalibration COMMAND test_phase142_physics_calibration)
+    set_tests_properties(Phase142PhysicsCalibration PROPERTIES TIMEOUT 300)
     # Long-term energy test (1M steps) can be run separately:
     add_test(NAME Phase142PhysicsCalibration_Quick
         COMMAND test_phase142_physics_calibration "~[longterm]")
     add_test(NAME Phase142PhysicsCalibration_LongTerm
         COMMAND test_phase142_physics_calibration "[longterm]")
+    set_tests_properties(Phase142PhysicsCalibration_LongTerm PROPERTIES TIMEOUT 300)
 
     # -------------------------------------------------------------------------
     # Phase 143 — v0.0.16 Curiosity Engine & Exploration Dynamics

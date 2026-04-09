@@ -169,11 +169,11 @@ public:
      * @param wf              WaveFunction to evolve.
      * @param dt              Timestep per step.
      * @param n_steps         Number of integration steps.
-     * @param tolerance       Max |ΔH/H₀| before SCRAM (default 0.0001 = 0.01%).
+     * @param tolerance       Max |ΔH/H₀| before SCRAM (default 1e-5, aligned with PhysicsOracle).
      * @param check_interval  How often to recompute H (default every 100 steps).
      */
     void evolve(WaveFunction& wf, float dt, size_t n_steps,
-                double tolerance = 1e-4, size_t check_interval = 100)
+                double tolerance = 1e-5, size_t check_interval = 100)
     {
         const double H0 = ham_.compute(wf);
         // Accept at most 10 SCRAM events before hard abort
