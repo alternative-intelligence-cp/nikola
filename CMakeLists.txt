@@ -73,6 +73,7 @@ set(AUTONOMY_SOURCES
     src/autonomy/module_swapper.cpp
     src/autonomy/evolutionary_orchestrator.cpp
     src/autonomy/shadow_spine.cpp
+    src/autonomy/self_improvement_engine.cpp
 )
 
 set(SPATIAL_SOURCES
@@ -168,6 +169,10 @@ target_link_libraries(nikola_core PUBLIC
     cppzmq
     Threads::Threads
     lmdb        # Phase 136: lmdb_memory_store.hpp inline calls mdb_* C API
+    sphincsplus_shake256f   # Phase 146: SelfImprovementEngine SPHINCS+ signing
+    ssl crypto              # Phase 146: SelfImprovementEngine Ed25519 via OpenSSL
+    sodium                  # Phase 146: transitive libsodium dependency
+    ${CMAKE_DL_LIBS}        # Phase 146: dlopen/dlsym for module loading
 )
 
 # ORT wiring
@@ -1446,6 +1451,14 @@ if(NIKOLA_BUILD_TESTS)
         nikola_core Catch2::Catch2WithMain)
     add_test(NAME Phase145AriaSpecialist COMMAND test_phase145_aria_specialist)
 
+    # Phase 146 — SelfImprovementEngine (v0.1.0)
+    add_executable(test_phase146_self_improvement_engine
+        tests/unit/phase146_self_improvement_engine_test.cpp)
+    target_link_libraries(test_phase146_self_improvement_engine PRIVATE
+        nikola_core Catch2::Catch2WithMain ${CMAKE_DL_LIBS})
+    add_test(NAME Phase146SelfImprovementEngine
+        COMMAND test_phase146_self_improvement_engine)
+
     # =========================================================================
     # INTEGRATION TESTS (v0.0.17)
     # =========================================================================
@@ -1502,6 +1515,16 @@ if(NIKOLA_BUILD_TESTS)
     target_link_libraries(test_integration_aria_specialist PRIVATE
         nikola_core Catch2::Catch2WithMain)
     add_test(NAME IntegrationAriaSpecialist COMMAND test_integration_aria_specialist)
+
+    # Integration: First Self-Improvement Cycle (v0.1.0)
+    add_executable(test_first_cycle
+        tests/integration/first_cycle_test.cpp)
+    target_link_libraries(test_first_cycle PRIVATE
+        nikola_core Catch2::Catch2WithMain ${CMAKE_DL_LIBS})
+    add_test(NAME FirstCycle_Quick
+        COMMAND test_first_cycle "[first_cycle]" "~[slow]")
+    add_test(NAME FirstCycle_Full
+        COMMAND test_first_cycle "[first_cycle]")
 
     # =========================================================================
     # END-TO-END TESTS (v0.0.17)
