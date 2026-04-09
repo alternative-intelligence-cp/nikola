@@ -436,6 +436,11 @@ if(NIKOLA_BUILD_TESTS)
     target_link_libraries(test_phase45_dopamine_lr PRIVATE nikola_core Catch2::Catch2WithMain)
     add_test(NAME Phase45DopamineLR COMMAND test_phase45_dopamine_lr)
 
+    # v0.1.4 — Manifold Geometry: 9D Grid & Metric Tensor Validation
+    add_executable(test_phase014_manifold_geometry tests/unit/phase014_manifold_geometry_test.cpp)
+    target_link_libraries(test_phase014_manifold_geometry PRIVATE nikola_core Catch2::Catch2WithMain)
+    add_test(NAME Phase014ManifoldGeometry COMMAND test_phase014_manifold_geometry)
+
     # Phase 46 Unit Tests: Serotonin-modulated metric elasticity
     add_executable(test_phase46_serotonin_elasticity tests/unit/phase46_serotonin_elasticity_test.cpp)
     target_link_libraries(test_phase46_serotonin_elasticity PRIVATE nikola_core Catch2::Catch2WithMain)
