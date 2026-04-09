@@ -394,4 +394,34 @@ size_t CudaPropagator::device_node_count() const noexcept
     return impl_->node_count;
 }
 
+// ------------------------------------------------------------------
+// query_occupancy — check GPU utilisation for the k_kick kernel
+// ------------------------------------------------------------------
+float CudaPropagator::query_occupancy() noexcept
+{
+    int count = 0;
+    if (cudaGetDeviceCount(&count) != cudaSuccess || count == 0)
+        return -1.0f;
+
+    int max_active_blocks = 0;
+    cudaError_t err = cudaOccupancyMaxActiveBlocksPerMultiprocessor(
+        &max_active_blocks,
+        k_kick,                // heaviest kernel (9-dim Laplacian)
+        BLOCK_SZ,              // 256 threads per block
+        0);                    // no dynamic shared memory
+
+    if (err != cudaSuccess || max_active_blocks <= 0)
+        return -1.0f;
+
+    cudaDeviceProp prop{};
+    if (cudaGetDeviceProperties(&prop, 0) != cudaSuccess)
+        return -1.0f;
+
+    int max_warps_per_sm    = prop.maxThreadsPerMultiProcessor / prop.warpSize;
+    int active_warps_per_sm = max_active_blocks * (BLOCK_SZ / prop.warpSize);
+
+    return static_cast<float>(active_warps_per_sm) /
+           static_cast<float>(max_warps_per_sm);
+}
+
 } // namespace nikola::physics

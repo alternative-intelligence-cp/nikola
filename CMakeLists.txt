@@ -971,7 +971,30 @@ if(NIKOLA_BUILD_TESTS)
             INSTALL_RPATH "/usr/local/cuda/lib64")
         add_test(NAME Phase138GpuPropagatorValidation COMMAND test_phase138_gpu_propagator_validation)
 
-        message(STATUS "CUDA ${CUDAToolkit_VERSION} found — nikola_cuda (torus_cuda.cu + propagator.cu), Phase 105, 110, 111, 135, 138 targets enabled")
+        # v0.1.3 — CUDA Kernel Tuning & GPU Energy Conservation Suite
+        #   GPU occupancy, GPU-CPU parity, emitter/multi-emitter/soliton/PML
+        #   energy conservation, long-duration drift, warp-shuffle validation,
+        #   throughput benchmarks.
+        add_executable(test_phase013_cuda_energy
+            tests/unit/phase013_cuda_energy_test.cpp)
+        target_include_directories(test_phase013_cuda_energy PRIVATE
+            ${CMAKE_SOURCE_DIR}/include
+            /usr/local/cuda/include)
+        target_link_directories(test_phase013_cuda_energy PRIVATE
+            /usr/local/cuda/lib64)
+        target_link_libraries(test_phase013_cuda_energy PRIVATE
+            nikola_core nikola_cuda Catch2::Catch2WithMain)
+        set_target_properties(test_phase013_cuda_energy PROPERTIES
+            BUILD_RPATH  "/usr/local/cuda/lib64"
+            INSTALL_RPATH "/usr/local/cuda/lib64")
+        add_test(NAME Phase013CudaEnergy
+            COMMAND test_phase013_cuda_energy "~[longsession]~[!benchmark]")
+        add_test(NAME Phase013CudaEnergy_LongSession
+            COMMAND test_phase013_cuda_energy "[longsession]")
+        add_test(NAME Phase013CudaEnergy_Benchmark
+            COMMAND test_phase013_cuda_energy "[!benchmark]")
+
+        message(STATUS "CUDA ${CUDAToolkit_VERSION} found — nikola_cuda (torus_cuda.cu + propagator.cu), Phase 013, 105, 110, 111, 135, 138 targets enabled")
     else()
         message(STATUS "CUDAToolkit not found — nikola_cuda and CUDA tests skipped")
     endif()
