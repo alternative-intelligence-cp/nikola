@@ -586,6 +586,37 @@ float DecisionLoop::score_generate_code(const NikolaState& s) const noexcept
 }
 
 // ============================================================================
+// execute_generate_code
+// ============================================================================
+
+std::string DecisionLoop::execute_generate_code(const NikolaState& s)
+{
+    if (!sie_) {
+        return "generate_code: no SIE attached (boredom=" +
+               std::to_string(s.boredom).substr(0, 4) +
+               " atp=" + std::to_string(s.atp).substr(0, 4) + ")";
+    }
+
+    auto result = sie_->run_cycle(s);
+    last_sie_result_ = result;
+
+    std::string payload;
+    if (result) {
+        payload = "SIE_SUCCESS: module deployed (proposal=" +
+                  std::to_string(result.proposal_id) +
+                  " elapsed=" + std::to_string(static_cast<int>(result.elapsed_ms)) + "ms)";
+    } else {
+        payload = "SIE_" + std::string(sie_outcome_str(result.outcome)) +
+                  " (elapsed=" + std::to_string(static_cast<int>(result.elapsed_ms)) + "ms)";
+    }
+
+    // Fire callback if registered
+    if (on_sie_cycle) on_sie_cycle(result);
+
+    return payload;
+}
+
+// ============================================================================
 // build_payload
 // ============================================================================
 
@@ -857,6 +888,12 @@ DecisionResult DecisionLoop::tick()
     if (winner == ActionType::REASON) {
         execute_reason();
     }
+    // GENERATE_CODE: run the full self-improvement cycle through the SIE.
+    // Specialist query → extract → compile → package → sign → deploy → store.
+    std::string generate_payload;
+    if (winner == ActionType::GENERATE_CODE) {
+        generate_payload = execute_generate_code(s);
+    }
 
     // ── 7. Build result ──────────────────────────────────────────────────────
     s.last_action = winner;
@@ -866,9 +903,16 @@ DecisionResult DecisionLoop::tick()
     DecisionResult result;
     result.type    = winner;
     result.score   = wscore;
-    result.payload = (winner == ActionType::EXPLORE && !explore_payload.empty())
-                     ? explore_payload
-                     : build_payload(winner, s);
+
+    // Select payload: side-effect actions produce their own payload,
+    // otherwise build_payload() generates a descriptive string.
+    if (winner == ActionType::EXPLORE && !explore_payload.empty()) {
+        result.payload = explore_payload;
+    } else if (winner == ActionType::GENERATE_CODE && !generate_payload.empty()) {
+        result.payload = generate_payload;
+    } else {
+        result.payload = build_payload(winner, s);
+    }
 
     // ── 7a. v0.0.9 — consume accumulated tokens AFTER build_payload reads them
     if (winner == ActionType::EMIT_THOUGHT) {

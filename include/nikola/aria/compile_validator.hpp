@@ -196,16 +196,16 @@ private:
 // ============================================================================
 
 /**
- * @brief Extract Aria source code from a model response string.
+ * @brief Extract source code from a model response string.
  *
  * Handles:
- *   1. Fenced ```aria\n...\n``` blocks
+ *   1. Fenced ```<lang>\n...\n``` blocks (aria, cpp, c++, etc.)
  *   2. Generic fenced ```\n...\n``` blocks
- *   3. Raw code (detected by Aria keywords)
+ *   3. Raw code (detected by language keywords)
  */
 inline std::string extract_code_block(const std::string& response) {
-    // Try fenced code block: ```aria\n...\n```
-    static const std::regex fenced_re(R"(```(?:aria)?\s*\n([\s\S]*?)```)");
+    // Try fenced code block: ```<optional-lang>\n...\n```
+    static const std::regex fenced_re(R"(```(?:\w+(?:\+\+)?)?\s*\n([\s\S]*?)```)");
     std::smatch match;
     if (std::regex_search(response, match, fenced_re)) {
         return match[1].str();

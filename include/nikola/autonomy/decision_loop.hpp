@@ -48,6 +48,7 @@
  */
 
 #include <nikola/autonomy/autonomy_engine.hpp>
+#include <nikola/autonomy/self_improvement_engine.hpp>
 #include <nikola/cognitive/cognitive_core.hpp>
 #include <nikola/cognitive/cognitive_torus.hpp>
 #include <nikola/cognitive/resonance_decoder.hpp>
@@ -386,6 +387,18 @@ public:
     /// Called every tick regardless of action (for monitoring / telemetry).
     std::function<void(const NikolaState&)>    on_tick;
 
+    /// Called when a self-improvement cycle completes (success or failure).
+    std::function<void(const SIECycleResult&)> on_sie_cycle;
+
+    // ------------------------------------------------------------------ self-improvement
+
+    /// Attach a SelfImprovementEngine to enable GENERATE_CODE execution.
+    /// The SIE must outlive this DecisionLoop instance.
+    void set_sie(SelfImprovementEngine* sie) noexcept { sie_ = sie; }
+
+    /// Access the attached SIE (or nullptr if none).
+    [[nodiscard]] SelfImprovementEngine* sie() const noexcept { return sie_; }
+
     // ------------------------------------------------------------------ accessors
 
     const DecisionLoopConfig&                 config()          const noexcept { return cfg_; }
@@ -497,6 +510,18 @@ private:
      * frequency-organised content rather than raw resonance.
      */
     void execute_reason();
+
+    /**
+     * @brief Execute a GENERATE_CODE action — run the full SIE cycle.
+     *
+     * Delegates to the attached SelfImprovementEngine.  If no SIE is attached,
+     * returns a descriptive string about the missing engine.  The SIE handles
+     * the full pipeline: specialist query → extract → compile → package → sign
+     * → ShadowSpine deploy → store.
+     *
+     * @return  Summary string for the DecisionResult payload.
+     */
+    std::string execute_generate_code(const NikolaState& s);
 
     /**
      * @brief Re-seed the field if total probability has collapsed to near zero.
@@ -650,6 +675,14 @@ private:
 
     /// True when specialist + validator are configured and available.
     bool aria_specialist_enabled_ = false;
+
+    // -- Phase 146: SelfImprovementEngine (v0.1.0) --
+
+    /// Attached SIE for execute_generate_code(). Not owned.
+    SelfImprovementEngine* sie_ = nullptr;
+
+    /// Most recent SIE cycle result (for inspection/telemetry).
+    std::optional<SIECycleResult> last_sie_result_;
 };
 
 } // namespace nikola::autonomy
