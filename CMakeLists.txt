@@ -232,6 +232,11 @@ if(NIKOLA_BUILD_TESTS)
     target_link_libraries(test_phase6_multimodal PRIVATE nikola_core Catch2::Catch2WithMain)
     add_test(NAME Phase6Multimodal COMMAND test_phase6_multimodal)
 
+    # Phase 6.1 Unit Tests: AudioInput (PCM → Nit[128])
+    add_executable(test_audio_input tests/unit/audio_input_test.cpp)
+    target_link_libraries(test_audio_input PRIVATE nikola_core Catch2::Catch2WithMain)
+    add_test(NAME AudioInput COMMAND test_audio_input)
+
     # Phase 7 Unit Tests: Security & Execution
     add_executable(test_phase7_security tests/unit/phase7_security_test.cpp)
     target_link_libraries(test_phase7_security PRIVATE nikola_core Catch2::Catch2WithMain)
@@ -1468,6 +1473,15 @@ if(NIKOLA_BUILD_TESTS)
         COMMAND test_integration_autonomy "~[longsession]")
     add_test(NAME IntegrationAutonomy_LongSession
         COMMAND test_integration_autonomy "[longsession]")
+
+    # Integration: Multimodal Input (v0.0.18)
+    add_executable(test_integration_multimodal
+        tests/integration/multimodal_integration_test.cpp)
+    target_include_directories(test_integration_multimodal PRIVATE
+        ${CMAKE_CURRENT_SOURCE_DIR}/tests/helpers)
+    target_link_libraries(test_integration_multimodal PRIVATE
+        nikola_core Catch2::Catch2WithMain)
+    add_test(NAME IntegrationMultimodal COMMAND test_integration_multimodal)
 
     # =========================================================================
     # END-TO-END TESTS (v0.0.17)

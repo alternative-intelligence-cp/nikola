@@ -28,6 +28,8 @@
 #include <nikola/cognitive/holographic_injector.hpp>
 #include <nikola/cognitive/relevance_gate.hpp>
 #include <nikola/foundation/toroidal_grid.hpp>
+#include <nikola/multimodal/audio_input.hpp>
+#include <nikola/multimodal/log_polar_transform.hpp>
 #include <nikola/diag/scope_profiler.hpp>
 #include <nikola/foundation/nit.hpp>
 
@@ -35,6 +37,7 @@
 #include <complex>
 #include <memory>
 #include <numeric>
+#include <span>
 #include <string>
 #include <vector>
 
@@ -264,6 +267,85 @@ public:
                            float weight,
                            double time = 0.0) {
         injector_->inject_scaled(nits, weight, time);
+    }
+
+    // ------------------------------------------------------------------
+    // Multimodal injection API (v0.0.18)
+    // ------------------------------------------------------------------
+
+    /**
+     * @brief Inject audio PCM samples into the torus via Goertzel → Nit[128].
+     *
+     * Pipeline: PCM → Goertzel(8 cognitive bands) → phase-coded Nit embedding
+     *           → HolographicInjector → perturb TorusGrid wavefunction.
+     *
+     * @param pcm          Flat PCM float samples (mono, any length)
+     * @param time         Current physics time (sets emitter phase)
+     * @param sample_rate  Sample rate in Hz (default: 48 kHz)
+     */
+    void inject_audio(std::span<const float> pcm,
+                      double time = 0.0,
+                      double sample_rate = 48000.0) {
+        auto nits = multimodal::AudioInput::process(pcm, sample_rate);
+        injector_->inject(nits, time);
+    }
+
+    /**
+     * @brief Inject audio with salience attenuation.
+     *
+     * @param pcm          Flat PCM float samples
+     * @param weight       Salience weight in [0, 1]
+     * @param time         Current physics time
+     * @param sample_rate  Sample rate in Hz (default: 48 kHz)
+     */
+    void inject_audio_scaled(std::span<const float> pcm,
+                             float weight,
+                             double time = 0.0,
+                             double sample_rate = 48000.0) {
+        auto nits = multimodal::AudioInput::process(pcm, sample_rate);
+        injector_->inject_scaled(nits, weight, time);
+    }
+
+    /**
+     * @brief Inject a grayscale image into the torus via log-polar → Nit[128].
+     *
+     * Pipeline: image → LogPolarTransform → activated pixels → Nit embedding
+     *           (pixel intensities mapped to balanced nonary) →
+     *           HolographicInjector → perturb TorusGrid wavefunction.
+     *
+     * The 64×64 log-polar output is linearly mapped to 128 nits by averaging
+     * adjacent log-polar bins (4096 bins → 128 nits, 32 bins per nit).
+     *
+     * @param image   Flattened grayscale float image [0,1], row-major
+     * @param width   Image width in pixels
+     * @param height  Image height in pixels
+     * @param time    Current physics time
+     */
+    void inject_visual(std::span<const float> image,
+                       int width, int height,
+                       double time = 0.0) {
+        const auto lp = multimodal::LogPolarTransform::transform(image, width, height);
+
+        // Map 4096 log-polar bins → 128 nits by averaging groups of 32
+        static constexpr int LP_TOTAL = multimodal::LP_RADIAL_BINS * multimodal::LP_ANGULAR_BINS;
+        static constexpr int BINS_PER_NIT = LP_TOTAL / 128;  // 32
+        static_assert(LP_TOTAL == 4096 && BINS_PER_NIT == 32);
+
+        std::vector<foundation::Nit> nits(128, foundation::NIT_ZERO);
+        for (int i = 0; i < 128; ++i) {
+            double sum = 0.0;
+            for (int j = 0; j < BINS_PER_NIT; ++j) {
+                sum += static_cast<double>(lp[static_cast<size_t>(i * BINS_PER_NIT + j)]);
+            }
+            double avg = sum / BINS_PER_NIT;
+            // Map [0, 1] → [-4, +4]: centre at zero, full brightness → +4
+            int val = static_cast<int>(std::round(avg * 8.0 - 4.0));
+            nits[static_cast<size_t>(i)] = static_cast<foundation::Nit>(
+                std::clamp(val,
+                           static_cast<int>(foundation::NIT_MIN),
+                           static_cast<int>(foundation::NIT_MAX)));
+        }
+        injector_->inject(nits, time);
     }
 
     /**

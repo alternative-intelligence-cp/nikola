@@ -36,6 +36,7 @@
 
 // All multimodal gap headers are lightweight (stdlib only) — include upfront
 #include <nikola/multimodal/audio_emitter.hpp>
+#include <nikola/multimodal/audio_input.hpp>
 #include <nikola/multimodal/log_polar_transform.hpp>
 #include <nikola/multimodal/checkpoint_manager.hpp>
 #include <nikola/multimodal/gguf_exporter.hpp>
@@ -110,6 +111,19 @@ public:
      * PCM samples currently unused (placeholder for future spectral analysis).
      */
     EmitterArray tick_audio(std::span<const float> pcm_samples, int time_index);
+
+    /**
+     * Process PCM audio → Nit[128] embedding via Goertzel band extraction.
+     *
+     * Returns a 128-element balanced-nonary vector suitable for
+     * HolographicInjector::inject() or CognitiveTorus::inject_raw().
+     *
+     * @param pcm_samples  Mono PCM float samples
+     * @param sample_rate  Sample rate in Hz (default: 48 kHz)
+     * @return             128-element Nit vector in [-4, +4]
+     */
+    std::vector<foundation::Nit> tick_audio_nits(std::span<const float> pcm_samples,
+                                                  double sample_rate = 48000.0);
 
     /**
      * Run log-polar transform on a grayscale float image and return injection coords.
@@ -201,6 +215,16 @@ MultimodalEngine::tick_audio(std::span<const float> /*pcm_samples*/, int time_in
         d.cfg.grid_nx, d.cfg.grid_ny,
         d.cfg.grid_nr, d.cfg.grid_ns,
         d.cfg.grid_nt, time_index);
+}
+
+std::vector<foundation::Nit>
+MultimodalEngine::tick_audio_nits(std::span<const float> pcm_samples, double sample_rate)
+{
+    auto& d = *impl_;
+    if (!d.cfg.enable_audio || pcm_samples.empty())
+        return std::vector<foundation::Nit>(AUDIO_EMBEDDING_DIM, foundation::NIT_ZERO);
+    ++d.snap.audio_ticks;
+    return AudioInput::process(pcm_samples, sample_rate);
 }
 
 MultimodalEngine::InjectionList
