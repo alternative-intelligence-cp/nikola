@@ -1521,6 +1521,22 @@ if(NIKOLA_BUILD_TESTS)
     add_test(NAME Phase146SelfImprovementEngine
         COMMAND test_phase146_self_improvement_engine)
 
+    # Phase 147 — Orchestrator ZMQ Socket Wiring (v0.1.11)
+    add_executable(test_phase147_orchestrator_wiring
+        tests/unit/phase147_orchestrator_wiring_test.cpp)
+    target_link_libraries(test_phase147_orchestrator_wiring PRIVATE
+        nikola_core Catch2::Catch2WithMain)
+    add_test(NAME Phase147OrchestratorWiring
+        COMMAND test_phase147_orchestrator_wiring)
+
+    # Phase 148 — ZAP Authenticator + CurveZMQ Integration (v0.1.11)
+    add_executable(test_phase148_zap_authenticator
+        tests/unit/phase148_zap_authenticator_test.cpp)
+    target_link_libraries(test_phase148_zap_authenticator PRIVATE
+        nikola_core Catch2::Catch2WithMain)
+    add_test(NAME Phase148ZapAuthenticator
+        COMMAND test_phase148_zap_authenticator)
+
     # v0.1.2 UFIE Physics Validation Suite
     add_executable(test_phase012_ufie_validation
         tests/unit/phase012_ufie_validation_test.cpp)
@@ -1741,9 +1757,18 @@ if(TARGET nikola_cuda)
 endif()
 message(STATUS "Diagnostic CLI: nikola-diag")
 
+# ============================================================================
+# NIKOLA-ORCHESTRATOR — ZMQ Spine + Component Lifecycle Service
+# ============================================================================
+add_executable(nikola_orchestrator src/nikola_orchestrator.cpp)
+target_compile_definitions(nikola_orchestrator PRIVATE NIKOLA_ORCHESTRATOR_IMPL)
+target_link_libraries(nikola_orchestrator PRIVATE nikola_core)
+set_target_properties(nikola_orchestrator PROPERTIES OUTPUT_NAME "nikola-orchestrator")
+message(STATUS "Orchestrator service: nikola-orchestrator")
+
 # Installation
 install(TARGETS nikola_core nikola_run nikola_train
-    nikola_state_dump nikola_dap_server nikola_diag
+    nikola_state_dump nikola_dap_server nikola_diag nikola_orchestrator
     LIBRARY DESTINATION lib
     ARCHIVE DESTINATION lib
     RUNTIME DESTINATION bin
