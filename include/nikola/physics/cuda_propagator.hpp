@@ -176,6 +176,20 @@ public:
     /// Number of nodes currently on device (0 before first upload).
     size_t device_node_count() const noexcept;
 
+    // ------------------------------------------------------------------
+    // Occupancy & diagnostics
+    // ------------------------------------------------------------------
+
+    /**
+     * @brief Query GPU occupancy for the k_kick kernel (the most register-heavy).
+     *
+     * Returns the fraction of maximum active warps per SM, e.g. 0.75 for 75%.
+     * Uses cudaOccupancyMaxActiveBlocksPerMultiprocessor to query the hardware.
+     *
+     * @return Occupancy as a fraction [0.0, 1.0], or -1.0 if no GPU present.
+     */
+    static float query_occupancy() noexcept;
+
 private:
     float c0_    = 1.f;
     float beta_  = 1.f;

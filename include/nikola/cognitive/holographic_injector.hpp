@@ -36,11 +36,37 @@ public:
     static constexpr double PHI           = 1.6180339887498948482;
     static constexpr double PI            = 3.1415926535897932385;
 
-    // Emitter frequencies: f_n = π·φⁿ for n in [0,7]
+    // Prime phase offsets per emitter (spec: e₁ +23°, e₂ +19°, … e₈ +3°)
+    // Descending primes as φⁿ ascends — ensures ergodic torus coverage
+    static constexpr std::array<double, NUM_EMITTERS> PRIME_PHASE_OFFSETS_DEG = {
+        23.0, 19.0, 17.0, 13.0, 11.0, 7.0, 5.0, 3.0
+    };
+
+    // Same offsets converted to radians (degrees × π/180)
+    static constexpr double DEG_TO_RAD = PI / 180.0;
+    static constexpr std::array<double, NUM_EMITTERS> PRIME_PHASE_OFFSETS = {
+        23.0 * DEG_TO_RAD, 19.0 * DEG_TO_RAD, 17.0 * DEG_TO_RAD, 13.0 * DEG_TO_RAD,
+        11.0 * DEG_TO_RAD,  7.0 * DEG_TO_RAD,  5.0 * DEG_TO_RAD,  3.0 * DEG_TO_RAD
+    };
+
+    // Synchronizer e₉: π × (1/φ) × √2 × (32/27) @ 0° Δϕ  (spec: phase reference clock)
+    // Memory addresses are phase angles relative to e₉; Δϕ = read head position
+    static constexpr double SYNCHRONIZER_FREQ =
+        PI * (1.0 / PHI) * 1.4142135623730950488 * (32.0 / 27.0);  // ≈ 3.254 Hz
+    static constexpr double SYNCHRONIZER_PHASE_OFFSET = 0.0;         // reference phase
+
+    // 179° phase asymmetry (Zenodo paper + ATPM framework)
+    // Negative Nit amplitudes produce anti-waves at 179° instead of 180°.
+    // This prevents total destructive interference, leaving ~1.745% residual
+    // energy that enables fuzzy associative recall in the WIP.
+    // cos(179°) ≈ -0.9998 vs cos(180°) = -1.0; residual = 1 - |cos(179°)| ≈ 0.01745
+    static constexpr double PHASE_ASYMMETRY = 179.0 * DEG_TO_RAD;    // π·179/180 rad
+
+    // Emitter frequencies: f_n = π·φⁿ for n in [1,8]  (spec: e₁–e₈)
     // These are spectrally orthogonal — no integer ratios → no resonance lock-in
     static std::array<double, NUM_EMITTERS> emitter_frequencies() {
         std::array<double, NUM_EMITTERS> freqs;
-        double phi_n = 1.0;
+        double phi_n = PHI;   // Start at φ¹, not φ⁰
         for (size_t n = 0; n < NUM_EMITTERS; ++n) {
             freqs[n] = PI * phi_n;
             phi_n *= PHI;
@@ -166,9 +192,10 @@ public:
         const double chord_time_step = (2.0 * PI) / static_cast<double>(num_chords + 1);
 
         // Scaling: mirror inject_chord_to_grid()
+        // Now 9 emitters total (8 + synchronizer), so denominator uses CHORD_SIZE
         static constexpr double NIT_MAX_         = 4.0;
         static constexpr double INJECTION_SCALE_ = 0.05;
-        const double scale = INJECTION_SCALE_ / (static_cast<double>(NUM_EMITTERS) * NIT_MAX_);
+        const double scale = INJECTION_SCALE_ / (static_cast<double>(CHORD_SIZE) * NIT_MAX_);
 
         std::vector<std::complex<double>> sig(num_chords);
         for (size_t c = 0; c < num_chords; ++c) {
@@ -177,10 +204,26 @@ public:
 
             double t = time + static_cast<double>(c) * chord_time_step;
             std::complex<double> sum = 0.0;
+            // 8 emitters with prime phase offsets + 179° asymmetry
             for (size_t n = 0; n < NUM_EMITTERS; ++n) {
-                double amplitude = static_cast<double>(chord[n % CHORD_SIZE]);
-                double freq      = freqs[n];
-                sum += amplitude * std::exp(std::complex<double>(0.0, freq * t));
+                double raw_amp = static_cast<double>(chord[n]);
+                double freq    = freqs[n];
+                double phase   = freq * t + PRIME_PHASE_OFFSETS[n];
+                if (raw_amp < 0.0) {
+                    sum += (-raw_amp) * std::exp(std::complex<double>(0.0, phase + PHASE_ASYMMETRY));
+                } else {
+                    sum += raw_amp * std::exp(std::complex<double>(0.0, phase));
+                }
+            }
+            // Synchronizer e₉ at 0° phase offset + 179° asymmetry for negatives
+            {
+                double raw_amp = static_cast<double>(chord[NUM_EMITTERS]);
+                double phase = SYNCHRONIZER_FREQ * t + SYNCHRONIZER_PHASE_OFFSET;
+                if (raw_amp < 0.0) {
+                    sum += (-raw_amp) * std::exp(std::complex<double>(0.0, phase + PHASE_ASYMMETRY));
+                } else {
+                    sum += raw_amp * std::exp(std::complex<double>(0.0, phase));
+                }
             }
             // Apply same safety scale as inject_chord_to_grid
             const double mag = std::abs(sum);
@@ -222,16 +265,35 @@ private:
     mutable double last_energy_ = 0.0;
 
     // Compute superposition amplitude for one 9-Nit chord at time t
-    // Uses 8 emitters, cycling through chord Nits as amplitudes
+    // Uses 8 emitters + synchronizer e₉ (9 total, matching CHORD_SIZE = 9)
+    // Each emitter carries its prime phase offset: ψ_n(t) = A_n · e^{i·(f_n·t + δ_n)}
+    // Negative Nit amplitudes use 179° anti-phase (not 180°) for soft matching
+    // Synchronizer e₉ at 0° Δϕ anchors the phase reference
     std::complex<double> compute_chord(const std::array<Nit, CHORD_SIZE>& chord,
                                        double t) const {
         std::complex<double> sum = 0.0;
+        // 8 emitters (e₁–e₈): chord indices 0–7
         for (size_t n = 0; n < NUM_EMITTERS; ++n) {
-            // Map emitter → chord index (wrap around 9 Nits)
-            double amplitude = static_cast<double>(chord[n % CHORD_SIZE]);
-            double freq      = freqs_[n];
-            // ψ_n(t) = A_n · e^{i·f_n·t}
-            sum += amplitude * std::exp(std::complex<double>(0.0, freq * t));
+            double raw_amp = static_cast<double>(chord[n]);
+            double freq    = freqs_[n];
+            double phase   = freq * t + PRIME_PHASE_OFFSETS[n];
+            // 179° asymmetry: negative amplitudes → |A| at (phase + 179°)
+            // instead of -A at phase (which would be |A| at phase + 180°)
+            if (raw_amp < 0.0) {
+                sum += (-raw_amp) * std::exp(std::complex<double>(0.0, phase + PHASE_ASYMMETRY));
+            } else {
+                sum += raw_amp * std::exp(std::complex<double>(0.0, phase));
+            }
+        }
+        // Synchronizer e₉: chord index 8, 0° phase offset (reference clock)
+        {
+            double raw_amp = static_cast<double>(chord[NUM_EMITTERS]);
+            double phase = SYNCHRONIZER_FREQ * t + SYNCHRONIZER_PHASE_OFFSET;
+            if (raw_amp < 0.0) {
+                sum += (-raw_amp) * std::exp(std::complex<double>(0.0, phase + PHASE_ASYMMETRY));
+            } else {
+                sum += raw_amp * std::exp(std::complex<double>(0.0, phase));
+            }
         }
         last_energy_ = std::abs(sum);
         return sum;
@@ -247,14 +309,15 @@ private:
         size_t base   = (chord_idx * stride) % (grid_n * grid_n * grid_n);
 
         // Normalise to safe injection amplitude.
-        // Raw chord magnitude: up to NUM_EMITTERS × MAX_NIT = 8 × 4 = 32.
+        // Raw chord magnitude: up to CHORD_SIZE × MAX_NIT = 9 × 4 = 36
+        // (8 emitters + synchronizer, each driven by one Nit ∈ [-4, +4]).
         // Scale → max |perturbation| ≈ INJECTION_SCALE (≈ 0.05), safely below
         // the nonlinear blow-up threshold sqrt(0.1 / beta) ≈ 0.316.
         static constexpr double NIT_MAX        = 4.0;
         static constexpr double INJECTION_SCALE= 0.05;
         double mag = std::abs(wave);
         if (mag > 0.0) {
-            double scale = INJECTION_SCALE / (static_cast<double>(NUM_EMITTERS) * NIT_MAX);
+            double scale = INJECTION_SCALE / (static_cast<double>(CHORD_SIZE) * NIT_MAX);
             wave *= scale;
         }
 

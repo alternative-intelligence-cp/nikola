@@ -203,4 +203,48 @@ struct HilbertStepResult {
     return h;
 }
 
+// ---------------------------------------------------------------------------
+// 9-Dimensional Hilbert Decoder
+// ---------------------------------------------------------------------------
+
+/// Decodes a 1-dimensional Hilbert index back to 9-dimensional spatial
+/// coordinates.  Exact inverse of hilbert_encode_9d().
+///
+/// @param h               64-bit Hilbert rank.
+/// @param bits_per_dim    Number of bits of precision per axis (1..7, default 7).
+/// @return                Nine 32-bit unsigned spatial coordinates.
+[[nodiscard]] constexpr std::array<uint32_t, 9> hilbert_decode_9d(
+        uint64_t h,
+        int bits_per_dim = 7) noexcept {
+    std::array<uint32_t, 9> coords{};
+    HilbertState state{0, 0};   // canonical initial state
+
+    for (int level = bits_per_dim - 1; level >= 0; --level) {
+        // 1. Extract 9-bit sub-hypercube rank w at this level
+        const uint16_t w = static_cast<uint16_t>(
+            (h >> (static_cast<unsigned>(level) * HILBERT_N)) & (HILBERT_NUM_CELLS - 1));
+
+        // 2. Recover cell coordinate l from (w, state):
+        //    Forward step does:  t = rotr_9d(l ^ e, d);  w = gc_inv(t)
+        //    Inverse:            t = gc(w);  l = rotl_9d(t, d) ^ e
+        //    rotl_9d(t, d) = rotr_9d(t, 9 - d)  [for d != 0]
+        const uint16_t t = gray_code(w);
+        const int inv_shift = (HILBERT_N - state.d) % HILBERT_N;
+        const uint16_t l = static_cast<uint16_t>(rotr_9d(t, inv_shift) ^ state.e);
+
+        // 3. Scatter l bits into coordinate dimensions at this bit level
+        for (int dim = 0; dim < HILBERT_N; ++dim) {
+            coords[static_cast<std::size_t>(dim)] |=
+                static_cast<uint32_t>(((l >> dim) & 1u) << level);
+        }
+
+        // 4. Advance FSM state (same update as encoder)
+        const uint16_t ew = HILBERT_E_TABLE_9D[w];
+        const uint8_t  dw = HILBERT_D_TABLE_9D[w];
+        state.e = static_cast<uint16_t>(state.e ^ rotr_9d(ew, state.d));
+        state.d = static_cast<uint8_t>((state.d + dw + 1) % HILBERT_N);
+    }
+    return coords;
+}
+
 } // namespace nikola::math

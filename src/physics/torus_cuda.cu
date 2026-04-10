@@ -11,8 +11,9 @@
  *   nl_i   = β/4  · |Ψ_i|⁴                        [nonlinear self-interaction]
  *
  * Reduction strategy (two-level):
- *   1. Per-block: shared-memory tree reduction over 256 threads.
- *   2. Cross-block: atomicAdd on three device double accumulators.
+ *   1. Per-warp:  __shfl_down_sync reduction (5 stages, no shared-mem needed).
+ *   2. Per-block: warp-0 reduces the per-warp sums from shared memory.
+ *   3. Cross-block: atomicAdd on three device double accumulators.
  *
  * Precision notes:
  *   - Thread-local accumulation in double (avoids FP32 catastrophic cancellation
@@ -119,34 +120,64 @@ __global__ static void hamiltonian_density_kernel(
     }
 
     // ----------------------------------------------------------------
-    // Step 2: Block-level shared-memory tree reduction (power-of-two stride)
+    // Step 2: Warp-level reduction via __shfl_down_sync, then
+    //         shared-memory cross-warp reduction, then atomicAdd.
     // ----------------------------------------------------------------
-    __shared__ double s_kin[BLOCK_SZ];
-    __shared__ double s_grd[BLOCK_SZ];
-    __shared__ double s_nl [BLOCK_SZ];
+    //
+    // Each warp (32 threads) reduces its own partial sums with warp
+    // shuffles (no __syncthreads needed). Then lane 0 of each warp
+    // writes its result into shared memory. A final warp reduces
+    // the per-warp sums and atomicAdds to the global accumulators.
+    // ----------------------------------------------------------------
 
-    s_kin[threadIdx.x] = kin;
-    s_grd[threadIdx.x] = grd;
-    s_nl [threadIdx.x] = nl;
+    constexpr unsigned FULL_MASK = 0xFFFFFFFF;
+
+    // Intra-warp reduction via shuffle (5 stages: 16→8→4→2→1)
+    #pragma unroll
+    for (int offset = 16; offset > 0; offset >>= 1) {
+        kin += __shfl_down_sync(FULL_MASK, kin, offset);
+        grd += __shfl_down_sync(FULL_MASK, grd, offset);
+        nl  += __shfl_down_sync(FULL_MASK, nl,  offset);
+    }
+
+    // Write per-warp results to shared memory (one slot per warp)
+    constexpr int WARPS_PER_BLOCK = BLOCK_SZ / 32;
+    __shared__ double s_kin[WARPS_PER_BLOCK];
+    __shared__ double s_grd[WARPS_PER_BLOCK];
+    __shared__ double s_nl [WARPS_PER_BLOCK];
+
+    const int warp_id = threadIdx.x / 32;
+    const int lane_id = threadIdx.x % 32;
+
+    if (lane_id == 0) {
+        s_kin[warp_id] = kin;
+        s_grd[warp_id] = grd;
+        s_nl [warp_id] = nl;
+    }
 
     __syncthreads();
 
-    for (int s = BLOCK_SZ / 2; s > 0; s >>= 1) {
-        if (threadIdx.x < s) {
-            s_kin[threadIdx.x] += s_kin[threadIdx.x + s];
-            s_grd[threadIdx.x] += s_grd[threadIdx.x + s];
-            s_nl [threadIdx.x] += s_nl [threadIdx.x + s];
+    // Final reduction: first warp reduces the WARPS_PER_BLOCK partial sums
+    if (warp_id == 0) {
+        kin = (lane_id < WARPS_PER_BLOCK) ? s_kin[lane_id] : 0.0;
+        grd = (lane_id < WARPS_PER_BLOCK) ? s_grd[lane_id] : 0.0;
+        nl  = (lane_id < WARPS_PER_BLOCK) ? s_nl [lane_id] : 0.0;
+
+        #pragma unroll
+        for (int offset = WARPS_PER_BLOCK / 2; offset > 0; offset >>= 1) {
+            kin += __shfl_down_sync(FULL_MASK, kin, offset);
+            grd += __shfl_down_sync(FULL_MASK, grd, offset);
+            nl  += __shfl_down_sync(FULL_MASK, nl,  offset);
         }
-        __syncthreads();
     }
 
     // ----------------------------------------------------------------
-    // Step 3: Atomic accumulation across blocks
+    // Step 3: Atomic accumulation across blocks (only lane 0 of warp 0)
     // ----------------------------------------------------------------
     if (threadIdx.x == 0) {
-        atomicAdd(d_kinetic,   s_kin[0]);
-        atomicAdd(d_gradient,  s_grd[0]);
-        atomicAdd(d_nonlinear, s_nl [0]);
+        atomicAdd(d_kinetic,   kin);
+        atomicAdd(d_gradient,  grd);
+        atomicAdd(d_nonlinear, nl);
     }
 }
 

@@ -20,6 +20,7 @@
 #include <array>
 #include <cstdint>
 #include <bit>         // std::countr_zero
+#include <random>
 #include <unordered_set>
 
 #include "nikola/math/hilbert_state_machine.hpp"
@@ -313,4 +314,74 @@ TEST_CASE("hilbert_encode_9d bits_per_dim=2 range check", "[phase94][hilbert][en
 
     REQUIRE(h_min <= max_rank);
     REQUIRE(h_max <= max_rank);
+}
+
+// ---------------------------------------------------------------------------
+// Section 8: hilbert_decode_9d (inverse of hilbert_encode_9d)
+// ---------------------------------------------------------------------------
+
+TEST_CASE("hilbert_decode_9d: origin decodes to all-zero", "[phase94][hilbert][decode]") {
+    auto coords = hilbert_decode_9d(0, 7);
+    for (int d = 0; d < 9; ++d) {
+        REQUIRE(coords[d] == 0);
+    }
+}
+
+TEST_CASE("hilbert_decode_9d: round-trip bits_per_dim=1 exhaustive (512 points)",
+          "[phase94][hilbert][decode]") {
+    for (uint32_t mask = 0; mask < 512u; ++mask) {
+        std::array<uint32_t, 9> coords{};
+        for (int dim = 0; dim < 9; ++dim) {
+            coords[dim] = (mask >> dim) & 1u;
+        }
+        uint64_t h = hilbert_encode_9d(coords, 1);
+        auto back = hilbert_decode_9d(h, 1);
+        REQUIRE(back == coords);
+    }
+}
+
+TEST_CASE("hilbert_decode_9d: round-trip bits_per_dim=2 exhaustive (262,144 points)",
+          "[phase94][hilbert][decode][longsession]") {
+    constexpr int BITS = 2;
+    constexpr uint32_t SIDE = 1u << BITS;  // 4
+    uint32_t total = 1;
+    for (int d = 0; d < 9; ++d) total *= SIDE;
+
+    for (uint32_t idx = 0; idx < total; ++idx) {
+        std::array<uint32_t, 9> coords{};
+        uint32_t tmp = idx;
+        for (int d = 0; d < 9; ++d) {
+            coords[d] = tmp % SIDE;
+            tmp /= SIDE;
+        }
+        uint64_t h = hilbert_encode_9d(coords, BITS);
+        auto back = hilbert_decode_9d(h, BITS);
+        REQUIRE(back == coords);
+    }
+}
+
+TEST_CASE("hilbert_decode_9d: round-trip 10,000 random coords bits_per_dim=7",
+          "[phase94][hilbert][decode]") {
+    std::mt19937 rng(42);
+    std::uniform_int_distribution<uint32_t> dist(0, (1u << 7) - 1);
+    for (int i = 0; i < 10000; ++i) {
+        std::array<uint32_t, 9> coords{};
+        for (auto& v : coords) v = dist(rng);
+        uint64_t h = hilbert_encode_9d(coords, 7);
+        auto back = hilbert_decode_9d(h, 7);
+        REQUIRE(back == coords);
+    }
+}
+
+TEST_CASE("hilbert_decode_9d: index round-trip encode(decode(h)) == h",
+          "[phase94][hilbert][decode]") {
+    std::mt19937 rng(99);
+    const uint64_t max_h = (1ull << 63) - 1;  // 7 bits × 9 dims = 63 bits
+    std::uniform_int_distribution<uint64_t> dist(0, max_h);
+    for (int i = 0; i < 10000; ++i) {
+        uint64_t h = dist(rng);
+        auto coords = hilbert_decode_9d(h, 7);
+        uint64_t h2 = hilbert_encode_9d(coords, 7);
+        REQUIRE(h2 == h);
+    }
 }

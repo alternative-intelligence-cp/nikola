@@ -56,6 +56,25 @@ inline constexpr double GOLDEN_RATIO = 1.6180339887498948482;
 /// Number of Golden Ratio harmonic emitters (E1 … E8).
 inline constexpr int EMITTER_COUNT = 8;
 
+/// Synchronizer e₉: π × (1/φ) × √2 × (32/27) ≈ 3.254 Hz @ 0° Δϕ (reference clock)
+inline constexpr double SYNCHRONIZER_FREQ_HZ =
+    M_PI * (1.0 / GOLDEN_RATIO) * M_SQRT2 * (32.0 / 27.0);
+
+/// Prime phase offsets per emitter in degrees (spec: descending as φⁿ ascends)
+inline constexpr std::array<double, EMITTER_COUNT> PRIME_PHASE_OFFSETS_DEG = {
+    23.0, 19.0, 17.0, 13.0, 11.0, 7.0, 5.0, 3.0
+};
+
+/// Prime phase offsets in radians
+inline constexpr std::array<double, EMITTER_COUNT> PRIME_PHASE_OFFSETS_RAD = {
+    23.0 * M_PI / 180.0, 19.0 * M_PI / 180.0, 17.0 * M_PI / 180.0, 13.0 * M_PI / 180.0,
+    11.0 * M_PI / 180.0,  7.0 * M_PI / 180.0,  5.0 * M_PI / 180.0,  3.0 * M_PI / 180.0
+};
+
+/// 179° phase asymmetry (Zenodo/ATPM): prevents total destructive interference,
+/// leaving ~1.745% residual energy for fuzzy associative recall.
+inline constexpr double PHASE_ASYMMETRY_RAD = 179.0 * M_PI / 180.0;
+
 // ═══════════════════════════════════════════════════════════════════════════
 // §2  Sampling rate constants
 // ═══════════════════════════════════════════════════════════════════════════

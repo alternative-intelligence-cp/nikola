@@ -390,6 +390,22 @@ public:
 #endif
     }
 
+    /**
+     * @brief Set the damping coefficient α for both CPU and GPU propagators.
+     *
+     * Higher α → stronger velocity damping → better long-run stability
+     * at the cost of faster energy dissipation.  Default is DEFAULT_ALPHA
+     * (0.01).  Long-run stress tests (≥10K steps) may need 25–35× higher.
+     *
+     * @param alpha  Damping coefficient.
+     */
+    void set_alpha(float alpha) noexcept {
+        propagator_.set_alpha(alpha);
+#ifdef NIKOLA_HAS_CUDA_KERNELS
+        gpu_prop_.set_alpha(alpha);
+#endif
+    }
+
     // ------------------------------------------------------------------
     // Physics step API
     // ------------------------------------------------------------------
