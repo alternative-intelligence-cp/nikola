@@ -883,7 +883,8 @@ if(NIKOLA_BUILD_TESTS)
         # -----------------------------------------------------------------------
         add_library(nikola_cuda STATIC
             src/physics/torus_cuda.cu
-            src/physics/propagator.cu)
+            src/physics/propagator.cu
+            src/cognitive/selective_scan.cu)
         set_target_properties(nikola_cuda PROPERTIES
             CUDA_ARCHITECTURES "86"
             CUDA_STANDARD 17
@@ -1012,7 +1013,27 @@ if(NIKOLA_BUILD_TESTS)
         add_test(NAME Phase013CudaEnergy_Benchmark
             COMMAND test_phase013_cuda_energy "[!benchmark]")
 
-        message(STATUS "CUDA ${CUDAToolkit_VERSION} found — nikola_cuda (torus_cuda.cu + propagator.cu), Phase 013, 105, 110, 111, 135, 138 targets enabled")
+        # Phase 160 — CUDA Selective Scan for Mamba-9D SSM (v0.1.6)
+        #   GPU/CPU equivalence, edge cases (T=1, zero input, long T=1000),
+        #   throughput benchmark targeting 1M nodes/ms.
+        add_executable(test_phase160_cuda_selective_scan
+            tests/unit/phase160_cuda_selective_scan_test.cpp)
+        target_include_directories(test_phase160_cuda_selective_scan PRIVATE
+            ${CMAKE_SOURCE_DIR}/include
+            /usr/local/cuda/include)
+        target_link_directories(test_phase160_cuda_selective_scan PRIVATE
+            /usr/local/cuda/lib64)
+        target_link_libraries(test_phase160_cuda_selective_scan PRIVATE
+            nikola_core nikola_cuda Catch2::Catch2WithMain)
+        set_target_properties(test_phase160_cuda_selective_scan PROPERTIES
+            BUILD_RPATH  "/usr/local/cuda/lib64"
+            INSTALL_RPATH "/usr/local/cuda/lib64")
+        add_test(NAME Phase160CudaSelectiveScan
+            COMMAND test_phase160_cuda_selective_scan "~[!benchmark]")
+        add_test(NAME Phase160CudaSelectiveScan_Benchmark
+            COMMAND test_phase160_cuda_selective_scan "[!benchmark]")
+
+        message(STATUS "CUDA ${CUDAToolkit_VERSION} found — nikola_cuda (torus_cuda.cu + propagator.cu + selective_scan.cu), Phase 013, 105, 110, 111, 135, 138, 160 targets enabled")
     else()
         message(STATUS "CUDAToolkit not found — nikola_cuda and CUDA tests skipped")
     endif()
@@ -1512,6 +1533,17 @@ if(NIKOLA_BUILD_TESTS)
     add_test(NAME Phase012UfieValidation_Benchmark
         COMMAND test_phase012_ufie_validation "[!benchmark]")
 
+    # -------------------------------------------------------------------------
+    # Phase 160 — v0.1.6 Mamba-9D SSM (physics-derived parameter extraction)
+    # -------------------------------------------------------------------------
+    add_executable(test_phase160_mamba9d
+        tests/unit/phase160_mamba9d_test.cpp)
+    target_link_libraries(test_phase160_mamba9d PRIVATE
+        nikola_core Catch2::Catch2WithMain)
+    add_test(NAME Phase160Mamba9D COMMAND test_phase160_mamba9d)
+    add_test(NAME Phase160Mamba9D_Benchmark
+        COMMAND test_phase160_mamba9d "[!benchmark]")
+
     # =========================================================================
     # INTEGRATION TESTS (v0.0.17)
     # =========================================================================
@@ -1537,6 +1569,21 @@ if(NIKOLA_BUILD_TESTS)
     target_link_libraries(test_integration_cognitive PRIVATE
         nikola_core Catch2::Catch2WithMain)
     add_test(NAME IntegrationCognitive COMMAND test_integration_cognitive)
+
+    # Integration: Mamba-9D Pipeline (v0.1.6)
+    #   CognitiveTorus → HilbertMambaBridge → Mamba9D end-to-end:
+    #   single-tick, multi-tick stability, 10K+ step stability,
+    #   resonance sweep, high-resonance regime.
+    add_executable(test_integration_mamba9d
+        tests/integration/phase160_mamba9d_integration_test.cpp)
+    target_include_directories(test_integration_mamba9d PRIVATE
+        ${CMAKE_CURRENT_SOURCE_DIR}/tests/helpers)
+    target_link_libraries(test_integration_mamba9d PRIVATE
+        nikola_core Catch2::Catch2WithMain)
+    add_test(NAME IntegrationMamba9D
+        COMMAND test_integration_mamba9d "~[longsession]")
+    add_test(NAME IntegrationMamba9D_LongSession
+        COMMAND test_integration_mamba9d "[longsession]")
 
     # Integration: Autonomy Pipeline
     add_executable(test_integration_autonomy
