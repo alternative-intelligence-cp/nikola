@@ -10,7 +10,10 @@
 #include <catch2/matchers/catch_matchers_floating_point.hpp>
 #include <nikola/spatial/hilbert_scanner.hpp>
 #include <nikola/foundation/vector9d.hpp>
+#include <chrono>
+#include <random>
 #include <set>
+#include <vector>
 
 using namespace nikola::spatial;
 using namespace nikola::foundation;
@@ -294,4 +297,49 @@ TEST_CASE("HilbertScanner causal-foliated scan order (invalid time_dim)", "[spat
     HilbertScanner scanner(1);
     REQUIRE_THROWS_AS(scanner.generate_scan_order(9), std::out_of_range);
     REQUIRE_THROWS_AS(scanner.generate_scan_order(100), std::out_of_range);
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// Throughput Benchmarks
+// ═══════════════════════════════════════════════════════════════════════════
+
+TEST_CASE("HilbertScanner encode throughput (order 3)", "[spatial][!benchmark]") {
+    HilbertScanner scanner(3);
+    constexpr int N = 100'000;
+    // Generate coords [0, 8)^9
+    std::vector<HilbertScanner::Coord9D> coords(N);
+    std::mt19937 rng(0);
+    std::uniform_int_distribution<uint32_t> dist(0, 7);
+    for (auto& c : coords) {
+        for (auto& v : c) v = dist(rng);
+    }
+
+    auto t0 = std::chrono::steady_clock::now();
+    volatile uint64_t sink = 0;
+    for (int i = 0; i < N; ++i) {
+        sink = scanner.coords_to_index(coords[i]);
+    }
+    auto t1 = std::chrono::steady_clock::now();
+    double ns = std::chrono::duration<double, std::nano>(t1 - t0).count() / N;
+
+    INFO("Hilbert encode (order 3): " << ns << " ns/op");
+    // Should be < 5µs per encode (Skilling in-place is O(n*b))
+    REQUIRE(ns < 5000.0);
+}
+
+TEST_CASE("HilbertScanner decode throughput (order 3)", "[spatial][!benchmark]") {
+    HilbertScanner scanner(3);
+    constexpr int N = 100'000;
+
+    auto t0 = std::chrono::steady_clock::now();
+    volatile uint32_t sink = 0;
+    for (int i = 0; i < N; ++i) {
+        auto c = scanner.index_to_coords(static_cast<uint64_t>(i));
+        sink = c[0];
+    }
+    auto t1 = std::chrono::steady_clock::now();
+    double ns = std::chrono::duration<double, std::nano>(t1 - t0).count() / N;
+
+    INFO("Hilbert decode (order 3): " << ns << " ns/op");
+    REQUIRE(ns < 5000.0);
 }

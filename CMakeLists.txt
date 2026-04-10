@@ -201,6 +201,18 @@ if(NIKOLA_BUILD_TESTS)
     add_executable(test_hilbert_scanner tests/unit/hilbert_scanner_test.cpp)
     target_link_libraries(test_hilbert_scanner PRIVATE nikola_core Catch2::Catch2WithMain)
     add_test(NAME HilbertScanner COMMAND test_hilbert_scanner)
+    add_test(NAME HilbertScanner_Benchmark COMMAND test_hilbert_scanner "[!benchmark]")
+
+    add_executable(test_morton_encoder tests/unit/morton_encoder_test.cpp)
+    target_link_libraries(test_morton_encoder PRIVATE nikola_core Catch2::Catch2WithMain)
+    add_test(NAME MortonEncoder COMMAND test_morton_encoder)
+    add_test(NAME MortonEncoder_LongSession COMMAND test_morton_encoder [longsession])
+    add_test(NAME MortonEncoder_Benchmark COMMAND test_morton_encoder "[!benchmark]")
+
+    add_executable(test_spatial_index tests/unit/spatial_index_test.cpp)
+    target_link_libraries(test_spatial_index PRIVATE nikola_core Catch2::Catch2WithMain)
+    add_test(NAME SpatialIndex COMMAND test_spatial_index)
+    add_test(NAME SpatialIndex_Benchmark COMMAND test_spatial_index "[!benchmark]")
     
     # Foundation Unit Tests
     add_executable(test_vector9d tests/unit/vector9d_test.cpp)
@@ -740,6 +752,7 @@ if(NIKOLA_BUILD_TESTS)
     add_executable(test_phase94_hilbert_state_machine tests/unit/phase94_hilbert_state_machine_test.cpp)
     target_link_libraries(test_phase94_hilbert_state_machine PRIVATE nikola_core Catch2::Catch2WithMain)
     add_test(NAME Phase94HilbertStateMachine COMMAND test_phase94_hilbert_state_machine)
+    add_test(NAME Phase94HilbertStateMachine_LongSession COMMAND test_phase94_hilbert_state_machine [longsession])
 
     # Phase 95 — GAP-038: CRC32C hardware intrinsics (SSE4.2 _mm_crc32_u{8,16,32,64})
     #   Header-only: include/nikola/system/crc32c.hpp
