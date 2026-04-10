@@ -280,8 +280,9 @@ struct Orchestrator::Impl {
     std::unordered_map<std::string, std::unique_ptr<CircuitBreaker>> breakers;
 
     // Sockets (optional — created on start())
-    std::optional<zmq::socket_t> pub_sock;
-    std::optional<zmq::socket_t> rep_sock;
+    std::optional<zmq::socket_t> pub_sock;       ///< PUB on events_endpoint — control + events
+    std::optional<zmq::socket_t> rep_sock;        ///< REP on control_endpoint — inbound commands
+    std::optional<zmq::socket_t> data_pub_sock;   ///< PUB on data_endpoint — high-rate data plane
 
     std::atomic<OrchestratorState> state{OrchestratorState::IDLE};
     std::atomic<bool>              running{false};
@@ -344,6 +345,12 @@ void Orchestrator::start() {
         cleanup_stale_shm();
     }
 
+    // Create ZMQ sockets via the spine socket factory
+    impl_->pub_sock.emplace(
+        impl_->spine.make_publisher(impl_->config.events_endpoint));
+    impl_->data_pub_sock.emplace(
+        impl_->spine.make_publisher(impl_->config.data_endpoint));
+
     impl_->running.store(true, std::memory_order_release);
     impl_->state.store(OrchestratorState::RUNNING, std::memory_order_release);
 
@@ -361,6 +368,12 @@ void Orchestrator::stop() {
     if (impl_->watchdog_thread.joinable()) {
         impl_->watchdog_thread.join();
     }
+
+    // Close ZMQ sockets before context destruction
+    impl_->data_pub_sock.reset();
+    impl_->rep_sock.reset();
+    impl_->pub_sock.reset();
+
     impl_->state.store(OrchestratorState::STOPPED, std::memory_order_release);
 }
 
@@ -406,10 +419,15 @@ bool Orchestrator::send_control(const std::string& comp,
 
     RetryPolicy policy{ZMQ_MAX_RETRIES, ZMQ_BACKOFF_BASE_MS, MessagePriority::CONTROL};
 
-    // Without actual socket, simulate: always succeeds if breaker CLOSED
     return retry_with_circuit_breaker([&]() -> bool {
-        (void)data; (void)len;
-        return cb.state() != CBState::OPEN;
+        if (!impl_->pub_sock) return false;
+        std::lock_guard<std::mutex> lock(impl_->send_mutex);
+        std::string topic = make_topic("control." + comp);
+        zmq::message_t topic_msg(topic.data(), topic.size());
+        zmq::message_t data_msg(data, len);
+        auto rc1 = impl_->pub_sock->send(topic_msg, zmq::send_flags::sndmore);
+        auto rc2 = impl_->pub_sock->send(data_msg, zmq::send_flags::none);
+        return rc1.has_value() && rc2.has_value();
     }, cb, policy);
 }
 
@@ -423,8 +441,14 @@ bool Orchestrator::send_data(const std::string& comp,
     RetryPolicy policy{ZMQ_MAX_RETRIES, ZMQ_BACKOFF_BASE_MS, MessagePriority::DATA};
 
     return retry_with_circuit_breaker([&]() -> bool {
-        (void)data; (void)len;
-        return cb.state() != CBState::OPEN;
+        if (!impl_->data_pub_sock) return false;
+        std::lock_guard<std::mutex> lock(impl_->send_mutex);
+        std::string topic = make_topic("data." + comp);
+        zmq::message_t topic_msg(topic.data(), topic.size());
+        zmq::message_t data_msg(data, len);
+        auto rc1 = impl_->data_pub_sock->send(topic_msg, zmq::send_flags::sndmore);
+        auto rc2 = impl_->data_pub_sock->send(data_msg, zmq::send_flags::none);
+        return rc1.has_value() && rc2.has_value();
     }, cb, policy);
 }
 

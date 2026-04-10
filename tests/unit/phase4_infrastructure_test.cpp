@@ -38,6 +38,18 @@
 using namespace nikola::infrastructure;
 using namespace std::chrono_literals;
 
+// Helper: create an OrchestratorConfig with unique inproc endpoints for tests
+static int g_orch_test_id = 0;
+static OrchestratorConfig make_test_config() {
+    int id = ++g_orch_test_id;
+    OrchestratorConfig cfg;
+    cfg.events_endpoint  = "inproc://test_p4_events_" + std::to_string(id);
+    cfg.control_endpoint = "inproc://test_p4_control_" + std::to_string(id);
+    cfg.data_endpoint    = "inproc://test_p4_data_" + std::to_string(id);
+    cfg.cleanup_stale_shm = false;
+    return cfg;
+}
+
 // ===========================================================================
 // GAP 4.1 — Circuit Breaker + Retry Logic
 // ===========================================================================
@@ -482,9 +494,7 @@ TEST_CASE("Orchestrator — starts in IDLE state", "[orchestrator]") {
 }
 
 TEST_CASE("Orchestrator — start transitions to RUNNING", "[orchestrator]") {
-    Orchestrator orch(OrchestratorConfig{
-        .cleanup_stale_shm = false  // skip filesystem sweep in test
-    });
+    Orchestrator orch(make_test_config());
     orch.start();
     CHECK(orch.is_running());
     CHECK(orch.state() == OrchestratorState::RUNNING);
@@ -492,7 +502,7 @@ TEST_CASE("Orchestrator — start transitions to RUNNING", "[orchestrator]") {
 }
 
 TEST_CASE("Orchestrator — stop transitions to STOPPED", "[orchestrator]") {
-    Orchestrator orch(OrchestratorConfig{.cleanup_stale_shm = false});
+    Orchestrator orch(make_test_config());
     orch.start();
     REQUIRE(orch.is_running());
     orch.stop();
@@ -501,14 +511,14 @@ TEST_CASE("Orchestrator — stop transitions to STOPPED", "[orchestrator]") {
 }
 
 TEST_CASE("Orchestrator — double stop is safe", "[orchestrator]") {
-    Orchestrator orch(OrchestratorConfig{.cleanup_stale_shm = false});
+    Orchestrator orch(make_test_config());
     orch.start();
     orch.stop();
     CHECK_NOTHROW(orch.stop()); // idempotent
 }
 
 TEST_CASE("Orchestrator — register_component adds to watchdog", "[orchestrator]") {
-    Orchestrator orch(OrchestratorConfig{.cleanup_stale_shm = false});
+    Orchestrator orch(make_test_config());
     orch.start();
 
     orch.register_component("physics", 1000);
@@ -522,7 +532,7 @@ TEST_CASE("Orchestrator — register_component adds to watchdog", "[orchestrator
 
 TEST_CASE("Orchestrator — send_control returns false for unregistered component",
           "[orchestrator]") {
-    Orchestrator orch(OrchestratorConfig{.cleanup_stale_shm = false});
+    Orchestrator orch(make_test_config());
     orch.start();
 
     uint8_t msg[] = {0x01, 0x02};
@@ -534,7 +544,7 @@ TEST_CASE("Orchestrator — send_control returns false for unregistered componen
 
 TEST_CASE("Orchestrator — send_control reports true for registered (closed breaker)",
           "[orchestrator]") {
-    Orchestrator orch(OrchestratorConfig{.cleanup_stale_shm = false});
+    Orchestrator orch(make_test_config());
     orch.start();
     orch.register_component("logic", 2000);
 
@@ -546,7 +556,7 @@ TEST_CASE("Orchestrator — send_control reports true for registered (closed bre
 }
 
 TEST_CASE("Orchestrator — restart callback fires on component death", "[orchestrator]") {
-    Orchestrator orch(OrchestratorConfig{.cleanup_stale_shm = false});
+    Orchestrator orch(make_test_config());
 
     bool restarted = false;
     std::string restarted_name;
