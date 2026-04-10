@@ -67,10 +67,13 @@ inline constexpr double NPT_PI  = 3.1415926535897932385;
 inline constexpr size_t NPT_NUM_HEADS = 8;
 
 /**
- * @brief Compute the n-th NPT head frequency: f_n = π · φⁿ
+ * @brief Compute the n-th NPT head frequency: f_n = π · φⁿ⁺¹
+ *
+ * Head 0 → emitter e₁ (n=1, f = π·φ¹ ≈ 5.083 Hz)
+ * Head 7 → emitter e₈ (n=8, f = π·φ⁸ ≈ 147.58 Hz)
  */
 inline double npt_head_frequency(size_t head_idx) noexcept {
-    double phi_n = 1.0;
+    double phi_n = NPT_PHI;   // Start at φ¹, not φ⁰
     for (size_t i = 0; i < head_idx; ++i) phi_n *= NPT_PHI;
     return NPT_PI * phi_n;
 }

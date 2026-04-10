@@ -31,11 +31,13 @@
 #include <nikola/cognitive/cognitive_core.hpp>
 #include <nikola/cognitive/spectral_stabilizer.hpp>
 #include <nikola/foundation/toroidal_grid.hpp>
+#include <nikola/physics/wave_function.hpp>
 #include <nikola/spatial/hilbert_scanner.hpp>
 
 #include <algorithm>
 #include <array>
 #include <cmath>
+#include <numeric>
 #include <vector>
 
 namespace nikola::cognitive {
@@ -457,6 +459,16 @@ public:
             auto gc = flat_to_grid_coords(i, grid_n_);
             node_hilbert_indices_[i] = scanner_.coords_to_index(gc);
         }
+
+        // Pre-compute reverse mapping: Hilbert rank → flat index.
+        // Sort flat indices by Hilbert index to get rank ordering.
+        // Used by state_to_wave_function() for spatially distributed scattering.
+        hilbert_rank_to_flat_.resize(N);
+        std::iota(hilbert_rank_to_flat_.begin(), hilbert_rank_to_flat_.end(), 0u);
+        std::sort(hilbert_rank_to_flat_.begin(), hilbert_rank_to_flat_.end(),
+            [this](size_t a, size_t b) {
+                return node_hilbert_indices_[a] < node_hilbert_indices_[b];
+            });
     }
 
     // ----------------------------------------------------------------- accessors
@@ -550,6 +562,82 @@ public:
         mamba_.reset(h_);
     }
 
+    // ---------------------------------------------------------- Phase B2: Mamba → WaveFunction
+
+    /**
+     * @brief Convert the current Mamba hidden state to a WaveFunction.
+     *
+     * Phase B2 reverse bridge: symmetric with the forward bridge (torus → Mamba).
+     * Maps pairs of hidden state values h[2k], h[2k+1] as (psi_real, psi_imag)
+     * onto the k-th Hilbert-ranked torus node.  This scatters 128 "perception
+     * frames" across the manifold in a space-filling pattern, producing a sparse
+     * but spatially distributed WaveFunction that NPT's wave-correlation
+     * attention can meaningfully attend over.
+     *
+     * The compression bottleneck (256 → WaveFunction) is intentional: Mamba
+     * abstracts the full manifold, NPT reasons over the abstraction.
+     *
+     * @return  WaveFunction populated from Mamba hidden state.
+     */
+    [[nodiscard]]
+    physics::WaveFunction state_to_wave_function() const {
+        physics::WaveFunction wf(foundation::GridConfig::uniform(grid_n_));
+        wf.seed_manifold(grid_n_, 0, 1, 0.f, 0);  // allocate all nodes (psi = 0)
+
+        const int H = static_cast<int>(h_.size());
+        const size_t N = total_nodes();
+        float* psi_r = wf.grid().psi_real();
+        float* psi_i = wf.grid().psi_imag();
+
+        // Map pairs of hidden units to Hilbert-ordered torus nodes.
+        // h[2k] → psi_real, h[2k+1] → psi_imag at the k-th Hilbert-ranked node.
+        const int num_pairs = H / 2;
+        for (int k = 0; k < num_pairs && static_cast<size_t>(k) < N; ++k) {
+            const size_t flat_idx = hilbert_rank_to_flat_[k];
+            psi_r[flat_idx] = h_[2 * k];
+            psi_i[flat_idx] = h_[2 * k + 1];
+        }
+
+        return wf;
+    }
+
+    // ---------------------------------------------------------- Phase B3: WaveFunction → Mamba input
+
+    /**
+     * @brief Extract a 9D Mamba input from a WaveFunction's dominant node.
+     *
+     * Phase B3 feedback path: converts NPT's output WaveFunction into a 9D
+     * coordinate suitable for Mamba9D::step().  Finds the highest-intensity
+     * node and converts its flat index to a normalized [-1, +1]⁹ coordinate.
+     *
+     * @param wf  Source WaveFunction (e.g. NPT attention output).
+     * @return    9D coordinate of the dominant node, or origin if field is empty.
+     */
+    [[nodiscard]]
+    static std::array<float, foundation::TORUS_DIMS>
+    wave_function_to_input(const physics::WaveFunction& wf) noexcept {
+        const size_t N = wf.num_nodes();
+        if (N == 0) return {};
+
+        const float* pr = wf.grid().psi_real();
+        const float* pi = wf.grid().psi_imag();
+
+        // Find hottest node (max |ψ|²)
+        size_t hot_idx = 0;
+        float hot_intensity = 0.f;
+        for (size_t i = 0; i < N; ++i) {
+            const float intensity = pr[i] * pr[i] + pi[i] * pi[i];
+            if (intensity > hot_intensity) {
+                hot_intensity = intensity;
+                hot_idx = i;
+            }
+        }
+
+        // Convert to normalised 9D coordinate
+        const int n = wf.grid().grid_n();
+        return grid_coord_to_float(hot_idx, n);
+    }
+
 private:
     /// Minimum Hilbert order such that 2^order ≥ n.
     static uint32_t min_order_for(int n) noexcept {
@@ -565,6 +653,7 @@ private:
     SSMLayer::State        h_;
     spatial::HilbertScanner scanner_;
     std::vector<uint64_t>  node_hilbert_indices_;
+    std::vector<size_t>    hilbert_rank_to_flat_;   ///< Phase B2: Hilbert rank → flat node index
 };
 
 } // namespace nikola::cognitive

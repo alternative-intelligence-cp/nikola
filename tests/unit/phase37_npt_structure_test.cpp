@@ -36,12 +36,13 @@ namespace physics = nikola::physics;  // allow physics::WaveFunction shorthand
 using Approx = Catch::Approx;
 
 // ---------------------------------------------------------------------------
-// Expected frequencies: π·φⁿ — computed independently to cross-validate
+// Expected frequencies: π·φⁿ⁺¹ — computed independently to cross-validate
+// Head 0 → emitter e₁ (n=1), Head 7 → emitter e₈ (n=8)
 // ---------------------------------------------------------------------------
 static double expected_freq(size_t n) {
     static constexpr double PHI = 1.6180339887498948482;
     static constexpr double PI  = 3.1415926535897932385;
-    double phi_n = 1.0;
+    double phi_n = PHI;   // Start at φ¹, not φ⁰
     for (size_t i = 0; i < n; ++i) phi_n *= PHI;
     return PI * phi_n;
 }

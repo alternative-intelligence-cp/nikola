@@ -80,21 +80,22 @@ TEST_CASE("Gap6.1 — minimum emitter separation > 10 grid cells", "[audio][gap6
 }
 
 TEST_CASE("Gap6.1 — golden ratio frequencies are monotonically increasing", "[audio][gap6.1]") {
-    for (int i = 0; i < NUM_EMITTERS - 1; ++i) {
+    for (int i = 1; i < NUM_EMITTERS; ++i) {
         CHECK(AudioEmitterLayout::emitter_frequency(i + 1) >
               AudioEmitterLayout::emitter_frequency(i));
     }
 }
 
-TEST_CASE("Gap6.1 — f_0 = π (golden ratio exponent 0 → φ^0 = 1)", "[audio][gap6.1]") {
-    const double f0 = AudioEmitterLayout::emitter_frequency(0);
-    CHECK_THAT(f0, WithinAbs(std::numbers::pi, 1e-9));
-}
-
-TEST_CASE("Gap6.1 — f_1 = π·φ (golden ratio exponent 1)", "[audio][gap6.1]") {
+TEST_CASE("Gap6.1 — f_1 = π·φ (emitter e₁, golden ratio exponent 1)", "[audio][gap6.1]") {
     const double f1 = AudioEmitterLayout::emitter_frequency(1);
     const double expected = std::numbers::pi * 1.6180339887498948482;
     CHECK_THAT(f1, WithinAbs(expected, 1e-9));
+}
+
+TEST_CASE("Gap6.1 — f_2 = π·φ² (emitter e₂, golden ratio exponent 2)", "[audio][gap6.1]") {
+    const double f2 = AudioEmitterLayout::emitter_frequency(2);
+    const double expected = std::numbers::pi * 1.6180339887498948482 * 1.6180339887498948482;
+    CHECK_THAT(f2, WithinAbs(expected, 1e-9));
 }
 
 TEST_CASE("Gap6.1 — r dimension carries resonance code (~12 for Nr=16)", "[audio][gap6.1]") {

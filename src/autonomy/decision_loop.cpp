@@ -96,11 +96,10 @@ DecisionLoop::DecisionLoop(nikola::cognitive::CognitiveTorus& torus,
     , cfg_(std::move(cfg))
     , npt_(static_cast<int>(torus.grid().grid_n()), 0.5f, 0.3f)  // v0.0.9: τ=0.5 (sharper), α=0.3
     , npt_last_result_(static_cast<int>(torus.grid().grid_n()))
-    , cognitive_core_(nikola::cognitive::SSM_HIDDEN_DIM,
-                      nikola::cognitive::SSM_INPUT_DIM,
-                      std::max(1, static_cast<int>(cfg_.vocabulary.size())),
-                      42u)
-    , ssm_state_()
+    , mamba_bridge_(static_cast<int>(torus.grid().grid_n()),
+                    nikola::cognitive::SSM_HIDDEN_DIM,
+                    std::max(1, static_cast<int>(cfg_.vocabulary.size())),
+                    42u)
     , autobiography_(std::make_unique<interior::AutobiographicalMemory>())
 {
     const auto now = std::chrono::steady_clock::now();
@@ -114,11 +113,8 @@ DecisionLoop::DecisionLoop(nikola::cognitive::CognitiveTorus& torus,
     aria_specialist_enabled_ = !cfg_.specialist_server_path.empty()
                              || !cfg_.ariac_path.empty();
 
-    // Phase 16.1 — initialise SSM (Mamba S6 selective scan) weights + state.
-    // Output dim matches vocabulary size so logits map 1:1 to tokens.
-    cognitive_core_.ssm().randomise(42);
-    cognitive_core_.ssm().randomise_selective(42);
-    ssm_state_ = cognitive_core_.ssm().make_zero_state();
+    // Phase B1 — HilbertMambaBridge's Mamba9D was initialised in member init list.
+    // SSM weights are already randomised by the bridge constructor; no extra init needed.
 
     // Register decoder vocabulary.
     // ORT mode: use NonaryEmbedder for semantically accurate 9D waves.
@@ -738,27 +734,26 @@ DecisionResult DecisionLoop::tick()
                      tick_reward);
     }
 
-    // ── 2b. Phase 16.1 — SSM selective-step on hottest torus node ────────────
-    // Extract the highest-intensity node, convert its flat index to a
-    // normalised 9D coordinate, and run the Mamba S6 selective scan.
-    // The SSM reads the torus — it does NOT modify it.  Output tokens feed
-    // into the accumulation buffer alongside resonance-decoded tokens.
+    // ── 2b. Phase B1 — Mamba9D via HilbertMambaBridge ──────────────────────
+    // Feed top-k hot nodes through the physics-aware Mamba9D pipeline.
+    // HilbertMambaBridge sorts nodes by Hilbert index (locality-preserving),
+    // extracts physics params from the torus, and steps Mamba9D with adaptive
+    // A diagonal and spectrally clamped Δ.  This replaces the bare SSMLayer.
     std::string ssm_token;
     if (!cfg_.vocabulary.empty()) {
-        NIKOLA_PROFILE("ssm::selective_step");
-        const auto hot = torus_.hot_nodes(1);
+        NIKOLA_PROFILE("mamba9d::tick");
+        constexpr size_t MAMBA_TOP_K = 8;  // one per emitter frequency
+        const auto hot = torus_.hot_nodes(MAMBA_TOP_K);
         if (!hot.empty()) {
-            const int gn = static_cast<int>(torus_.grid().grid_n());
-            auto coord = grid_coord_to_float(hot[0], gn);
-
-            // S6 selective-step (input-dependent gating, ZOH discretisation)
-            cognitive_core_.ssm().selective_step(ssm_state_, coord);
-            cognitive_core_.sequence().advance();
+            // Run Mamba9D over hot nodes with physics-derived parameters
+            mamba_bridge_.tick(
+                g.psi_real(), g.psi_imag(), N, hot,
+                /* resonance */ 0.5f, /* rho_G */ 1.0f);
 
             // Compute output logits and sample a token
             std::vector<float> logits;
-            cognitive_core_.ssm().compute_output(ssm_state_, logits);
-            const size_t token_idx = cognitive_core_.sampler().sample_from_vector(
+            mamba_bridge_.mamba().ssm().compute_output(mamba_bridge_.state(), logits);
+            const size_t token_idx = mamba_bridge_.mamba().sampler().sample_from_vector(
                 logits, 0.01f);  // low temperature — favour high-probability tokens
 
             // Map to vocabulary word
@@ -1112,28 +1107,48 @@ std::string DecisionLoop::execute_explore(const NikolaState& s)
 
 void DecisionLoop::execute_reason()
 {
+    // Phase B2: NPT reads Mamba's perception, not the raw torus.
+    // Convert Mamba hidden state → WaveFunction via reverse HilbertMambaBridge.
+    // The compression bottleneck (256 → WaveFunction) is intentional:
+    // Mamba abstracts the manifold, NPT reasons over the abstraction.
+    auto mamba_wf = mamba_bridge_.state_to_wave_function();
+
     // Phase 45: Pass live dopamine level so NPT scales Q/K learning rates
     // by η(D) = 1 + tanh(D − 0.5).  Reward spikes → faster encoding;
     // punishment dips → plasticity lock.
     // Phase 46: Pass live serotonin so NPT applies elastic restoring force.
-    // High S (exploitation) → λ_s large → manifold resists deformation.
-    // Low S  (exploration)  → λ_s ≈ 0  → full plasticity, no damping.
     // Phase 47: Pass live norepinephrine so NPT modulates attention temperature.
-    // High N (hypervigilance) → τ_eff = τ/2   → sharp, tunnel-vision focus.
-    // Low N  (deep calm)      → τ_eff = τ     → broad multi-head integration.
-    auto result = npt_.forward(torus_.wave_function(),
+    auto result = npt_.forward(mamba_wf,
                                engine_.dopamine(),
                                engine_.serotonin(),
                                engine_.norepinephrine());
 
     if (result.has_output) {
-        // Blend the NPT output back into the live field.
-        // Weight α = top head score × 0.3:
-        //   — the most-attended spectral band contributes proportionally
-        //   — scaled to 0.3 to colour the field without dominating it
+        // Phase B3: NPT output feeds back to Mamba, not directly to torus.
+        // Mamba is the SOLE writer to the torus — NPT never writes directly.
+        // 1. Extract dominant 9D coordinate from NPT output WaveFunction
+        auto npt_input = nikola::cognitive::HilbertMambaBridge::wave_function_to_input(
+            result.output);
+
+        // 2. Construct mild feedback physics (no specific torus physics here —
+        //    this is reasoning feedback, not sensory perception)
+        nikola::cognitive::PhysicsParams feedback_physics;
+        feedback_physics.resonance = 0.5f;
+        feedback_physics.rho_G     = 1.0f;
+        // Uniform intensity — reasoning doesn't bias decay rates
+        feedback_physics.intensity.fill(0.5f);
+        feedback_physics.phase.fill(0.f);
+
+        // 3. Step Mamba with NPT's reasoning output (bidirectional link)
+        mamba_bridge_.mamba().step(mamba_bridge_.state(), npt_input, feedback_physics);
+
+        // 4. Mamba writes torus: project updated hidden state to wave modification
+        //    Weight α = top head score × 0.3 — same blending semantics as before,
+        //    but now Mamba mediates the write.
         const float top_score = *std::max_element(
             result.head_scores.begin(), result.head_scores.end());
-        torus_.wave_function().add_scaled(result.output, top_score * 0.3f);
+        auto mamba_output_wf = mamba_bridge_.state_to_wave_function();
+        torus_.wave_function().add_scaled(mamba_output_wf, top_score * 0.3f);
     }
 
     // Cache for external inspection via last_npt_result().

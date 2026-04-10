@@ -51,6 +51,7 @@
 #include <nikola/autonomy/self_improvement_engine.hpp>
 #include <nikola/cognitive/cognitive_core.hpp>
 #include <nikola/cognitive/cognitive_torus.hpp>
+#include <nikola/cognitive/mamba9d.hpp>
 #include <nikola/cognitive/resonance_decoder.hpp>
 #include <nikola/cognitive/semantic_memory.hpp>
 #include <nikola/cognitive/neuroplastic_transformer.hpp>
@@ -567,9 +568,8 @@ private:
     nikola::cognitive::NeuroplasticTransformer    npt_;             ///< Phase 42 — multi-head wave attention
     nikola::cognitive::AttentionResult            npt_last_result_; ///< Most recent NPT forward output
 
-    // Phase 16.1 — SSM (Mamba S6) learned control layer
-    nikola::cognitive::CognitiveCore             cognitive_core_;  ///< SSM + SequenceManager + Sampler
-    nikola::cognitive::SSMLayer::State           ssm_state_;       ///< Persistent hidden state across ticks
+    // Phase B1 — Mamba9D via HilbertMambaBridge (replaces bare SSMLayer)
+    nikola::cognitive::HilbertMambaBridge        mamba_bridge_;    ///< Physics-aware Mamba9D + Hilbert ordering
 
     NikolaState  last_state_;
     uint64_t     tick_count_  = 0;

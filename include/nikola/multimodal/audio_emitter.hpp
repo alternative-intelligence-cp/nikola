@@ -168,7 +168,7 @@ public:
     }
 
     /**
-     * Emitter frequency f_n = π·φⁿ
+     * Emitter frequency f_n = π·φⁿ, n ∈ [1, 8] per spec (e₁–e₈).
      */
     static double emitter_frequency(int n) {
         return std::numbers::pi * std::pow(GOLDEN_RATIO, static_cast<double>(n));
