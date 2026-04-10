@@ -1537,6 +1537,14 @@ if(NIKOLA_BUILD_TESTS)
     add_test(NAME Phase148ZapAuthenticator
         COMMAND test_phase148_zap_authenticator)
 
+    # Phase 149 — Autodiff Engine (v0.1.12)
+    add_executable(test_phase149_autodiff
+        tests/unit/phase149_autodiff_test.cpp)
+    target_link_libraries(test_phase149_autodiff PRIVATE
+        nikola_core Catch2::Catch2WithMain)
+    add_test(NAME Phase149Autodiff
+        COMMAND test_phase149_autodiff)
+
     # v0.1.2 UFIE Physics Validation Suite
     add_executable(test_phase012_ufie_validation
         tests/unit/phase012_ufie_validation_test.cpp)
