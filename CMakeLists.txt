@@ -1577,6 +1577,14 @@ if(NIKOLA_BUILD_TESTS)
     add_test(NAME Phase153SoloCycleEngine
         COMMAND test_phase153_solo_cycle_engine)
 
+    # Phase 154 — DMC Checkpointing & GGUF Export (v0.1.17)
+    add_executable(test_phase154_persistence
+        tests/unit/phase154_persistence_test.cpp)
+    target_link_libraries(test_phase154_persistence PRIVATE
+        nikola_core Catch2::Catch2WithMain ggml-base)
+    add_test(NAME Phase154Persistence
+        COMMAND test_phase154_persistence)
+
     # v0.1.2 UFIE Physics Validation Suite
     add_executable(test_phase012_ufie_validation
         tests/unit/phase012_ufie_validation_test.cpp)
