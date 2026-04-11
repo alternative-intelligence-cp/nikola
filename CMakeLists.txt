@@ -1569,6 +1569,14 @@ if(NIKOLA_BUILD_TESTS)
     add_test(NAME Phase152BicameralTrainer
         COMMAND test_phase152_bicameral_trainer)
 
+    # Phase 153 — Solo Cycle Engine: Multi-Cycle SIE (v0.1.16)
+    add_executable(test_phase153_solo_cycle_engine
+        tests/unit/phase153_solo_cycle_engine_test.cpp)
+    target_link_libraries(test_phase153_solo_cycle_engine PRIVATE
+        nikola_core Catch2::Catch2WithMain ${CMAKE_DL_LIBS})
+    add_test(NAME Phase153SoloCycleEngine
+        COMMAND test_phase153_solo_cycle_engine)
+
     # v0.1.2 UFIE Physics Validation Suite
     add_executable(test_phase012_ufie_validation
         tests/unit/phase012_ufie_validation_test.cpp)

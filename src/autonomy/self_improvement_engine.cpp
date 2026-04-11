@@ -187,6 +187,96 @@ SIECycleResult SelfImprovementEngine::run_cycle(const NikolaState& state)
 }
 
 // ============================================================================
+// Solo-mode cycle (pre-generated source, bypass specialist)
+// ============================================================================
+
+SIECycleResult SelfImprovementEngine::run_cycle_with_source(
+        const std::string& source_code,
+        const std::string& instruction)
+{
+    std::lock_guard<std::mutex> lock(cycle_mutex_);
+
+    SIECycleResult result;
+    result.instruction = instruction;
+    result.source_code = source_code;
+    const auto t0 = std::chrono::steady_clock::now();
+    ++cycles_attempted_;
+
+    auto finish = [&](SIEOutcome out) {
+        result.outcome = out;
+        const auto t1 = std::chrono::steady_clock::now();
+        result.elapsed_ms = std::chrono::duration<double, std::milli>(t1 - t0).count();
+        return result;
+    };
+
+    // Skip steps 1-3 (formulate / specialist / extract) — source already provided.
+
+    if (source_code.empty()) {
+        return finish(SIEOutcome::NO_CODE_EXTRACTED);
+    }
+
+    // ── Step 5: Package into .so ────────────────────────────────────────────
+    result.so_path = package_module(result.source_code, result.compile_output);
+    if (result.so_path.empty()) {
+        return finish(SIEOutcome::PACKAGING_FAILED);
+    }
+
+    // ── Step 6: Sign the module ─────────────────────────────────────────────
+    auto binary = read_binary(result.so_path);
+    if (binary.empty()) {
+        return finish(SIEOutcome::SIGNING_FAILED);
+    }
+
+    auto sig_opt = sign_module(binary);
+    if (!sig_opt) {
+        return finish(SIEOutcome::SIGNING_FAILED);
+    }
+
+    // ── Step 7: Deploy through ShadowSpine (Gate 0–3) ──────────────────────
+    auto stage_report = spine_.stage(
+        result.so_path,
+        result.source_code,
+        *sig_opt,
+        ed_pk_,
+        sphincs_kp_.pk);
+
+    result.stage_report = stage_report;
+
+    if (!stage_report) {
+        switch (stage_report.status) {
+            case StageStatus::SIGNATURE_REJECTED:
+                return finish(SIEOutcome::GATE0_REJECTED);
+            case StageStatus::ATP_DENIED:
+                return finish(SIEOutcome::ATP_DENIED);
+            case StageStatus::SECURITY_REJECTED:
+                return finish(SIEOutcome::GATE1_REJECTED);
+            case StageStatus::PHYSICS_REJECTED:
+                return finish(SIEOutcome::GATE2_REJECTED);
+            case StageStatus::LOAD_FAILED:
+            case StageStatus::SYMBOL_MISSING:
+            case StageStatus::SAME_MODULE:
+                return finish(SIEOutcome::GATE3_REJECTED);
+            default:
+                return finish(SIEOutcome::GATE3_REJECTED);
+        }
+    }
+
+    // ── Step 8: Store proposal ──────────────────────────────────────────────
+    if (store_) {
+        aria::CodeProposal proposal;
+        proposal.source_code     = result.source_code;
+        proposal.compile_success = true;
+        proposal.instruction     = result.instruction;
+        proposal.compile_time_ms = result.elapsed_ms;
+        result.proposal_id = store_->store(proposal);
+    }
+
+    // ── Step 9: SUCCESS ─────────────────────────────────────────────────────
+    ++cycles_succeeded_;
+    return finish(SIEOutcome::SUCCESS);
+}
+
+// ============================================================================
 // Instruction formulation
 // ============================================================================
 
