@@ -621,6 +621,9 @@ public:
     /// Read-only access to head i (0-7).
     const WaveCorrelationHead& head(size_t i) const { return heads_.at(i); }
 
+    /// Mutable access to head i (0-7) — for persistence deserialization.
+    WaveCorrelationHead& head(size_t i) { return heads_.at(i); }
+
     /// Frequency of head i (π·φⁱ Hz).
     double head_frequency(size_t i) const { return heads_.at(i).frequency; }
 
