@@ -1545,6 +1545,14 @@ if(NIKOLA_BUILD_TESTS)
     add_test(NAME Phase149Autodiff
         COMMAND test_phase149_autodiff)
 
+    # Phase 150 — MambaTrainer SSM Training (v0.1.13)
+    add_executable(test_phase150_mamba_trainer
+        tests/unit/phase150_mamba_trainer_test.cpp)
+    target_link_libraries(test_phase150_mamba_trainer PRIVATE
+        nikola_core Catch2::Catch2WithMain)
+    add_test(NAME Phase150MambaTrainer
+        COMMAND test_phase150_mamba_trainer)
+
     # v0.1.2 UFIE Physics Validation Suite
     add_executable(test_phase012_ufie_validation
         tests/unit/phase012_ufie_validation_test.cpp)

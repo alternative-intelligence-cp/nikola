@@ -206,12 +206,69 @@ public:
         }
     }
 
+    // ── Forward pass (recompute from leaves) ──────────────────────────
+
+    /**
+     * @brief Recompute all non-leaf node values in topological order.
+     *
+     * Call after set_value() on leaves to propagate new inputs through
+     * the existing graph structure. Required for training loops where
+     * graph topology is built once but leaf values change each step.
+     */
+    void forward() {
+        for (uint16_t i = 0; i < num_nodes_; ++i) {
+            switch (op_types_[i]) {
+            case StaticOpType::LEAF:
+                break; // value set externally via set_value()
+
+            case StaticOpType::ADD:
+                values_[i] = values_[parent_a_[i]] + values_[parent_b_[i]];
+                break;
+
+            case StaticOpType::MULTIPLY:
+                values_[i] = values_[parent_a_[i]] * values_[parent_b_[i]];
+                break;
+
+            case StaticOpType::SQUARED_NORM:
+                values_[i] = {std::norm(values_[parent_a_[i]]), 0.0};
+                break;
+
+            case StaticOpType::MATVEC: {
+                int out_dim = parent_b_[i];
+                values_[i] = matrices_[op_data_[i]](out_dim, 0) * values_[parent_a_[i]];
+                break;
+            }
+
+            case StaticOpType::UFIE_STEP: {
+                uint16_t sc_idx = parent_b_[i];
+                double dt_val   = scalars_[sc_idx];
+                double beta_val = scalars_[sc_idx + 1];
+                const auto& H  = matrices_[op_data_[i]];
+
+                auto psi = values_[parent_a_[i]];
+                std::complex<double> i_unit(0.0, 1.0);
+                std::complex<double> linear  = 1.0 - i_unit * H(0, 0) * dt_val;
+                double psi_norm_sq = std::norm(psi);
+                std::complex<double> nonlinear = -i_unit * beta_val * psi_norm_sq * dt_val;
+                values_[i] = (linear + nonlinear) * psi;
+                break;
+            }
+            } // switch
+        }
+    }
+
     // ── Accessors ──────────────────────────────────────────────────────
 
     std::complex<double> get_value(uint16_t id) const    { return values_[id]; }
     std::complex<double> get_gradient(uint16_t id) const { return gradients_[id]; }
     void set_value(uint16_t id, std::complex<double> v)  { values_[id] = v; }
     uint16_t size() const { return num_nodes_; }
+
+    /// Zero only gradients, preserving values and structure. Use before
+    /// backward() in training loops that call forward() per sample.
+    void zero_gradients() {
+        std::memset(gradients_.data(), 0, num_nodes_ * sizeof(std::complex<double>));
+    }
 
     /// Reset for next training iteration: zero values/gradients, keep structure
     void reset() {
