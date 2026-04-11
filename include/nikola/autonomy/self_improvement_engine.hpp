@@ -191,6 +191,18 @@ public:
     /// @returns SIECycleResult with full details of every step.
     [[nodiscard]] SIECycleResult run_cycle(const NikolaState& state);
 
+    /// Run an SIE cycle with pre-generated source code (solo mode).
+    ///
+    /// Skips the specialist query and code extraction steps.  Starts
+    /// directly at packaging → signing → deployment → store.
+    ///
+    /// @param source_code  C++ source code to package and deploy.
+    /// @param instruction  Description of the improvement (for logging/store).
+    /// @returns SIECycleResult with full details.
+    [[nodiscard]] SIECycleResult run_cycle_with_source(
+            const std::string& source_code,
+            const std::string& instruction);
+
     // -----------------------------------------------------------------------
     // Inspection
     // -----------------------------------------------------------------------
