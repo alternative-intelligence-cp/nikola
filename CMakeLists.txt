@@ -1561,6 +1561,14 @@ if(NIKOLA_BUILD_TESTS)
     add_test(NAME Phase151TransformerTrainer
         COMMAND test_phase151_transformer_trainer)
 
+    # Phase 152 — BicameralTrainer Joint Training (v0.1.15)
+    add_executable(test_phase152_bicameral_trainer
+        tests/unit/phase152_bicameral_trainer_test.cpp)
+    target_link_libraries(test_phase152_bicameral_trainer PRIVATE
+        nikola_core Catch2::Catch2WithMain)
+    add_test(NAME Phase152BicameralTrainer
+        COMMAND test_phase152_bicameral_trainer)
+
     # v0.1.2 UFIE Physics Validation Suite
     add_executable(test_phase012_ufie_validation
         tests/unit/phase012_ufie_validation_test.cpp)
