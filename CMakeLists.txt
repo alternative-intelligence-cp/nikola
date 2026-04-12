@@ -1593,6 +1593,14 @@ if(NIKOLA_BUILD_TESTS)
     add_test(NAME Phase155NapSystem
         COMMAND test_phase155_nap_system)
 
+    # Phase 156 — Security Hardening (v0.1.19)
+    add_executable(test_phase156_security_hardening
+        tests/unit/phase156_security_hardening_test.cpp)
+    target_link_libraries(test_phase156_security_hardening PRIVATE
+        nikola_core Catch2::Catch2WithMain)
+    add_test(NAME Phase156SecurityHardening
+        COMMAND test_phase156_security_hardening)
+
     # v0.1.2 UFIE Physics Validation Suite
     add_executable(test_phase012_ufie_validation
         tests/unit/phase012_ufie_validation_test.cpp)
