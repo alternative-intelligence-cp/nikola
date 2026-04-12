@@ -1601,6 +1601,14 @@ if(NIKOLA_BUILD_TESTS)
     add_test(NAME Phase156SecurityHardening
         COMMAND test_phase156_security_hardening)
 
+    # Phase 157 — Pre-Release Audit (v0.1.20)
+    add_executable(test_phase157_prerelease_audit
+        tests/unit/phase157_prerelease_audit_test.cpp)
+    target_link_libraries(test_phase157_prerelease_audit PRIVATE
+        nikola_core Catch2::Catch2WithMain)
+    add_test(NAME Phase157PreReleaseAudit
+        COMMAND test_phase157_prerelease_audit)
+
     # v0.1.2 UFIE Physics Validation Suite
     add_executable(test_phase012_ufie_validation
         tests/unit/phase012_ufie_validation_test.cpp)
