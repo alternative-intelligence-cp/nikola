@@ -1585,6 +1585,14 @@ if(NIKOLA_BUILD_TESTS)
     add_test(NAME Phase154Persistence
         COMMAND test_phase154_persistence)
 
+    # Phase 155 — NAP System & Memory Consolidation (v0.1.18)
+    add_executable(test_phase155_nap_system
+        tests/unit/phase155_nap_system_test.cpp)
+    target_link_libraries(test_phase155_nap_system PRIVATE
+        nikola_core Catch2::Catch2WithMain)
+    add_test(NAME Phase155NapSystem
+        COMMAND test_phase155_nap_system)
+
     # v0.1.2 UFIE Physics Validation Suite
     add_executable(test_phase012_ufie_validation
         tests/unit/phase012_ufie_validation_test.cpp)
