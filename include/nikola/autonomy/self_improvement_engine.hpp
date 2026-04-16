@@ -27,6 +27,7 @@
 #include <nikola/aria/compile_validator.hpp>
 #include <nikola/aria/code_proposal_store.hpp>
 #include <nikola/aria/specialist_interface.hpp>
+#include <nikola/autonomy/lookup_agent.hpp>       // LookupFn
 #include <nikola/autonomy/shadow_spine.hpp>
 #include <nikola/security/hybrid_verifier.hpp>
 #include <nikola/security/sphincs_signer.hpp>
@@ -112,6 +113,11 @@ struct SIECycleResult {
     /// Proposal ID in the code store (0 if not stored).
     uint64_t proposal_id{0};
 
+    /// Research phase results (empty if no research function configured).
+    std::string research_query;    ///< What weakness was researched
+    std::string research_content;  ///< What the research found
+    std::string research_source;   ///< Source oracle (e.g. "tavily", "firecrawl")
+
     /// Wall-clock duration of the entire cycle.
     double elapsed_ms{0.0};
 
@@ -181,11 +187,24 @@ public:
     // Core operation
     // -----------------------------------------------------------------------
 
+    /// Set an optional research function for pre-cycle knowledge acquisition.
+    ///
+    /// When configured, the SIE will research the identified weakness
+    /// before formulating the specialist instruction, allowing code
+    /// generation to be informed by real-world knowledge.
+    ///
+    /// Typically wired via ResearchRouter::as_lookup_fn().
+    void set_research_fn(LookupFn fn) { research_fn_ = std::move(fn); }
+
     /// Run a complete self-improvement cycle.
     ///
     /// Given the current NikolaState, formulates an improvement instruction,
     /// generates candidate code, validates it, packages it into a .so,
     /// self-signs it, and attempts deployment through ShadowSpine.
+    ///
+    /// If a research function is configured (set_research_fn), the cycle
+    /// includes a research phase: state → research query → lookup →
+    /// incorporate findings into instruction.
     ///
     /// @param state  Current cognitive/metabolic state snapshot.
     /// @returns SIECycleResult with full details of every step.
@@ -230,7 +249,14 @@ private:
     // -----------------------------------------------------------------------
 
     /// Formulate an improvement instruction from the current state.
-    [[nodiscard]] std::string formulate_instruction(const NikolaState& state) const;
+    /// If research_context is non-empty, it is incorporated into the prompt.
+    [[nodiscard]] std::string formulate_instruction(
+            const NikolaState& state,
+            const std::string& research_context = {}) const;
+
+    /// Formulate a research query based on the identified weakness in state.
+    [[nodiscard]] static std::string formulate_research_query(
+            const NikolaState& state);
 
     /// Package C++ source into a shared library (.so).
     /// Returns path to the .so on success, empty string on failure.
@@ -262,6 +288,8 @@ private:
     std::vector<uint8_t>        ed_sk_;     ///< 32-byte Ed25519 private key
     security::SphincsKeypair    sphincs_kp_;
     EVP_PKEY*                   ed_pkey_{nullptr}; ///< OpenSSL EVP handle
+
+    LookupFn              research_fn_;   ///< Optional research function
 
     uint32_t cycles_attempted_{0};
     uint32_t cycles_succeeded_{0};

@@ -463,15 +463,19 @@ TEST_CASE("§D-2 action_name(GENERATE_CODE) returns correct string", "[action_ty
     CHECK(std::string(action_name(ActionType::GENERATE_CODE)) == "GENERATE_CODE");
 }
 
-TEST_CASE("§D-3 action_name covers all 11 actions without UNKNOWN", "[action_type][sectionD]") {
-    for (int i = 0; i <= 10; ++i) {
+TEST_CASE("§D-3 action_name covers all 12 actions without UNKNOWN", "[action_type][sectionD]") {
+    for (int i = 0; i <= 11; ++i) {
         auto name = action_name(static_cast<ActionType>(i));
         CHECK(std::string(name) != "UNKNOWN");
     }
 }
 
-TEST_CASE("§D-4 action_name(11) returns UNKNOWN", "[action_type][sectionD]") {
-    CHECK(std::string(action_name(static_cast<ActionType>(11))) == "UNKNOWN");
+TEST_CASE("§D-4 action_name(11) returns PURSUE_GOAL", "[action_type][sectionD]") {
+    CHECK(std::string(action_name(static_cast<ActionType>(11))) == "PURSUE_GOAL");
+}
+
+TEST_CASE("§D-4b action_name(12) returns UNKNOWN", "[action_type][sectionD]") {
+    CHECK(std::string(action_name(static_cast<ActionType>(12))) == "UNKNOWN");
 }
 
 TEST_CASE("§D-5 GENERATE_CODE is distinct from all other actions", "[action_type][sectionD]") {

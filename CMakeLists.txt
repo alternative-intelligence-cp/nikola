@@ -24,6 +24,7 @@ find_package(Eigen3 3.4 REQUIRED)
 find_package(Protobuf REQUIRED)
 find_package(Threads REQUIRED)
 find_package(cppzmq REQUIRED)  # Phase 4: ZMQ Spine
+find_package(CURL REQUIRED)    # Phase 32: HTTP Client for oracle agents
 
 # ORT (ONNX Runtime) — optional; enables BERT-based semantic embeddings
 set(ORT_ROOT "/home/randy/Workspace/SYSTEM/onnxruntime/cpp" CACHE PATH "Path to ONNX Runtime C++ SDK")
@@ -74,6 +75,10 @@ set(AUTONOMY_SOURCES
     src/autonomy/evolutionary_orchestrator.cpp
     src/autonomy/shadow_spine.cpp
     src/autonomy/self_improvement_engine.cpp
+    src/autonomy/tavily_oracle.cpp          # Phase 32: Tavily Search Oracle
+    src/autonomy/firecrawl_oracle.cpp        # Phase 32: Firecrawl Scraping Oracle
+    src/autonomy/research_router.cpp         # Phase 32: Smart Router
+    src/autonomy/goal_system.cpp             # Phase 33: GoalSystem
 )
 
 set(SPATIAL_SOURCES
@@ -90,6 +95,7 @@ set(FOUNDATION_SOURCES
 # Core Infrastructure
 set(CORE_SOURCES
     src/core/config.cpp
+    src/infrastructure/http_client.cpp  # Phase 32: HTTP Client
 )
 
 # Genesis Module 1: Cognitive Resonance
@@ -173,6 +179,7 @@ target_link_libraries(nikola_core PUBLIC
     ssl crypto              # Phase 146: SelfImprovementEngine Ed25519 via OpenSSL
     sodium                  # Phase 146: transitive libsodium dependency
     ${CMAKE_DL_LIBS}        # Phase 146: dlopen/dlsym for module loading
+    CURL::libcurl            # Phase 32: HTTP Client for oracle agents
 )
 
 # ORT wiring
@@ -1725,6 +1732,36 @@ if(NIKOLA_BUILD_TESTS)
     target_link_libraries(test_e2e_pipeline PRIVATE
         nikola_core Catch2::Catch2WithMain)
     add_test(NAME E2EPipeline COMMAND test_e2e_pipeline)
+
+    # Phase 32 Unit Tests: HTTP Client
+    add_executable(test_http_client tests/unit/http_client_test.cpp)
+    target_link_libraries(test_http_client PRIVATE nikola_core Catch2::Catch2WithMain)
+    add_test(NAME HttpClient COMMAND test_http_client --reporter console "~[network]")
+
+    # Phase 32 Unit Tests: Tavily Oracle
+    add_executable(test_tavily_oracle tests/unit/tavily_oracle_test.cpp)
+    target_link_libraries(test_tavily_oracle PRIVATE nikola_core Catch2::Catch2WithMain)
+    add_test(NAME TavilyOracle COMMAND test_tavily_oracle --reporter console "~[network]")
+
+    # Phase 32 Unit Tests: Firecrawl Oracle
+    add_executable(test_firecrawl_oracle tests/unit/firecrawl_oracle_test.cpp)
+    target_link_libraries(test_firecrawl_oracle PRIVATE nikola_core Catch2::Catch2WithMain)
+    add_test(NAME FirecrawlOracle COMMAND test_firecrawl_oracle --reporter console "~[network]")
+
+    # Phase 32 Unit Tests: Research Router
+    add_executable(test_research_router tests/unit/research_router_test.cpp)
+    target_link_libraries(test_research_router PRIVATE nikola_core Catch2::Catch2WithMain)
+    add_test(NAME ResearchRouter COMMAND test_research_router --reporter console "~[network]")
+
+    # Phase 32 Unit Tests: SIE Research Integration
+    add_executable(test_sie_research tests/unit/sie_research_test.cpp)
+    target_link_libraries(test_sie_research PRIVATE nikola_core Catch2::Catch2WithMain ${CMAKE_DL_LIBS})
+    add_test(NAME SIEResearch COMMAND test_sie_research --reporter console "~[network]")
+
+    # Phase 33 Unit Tests: GoalSystem
+    add_executable(test_goal_system tests/unit/goal_system_test.cpp)
+    target_link_libraries(test_goal_system PRIVATE nikola_core Catch2::Catch2WithMain)
+    add_test(NAME GoalSystem COMMAND test_goal_system --reporter console)
 
     message(STATUS "Tests configured (unit + integration + e2e) - run with: make test")
 endif()
