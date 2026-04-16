@@ -79,6 +79,9 @@ set(AUTONOMY_SOURCES
     src/autonomy/firecrawl_oracle.cpp        # Phase 32: Firecrawl Scraping Oracle
     src/autonomy/research_router.cpp         # Phase 32: Smart Router
     src/autonomy/goal_system.cpp             # Phase 33: GoalSystem
+    src/autonomy/auto_ingestor.cpp           # v0.2.2: AutoIngestor
+    src/autonomy/ingestion_filter.cpp         # v0.2.2: IngestionFilter
+    src/autonomy/ingestion_orchestrator.cpp   # v0.2.2: IngestionOrchestrator
 )
 
 set(SPATIAL_SOURCES
@@ -95,7 +98,8 @@ set(FOUNDATION_SOURCES
 # Core Infrastructure
 set(CORE_SOURCES
     src/core/config.cpp
-    src/infrastructure/http_client.cpp  # Phase 32: HTTP Client
+    src/infrastructure/http_client.cpp   # Phase 32: HTTP Client
+    src/infrastructure/data_watcher.cpp  # v0.2.2: DataWatcher (inotify)
 )
 
 # Genesis Module 1: Cognitive Resonance
@@ -1762,6 +1766,26 @@ if(NIKOLA_BUILD_TESTS)
     add_executable(test_goal_system tests/unit/goal_system_test.cpp)
     target_link_libraries(test_goal_system PRIVATE nikola_core Catch2::Catch2WithMain)
     add_test(NAME GoalSystem COMMAND test_goal_system --reporter console)
+
+    # v0.2.2 Unit Tests: DataWatcher
+    add_executable(test_data_watcher tests/unit/data_watcher_test.cpp)
+    target_link_libraries(test_data_watcher PRIVATE nikola_core Catch2::Catch2WithMain)
+    add_test(NAME DataWatcher COMMAND test_data_watcher --reporter console)
+
+    # v0.2.2 Unit Tests: AutoIngestor
+    add_executable(test_auto_ingestor tests/unit/auto_ingestor_test.cpp)
+    target_link_libraries(test_auto_ingestor PRIVATE nikola_core Catch2::Catch2WithMain)
+    add_test(NAME AutoIngestor COMMAND test_auto_ingestor --reporter console)
+
+    # v0.2.2 Unit Tests: IngestionFilter
+    add_executable(test_ingestion_filter tests/unit/ingestion_filter_test.cpp)
+    target_link_libraries(test_ingestion_filter PRIVATE nikola_core Catch2::Catch2WithMain)
+    add_test(NAME IngestionFilter COMMAND test_ingestion_filter --reporter console)
+
+    # v0.2.2 Unit Tests: IngestionOrchestrator
+    add_executable(test_ingestion_orchestrator tests/unit/ingestion_orchestrator_test.cpp)
+    target_link_libraries(test_ingestion_orchestrator PRIVATE nikola_core Catch2::Catch2WithMain)
+    add_test(NAME IngestionOrchestrator COMMAND test_ingestion_orchestrator --reporter console)
 
     message(STATUS "Tests configured (unit + integration + e2e) - run with: make test")
 endif()
