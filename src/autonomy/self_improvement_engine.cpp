@@ -92,10 +92,23 @@ SIECycleResult SelfImprovementEngine::run_cycle(const NikolaState& state)
         return result;
     };
 
-    // ── Step 1: Formulate instruction ───────────────────────────────────────
-    result.instruction = formulate_instruction(state);
+    // ── Step 1: Research the weakness (if research function configured) ──
+    std::string research_context;
+    if (research_fn_) {
+        result.research_query = formulate_research_query(state);
+        if (!result.research_query.empty()) {
+            result.research_content = research_fn_(result.research_query);
+            if (!result.research_content.empty()) {
+                result.research_source = "research_router";
+                research_context = result.research_content;
+            }
+        }
+    }
 
-    // ── Step 2: Query specialist ────────────────────────────────────────────
+    // ── Step 2: Formulate instruction ───────────────────────────────────────
+    result.instruction = formulate_instruction(state, research_context);
+
+    // ── Step 3: Query specialist ────────────────────────────────────────────
     if (!ensure_specialist_running()) {
         return finish(SIEOutcome::SPECIALIST_FAILED);
     }
@@ -113,24 +126,24 @@ SIECycleResult SelfImprovementEngine::run_cycle(const NikolaState& state)
     }
     result.raw_response = specialist_result.response;
 
-    // ── Step 3: Extract code ────────────────────────────────────────────────
+    // ── Step 4: Extract code ────────────────────────────────────────────────
     result.source_code = aria::extract_code_block(result.raw_response);
     if (result.source_code.empty()) {
         return finish(SIEOutcome::NO_CODE_EXTRACTED);
     }
 
-    // ── Step 4: Security pre-check — ensure source doesn't contain
+    // ── Step 5: Security pre-check — ensure source doesn't contain
     //     obviously dangerous patterns before we compile ─────────────────────
     //     (Full Gate 1 check happens in the EO pipeline, but we do a
     //      quick pre-screen here to avoid compiling malicious code)
 
-    // ── Step 5: Package into .so ────────────────────────────────────────────
+    // ── Step 6: Package into .so ────────────────────────────────────────────
     result.so_path = package_module(result.source_code, result.compile_output);
     if (result.so_path.empty()) {
         return finish(SIEOutcome::PACKAGING_FAILED);
     }
 
-    // ── Step 6: Sign the module ─────────────────────────────────────────────
+    // ── Step 7: Sign the module ─────────────────────────────────────────────
     auto binary = read_binary(result.so_path);
     if (binary.empty()) {
         return finish(SIEOutcome::SIGNING_FAILED);
@@ -141,7 +154,7 @@ SIECycleResult SelfImprovementEngine::run_cycle(const NikolaState& state)
         return finish(SIEOutcome::SIGNING_FAILED);
     }
 
-    // ── Step 7: Deploy through ShadowSpine (Gate 0–3) ──────────────────────
+    // ── Step 8: Deploy through ShadowSpine (Gate 0–3) ──────────────────────
     auto stage_report = spine_.stage(
         result.so_path,
         result.source_code,
@@ -171,7 +184,7 @@ SIECycleResult SelfImprovementEngine::run_cycle(const NikolaState& state)
         }
     }
 
-    // ── Step 8: Store proposal ──────────────────────────────────────────────
+    // ── Step 9: Store proposal ──────────────────────────────────────────────
     if (store_) {
         aria::CodeProposal proposal;
         proposal.source_code     = result.source_code;
@@ -181,7 +194,7 @@ SIECycleResult SelfImprovementEngine::run_cycle(const NikolaState& state)
         result.proposal_id = store_->store(proposal);
     }
 
-    // ── Step 9: SUCCESS ─────────────────────────────────────────────────────
+    // ── Step 10: SUCCESS ────────────────────────────────────────────────────
     ++cycles_succeeded_;
     return finish(SIEOutcome::SUCCESS);
 }
@@ -281,7 +294,8 @@ SIECycleResult SelfImprovementEngine::run_cycle_with_source(
 // ============================================================================
 
 std::string SelfImprovementEngine::formulate_instruction(
-        const NikolaState& state) const
+        const NikolaState& state,
+        const std::string& research_context) const
 {
     // Build a targeted improvement instruction based on current cognitive state.
     // This is the "what should I improve?" logic — Nikola introspects on its
@@ -315,6 +329,17 @@ std::string SelfImprovementEngine::formulate_instruction(
                "cognitive scoring system. Current state: boredom="
             << state.boredom << " entropy=" << state.entropy
             << " dopamine=" << state.dopamine << " atp=" << state.atp << ". ";
+    }
+
+    // If research context is available, inject it so the specialist can
+    // produce more informed code based on real-world knowledge.
+    if (!research_context.empty()) {
+        oss << "\n\nResearch context (external knowledge retrieved for this cycle):\n"
+               "--- BEGIN RESEARCH ---\n"
+            << research_context.substr(0, 4096)  // Cap to avoid prompt overflow
+            << "\n--- END RESEARCH ---\n"
+               "Use the above research to inform your parameter choices and "
+               "implementation approach.\n";
     }
 
     oss << "\n\nThe module MUST:\n"
@@ -472,6 +497,34 @@ bool SelfImprovementEngine::ensure_specialist_running()
 bool SelfImprovementEngine::specialist_running() const noexcept
 {
     return specialist_started_;
+}
+
+// ============================================================================
+// Research query formulation
+// ============================================================================
+
+std::string SelfImprovementEngine::formulate_research_query(
+        const NikolaState& state)
+{
+    // Translate the identified weakness into a targeted research query.
+    // The query should retrieve knowledge that helps the specialist
+    // generate better cognitive parameters.
+
+    if (state.boredom > 0.8f) {
+        return "exploration diversity algorithms novelty injection "
+               "cognitive parameter tuning reinforcement learning";
+    }
+    if (state.entropy > 2.0f) {
+        return "attention weighting spectral coherence neural field "
+               "entropy reduction cognitive architecture";
+    }
+    if (state.dopamine < 0.3f && state.atp > 0.5f) {
+        return "reward prediction error dopamine baseline recalibration "
+               "temporal difference learning parameter optimization";
+    }
+    // General improvement
+    return "cognitive scoring system parameter tuning "
+           "autonomous self-improvement neural architecture";
 }
 
 } // namespace nikola::autonomy

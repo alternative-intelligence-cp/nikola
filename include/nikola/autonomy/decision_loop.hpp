@@ -148,6 +148,11 @@ enum class ActionType : uint8_t {
     /// a compact error summary (if compile fails).
     /// ATP cost: 500 (compile) + 50 (persist) = 550
     GENERATE_CODE = 10,
+
+    /// Pursue the current highest-priority goal from GoalSystem.
+    /// Fires when GoalSystem has an actionable goal and dopamine/ATP allow.
+    /// Payload: active goal description + tier.
+    PURSUE_GOAL   = 11,
 };
 
 /// Human-readable name for an ActionType (for logging).
@@ -164,6 +169,7 @@ inline const char* action_name(ActionType a) noexcept {
         case ActionType::RECALL_MEMORY:  return "RECALL_MEMORY";
         case ActionType::REASON:         return "REASON";
         case ActionType::GENERATE_CODE:  return "GENERATE_CODE";
+        case ActionType::PURSUE_GOAL:    return "PURSUE_GOAL";
         default:                         return "UNKNOWN";
     }
 }
@@ -482,6 +488,7 @@ private:
     float score_recall_memory(const NikolaState& s)  const;  ///< no noexcept: calls recall() which allocates
     float score_reason(const NikolaState& s)         const noexcept;
     float score_generate_code(const NikolaState& s)  const noexcept;
+    float score_pursue_goal(const NikolaState& s)    const noexcept;
 
     /// Build payload string for chosen action.
     std::string build_payload(ActionType type, const NikolaState& s) const;
@@ -523,6 +530,17 @@ private:
      * @return  Summary string for the DecisionResult payload.
      */
     std::string execute_generate_code(const NikolaState& s);
+
+    /**
+     * @brief Execute a PURSUE_GOAL action — advance the active goal.
+     *
+     * Updates the GoalSystem's active goal progress, integrating with the
+     * AutonomyEngine's dopamine system.  Returns a description of the goal
+     * being pursued for the DecisionResult payload.
+     *
+     * @return  Summary string describing the active goal being pursued.
+     */
+    std::string execute_pursue_goal(const NikolaState& s);
 
     /**
      * @brief Re-seed the field if total probability has collapsed to near zero.
@@ -672,6 +690,9 @@ private:
 
     /// Cooldown for GENERATE_CODE action.
     std::chrono::steady_clock::time_point last_generate_time_;
+
+    /// Cooldown for PURSUE_GOAL action.
+    std::chrono::steady_clock::time_point last_pursue_goal_time_;
 
     /// True when specialist + validator are configured and available.
     bool aria_specialist_enabled_ = false;

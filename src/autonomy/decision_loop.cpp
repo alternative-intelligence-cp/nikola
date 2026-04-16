@@ -613,6 +613,51 @@ std::string DecisionLoop::execute_generate_code(const NikolaState& s)
 }
 
 // ============================================================================
+// score_pursue_goal
+// ============================================================================
+
+float DecisionLoop::score_pursue_goal(const NikolaState& s) const noexcept
+{
+    // PURSUE_GOAL fires when:
+    //  - GoalSystem has an actionable goal (unblocked, active)
+    //  - ATP ≥ 0.25 (goal pursuit needs energy)
+    //  - Cooldown: at least 2s between pursue actions
+    if (s.atp < 0.25f) return 0.f;
+    if (seconds_since(last_pursue_goal_time_) < 2.0f) return 0.f;
+
+    const auto* goal = engine_.goal_system().active_goal();
+    if (!goal) return 0.f;
+
+    // Score = goal priority × ATP × 0.8
+    // High-priority goals score higher.  With priority=0.7, ATP=0.8 → 0.448
+    return goal->priority * s.atp * 0.8f;
+}
+
+// ============================================================================
+// execute_pursue_goal
+// ============================================================================
+
+std::string DecisionLoop::execute_pursue_goal(const NikolaState& s)
+{
+    auto& gs = engine_.goal_system();
+    const auto* goal = gs.active_goal();
+    if (!goal) {
+        return "pursue_goal: no active goal";
+    }
+
+    // Advance progress by a small increment proportional to ATP
+    float progress_step = 0.05f * s.atp;
+    uint64_t goal_id = goal->id;
+    std::string desc = goal->description;
+    std::string tier = goal_tier_str(goal->tier);
+
+    (void)gs.update_progress(goal_id, goal->progress + progress_step);
+
+    return "pursuing: " + desc + " [" + tier + "] (progress=" +
+           std::to_string(goal->progress).substr(0, 4) + ")";
+}
+
+// ============================================================================
 // build_payload
 // ============================================================================
 
@@ -687,6 +732,15 @@ std::string DecisionLoop::build_payload(ActionType type, const NikolaState& s) c
             return "generating aria code (boredom=" +
                    std::to_string(s.boredom).substr(0, 4) +
                    " atp=" + std::to_string(s.atp).substr(0, 4) + ")";
+
+        case ActionType::PURSUE_GOAL: {
+            const auto* goal = engine_.goal_system().active_goal();
+            if (goal) {
+                return "pursuing: " + goal->description + " [" +
+                       std::string(goal_tier_str(goal->tier)) + "]";
+            }
+            return "pursue_goal: no active goal";
+        }
 
         default:
             return "";
@@ -793,19 +847,20 @@ DecisionResult DecisionLoop::tick()
     static constexpr float SILENT_SCORE = 0.3f;
 
     struct Candidate { ActionType type; float score; };
-    Candidate candidates[10];
+    Candidate candidates[11];
     {
         NIKOLA_PROFILE("autonomy::score_candidates");
-        candidates[0] = { ActionType::NAP,            score_nap(s)            };
-        candidates[1] = { ActionType::REFUSE,         score_refuse(s)         };
-        candidates[2] = { ActionType::ESCALATE,       score_escalate(s)       };
-        candidates[3] = { ActionType::EXPLORE,        score_explore(s)        };
-        candidates[4] = { ActionType::EMIT_THOUGHT,   score_emit_thought(s)   };
-        candidates[5] = { ActionType::STORE_MEMORY,   score_store_memory(s)   };
-        candidates[6] = { ActionType::REQUEST_LOOKUP, score_request_lookup(s) };
-        candidates[7] = { ActionType::RECALL_MEMORY,  score_recall_memory(s)  };
-        candidates[8] = { ActionType::REASON,         score_reason(s)         };
-        candidates[9] = { ActionType::GENERATE_CODE,  score_generate_code(s)  };
+        candidates[0]  = { ActionType::NAP,            score_nap(s)            };
+        candidates[1]  = { ActionType::REFUSE,         score_refuse(s)         };
+        candidates[2]  = { ActionType::ESCALATE,       score_escalate(s)       };
+        candidates[3]  = { ActionType::EXPLORE,        score_explore(s)        };
+        candidates[4]  = { ActionType::EMIT_THOUGHT,   score_emit_thought(s)   };
+        candidates[5]  = { ActionType::STORE_MEMORY,   score_store_memory(s)   };
+        candidates[6]  = { ActionType::REQUEST_LOOKUP, score_request_lookup(s) };
+        candidates[7]  = { ActionType::RECALL_MEMORY,  score_recall_memory(s)  };
+        candidates[8]  = { ActionType::REASON,         score_reason(s)         };
+        candidates[9]  = { ActionType::GENERATE_CODE,  score_generate_code(s)  };
+        candidates[10] = { ActionType::PURSUE_GOAL,    score_pursue_goal(s)    };
     }
 
     // Find best non-silent candidate
@@ -889,6 +944,12 @@ DecisionResult DecisionLoop::tick()
     if (winner == ActionType::GENERATE_CODE) {
         generate_payload = execute_generate_code(s);
     }
+    // PURSUE_GOAL: advance the active goal from GoalSystem.
+    std::string pursue_goal_payload;
+    if (winner == ActionType::PURSUE_GOAL) {
+        pursue_goal_payload = execute_pursue_goal(s);
+        last_pursue_goal_time_ = std::chrono::steady_clock::now();
+    }
 
     // ── 7. Build result ──────────────────────────────────────────────────────
     s.last_action = winner;
@@ -905,6 +966,8 @@ DecisionResult DecisionLoop::tick()
         result.payload = explore_payload;
     } else if (winner == ActionType::GENERATE_CODE && !generate_payload.empty()) {
         result.payload = generate_payload;
+    } else if (winner == ActionType::PURSUE_GOAL && !pursue_goal_payload.empty()) {
+        result.payload = pursue_goal_payload;
     } else {
         result.payload = build_payload(winner, s);
     }

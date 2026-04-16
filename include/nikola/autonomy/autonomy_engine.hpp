@@ -35,6 +35,7 @@
 // All autonomy gap headers are lightweight (stdlib only) — include upfront
 #include <nikola/autonomy/dopamine_system.hpp>
 #include <nikola/autonomy/entropy_estimator.hpp>
+#include <nikola/autonomy/goal_system.hpp>
 #include <nikola/autonomy/hamiltonian_value.hpp>   // NIK-005
 #include <nikola/autonomy/metabolic_simulator.hpp>
 #include <nikola/autonomy/nap_controller.hpp>
@@ -276,6 +277,8 @@ public:
 
     [[nodiscard]] const DopamineSystem&     dopamine_system()    const noexcept;
     [[nodiscard]] const BoredomRegulator&   boredom_regulator()  const noexcept;
+    [[nodiscard]] GoalSystem&               goal_system()              noexcept;
+    [[nodiscard]] const GoalSystem&         goal_system()        const noexcept;
     [[nodiscard]] const MetabolicSimulator& metabolic()          const noexcept;
     [[nodiscard]] const NapController&      nap_controller()     const noexcept;
     [[nodiscard]] const DreamWeaveEngine&   dream_weave()        const noexcept;
@@ -305,6 +308,7 @@ struct AutonomyEngineImpl {
     MetabolicSimulator metabolic;
     NapController      nap;
     DreamWeaveEngine   dream;
+    GoalSystem         goal_system;           // Phase 33: GoalSystem
     HamiltonianValue   hamiltonian_value_fn;  // NIK-005
 
     float    last_entropy  = 0.0f;
@@ -344,6 +348,11 @@ struct AutonomyEngineImpl {
 AutonomyEngine::AutonomyEngine(AutonomyConfig cfg)
     : impl_(std::make_unique<AutonomyEngineImpl>(std::move(cfg)))
 {
+    // Wire GoalSystem reward callback to DopamineSystem::adjust()
+    impl_->goal_system.set_reward_fn([this](float delta, const std::string& /*desc*/) {
+        impl_->dopamine.adjust(delta);
+    });
+
     // Wire NapController callbacks
     impl_->nap.on_enter_nap = [this]() {
         if (on_nap_enter) on_nap_enter();
@@ -476,6 +485,9 @@ void AutonomyEngine::tick(float                  dt,
     }
 
     // --- 4. Metabolic cost — proxy energy rate from total energy ---
+    // Phase 33: GoalSystem autonomous motivation check
+    I.goal_system.check_motivation(I.boredom.level(), I.dopamine.level(), I.tick_count_);
+
     // Phase 50: track query-gate ticks (spec §8.3: ATP < 15% → reject queries)
     if (I.metabolic.atp() < NAP_ENTER_THRESHOLD) ++I.query_gate_count_;
     if (!I.nap.is_napping()) {
@@ -590,6 +602,9 @@ void AutonomyEngine::tick_physics(
     }
 
     // --- 4. Metabolic cost ---
+    // Phase 33: GoalSystem autonomous motivation check
+    I.goal_system.check_motivation(I.boredom.level(), I.dopamine.level(), I.tick_count_);
+
     // Phase 50: track query-gate ticks (spec §8.3: ATP < 15% → reject queries)
     if (I.metabolic.atp() < NAP_ENTER_THRESHOLD) ++I.query_gate_count_;
     if (!I.nap.is_napping()) {
@@ -650,6 +665,8 @@ AutonomySnapshot AutonomyEngine::snapshot() const noexcept {
 
 const DopamineSystem&     AutonomyEngine::dopamine_system()   const noexcept { return impl_->dopamine; }
 const BoredomRegulator&   AutonomyEngine::boredom_regulator() const noexcept { return impl_->boredom; }
+GoalSystem&               AutonomyEngine::goal_system()             noexcept { return impl_->goal_system; }
+const GoalSystem&         AutonomyEngine::goal_system()       const noexcept { return impl_->goal_system; }
 const MetabolicSimulator& AutonomyEngine::metabolic()         const noexcept { return impl_->metabolic; }
 const NapController&      AutonomyEngine::nap_controller()    const noexcept { return impl_->nap; }
 const DreamWeaveEngine&   AutonomyEngine::dream_weave()       const noexcept { return impl_->dream; }
