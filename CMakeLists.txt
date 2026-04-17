@@ -191,10 +191,16 @@ target_link_libraries(nikola_core PUBLIC
 
 # ORT wiring
 if(NIKOLA_HAS_ORT)
+    # Model paths — configurable for Docker builds
+    set(NIKOLA_ORT_MODEL_PATH_DEFAULT "${CMAKE_SOURCE_DIR}/models/bert-tiny-onnx/model.onnx")
+    set(NIKOLA_ORT_TOKENIZER_PATH_DEFAULT "${CMAKE_SOURCE_DIR}/models/bert-tiny-onnx")
+    set(NIKOLA_ORT_MODEL_PATH "${NIKOLA_ORT_MODEL_PATH_DEFAULT}" CACHE FILEPATH "Path to ONNX model")
+    set(NIKOLA_ORT_TOKENIZER_PATH "${NIKOLA_ORT_TOKENIZER_PATH_DEFAULT}" CACHE PATH "Path to tokenizer dir")
+
     target_compile_definitions(nikola_core PUBLIC NIKOLA_HAS_ORT)
     target_compile_definitions(nikola_core PUBLIC
-        NIKOLA_ORT_MODEL_PATH="/home/randy/Workspace/SYSTEM/onnxruntime/bert-tiny-onnx/model.onnx"
-        NIKOLA_ORT_TOKENIZER_PATH="/home/randy/Workspace/SYSTEM/onnxruntime/bert-tiny-onnx"
+        NIKOLA_ORT_MODEL_PATH="${NIKOLA_ORT_MODEL_PATH}"
+        NIKOLA_ORT_TOKENIZER_PATH="${NIKOLA_ORT_TOKENIZER_PATH}"
     )
     target_include_directories(nikola_core PUBLIC ${ORT_ROOT}/include)
     target_link_libraries(nikola_core PUBLIC onnxruntime_imported)

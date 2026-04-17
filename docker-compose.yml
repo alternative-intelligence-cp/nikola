@@ -1,0 +1,177 @@
+# ==============================================================================
+# Nikola — Docker Compose Service Orchestration
+# v0.2.4
+#
+# Aligned with: include/nikola/system/service_orchestration.hpp (GAP-026)
+#
+# 4-Layer Service Hierarchy:
+#   Layer 0 (Core):       nikola-spine   — ZeroMQ broker (no deps)
+#   Layer 1 (Physics):    nikola-physics — GPU engine (depends on spine)
+#   Layer 2 (Cognition):  nikola-orchestrator + nikola-memory
+#   Layer 3 (Tools):      nikola-executor + nikola-web
+#
+# Usage:
+#   docker compose up -d               # Start all services
+#   docker compose up -d nikola-spine   # Start spine only
+#   docker compose --profile gpu up -d  # Enable GPU services
+#   docker compose down                 # Graceful shutdown
+# ==============================================================================
+
+x-common: &common
+  image: nikola:${NIKOLA_VERSION:-latest}
+  restart: unless-stopped
+  networks:
+    - nikola-net
+  volumes:
+    - ipc-sockets:/tmp/nikola/ipc
+  environment: &common-env
+    NIKOLA_LOG_LEVEL: ${NIKOLA_LOG_LEVEL:-info}
+    NIKOLA_STATE_DB: /data/nikola/checkpoints/state.lmdb
+    NIKOLA_MEMORY_PATH: /data/nikola/memory
+    NIKOLA_ORT_MODEL_PATH: /opt/nikola/models/bert-tiny-onnx/model.onnx
+    NIKOLA_ORT_TOKENIZER_PATH: /opt/nikola/models/bert-tiny-onnx
+
+services:
+  # ─── Layer 0: Core ──────────────────────────────────────────────────────────
+
+  nikola-spine:
+    <<: *common
+    container_name: nikola-spine
+    entrypoint: ["nikola-run"]
+    command: ["--state-db", "/data/nikola/checkpoints/state.lmdb"]
+    ports:
+      - "${NIKOLA_EVENTS_PORT:-5555}:5555"     # ZMQ events (PUB)
+      - "${NIKOLA_CONTROL_PORT:-5556}:5556"    # ZMQ control (REP)
+      - "${NIKOLA_DATA_PORT:-5557}:5557"       # ZMQ data plane (PUB)
+      - "${NIKOLA_STATE_PORT:-5560}:5560"      # Node state/actions (PUB)
+      - "${NIKOLA_STIMULUS_PORT:-5561}:5561"   # Node stimulus input (PULL)
+      - "${NIKOLA_PEER_PORT:-9876}:9876"       # Peer protocol
+    volumes:
+      - ipc-sockets:/tmp/nikola/ipc
+      - nikola-checkpoints:/data/nikola/checkpoints
+      - nikola-logs:/data/nikola/logs
+      - ${CURVEZMQ_KEYS_PATH:-./keys}:/etc/nikola/keys:ro
+    environment:
+      <<: *common-env
+      ZMQ_CURVE_SERVER: ${ZMQ_CURVE_SERVER:-0}
+    healthcheck:
+      test: ["CMD", "nikola-diag", "--health", "--json"]
+      interval: 5s       # SPINE_HEALTHCHECK_INTERVAL_S
+      timeout: 2s        # SPINE_HEALTHCHECK_TIMEOUT_S
+      retries: 5         # SPINE_HEALTHCHECK_RETRIES
+      start_period: 35s  # SPINE_HEALTHCHECK_START_WINDOW_S
+    deploy:
+      resources:
+        limits:
+          memory: 4G     # SPINE_MEMORY_LIMIT_BYTES (4 GiB)
+          cpus: "2.0"    # SPINE_CPU_LIMIT
+
+  # ─── Layer 1: Physics ──────────────────────────────────────────────────────
+
+  nikola-physics:
+    <<: *common
+    container_name: nikola-physics
+    profiles:
+      - gpu
+    entrypoint: ["nikola-run"]
+    command: ["--mode", "physics"]
+    depends_on:
+      nikola-spine:
+        condition: service_healthy
+    environment:
+      <<: *common-env
+      OMP_NUM_THREADS: "16"            # PHYSICS_OMP_NUM_THREADS
+      OMP_STACKSIZE: "64M"            # PHYSICS_STACK_SIZE_BYTES (64 MiB)
+      NVIDIA_VISIBLE_DEVICES: all
+      NVIDIA_DRIVER_CAPABILITIES: compute,utility
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
+
+  # ─── Layer 2: Cognition & Memory ────────────────────────────────────────────
+
+  nikola-orchestrator:
+    <<: *common
+    container_name: nikola-orchestrator
+    entrypoint: ["nikola-orchestrator"]
+    depends_on:
+      nikola-spine:
+        condition: service_healthy
+    volumes:
+      - ipc-sockets:/tmp/nikola/ipc
+      - nikola-logs:/data/nikola/logs
+      - ${CURVEZMQ_KEYS_PATH:-./keys}:/etc/nikola/keys:ro
+
+  nikola-memory:
+    <<: *common
+    container_name: nikola-memory
+    entrypoint: ["nikola-run"]
+    command: ["--mode", "memory"]
+    depends_on:
+      nikola-spine:
+        condition: service_healthy
+    volumes:
+      - ipc-sockets:/tmp/nikola/ipc
+      - nikola-memory:/data/nikola/memory
+      - nikola-checkpoints:/data/nikola/checkpoints
+      - ${CURVEZMQ_KEYS_PATH:-./keys}:/etc/nikola/keys:ro
+    stop_signal: SIGTERM               # MEMORY_STOP_SIGNAL
+    stop_grace_period: 60s             # MEMORY_STOP_GRACE_PERIOD_S
+
+  # ─── Layer 3: Tools & Interface ─────────────────────────────────────────────
+
+  nikola-executor:
+    <<: *common
+    container_name: nikola-executor
+    entrypoint: ["nikola-run"]
+    command: ["--mode", "executor"]
+    depends_on:
+      nikola-spine:
+        condition: service_healthy
+      nikola-orchestrator:
+        condition: service_started
+
+  nikola-web:
+    <<: *common
+    container_name: nikola-web
+    entrypoint: ["nikola-dap"]
+    depends_on:
+      nikola-spine:
+        condition: service_healthy
+      nikola-orchestrator:
+        condition: service_started
+
+  # ─── Support: Diagnostics ──────────────────────────────────────────────────
+
+  nikola-diag:
+    <<: *common
+    container_name: nikola-diag
+    entrypoint: ["nikola-diag"]
+    command: ["--all", "--json"]
+    profiles:
+      - diagnostics
+    depends_on:
+      nikola-spine:
+        condition: service_healthy
+
+# ─── Networks ────────────────────────────────────────────────────────────────
+
+networks:
+  nikola-net:
+    driver: bridge
+
+# ─── Volumes ─────────────────────────────────────────────────────────────────
+
+volumes:
+  nikola-checkpoints:
+    driver: local
+  nikola-memory:
+    driver: local
+  nikola-logs:
+    driver: local
+  ipc-sockets:
+    driver: local
