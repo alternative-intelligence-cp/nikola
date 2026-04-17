@@ -1,0 +1,152 @@
+# ==============================================================================
+# Nikola Inference — Lightweight Docker Image
+# v0.2.5: Inference-only runner (no autonomy/training/SIE stack)
+#
+# GPU build (default):
+#   docker build -f Dockerfile.infer -t nikola-infer:latest .
+#   docker run --gpus all -p 8080:8080 nikola-infer:latest --serve
+#
+# CPU-only build:
+#   docker build -f Dockerfile.infer \
+#     --build-arg BUILDER_IMAGE=ubuntu:24.04 \
+#     --build-arg RUNTIME_IMAGE=ubuntu:24.04 \
+#     --build-arg CUDA_ARCH="" \
+#     -t nikola-infer:cpu .
+#
+# ~60% smaller than the full image (no ZMQ, no training, no security stack).
+# ==============================================================================
+
+ARG CUDA_VERSION=12.6.3
+ARG UBUNTU_VERSION=24.04
+ARG ORT_VERSION=1.21.1
+ARG CMAKE_BUILD_TYPE=Release
+ARG CUDA_ARCH=86
+ARG BUILDER_IMAGE=nvidia/cuda:${CUDA_VERSION}-devel-ubuntu${UBUNTU_VERSION}
+ARG RUNTIME_IMAGE=nvidia/cuda:${CUDA_VERSION}-runtime-ubuntu${UBUNTU_VERSION}
+
+# ==============================================================================
+# Stage 1: Builder
+# ==============================================================================
+
+FROM ${BUILDER_IMAGE} AS builder
+
+ARG CMAKE_BUILD_TYPE
+ARG ORT_VERSION
+ARG CUDA_ARCH
+ARG TARGETARCH
+
+ENV DEBIAN_FRONTEND=noninteractive
+
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    build-essential \
+    cmake \
+    ninja-build \
+    git \
+    pkg-config \
+    libeigen3-dev \
+    libprotobuf-dev \
+    protobuf-compiler \
+    libzmq3-dev \
+    libczmq-dev \
+    libcurl4-openssl-dev \
+    liblmdb-dev \
+    libsodium-dev \
+    libssl-dev \
+    && rm -rf /var/lib/apt/lists/*
+
+# cppzmq (required by nikola_core)
+RUN git clone --depth 1 --branch v4.10.0 \
+    https://github.com/zeromq/cppzmq.git /tmp/cppzmq && \
+    cd /tmp/cppzmq && mkdir build && cd build && \
+    cmake .. -DCPPZMQ_BUILD_TESTS=OFF -G Ninja && \
+    ninja install && rm -rf /tmp/cppzmq
+
+# Catch2 v3
+RUN git clone --depth 1 --branch v3.4.0 \
+    https://github.com/catchorg/Catch2.git /tmp/catch2 && \
+    cd /tmp/catch2 && mkdir build && cd build && \
+    cmake .. -DBUILD_TESTING=OFF -G Ninja && \
+    ninja install && rm -rf /tmp/catch2
+
+# ONNX Runtime
+RUN mkdir -p /opt/onnxruntime && \
+    apt-get update && apt-get install -y --no-install-recommends wget && \
+    wget -q "https://github.com/microsoft/onnxruntime/releases/download/v${ORT_VERSION}/onnxruntime-linux-x64-gpu-${ORT_VERSION}.tgz" \
+        -O /tmp/ort.tgz && \
+    tar xzf /tmp/ort.tgz -C /opt/onnxruntime --strip-components=1 && \
+    rm /tmp/ort.tgz && \
+    rm -rf /var/lib/apt/lists/*
+
+WORKDIR /build/nikola
+COPY . .
+
+# Build — only nikola-infer target (faster build, smaller binary)
+RUN mkdir -p build && cd build && \
+    CMAKE_ARGS="-G Ninja \
+        -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE} \
+        -DORT_ROOT=/opt/onnxruntime \
+        -DNIKOLA_ORT_MODEL_PATH=/build/nikola/models/bert-tiny-onnx/model.onnx \
+        -DNIKOLA_ORT_TOKENIZER_PATH=/build/nikola/models/bert-tiny-onnx \
+        -DNIKOLA_BUILD_TESTS=OFF" && \
+    if [ -n "${CUDA_ARCH}" ]; then \
+        CMAKE_ARGS="${CMAKE_ARGS} -DCMAKE_CUDA_ARCHITECTURES=${CUDA_ARCH}"; \
+    fi && \
+    cmake .. ${CMAKE_ARGS} && \
+    ninja nikola_infer -j$(nproc)
+
+# ==============================================================================
+# Stage 2: Runtime — inference only
+# ==============================================================================
+
+FROM ${RUNTIME_IMAGE} AS runtime
+
+ENV DEBIAN_FRONTEND=noninteractive
+
+# Minimal runtime deps (no ZMQ — inference server uses raw HTTP)
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    libprotobuf-lite32t64 \
+    libzmq5 \
+    libcurl4t64 \
+    liblmdb0 \
+    libsodium23 \
+    libssl3t64 \
+    libgomp1 \
+    && rm -rf /var/lib/apt/lists/*
+
+# Non-root user
+RUN groupadd -r nikola && useradd -r -g nikola -m -s /bin/bash nikola
+
+# Directory structure
+RUN mkdir -p /opt/nikola/bin \
+             /opt/nikola/lib \
+             /opt/nikola/models \
+             /data/nikola/checkpoints && \
+    chown -R nikola:nikola /data/nikola
+
+# Copy only the inference binary
+COPY --from=builder /build/nikola/build/nikola-infer /opt/nikola/bin/
+
+# Copy ONNX Runtime shared libs
+COPY --from=builder /opt/onnxruntime/lib/libonnxruntime*.so* /opt/nikola/lib/
+
+# Copy BERT-tiny model
+COPY --from=builder /build/nikola/models/ /opt/nikola/models/
+
+# Environment
+ENV LD_LIBRARY_PATH="/opt/nikola/lib:${LD_LIBRARY_PATH}"
+ENV PATH="/opt/nikola/bin:${PATH}"
+ENV NIKOLA_ORT_MODEL_PATH="/opt/nikola/models/bert-tiny-onnx/model.onnx"
+ENV NIKOLA_ORT_TOKENIZER_PATH="/opt/nikola/models/bert-tiny-onnx"
+
+# HTTP API port
+EXPOSE 8080
+
+# Health check via HTTP endpoint
+HEALTHCHECK --interval=10s --timeout=3s --retries=3 --start-period=15s \
+    CMD curl -sf http://localhost:8080/v1/health || exit 1
+
+USER nikola
+WORKDIR /data/nikola
+
+ENTRYPOINT ["nikola-infer"]
+CMD ["--serve", "--port", "8080"]

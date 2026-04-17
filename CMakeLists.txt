@@ -1811,6 +1811,13 @@ if(NIKOLA_BUILD_TESTS)
     target_link_libraries(test_narrative_growth PRIVATE nikola_core Catch2::Catch2WithMain)
     add_test(NAME NarrativeGrowth COMMAND test_narrative_growth --reporter console)
 
+    # v0.2.5 Unit Tests: NikolaInference (lightweight runner)
+    add_executable(test_nikola_inference
+        tests/unit/nikola_inference_test.cpp
+        src/inference/nikola_inference.cpp)
+    target_link_libraries(test_nikola_inference PRIVATE nikola_core Catch2::Catch2WithMain)
+    add_test(NAME NikolaInference COMMAND test_nikola_inference --reporter console)
+
     message(STATUS "Tests configured (unit + integration + e2e) - run with: make test")
 endif()
 
@@ -1923,9 +1930,31 @@ target_link_libraries(nikola_orchestrator PRIVATE nikola_core)
 set_target_properties(nikola_orchestrator PROPERTIES OUTPUT_NAME "nikola-orchestrator")
 message(STATUS "Orchestrator service: nikola-orchestrator")
 
+# ============================================================================
+# NIKOLA-INFER — Lightweight inference CLI (no autonomy)
+# ============================================================================
+add_executable(nikola_infer
+    src/nikola_infer.cpp
+    src/inference/nikola_inference.cpp
+    src/inference/http_server.cpp
+)
+target_compile_definitions(nikola_infer PRIVATE NIKOLA_INFERENCE_IMPL)
+target_link_libraries(nikola_infer PRIVATE nikola_core)
+target_link_directories(nikola_infer PRIVATE /usr/local/lib)
+set_target_properties(nikola_infer PROPERTIES OUTPUT_NAME "nikola-infer")
+if(TARGET nikola_cuda)
+    target_link_libraries(nikola_infer PRIVATE nikola_cuda)
+    target_link_directories(nikola_infer PRIVATE /usr/local/cuda/lib64)
+    set_target_properties(nikola_infer PROPERTIES
+        BUILD_RPATH  "/usr/local/cuda/lib64"
+        INSTALL_RPATH "/usr/local/cuda/lib64")
+    message(STATUS "nikola-infer: linked nikola_cuda — GPU propagator active")
+endif()
+message(STATUS "Inference CLI: nikola-infer")
+
 # Installation
 install(TARGETS nikola_core nikola_run nikola_train
-    nikola_state_dump nikola_dap_server nikola_diag nikola_orchestrator
+    nikola_state_dump nikola_dap_server nikola_diag nikola_orchestrator nikola_infer
     LIBRARY DESTINATION lib
     ARCHIVE DESTINATION lib
     RUNTIME DESTINATION bin

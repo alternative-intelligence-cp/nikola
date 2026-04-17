@@ -151,6 +151,7 @@ COPY --from=builder /build/nikola/build/nikola-orchestrator /opt/nikola/bin/
 COPY --from=builder /build/nikola/build/nikola-diag       /opt/nikola/bin/
 COPY --from=builder /build/nikola/build/nikola-dap        /opt/nikola/bin/
 COPY --from=builder /build/nikola/build/nikola-state-dump /opt/nikola/bin/
+COPY --from=builder /build/nikola/build/nikola-infer      /opt/nikola/bin/
 
 # ─── Copy ONNX Runtime shared libs ──────────────────────────────────────────
 
