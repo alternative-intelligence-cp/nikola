@@ -1826,6 +1826,29 @@ if(NIKOLA_BUILD_TESTS)
     add_test(NAME Phase160SecurityProduction
         COMMAND test_phase160_security_production)
 
+    # v0.2.7 — Integration Tests (0.2.x series)
+    add_executable(test_v02x_integration
+        tests/integration/v02x_integration_test.cpp
+        src/inference/nikola_inference.cpp)
+    target_include_directories(test_v02x_integration PRIVATE
+        ${CMAKE_CURRENT_SOURCE_DIR}/tests/helpers)
+    target_link_libraries(test_v02x_integration PRIVATE
+        nikola_core Catch2::Catch2WithMain lmdb)
+    add_test(NAME V02xIntegration
+        COMMAND test_v02x_integration "~[benchmark]~[longsession]")
+
+    # v0.2.7 — Performance Audit Benchmarks
+    add_executable(test_v027_performance_audit
+        tests/integration/v027_performance_audit_test.cpp
+        src/inference/nikola_inference.cpp)
+    target_include_directories(test_v027_performance_audit PRIVATE
+        ${CMAKE_CURRENT_SOURCE_DIR}/tests/helpers)
+    target_link_libraries(test_v027_performance_audit PRIVATE
+        nikola_core Catch2::Catch2WithMain lmdb)
+    add_test(NAME V027PerformanceAudit
+        COMMAND test_v027_performance_audit)
+    set_tests_properties(V027PerformanceAudit PROPERTIES LABELS "integration")
+
     message(STATUS "Tests configured (unit + integration + e2e) - run with: make test")
 endif()
 

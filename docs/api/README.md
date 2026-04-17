@@ -1,6 +1,6 @@
 # Nikola — Public API Reference
 
-_Last updated: 2026-04-09 (v0.0.20)_
+_Last updated: 2026-04-17 (v0.2.7)_
 
 This directory documents the public C++ API surface exposed by `libnikola_core`.
 All headers live under `include/nikola/` and are organized by namespace.
@@ -239,3 +239,85 @@ enum class ActionType : int {
 ### Metrics (FD 3 JSON-Lines)
 - See `docs/architecture/metrics_schema.md` for wire format
 - Gauges: tick.energy, tick.dopamine, tick.atp, tick.boredom, tick.entropy, tick.duration
+
+---
+
+## v0.2.x API Additions
+
+### Inference Server (`inference/http_server.hpp`)
+
+HTTP REST API for inference:
+
+| Endpoint | Method | Description |
+|----------|--------|-------------|
+| `/v1/generate` | POST | Generate text from stimulus |
+| `/v1/embed` | POST | Compute Nit embeddings for text |
+| `/health` | GET | Server health check |
+
+**POST /v1/generate**
+```json
+{
+  "prompt": "What is physics?",
+  "max_tokens": 50,
+  "temperature": 0.7
+}
+```
+Response:
+```json
+{
+  "text": "...",
+  "tokens": 42,
+  "energy": 0.234,
+  "ticks": 50
+}
+```
+
+### Oracle APIs (`autonomy/`)
+
+| Class | Method | Description |
+|-------|--------|-------------|
+| `TavilyOracle` | `search(query)` | Web search via Tavily API |
+| `FirecrawlOracle` | `scrape(url)` | Web page scraping |
+| `FirecrawlOracle` | `assess(content)` | Content assessment with URL extraction |
+| `ResearchRouter` | `route(query)` | Classify and route queries to appropriate oracle |
+| `OraclePool` | `query(topic)` | Multi-oracle aggregation |
+| `CoherenceOracle` | `score(results)` | Cross-source coherence scoring |
+
+### Goal System (`autonomy/goal_system.hpp`)
+
+| Method | Description |
+|--------|-------------|
+| `create_goal(desc, tier)` | Create goal with priority tier |
+| `complete_goal(id, reward)` | Complete and apply dopamine reward |
+| `add_dependency(parent, child)` | DAG dependency with cycle prevention |
+| `serialize() / deserialize()` | Binary persistence |
+
+### Personality (`autonomy/`)
+
+| Class | Method | Description |
+|-------|--------|-------------|
+| `PersonalityDrift` | `apply_outcome(exp)` | Evolve traits from experience |
+| `PreferenceEngine` | `learn(topic, strength)` | Record preference with decay |
+| `Autobiography` | `record_event(e)` | Log life event |
+| `Autobiography` | `generate_narrative()` | Produce self-narrative |
+| `SkillTracker` | `record(skill, outcome)` | Track competency |
+| `ValueFormation` | `reinforce(value, amount)` | Develop value system |
+
+### Ingestion (`autonomy/`)
+
+| Class | Method | Description |
+|-------|--------|-------------|
+| `IngestionFilter` | `check(chunk)` | Budget + safety + dedup filter |
+| `IngestionFilter` | `record_ingested(chunk)` | Record accepted chunk |
+| `AutoIngestor` | `ingest_file(path)` | Full file ingestion pipeline |
+
+### Security Pipeline (`security/`)
+
+| Class | Method | Description |
+|-------|--------|-------------|
+| `SecurityPipeline` | `evaluate(name, code)` | Full security evaluation |
+| `CodeSafetyVerifier` | `verify(code)` | Static safety analysis |
+| `CodePatternBlacklist` | `check(code)` | Dangerous pattern detection |
+| `KvmSandbox` | `create_vm / boot / wait` | Micro-VM isolation |
+| `EbpfMonitor` | `watch_pid / poll / events` | Runtime monitoring |
+| `AnomalyDetector` | `check(metrics)` | Statistical anomaly detection |
