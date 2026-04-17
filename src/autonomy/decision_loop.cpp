@@ -20,6 +20,10 @@
 #include <nikola/cognitive/lmdb_memory_store.hpp>    // Phase 136 — LMDB persistence
 #include <nikola/persistence/lmdb_state_store.hpp>   // Phase 137 — full state persistence
 #include <nikola/interior/autobiography.hpp>         // Phase 137 — autobiography member
+#include <nikola/interior/preference_engine.hpp>     // v0.2.3 — PreferenceEngine
+#include <nikola/interior/personality_drift.hpp>     // v0.2.3 — PersonalityDrift
+#include <nikola/interior/narrative_growth.hpp>      // v0.2.3 — NarrativeGrowth
+#include <nikola/interior/affective_state.hpp>       // v0.2.3 — AffectiveState
 
 #include <algorithm>
 #include <cctype>
@@ -250,6 +254,12 @@ DecisionLoop::DecisionLoop(nikola::cognitive::CognitiveTorus& torus,
                       << e.what() << "\n";
         }
     }
+
+    // v0.2.3 — Initialise interior personality/preference modules.
+    preferences_      = std::make_unique<interior::PreferenceEngine>();
+    personality_      = std::make_unique<interior::PersonalityDrift>();
+    narrative_growth_ = std::make_unique<interior::NarrativeGrowth>();
+    affective_state_  = std::make_unique<interior::AffectiveState>();
 }
 
 // ============================================================================
@@ -282,6 +292,21 @@ const interior::AutobiographicalMemory& DecisionLoop::autobiography() const noex
 interior::AutobiographicalMemory& DecisionLoop::autobiography() noexcept
 {
     return *autobiography_;
+}
+
+const interior::PreferenceEngine& DecisionLoop::preferences() const noexcept
+{
+    return *preferences_;
+}
+
+const interior::PersonalityDrift& DecisionLoop::personality() const noexcept
+{
+    return *personality_;
+}
+
+const interior::AffectiveState& DecisionLoop::affect() const noexcept
+{
+    return *affective_state_;
 }
 
 // ============================================================================
@@ -556,7 +581,7 @@ float DecisionLoop::score_reason(const NikolaState& s) const noexcept
     // field so decoded tokens carry multi-band spectral coherence.  Letting
     // REASON fire more often (up to 4× per prompt) dramatically improves the
     // quality of subsequent EMIT_THOUGHT output.
-    if (seconds_since(last_reason_time_) < 0.5f) return 0.f;
+    if (seconds_since(last_reason_time_) < cfg_.min_reason_interval_s) return 0.f;
     return s.entropy * s.atp * 1.0f;
 }
 
@@ -623,7 +648,7 @@ float DecisionLoop::score_pursue_goal(const NikolaState& s) const noexcept
     //  - ATP ≥ 0.25 (goal pursuit needs energy)
     //  - Cooldown: at least 2s between pursue actions
     if (s.atp < 0.25f) return 0.f;
-    if (seconds_since(last_pursue_goal_time_) < 2.0f) return 0.f;
+    if (seconds_since(last_pursue_goal_time_) < cfg_.min_pursue_goal_interval_s) return 0.f;
 
     const auto* goal = engine_.goal_system().active_goal();
     if (!goal) return 0.f;
@@ -843,6 +868,9 @@ DecisionResult DecisionLoop::tick()
         if (!ssm_token.empty())              try_add(ssm_token);
     }
 
+    // ── 3c. v0.2.3 — Update AffectiveState from current NikolaState ────────
+    affective_state_->update(s);
+
     // ── 4. Score all candidates ─────────────────────────────────────────────
     static constexpr float SILENT_SCORE = 0.3f;
 
@@ -861,6 +889,66 @@ DecisionResult DecisionLoop::tick()
         candidates[8]  = { ActionType::REASON,         score_reason(s)         };
         candidates[9]  = { ActionType::GENERATE_CODE,  score_generate_code(s)  };
         candidates[10] = { ActionType::PURSUE_GOAL,    score_pursue_goal(s)    };
+    }
+
+    // ── 4b. v0.2.3 — Apply personality multiplier, preference bias, and
+    //        affective modulation AFTER base scoring, BEFORE winner selection.
+    //
+    //   final_score = base_score × personality_multiplier + preference_bias
+    //                 + affective_nudge
+    //
+    //   personality_multiplier: [0.7, 1.3] from PersonalityDrift
+    //   preference_bias:       [-0.15, +0.15] from PreferenceEngine
+    //   affective_nudge:        valence-driven modulation:
+    //       positive valence → boost EXPLORE, PURSUE_GOAL (+0.05 × valence)
+    //       negative valence → boost NAP, STORE_MEMORY (+0.05 × |valence|)
+    //
+    //   Gated behind PERSONALITY_WARMUP_TICKS to let the base scoring
+    //   establish a stable baseline before personality influence kicks in.
+    //   After warmup, influence ramps up gradually over PERSONALITY_RAMP_TICKS
+    //   so personality grows organically rather than snapping on suddenly.
+    static constexpr uint64_t PERSONALITY_WARMUP_TICKS = 200;
+    static constexpr float    PERSONALITY_RAMP_TICKS   = 5000.0f;
+    static constexpr float    PERSONALITY_MAX_STRENGTH = 1.0f;
+
+    if (cfg_.enable_personality && tick_count_ >= PERSONALITY_WARMUP_TICKS) {
+        const float valence = static_cast<float>(affective_state_->valence());
+
+        // Gradual ramp: influence grows from 0 → MAX_STRENGTH over RAMP_TICKS
+        const float age = static_cast<float>(tick_count_ - PERSONALITY_WARMUP_TICKS);
+        const float ramp = std::min(1.0f, age / PERSONALITY_RAMP_TICKS);
+        const float strength = PERSONALITY_MAX_STRENGTH * ramp;
+
+        for (auto& c : candidates) {
+            const int action_int = static_cast<int>(c.type);
+
+            // Personality multiplier (temperament shapes action selection)
+            const float raw_mult = personality_->action_multiplier(action_int);
+            const float scaled_mult = 1.0f + (raw_mult - 1.0f) * strength;
+            c.score *= scaled_mult;
+
+            // Preference bias (learned likes/dislikes for action types)
+            c.score += preferences_->action_bias(action_int) * strength;
+
+            // Affective nudge (emotional state gently biases choices)
+            const float affect_weight = 0.02f * ramp;
+            if (valence > 0.0f) {
+                // Positive valence → more ambitious (explore, pursue goals)
+                if (c.type == ActionType::EXPLORE ||
+                    c.type == ActionType::PURSUE_GOAL) {
+                    c.score += affect_weight * valence;
+                }
+            } else if (valence < 0.0f) {
+                // Negative valence → more conservative (rest, consolidate)
+                if (c.type == ActionType::NAP ||
+                    c.type == ActionType::STORE_MEMORY) {
+                    c.score += affect_weight * (-valence);
+                }
+            }
+
+            // Floor at zero — scores should never go negative
+            if (c.score < 0.0f) c.score = 0.0f;
+        }
     }
 
     // Find best non-silent candidate
@@ -983,6 +1071,80 @@ DecisionResult DecisionLoop::tick()
     // ── 8. Fire callbacks ────────────────────────────────────────────────────
     if (on_tick)   on_tick(s);
     if (on_action && winner != ActionType::SILENT) on_action(result);
+
+    // ── 8b. v0.2.3 — Feed outcome back to personality/preference modules ────
+    // Gated behind the same warmup period as score modulation so preferences
+    // and personality don't accumulate during the base-scoring warmup phase.
+    if (cfg_.enable_personality && winner != ActionType::SILENT && tick_count_ >= PERSONALITY_WARMUP_TICKS) {
+        const int action_int = static_cast<int>(winner);
+
+        // Implicit preference learning: reinforce the chosen action
+        preferences_->learn_from_action(action_int, tick_count_);
+
+        // Personality drift: construct outcome from action result
+        // Success approximation: positive TD error = likely good outcome
+        float success = std::clamp(static_cast<float>(s.td_error), -1.0f, 1.0f);
+        float risk    = (winner == ActionType::EXPLORE ||
+                         winner == ActionType::PURSUE_GOAL ||
+                         winner == ActionType::GENERATE_CODE) ? 0.6f : 0.2f;
+        float complexity = 0.3f;
+        if (winner == ActionType::REASON || winner == ActionType::GENERATE_CODE)
+            complexity = 0.7f;
+
+        interior::ExperienceOutcome outcome{success, action_int, risk, complexity};
+        personality_->apply_outcome(outcome);
+
+        // Milestone detection: first-action milestones
+        auto milestone_desc = narrative_growth_->check_first_action(
+            action_int, tick_count_);
+        if (!milestone_desc.empty()) {
+            narrative_growth_->record_milestone(
+                *autobiography_,
+                interior::MilestoneType::FIRST_ACTION,
+                milestone_desc, s,
+                affective_state_->current_affect(),
+                tick_count_);
+        }
+
+        // Personality shift milestones (check every 100 ticks)
+        if (tick_count_ % 100 == 0) {
+            auto snap = personality_->snapshot();
+            auto shifts = narrative_growth_->check_personality_shifts(
+                snap, tick_count_);
+            for (const auto& desc : shifts) {
+                narrative_growth_->record_milestone(
+                    *autobiography_,
+                    interior::MilestoneType::PERSONALITY_SHIFT,
+                    desc, s,
+                    affective_state_->current_affect(),
+                    tick_count_);
+            }
+        }
+    }
+
+    // NAP: trigger self-reflection and homeostatic decay
+    if (cfg_.enable_personality && winner == ActionType::NAP) {
+        // Self-reflection during NAP
+        narrative_growth_->generate_reflection(
+            *autobiography_,
+            personality_->snapshot(),
+            1000,  // look back ~1000 ticks
+            tick_count_);
+
+        // Homeostatic decay of personality (gentle regression to balanced)
+        personality_->decay(elapsed_dt);
+
+        // Preference decay
+        preferences_->decay(elapsed_dt);
+
+        // Autobiography compression if needed
+        if (narrative_growth_->needs_compression(*autobiography_)) {
+            narrative_growth_->compress(*autobiography_, s, tick_count_);
+        }
+
+        // Personality epoch reset during NAP (allow new drift)
+        personality_->reset_epoch();
+    }
 
     // ── 9. Phase 137 — persist state to LMDB ────────────────────────────────
     if (state_store_) {

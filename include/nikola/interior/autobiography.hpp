@@ -213,6 +213,13 @@ public:
     const std::vector<LifeEvent>&  events()       const { return events_; }
     const std::vector<ValueEntry>& value_entries() const { return values_; }
 
+    /**
+     * @brief Replace events vector (used by NarrativeGrowth for compression).
+     */
+    void replace_events(std::vector<LifeEvent> new_events) {
+        events_ = std::move(new_events);
+    }
+
     size_t event_count() const { return events_.size(); }
     size_t skill_count() const { return skills_.size(); }
     size_t value_count() const { return values_.size(); }

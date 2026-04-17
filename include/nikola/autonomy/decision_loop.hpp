@@ -70,7 +70,13 @@
 #include <vector>
 
 // Forward declarations — avoid circular includes with autobiography.hpp
-namespace nikola::interior { class AutobiographicalMemory; }
+namespace nikola::interior {
+    class AutobiographicalMemory;
+    class PreferenceEngine;
+    class PersonalityDrift;
+    class NarrativeGrowth;
+    class AffectiveState;
+}
 // Forward declaration — avoid pulling lmdb.h into every translation unit
 namespace nikola::persistence { class LmdbStateStore; }
 
@@ -221,6 +227,12 @@ struct DecisionLoopConfig {
     /// Torus steps to run per tick (tradeoff: more = richer state, more latency)
     int   steps_per_tick       = 50;
 
+    /// Enable v0.2.3 personality/preference modulation and learning.
+    /// When false, the interior modules are constructed but inert — no
+    /// per-tick overhead from learning, scoring modulation, or milestone
+    /// detection.  Default: true.
+    bool  enable_personality   = true;
+
     /// A candidate must score this much above SILENT to be chosen.
     float action_threshold     = 0.02f;
 
@@ -286,6 +298,14 @@ struct DecisionLoopConfig {
     /// Ticks between Ψ wavefunction checkpoints (default: 100).
     /// Only used when state_db_path is non-empty.
     int checkpoint_interval = 100;
+
+    /// Minimum seconds between consecutive REASON actions.
+    /// Default: 0.5s — allow REASON to fire often for richer attention passes.
+    float min_reason_interval_s = 0.5f;
+
+    /// Minimum seconds between consecutive PURSUE_GOAL actions.
+    /// Default: 2.0s — goal pursuit needs time to evaluate outcomes.
+    float min_pursue_goal_interval_s = 2.0f;
 
     /// Minimum seconds between consecutive GENERATE_CODE actions (rate limiting).
     /// Default: 30s — code generation is expensive (specialist inference + compile).
@@ -421,6 +441,11 @@ public:
     /// Phase 137: autobiographical memory (events, skills, values).
     const interior::AutobiographicalMemory& autobiography() const noexcept;
     interior::AutobiographicalMemory&       autobiography()       noexcept;
+
+    /// v0.2.3: Read-only access to interior personality/preference modules.
+    const interior::PreferenceEngine& preferences() const noexcept;
+    const interior::PersonalityDrift& personality() const noexcept;
+    const interior::AffectiveState&   affect()      const noexcept;
 
     // ------------------------------------------------------------------ state injection
 
@@ -676,6 +701,12 @@ private:
 
     /// Autobiographical memory — identity, events, skills, values.
     std::unique_ptr<interior::AutobiographicalMemory> autobiography_;
+
+    /// v0.2.3 — Interior personality and preference modules.
+    std::unique_ptr<interior::PreferenceEngine> preferences_;
+    std::unique_ptr<interior::PersonalityDrift> personality_;
+    std::unique_ptr<interior::NarrativeGrowth>  narrative_growth_;
+    std::unique_ptr<interior::AffectiveState>   affective_state_;
 
     /// LMDB state store for cross-session persistence (nullptr if no state_db_path).
     std::unique_ptr<nikola::persistence::LmdbStateStore> state_store_;
