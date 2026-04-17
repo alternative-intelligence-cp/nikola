@@ -138,6 +138,9 @@ set(INTERIOR_SOURCES
     src/interior/autobiography.cpp     # Phase 124
     src/interior/curiosity.cpp         # Phase 118
     src/interior/internal_dialogue.cpp   # Phase 122
+    src/interior/preference_engine.cpp    # v0.2.3: PreferenceEngine
+    src/interior/personality_drift.cpp     # v0.2.3: PersonalityDrift
+    src/interior/narrative_growth.cpp      # v0.2.3: NarrativeGrowth
 )
 
 # Genesis Module 7: Code Generation & Self-Improvement (Aria Language)
@@ -1786,6 +1789,21 @@ if(NIKOLA_BUILD_TESTS)
     add_executable(test_ingestion_orchestrator tests/unit/ingestion_orchestrator_test.cpp)
     target_link_libraries(test_ingestion_orchestrator PRIVATE nikola_core Catch2::Catch2WithMain)
     add_test(NAME IngestionOrchestrator COMMAND test_ingestion_orchestrator --reporter console)
+
+    # v0.2.3 Unit Tests: PreferenceEngine
+    add_executable(test_preference_engine tests/unit/preference_engine_test.cpp)
+    target_link_libraries(test_preference_engine PRIVATE nikola_core Catch2::Catch2WithMain)
+    add_test(NAME PreferenceEngine COMMAND test_preference_engine --reporter console)
+
+    # v0.2.3 Unit Tests: PersonalityDrift
+    add_executable(test_personality_drift tests/unit/personality_drift_test.cpp)
+    target_link_libraries(test_personality_drift PRIVATE nikola_core Catch2::Catch2WithMain)
+    add_test(NAME PersonalityDrift COMMAND test_personality_drift --reporter console)
+
+    # v0.2.3 Unit Tests: NarrativeGrowth
+    add_executable(test_narrative_growth tests/unit/narrative_growth_test.cpp)
+    target_link_libraries(test_narrative_growth PRIVATE nikola_core Catch2::Catch2WithMain)
+    add_test(NAME NarrativeGrowth COMMAND test_narrative_growth --reporter console)
 
     message(STATUS "Tests configured (unit + integration + e2e) - run with: make test")
 endif()

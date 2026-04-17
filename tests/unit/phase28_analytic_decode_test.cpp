@@ -73,7 +73,11 @@ static DecisionLoopConfig make_config(float min_emit_s = 0.0f,
     DecisionLoopConfig cfg;
     cfg.steps_per_tick      = 10;
     cfg.action_threshold    = threshold;
+    cfg.enable_personality  = false;  // deterministic: no wall-clock timing deps
     cfg.min_emit_interval_s = min_emit_s;
+    cfg.min_store_interval_s    = 0.0f;   // zero all cooldowns for determinism
+    cfg.min_recall_interval_s   = 0.0f;
+    cfg.min_generate_interval_s = 0.0f;
     cfg.decode_top_k        = 5;
     cfg.alive_prior         = 0.1f;
     cfg.vocabulary = { "hello", "curious", "wave", "energy", "nikola",
