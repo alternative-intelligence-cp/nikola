@@ -43,6 +43,14 @@
 #  include <sys/types.h>
 #endif
 
+#ifdef NIKOLA_ENABLE_EBPF
+#  include <bpf/libbpf.h>
+#  include <bpf/bpf.h>
+#  include <cstring>
+#  include <fstream>
+#  include <iostream>
+#endif
+
 namespace nikola::security {
 
 // ============================================================================
@@ -152,10 +160,23 @@ public:
         std::string       safe_path_prefix = "/var/lib/nikola/vm";
         uint32_t          ring_buffer_pages = EBPF_RING_BUFFER_PAGES;
         bool              auto_kill         = true;
+        std::string       bpf_object_path;   ///< Path to pre-compiled .bpf.o (eBPF mode)
     };
 
     EbpfMonitor() : cfg_{} {}
     explicit EbpfMonitor(Config cfg) : cfg_(std::move(cfg)) {}
+
+    ~EbpfMonitor() {
+#ifdef NIKOLA_ENABLE_EBPF
+        detach_ebpf();
+#endif
+    }
+
+    // Non-copyable, non-movable (owns BPF resources)
+    EbpfMonitor(const EbpfMonitor&) = delete;
+    EbpfMonitor& operator=(const EbpfMonitor&) = delete;
+    EbpfMonitor(EbpfMonitor&&) = delete;
+    EbpfMonitor& operator=(EbpfMonitor&&) = delete;
 
     // ── Process registration ────────────────────────────────────────────────
 
@@ -245,7 +266,42 @@ public:
 
     const ResponsePolicy& policy() const { return cfg_.policy; }
     void set_policy(ResponsePolicy p) { cfg_.policy = std::move(p); }
+    // ── eBPF lifecycle ─────────────────────────────────────────────────────
 
+    /**
+     * Start real eBPF monitoring. Loads the BPF program from the configured
+     * .bpf.o path and attaches tracepoints.
+     * Returns false if eBPF is not compiled in or attachment fails.
+     */
+    bool start() {
+#ifdef NIKOLA_ENABLE_EBPF
+        if (cfg_.bpf_object_path.empty()) return false;
+        return attach_ebpf(cfg_.bpf_object_path);
+#else
+        return false;
+#endif
+    }
+
+    /**
+     * Start eBPF monitoring from a specific BPF object file.
+     */
+    bool start(const std::string& bpf_obj_path) {
+#ifdef NIKOLA_ENABLE_EBPF
+        return attach_ebpf(bpf_obj_path);
+#else
+        (void)bpf_obj_path;
+        return false;
+#endif
+    }
+
+    /**
+     * Stop eBPF monitoring and free BPF resources.
+     */
+    void stop() {
+#ifdef NIKOLA_ENABLE_EBPF
+        detach_ebpf();
+#endif
+    }
     // ── eBPF status ──────────────────────────────────────────────────────────
 
     bool ebpf_available() const {
@@ -272,12 +328,163 @@ private:
 
 #ifdef NIKOLA_ENABLE_EBPF
     bool ebpf_attached_{false};
+    struct bpf_object*     bpf_obj_{nullptr};
+    struct ring_buffer*    ringbuf_{nullptr};
+    int                    ringbuf_map_fd_{-1};
 
-    // BPF ring buffer drain — processes all pending events
-    size_t drain_ring_buffer() {
-        // TODO: libbpf ring_buffer__poll() integration
-        // For now, fall through to the injected event path
+    // ── BPF ring buffer event structure (must match .bpf.c layout) ──────
+    struct BpfRawEvent {
+        uint32_t pid;
+        uint32_t event_type;     // maps to EbpfEventType
+        char     comm[16];       // process name
+        char     filename[128];  // for openat: file path
+    };
+
+    /// Static ring buffer callback — forwards to instance method
+    static int ringbuf_callback(void* ctx, void* data, size_t len) {
+        auto* self = static_cast<EbpfMonitor*>(ctx);
+        if (len < sizeof(BpfRawEvent)) return 0;
+
+        const auto* raw = static_cast<const BpfRawEvent*>(data);
+
+        // Filter: only care about watched PIDs
+        auto it = self->procs_.find(static_cast<int>(raw->pid));
+        if (it == self->procs_.end()) return 0;
+
+        // Build event
+        EbpfEvent ev;
+        ev.pid          = static_cast<int>(raw->pid);
+        ev.vm_name      = it->second.vm_name;
+        ev.type         = (raw->event_type <= static_cast<uint32_t>(EbpfEventType::PTRACE_ATTEMPT))
+                              ? static_cast<EbpfEventType>(raw->event_type)
+                              : EbpfEventType::UNKNOWN;
+        ev.detail       = std::string(raw->filename, strnlen(raw->filename, sizeof(raw->filename)));
+        ev.killed       = false;
+        ev.timestamp    = std::chrono::steady_clock::now();
+
+        // For file opens: check if path is within the safe prefix
+        if (ev.type == EbpfEventType::FILE_OPEN_OUTSIDE) {
+            if (ev.detail.rfind(self->cfg_.safe_path_prefix, 0) == 0) {
+                return 0;  // inside safe prefix — not an escape
+            }
+        }
+
+        // Measure detection latency from event arrival
+        auto detect_start = std::chrono::steady_clock::now();
+
+        // Apply policy
+        ResponseAction action = self->cfg_.policy.action_for(ev.type);
+        switch (action) {
+            case ResponseAction::KILL_AND_ALERT:
+                if (self->cfg_.auto_kill && ev.pid > 0) {
+#ifdef __linux__
+                    ::kill(ev.pid, SIGKILL);
+#endif
+                    ev.killed = true;
+                    ++self->total_kills_;
+                }
+                if (self->on_alert_) self->on_alert_(ev);
+                break;
+            case ResponseAction::ALERT_ONLY:
+                if (self->on_alert_) self->on_alert_(ev);
+                break;
+            case ResponseAction::LOG_ONLY:
+                break;
+        }
+
+        auto detect_end = std::chrono::steady_clock::now();
+        ev.detection_ns = static_cast<uint64_t>(
+            std::chrono::duration_cast<std::chrono::nanoseconds>(
+                detect_end - detect_start).count());
+
+        // Track latency
+        self->total_response_ns_ += ev.detection_ns;
+        if (ev.detection_ns > self->worst_response_ns_)
+            self->worst_response_ns_ = ev.detection_ns;
+
+        ++it->second.event_count;
+        self->events_.push_back(std::move(ev));
+        ++self->total_events_;
+
         return 0;
+    }
+
+    /// Load pre-compiled BPF object from .bpf.o file and attach
+    bool attach_ebpf(const std::string& bpf_obj_path) {
+        bpf_obj_ = bpf_object__open(bpf_obj_path.c_str());
+        if (!bpf_obj_) {
+            std::cerr << "[EbpfMonitor] Failed to open BPF object: "
+                      << bpf_obj_path << "\n";
+            return false;
+        }
+
+        int err = bpf_object__load(bpf_obj_);
+        if (err) {
+            std::cerr << "[EbpfMonitor] Failed to load BPF object: "
+                      << err << "\n";
+            bpf_object__close(bpf_obj_);
+            bpf_obj_ = nullptr;
+            return false;
+        }
+
+        // Attach all programs (tracepoints) in the object
+        struct bpf_program* prog;
+        bpf_object__for_each_program(prog, bpf_obj_) {
+            struct bpf_link* link = bpf_program__attach(prog);
+            if (!link) {
+                std::cerr << "[EbpfMonitor] Failed to attach program: "
+                          << bpf_program__name(prog) << "\n";
+                // Continue — some tracepoints may not be available
+            }
+        }
+
+        // Find and open the ring buffer map
+        struct bpf_map* map = bpf_object__find_map_by_name(bpf_obj_, "events");
+        if (!map) {
+            std::cerr << "[EbpfMonitor] No 'events' ring buffer map found\n";
+            detach_ebpf();
+            return false;
+        }
+
+        ringbuf_map_fd_ = bpf_map__fd(map);
+        ringbuf_ = ring_buffer__new(ringbuf_map_fd_, ringbuf_callback,
+                                     this, nullptr);
+        if (!ringbuf_) {
+            std::cerr << "[EbpfMonitor] Failed to create ring buffer\n";
+            detach_ebpf();
+            return false;
+        }
+
+        ebpf_attached_ = true;
+        return true;
+    }
+
+    /// Detach and clean up BPF resources
+    void detach_ebpf() {
+        if (ringbuf_) {
+            ring_buffer__free(ringbuf_);
+            ringbuf_ = nullptr;
+        }
+        if (bpf_obj_) {
+            bpf_object__close(bpf_obj_);
+            bpf_obj_ = nullptr;
+        }
+        ringbuf_map_fd_ = -1;
+        ebpf_attached_ = false;
+    }
+
+    /// Drain pending events from the BPF ring buffer
+    size_t drain_ring_buffer() {
+        if (!ringbuf_ || !ebpf_attached_) return 0;
+
+        size_t before = total_events_;
+        // Poll with the configured interval timeout (non-blocking if 0)
+        int err = ring_buffer__poll(ringbuf_, EBPF_POLL_INTERVAL_MS);
+        if (err < 0 && err != -EINTR) {
+            // Transient error — don't crash, just skip this cycle
+            return 0;
+        }
+        return total_events_ - before;
     }
 #endif
 

@@ -1818,6 +1818,14 @@ if(NIKOLA_BUILD_TESTS)
     target_link_libraries(test_nikola_inference PRIVATE nikola_core Catch2::Catch2WithMain)
     add_test(NAME NikolaInference COMMAND test_nikola_inference --reporter console)
 
+    # Phase 160 — Security Production (v0.2.6)
+    add_executable(test_phase160_security_production
+        tests/unit/phase160_security_production_test.cpp)
+    target_link_libraries(test_phase160_security_production PRIVATE
+        nikola_core Catch2::Catch2WithMain)
+    add_test(NAME Phase160SecurityProduction
+        COMMAND test_phase160_security_production)
+
     message(STATUS "Tests configured (unit + integration + e2e) - run with: make test")
 endif()
 

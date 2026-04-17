@@ -39,6 +39,18 @@
 #include <unordered_map>
 #include <vector>
 
+#ifdef NIKOLA_ENABLE_KVM
+#  include <filesystem>
+#  include <fstream>
+#  include <csignal>
+#  include <cstring>
+#  include <sys/types.h>
+#  include <sys/wait.h>
+#  include <unistd.h>
+#  include <fcntl.h>
+#  include <poll.h>
+#endif
+
 namespace nikola::security {
 
 // ============================================================================
@@ -142,6 +154,7 @@ struct VMInstance {
     VMState        state{VMState::CREATED};
     int            pid{-1};           ///< qemu-system PID (or -1)
     int            exit_code{-1};     ///< Guest exit code (-1 = not yet)
+    int            stdout_fd_{-1};    ///< Pipe fd for stdout capture (KVM mode)
     IsolationRules isolation;
     CGroupConfig   cgroup;
     std::string    overlay_path;      ///< Copy-on-write overlay qcow2 path
@@ -320,11 +333,71 @@ public:
         return true;
     }
 
+    /**
+     * Wait for a VM to complete execution, with timeout in milliseconds.
+     * On real KVM: waits for qemu-system process, captures stdout/stderr.
+     * Without KVM: returns immediately with whatever state the VM is in.
+     */
+    ExecutionResult wait_completion(const std::string& name,
+                                    uint32_t timeout_ms = 30000)
+    {
+        auto it = vms_.find(name);
+        if (it == vms_.end()) return {false, -1, "", "vm not found", 0.0};
+        auto& vm = it->second;
+
+        if (vm.state == VMState::COMPLETED) {
+            return {true, vm.exit_code, vm.stdout_capture, "", vm.elapsed_seconds()};
+        }
+        if (vm.state != VMState::RUNNING) {
+            return {false, vm.exit_code, vm.stdout_capture,
+                    "vm not running (state=" + std::string(vm_state_str(vm.state)) + ")",
+                    vm.elapsed_seconds()};
+        }
+
+#ifdef NIKOLA_ENABLE_KVM
+        return wait_for_completion(vm, timeout_ms);
+#else
+        (void)timeout_ms;
+        // Non-KVM: return current state
+        return {vm.state == VMState::COMPLETED, vm.exit_code,
+                vm.stdout_capture, "", vm.elapsed_seconds()};
+#endif
+    }
+
     // ── Query ────────────────────────────────────────────────────────────────
 
     const VMInstance* get_vm(const std::string& name) const {
         auto it = vms_.find(name);
         return (it != vms_.end()) ? &it->second : nullptr;
+    }
+
+    VMInstance* get_vm(const std::string& name) {
+        auto it = vms_.find(name);
+        return (it != vms_.end()) ? &it->second : nullptr;
+    }
+
+    /**
+     * Inject source code into a running VM for execution.
+     * In non-KVM mode: stores the code in the VM's stdout_capture for testing.
+     * In KVM mode: writes code to shared overlay and signals guest to execute.
+     */
+    void inject_code(const std::string& vm_name, const std::string& source_code) {
+        auto* vm = get_vm(vm_name);
+        if (!vm || vm->state != VMState::RUNNING) return;
+
+#ifdef NIKOLA_ENABLE_KVM
+        // Write source code to the overlay filesystem for the guest to pick up
+        if (!vm->overlay_path.empty()) {
+            std::ofstream ofs(vm->overlay_path + "/code_input.src");
+            if (ofs) ofs << source_code;
+        }
+#else
+        // Non-KVM simulation: store code for test retrieval
+        vm->stdout_capture = "[injected:" + std::to_string(source_code.size()) + " bytes]";
+        vm->state = VMState::COMPLETED;
+        vm->exit_code = 0;
+        vm->end_time = std::chrono::steady_clock::now();
+#endif
     }
 
     size_t vm_count()    const { return vms_.size(); }
@@ -457,18 +530,135 @@ private:
 
     bool launch_qemu(VMInstance& vm) {
         auto args = build_qemu_args(vm);
-        // Build the full command
-        std::string cmd;
-        for (const auto& a : args) cmd += a + " ";
-        cmd += "&";
 
-        // Fork and exec would be better, but system() suffices for PoC
-        int ret = ::system(cmd.c_str());
-        if (ret != 0) return false;
+        // Create pipe for stdout capture
+        int stdout_pipe[2];
+        if (::pipe2(stdout_pipe, O_CLOEXEC) != 0) return false;
 
-        // TODO: parse PID from qemu process table
-        vm.pid = -1;
+        pid_t pid = ::fork();
+        if (pid < 0) {
+            ::close(stdout_pipe[0]);
+            ::close(stdout_pipe[1]);
+            return false;
+        }
+
+        if (pid == 0) {
+            // ── Child process ────────────────────────────────────────────
+            ::close(stdout_pipe[0]);  // close read end
+
+            // Redirect stdout + stderr to pipe
+            ::dup2(stdout_pipe[1], STDOUT_FILENO);
+            ::dup2(stdout_pipe[1], STDERR_FILENO);
+            ::close(stdout_pipe[1]);
+
+            // Build argv for execvp
+            std::vector<char*> argv;
+            argv.reserve(args.size() + 1);
+            for (auto& a : args) argv.push_back(a.data());
+            argv.push_back(nullptr);
+
+            ::execvp(argv[0], argv.data());
+            ::_exit(127);  // exec failed
+        }
+
+        // ── Parent process ───────────────────────────────────────────────
+        ::close(stdout_pipe[1]);  // close write end
+
+        vm.pid = static_cast<int>(pid);
+        vm.stdout_fd_ = stdout_pipe[0];
+
+        // Assign to cgroup (best-effort — cgroup may not exist in test envs)
+        const std::string cgroup_procs = vm.cgroup.v2_path(vm.name) + "/cgroup.procs";
+        std::ofstream cg(cgroup_procs);
+        if (cg) cg << pid;
+
         return true;
+    }
+
+    /**
+     * Wait for a VM process to finish with timeout.
+     * Captures stdout/stderr and populates the execution result.
+     */
+    ExecutionResult wait_for_completion(VMInstance& vm, uint32_t timeout_ms) {
+        ExecutionResult result;
+        if (vm.pid <= 0) {
+            result.error = "no process";
+            return result;
+        }
+
+        // Non-blocking read of stdout while waiting for process
+        std::string output;
+        char buf[4096];
+        auto deadline = std::chrono::steady_clock::now()
+                      + std::chrono::milliseconds(timeout_ms);
+
+        while (std::chrono::steady_clock::now() < deadline) {
+            // Check if process has exited
+            int status = 0;
+            pid_t w = ::waitpid(vm.pid, &status, WNOHANG);
+            if (w > 0) {
+                // Process exited — drain remaining stdout
+                if (vm.stdout_fd_ >= 0) {
+                    while (true) {
+                        ssize_t n = ::read(vm.stdout_fd_, buf, sizeof(buf));
+                        if (n <= 0) break;
+                        output.append(buf, static_cast<size_t>(n));
+                    }
+                    ::close(vm.stdout_fd_);
+                    vm.stdout_fd_ = -1;
+                }
+
+                vm.exit_code = WIFEXITED(status) ? WEXITSTATUS(status) : -1;
+                vm.stdout_capture = output;
+                vm.state = (vm.exit_code == 0) ? VMState::COMPLETED : VMState::FAILED;
+                vm.end_time = std::chrono::steady_clock::now();
+
+                result.success = (vm.exit_code == 0);
+                result.exit_code = vm.exit_code;
+                result.stdout_data = output;
+                result.elapsed_s = vm.elapsed_seconds();
+                return result;
+            }
+
+            // Poll stdout for data (100ms chunks)
+            if (vm.stdout_fd_ >= 0) {
+                struct pollfd pfd{vm.stdout_fd_, POLLIN, 0};
+                if (::poll(&pfd, 1, 100) > 0) {
+                    ssize_t n = ::read(vm.stdout_fd_, buf, sizeof(buf));
+                    if (n > 0) output.append(buf, static_cast<size_t>(n));
+                }
+            }
+        }
+
+        // Timeout — send SIGTERM, then SIGKILL after 2s
+        ::kill(vm.pid, SIGTERM);
+
+        auto kill_deadline = std::chrono::steady_clock::now()
+                           + std::chrono::seconds(2);
+        while (std::chrono::steady_clock::now() < kill_deadline) {
+            int status = 0;
+            if (::waitpid(vm.pid, &status, WNOHANG) > 0) break;
+            usleep(50000);  // 50ms
+        }
+
+        // Force kill if still alive
+        if (::waitpid(vm.pid, nullptr, WNOHANG) == 0) {
+            ::kill(vm.pid, SIGKILL);
+            ::waitpid(vm.pid, nullptr, 0);
+        }
+
+        if (vm.stdout_fd_ >= 0) {
+            ::close(vm.stdout_fd_);
+            vm.stdout_fd_ = -1;
+        }
+
+        vm.state = VMState::FAILED;
+        vm.end_time = std::chrono::steady_clock::now();
+
+        result.error = "timeout after " + std::to_string(timeout_ms) + "ms";
+        result.stdout_data = output;
+        result.elapsed_s = vm.elapsed_seconds();
+        return result;
     }
 #endif // NIKOLA_ENABLE_KVM
 };
