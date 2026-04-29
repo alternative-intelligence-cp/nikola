@@ -320,6 +320,65 @@ TEST_CASE("§F-5 ingest_file with CSV file", "[auto_ingestor][ingest]") {
     CHECK(inject_count == 2);
 }
 
+TEST_CASE("§F-5b ingest_file extracts PDF text payload", "[auto_ingestor][ingest][pdf]") {
+    TempDir tmp;
+    auto f = tmp.path / "sample.pdf";
+
+    // Minimal PDF-like payload with BT/ET text object and Tj operand.
+    write_file(
+        f,
+        "%PDF-1.4\n"
+        "1 0 obj\n"
+        "<< /Type /Page >>\n"
+        "stream\n"
+        "BT\n"
+        "/F1 12 Tf\n"
+        "72 720 Td\n"
+        "(Hello from PDF ingestion) Tj\n"
+        "ET\n"
+        "endstream\n"
+        "endobj\n");
+
+    std::vector<std::string> injected;
+
+    AutoIngestorConfig cfg;
+    cfg.min_chunk_chars = 5;
+    AutoIngestor ai(cfg);
+    ai.set_inject_fn([&](const std::string& s) { injected.push_back(s); });
+    ai.set_store_fn([]() {});
+    ai.set_tick_fn([](int) {});
+
+    auto result = ai.ingest_file(f.string());
+
+    CHECK(result.success);
+    CHECK(result.file_type == FileType::TEXT);
+    REQUIRE_FALSE(injected.empty());
+    CHECK(injected[0].find("Hello from PDF ingestion") != std::string::npos);
+}
+
+TEST_CASE("§F-5c ingest_file extracts PDF by magic despite extension", "[auto_ingestor][ingest][pdf]") {
+    TempDir tmp;
+    auto f = tmp.path / "payload.bin";
+
+    write_file(
+        f,
+        "%PDF-1.7\n"
+        "BT\n"
+        "(Magic wins over extension) Tj\n"
+        "ET\n");
+
+    std::string captured;
+    AutoIngestor ai;
+    ai.set_inject_fn([&](const std::string& s) { captured = s; });
+    ai.set_store_fn([]() {});
+    ai.set_tick_fn([](int) {});
+
+    auto result = ai.ingest_file(f.string());
+    CHECK(result.success);
+    CHECK(result.file_type == FileType::TEXT);
+    CHECK(captured.find("Magic wins over extension") != std::string::npos);
+}
+
 TEST_CASE("§F-6 ingest_file nonexistent file fails", "[auto_ingestor][ingest]") {
     AutoIngestor ai;
     auto result = ai.ingest_file("/nonexistent/file.txt");

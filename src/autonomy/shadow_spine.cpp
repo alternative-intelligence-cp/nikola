@@ -109,13 +109,16 @@ CycleStats ShadowSpine::stats() const noexcept {
 
 StageStatus ShadowSpine::from_cycle_status(CycleStatus cs) noexcept {
     switch (cs) {
-        case CycleStatus::SUCCESS:            return StageStatus::SUCCESS;
-        case CycleStatus::ATP_DENIED:         return StageStatus::ATP_DENIED;
-        case CycleStatus::SECURITY_REJECTED:  return StageStatus::SECURITY_REJECTED;
-        case CycleStatus::PHYSICS_REJECTED:   return StageStatus::PHYSICS_REJECTED;
-        case CycleStatus::LOAD_FAILED:        return StageStatus::LOAD_FAILED;
-        case CycleStatus::SYMBOL_MISSING:     return StageStatus::SYMBOL_MISSING;
-        case CycleStatus::SAME_MODULE:        return StageStatus::SAME_MODULE;
+        case CycleStatus::SUCCESS:                    return StageStatus::SUCCESS;
+        case CycleStatus::ATP_DENIED:                 return StageStatus::ATP_DENIED;
+        case CycleStatus::SECURITY_REJECTED:          return StageStatus::SECURITY_REJECTED;
+        case CycleStatus::STATIC_ANALYSIS_REJECTED:   return StageStatus::STATIC_ANALYSIS_REJECTED;
+        case CycleStatus::PHYSICS_REJECTED:           return StageStatus::PHYSICS_REJECTED;
+        case CycleStatus::ALIGNMENT_REJECTED:         return StageStatus::ALIGNMENT_REJECTED;
+        case CycleStatus::PERFORMANCE_REJECTED:       return StageStatus::PERFORMANCE_REJECTED;
+        case CycleStatus::LOAD_FAILED:                return StageStatus::LOAD_FAILED;
+        case CycleStatus::SYMBOL_MISSING:             return StageStatus::SYMBOL_MISSING;
+        case CycleStatus::SAME_MODULE:                return StageStatus::SAME_MODULE;
     }
     return StageStatus::LOAD_FAILED; // unreachable
 }

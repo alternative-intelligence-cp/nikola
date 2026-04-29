@@ -4,11 +4,139 @@
  */
 
 #include <nikola/autonomy/auto_ingestor.hpp>
+#include <nikola/infrastructure/mime_detection_policy.hpp>
 
 #include <algorithm>
+#include <cctype>
 #include <chrono>
 #include <fstream>
 #include <sstream>
+
+namespace {
+
+[[nodiscard]] bool is_printable_pdf_char(unsigned char c) noexcept {
+    return c == '\t' || c == '\n' || c == '\r' || (c >= 0x20 && c <= 0x7e);
+}
+
+[[nodiscard]] std::string normalize_whitespace(std::string_view in) {
+    std::string out;
+    out.reserve(in.size());
+
+    bool prev_space = true;
+    for (char ch : in) {
+        const bool ws = (ch == ' ' || ch == '\n' || ch == '\r' || ch == '\t' || ch == '\f' || ch == '\v');
+        if (ws) {
+            if (!prev_space) {
+                out.push_back(' ');
+                prev_space = true;
+            }
+            continue;
+        }
+        out.push_back(ch);
+        prev_space = false;
+    }
+
+    while (!out.empty() && out.back() == ' ') out.pop_back();
+    return out;
+}
+
+// Lightweight PDF text extractor:
+//  1) Prefer text operands inside BT...ET blocks: ( ... )
+//  2) Fallback to long printable runs if no text objects were found.
+[[nodiscard]] std::string extract_pdf_text(std::string_view bytes) {
+    std::string extracted;
+    extracted.reserve(bytes.size() / 8);
+
+    // Pass 1: parse BT ... ET blocks and collect string literals ( ... ).
+    size_t i = 0;
+    while (i + 1 < bytes.size()) {
+        if (!(bytes[i] == 'B' && bytes[i + 1] == 'T')) {
+            ++i;
+            continue;
+        }
+
+        i += 2;
+        while (i + 1 < bytes.size() && !(bytes[i] == 'E' && bytes[i + 1] == 'T')) {
+            if (bytes[i] != '(') {
+                ++i;
+                continue;
+            }
+
+            ++i; // consume '('
+            int depth = 1;
+            std::string token;
+            token.reserve(64);
+
+            while (i < bytes.size() && depth > 0) {
+                char c = bytes[i++];
+                if (c == '\\') {
+                    if (i >= bytes.size()) break;
+                    char esc = bytes[i++];
+                    switch (esc) {
+                        case 'n': token.push_back('\n'); break;
+                        case 'r': token.push_back('\r'); break;
+                        case 't': token.push_back('\t'); break;
+                        case 'b': token.push_back('\b'); break;
+                        case 'f': token.push_back('\f'); break;
+                        case '(': token.push_back('('); break;
+                        case ')': token.push_back(')'); break;
+                        case '\\': token.push_back('\\'); break;
+                        default:
+                            if (is_printable_pdf_char(static_cast<unsigned char>(esc))) token.push_back(esc);
+                            break;
+                    }
+                    continue;
+                }
+
+                if (c == '(') {
+                    ++depth;
+                    token.push_back(c);
+                    continue;
+                }
+                if (c == ')') {
+                    --depth;
+                    if (depth == 0) break;
+                    token.push_back(c);
+                    continue;
+                }
+
+                if (is_printable_pdf_char(static_cast<unsigned char>(c))) token.push_back(c);
+            }
+
+            if (!token.empty()) {
+                if (!extracted.empty()) extracted.push_back(' ');
+                extracted += token;
+            }
+        }
+
+        if (i + 1 < bytes.size()) i += 2; // consume ET
+    }
+
+    // Pass 2 fallback: gather printable runs if text objects were absent.
+    if (extracted.empty()) {
+        std::string run;
+        for (char c : bytes) {
+            const auto uc = static_cast<unsigned char>(c);
+            if (is_printable_pdf_char(uc)) {
+                run.push_back(c);
+            } else {
+                if (run.size() >= 8) {
+                    if (!extracted.empty()) extracted.push_back(' ');
+                    extracted += run;
+                }
+                run.clear();
+            }
+        }
+        if (run.size() >= 8) {
+            if (!extracted.empty()) extracted.push_back(' ');
+            extracted += run;
+        }
+    }
+
+    return normalize_whitespace(extracted);
+}
+
+} // namespace
 
 namespace nikola::autonomy {
 
@@ -252,12 +380,32 @@ IngestionResult AutoIngestor::ingest_file(const std::string& path) {
     auto t0 = Clock::now();
 
     // Read file
-    auto content = read_file_content(path, cfg_.max_file_bytes);
-    if (content.empty()) {
+    auto raw_content = read_file_content(path, cfg_.max_file_bytes);
+    if (raw_content.empty()) {
         result.error = "file empty, unreadable, or exceeds size limit";
         stats_.files_processed++;
         stats_.files_failed++;
         return result;
+    }
+
+    auto content = raw_content;
+
+    // v0.3.6 QoL: MIME-aware file-type fallback (supports content-based
+    // detection when extension is absent or misleading).
+    const auto mime = infrastructure::resolve_mime(path, raw_content);
+    result.file_type = infrastructure::detect_file_type(path, raw_content);
+
+    // v0.3.6 slice 4: lightweight PDF extraction path.
+    if (mime == infrastructure::MimeType::APPLICATION_PDF) {
+        content = extract_pdf_text(raw_content);
+        if (content.empty()) {
+            result.error = "pdf contains no extractable text";
+            stats_.files_processed++;
+            stats_.files_failed++;
+            return result;
+        }
+        // Downstream chunking should treat extracted payload as text.
+        result.file_type = FileType::TEXT;
     }
 
     // Chunk

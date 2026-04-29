@@ -39,6 +39,7 @@ namespace nikola::security {
 enum class PipelineStage : uint8_t {
     SUBMITTED,         ///< Code received from SIE
     CSVP_VERIFY,       ///< CSVP 4-stage static analysis
+    STATIC_ANALYSIS,   ///< clang-tidy + cppcheck (Gate 1.5)
     PATTERN_SCAN,      ///< CodePatternBlacklist scan
     KVM_EXECUTE,       ///< Sandboxed execution in KVM VM
     EBPF_MONITOR,      ///< eBPF escape detection during execution
@@ -49,14 +50,15 @@ enum class PipelineStage : uint8_t {
 
 inline const char* pipeline_stage_str(PipelineStage s) {
     switch (s) {
-        case PipelineStage::SUBMITTED:     return "SUBMITTED";
-        case PipelineStage::CSVP_VERIFY:   return "CSVP_VERIFY";
-        case PipelineStage::PATTERN_SCAN:  return "PATTERN_SCAN";
-        case PipelineStage::KVM_EXECUTE:   return "KVM_EXECUTE";
-        case PipelineStage::EBPF_MONITOR:  return "EBPF_MONITOR";
-        case PipelineStage::ANOMALY_CHECK: return "ANOMALY_CHECK";
-        case PipelineStage::DEPLOYED:      return "DEPLOYED";
-        case PipelineStage::QUARANTINED:   return "QUARANTINED";
+        case PipelineStage::SUBMITTED:        return "SUBMITTED";
+        case PipelineStage::CSVP_VERIFY:       return "CSVP_VERIFY";
+        case PipelineStage::STATIC_ANALYSIS:   return "STATIC_ANALYSIS";
+        case PipelineStage::PATTERN_SCAN:      return "PATTERN_SCAN";
+        case PipelineStage::KVM_EXECUTE:       return "KVM_EXECUTE";
+        case PipelineStage::EBPF_MONITOR:      return "EBPF_MONITOR";
+        case PipelineStage::ANOMALY_CHECK:     return "ANOMALY_CHECK";
+        case PipelineStage::DEPLOYED:          return "DEPLOYED";
+        case PipelineStage::QUARANTINED:       return "QUARANTINED";
     }
     return "UNKNOWN";
 }

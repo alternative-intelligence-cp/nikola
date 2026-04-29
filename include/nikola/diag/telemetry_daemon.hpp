@@ -246,6 +246,7 @@ public:
      * Useful in tests where the drain thread latency is undesirable.
      */
     void flush_sync() {
+        std::lock_guard<std::mutex> lock(drain_mutex_);
         MetricRecord rec;
         while (queue_.pop(rec)) {
             write_record(rec);
@@ -296,8 +297,11 @@ private:
         MetricRecord rec;
         while (running_.load(std::memory_order_acquire)) {
             // Drain all available
-            while (queue_.pop(rec)) {
-                write_record(rec);
+            {
+                std::lock_guard<std::mutex> lock(drain_mutex_);
+                while (queue_.pop(rec)) {
+                    write_record(rec);
+                }
             }
             // Wait for more with a short timeout so stop() is responsive
             std::unique_lock lk(cv_mutex_);
@@ -305,6 +309,7 @@ private:
                          [this]{ return !queue_.empty() || !running_.load(); });
         }
         // Final drain after stop()
+        std::lock_guard<std::mutex> lock(drain_mutex_);
         while (queue_.pop(rec)) write_record(rec);
     }
 
@@ -317,6 +322,7 @@ private:
     SpscRing<MetricRecord, TELEMETRY_QUEUE_CAP> queue_;
 
     std::thread             drain_thread_;
+    std::mutex              drain_mutex_;
     std::mutex              cv_mutex_;
     std::condition_variable cv_;
 };

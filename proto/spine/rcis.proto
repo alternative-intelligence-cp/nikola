@@ -1,0 +1,61 @@
+syntax = "proto3";
+
+package nikola.spine;
+
+// v0.3.5 — RCIS Protocol + Multi-Process
+// Runtime Cognitive Interface Spine (RCIS)
+//
+// These messages define the protobuf contract for ZMQ-mediated inter-component
+// IPC. They are intentionally compact and append-only friendly.
+
+message NeuralSpike {
+  // Required envelope headers (validated at runtime)
+  string request_id = 1;
+  uint64 timestamp_ns = 2;
+
+  // Routing / tracing
+  string source = 3;
+  string topic = 4;
+  map<string, string> trace_context = 5;
+
+  // Payloads
+  bytes payload = 6;
+  repeated float resonance_vector = 7;
+  float resonance_score = 8;
+}
+
+message RCISRequest {
+  enum RequestType {
+    REQUEST_UNSPECIFIED = 0;
+    PING = 1;
+    INJECT_STIMULUS = 2;
+    FETCH_STATE = 3;
+    FORWARD_SPIKE = 4;
+  }
+
+  string request_id = 1;
+  uint64 timestamp_ns = 2;
+  RequestType type = 3;
+
+  // Type-specific data
+  string stimulus_text = 4;
+  NeuralSpike spike = 5;
+}
+
+message RCISResponse {
+  enum Status {
+    STATUS_UNSPECIFIED = 0;
+    OK = 1;
+    REJECTED = 2;
+    ERROR = 3;
+  }
+
+  string request_id = 1;
+  uint64 timestamp_ns = 2;
+  Status status = 3;
+  string message = 4;
+
+  // Optional payloads
+  string state_json = 5;
+  NeuralSpike spike = 6;
+}

@@ -173,8 +173,14 @@ SIECycleResult SelfImprovementEngine::run_cycle(const NikolaState& state)
                 return finish(SIEOutcome::ATP_DENIED);
             case StageStatus::SECURITY_REJECTED:
                 return finish(SIEOutcome::GATE1_REJECTED);
+            case StageStatus::STATIC_ANALYSIS_REJECTED:
+                return finish(SIEOutcome::GATE1B_REJECTED);
             case StageStatus::PHYSICS_REJECTED:
                 return finish(SIEOutcome::GATE2_REJECTED);
+            case StageStatus::ALIGNMENT_REJECTED:
+                return finish(SIEOutcome::GATE4_REJECTED);
+            case StageStatus::PERFORMANCE_REJECTED:
+                return finish(SIEOutcome::GATE5_REJECTED);
             case StageStatus::LOAD_FAILED:
             case StageStatus::SYMBOL_MISSING:
             case StageStatus::SAME_MODULE:

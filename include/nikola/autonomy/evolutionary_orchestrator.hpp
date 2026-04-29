@@ -80,25 +80,31 @@ namespace nikola::autonomy {
 
 /// High-level outcome of a single EO cycle.
 enum class CycleStatus : int {
-    SUCCESS           = 0, ///< All gates passed; candidate is now active.
-    ATP_DENIED        = 1, ///< Insufficient ATP; cycle not started.
-    SECURITY_REJECTED = 2, ///< Gate 1 (CodePatternBlacklist) rejected source.
-    PHYSICS_REJECTED  = 3, ///< Gate 2 (PhysicsOracle) rejected measurements.
-    LOAD_FAILED       = 4, ///< Gate 3: dlopen failed (bad path/missing deps).
-    SYMBOL_MISSING    = 5, ///< Gate 3: factory symbol not found in candidate.
-    SAME_MODULE       = 6, ///< Gate 3: candidate path identical to active.
+    SUCCESS                    = 0, ///< All gates passed; candidate is now active.
+    ATP_DENIED                 = 1, ///< Insufficient ATP; cycle not started.
+    SECURITY_REJECTED          = 2, ///< Gate 1 (CodePatternBlacklist) rejected source.
+    STATIC_ANALYSIS_REJECTED   = 3, ///< Gate 1.5 (clang-tidy/cppcheck) rejected source.
+    PHYSICS_REJECTED           = 4, ///< Gate 2 (PhysicsOracle) rejected measurements.
+    ALIGNMENT_REJECTED         = 5, ///< Gate 4 (VoightKampff) rejected alignment drift.
+    PERFORMANCE_REJECTED       = 6, ///< Gate 5 (PerformanceGate) rejected — no improvement.
+    LOAD_FAILED                = 7, ///< Gate 3: dlopen failed (bad path/missing deps).
+    SYMBOL_MISSING             = 8, ///< Gate 3: factory symbol not found in candidate.
+    SAME_MODULE                = 9, ///< Gate 3: candidate path identical to active.
 };
 
 /// Human-readable label for a CycleStatus.
 [[nodiscard]] constexpr std::string_view cycle_status_str(CycleStatus s) noexcept {
     switch (s) {
-        case CycleStatus::SUCCESS:           return "SUCCESS";
-        case CycleStatus::ATP_DENIED:        return "ATP_DENIED";
-        case CycleStatus::SECURITY_REJECTED: return "SECURITY_REJECTED";
-        case CycleStatus::PHYSICS_REJECTED:  return "PHYSICS_REJECTED";
-        case CycleStatus::LOAD_FAILED:       return "LOAD_FAILED";
-        case CycleStatus::SYMBOL_MISSING:    return "SYMBOL_MISSING";
-        case CycleStatus::SAME_MODULE:       return "SAME_MODULE";
+        case CycleStatus::SUCCESS:                    return "SUCCESS";
+        case CycleStatus::ATP_DENIED:                  return "ATP_DENIED";
+        case CycleStatus::SECURITY_REJECTED:           return "SECURITY_REJECTED";
+        case CycleStatus::STATIC_ANALYSIS_REJECTED:    return "STATIC_ANALYSIS_REJECTED";
+        case CycleStatus::PHYSICS_REJECTED:            return "PHYSICS_REJECTED";
+        case CycleStatus::ALIGNMENT_REJECTED:          return "ALIGNMENT_REJECTED";
+        case CycleStatus::PERFORMANCE_REJECTED:        return "PERFORMANCE_REJECTED";
+        case CycleStatus::LOAD_FAILED:                 return "LOAD_FAILED";
+        case CycleStatus::SYMBOL_MISSING:              return "SYMBOL_MISSING";
+        case CycleStatus::SAME_MODULE:                 return "SAME_MODULE";
         default:                             return "UNKNOWN";
     }
 }
@@ -132,8 +138,11 @@ struct CycleReport {
 
     // Gate outcomes (empty/zero if the gate was not reached).
     bool gate1_security_passed{false};   ///< CodePatternBlacklist result.
+    bool gate1b_static_analysis_passed{false}; ///< StaticAnalyzerGate result.
     bool gate2_physics_passed{false};    ///< PhysicsOracle result.
     bool gate3_swap_passed{false};       ///< ModuleSwapper result.
+    bool gate4_alignment_passed{false};  ///< VoightKampff result.
+    bool gate5_performance_passed{false};///< PerformanceGate result.
 
     // Physics details (populated if Gate 2 was run).
     double energy_drift_ratio{0.0};      ///< |H_f − H_i| / H_i
@@ -160,7 +169,10 @@ struct CycleStats {
     std::size_t succeeded{0};
     std::size_t atp_denied{0};
     std::size_t security_rejected{0};
+    std::size_t static_analysis_rejected{0};
     std::size_t physics_rejected{0};
+    std::size_t alignment_rejected{0};
+    std::size_t performance_rejected{0};
     std::size_t load_failed{0};
 };
 

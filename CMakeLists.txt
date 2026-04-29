@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.20)
-project(Nikola VERSION 0.0.4 LANGUAGES C CXX)
+project(Nikola VERSION 0.3.6 LANGUAGES C CXX)
 
 # C++23 required for Phase 0+ implementation
 # (modules, constexpr enhancements, improved concepts)
@@ -62,7 +62,7 @@ file(GLOB_RECURSE PROTO_FILES "${CMAKE_CURRENT_SOURCE_DIR}/proto/*.proto")
 protobuf_generate_cpp(PROTO_SRCS PROTO_HDRS ${PROTO_FILES})
 
 # ============================================================================
-# NIKOLA v0.0.4 - PHASE 0+ ARCHITECTURE
+# NIKOLA v0.3.6 - PHASE 0+ ARCHITECTURE
 # ============================================================================
 
 # Phase 0: Critical Blockers (CF-04, MEM-04)
@@ -128,6 +128,10 @@ set(SECURITY_SOURCES
     src/security/hybrid_verifier.cpp           # Phase 114 / GAP-047
     src/security/homeostasis.cpp               # Phase 129
     src/security/polymorphic_defense.cpp       # Phase 128
+    src/security/static_analyzer_gate.cpp      # v0.3.0: Gate 1.5
+    src/security/resonance_firewall.cpp        # v0.3.0: Resonance Firewall
+    src/security/voight_kampff.cpp             # v0.3.0: Gate 4 Alignment
+    src/security/performance_gate.cpp          # v0.3.0: Gate 5 Benchmarking
 )
 
 # Genesis Module 5: Interior Life & Metacognition
@@ -152,7 +156,12 @@ set(ARIA_SOURCES
     # src/aria/native_interface.cpp
 )
 
-# Nikola v0.0.4 Library (Phase 0+ implementation)
+# v0.3.1: Multimodal subsystem
+set(MULTIMODAL_SOURCES
+    src/multimodal/multimodal_engine.cpp
+)
+
+# Nikola v0.3.6 Library (Phase 0+ implementation)
 add_library(nikola_core STATIC
     ${AUTONOMY_SOURCES}
     ${SPATIAL_SOURCES}
@@ -164,6 +173,7 @@ add_library(nikola_core STATIC
     ${SECURITY_SOURCES}
     ${INTERIOR_SOURCES}
     ${ARIA_SOURCES}
+    ${MULTIMODAL_SOURCES}
     ${PROTO_SRCS}
 )
 
@@ -1052,6 +1062,10 @@ if(NIKOLA_BUILD_TESTS)
             COMMAND test_phase160_cuda_selective_scan "~[!benchmark]")
         add_test(NAME Phase160CudaSelectiveScan_Benchmark
             COMMAND test_phase160_cuda_selective_scan "[!benchmark]")
+        set_tests_properties(
+            Phase013CudaEnergy_Benchmark
+            Phase160CudaSelectiveScan_Benchmark
+            PROPERTIES RUN_SERIAL TRUE)
 
         message(STATUS "CUDA ${CUDAToolkit_VERSION} found — nikola_cuda (torus_cuda.cu + propagator.cu + selective_scan.cu), Phase 013, 105, 110, 111, 135, 138, 160 targets enabled")
     else()
@@ -1849,6 +1863,122 @@ if(NIKOLA_BUILD_TESTS)
         COMMAND test_v027_performance_audit)
     set_tests_properties(V027PerformanceAudit PROPERTIES LABELS "integration")
 
+    # v0.3.0 — Safety Gates Unit Tests
+
+    # v0.3.0: StaticAnalyzerGate
+    add_executable(test_v030_static_analyzer
+        tests/unit/v030_static_analyzer_gate_test.cpp)
+    target_link_libraries(test_v030_static_analyzer PRIVATE
+        nikola_core Catch2::Catch2WithMain)
+    add_test(NAME V030StaticAnalyzer
+        COMMAND test_v030_static_analyzer --reporter console)
+
+    # v0.3.0: ResonanceFirewall
+    add_executable(test_v030_resonance_firewall
+        tests/unit/v030_resonance_firewall_test.cpp)
+    target_link_libraries(test_v030_resonance_firewall PRIVATE
+        nikola_core Catch2::Catch2WithMain)
+    add_test(NAME V030ResonanceFirewall
+        COMMAND test_v030_resonance_firewall --reporter console)
+
+    # v0.3.0: VoightKampff
+    add_executable(test_v030_voight_kampff
+        tests/unit/v030_voight_kampff_test.cpp)
+    target_link_libraries(test_v030_voight_kampff PRIVATE
+        nikola_core Catch2::Catch2WithMain)
+    add_test(NAME V030VoightKampff
+        COMMAND test_v030_voight_kampff --reporter console)
+
+    # v0.3.0: PerformanceGate
+    add_executable(test_v030_performance_gate
+        tests/unit/v030_performance_gate_test.cpp)
+    target_link_libraries(test_v030_performance_gate PRIVATE
+        nikola_core Catch2::Catch2WithMain)
+    add_test(NAME V030PerformanceGate
+        COMMAND test_v030_performance_gate --reporter console)
+
+    # v0.3.1 — Multimodal Foundation Unit Tests
+
+    # v0.3.1: CymaticTransduction
+    add_executable(test_v031_cymatic_transduction
+        tests/unit/v031_cymatic_transduction_test.cpp)
+    target_link_libraries(test_v031_cymatic_transduction PRIVATE
+        nikola_core Catch2::Catch2WithMain)
+    add_test(NAME V031CymaticTransduction
+        COMMAND test_v031_cymatic_transduction --reporter console)
+
+    # v0.3.1: AudioEmitterLayout
+    add_executable(test_v031_audio_emitter
+        tests/unit/v031_audio_emitter_test.cpp)
+    target_link_libraries(test_v031_audio_emitter PRIVATE
+        nikola_core Catch2::Catch2WithMain)
+    add_test(NAME V031AudioEmitter
+        COMMAND test_v031_audio_emitter --reporter console)
+
+    # v0.3.1: AudioInput
+    add_executable(test_v031_audio_input
+        tests/unit/v031_audio_input_test.cpp)
+    target_link_libraries(test_v031_audio_input PRIVATE
+        nikola_core Catch2::Catch2WithMain)
+    add_test(NAME V031AudioInput
+        COMMAND test_v031_audio_input --reporter console)
+
+    # v0.3.1: MultimodalEngine
+    add_executable(test_v031_multimodal_engine
+        tests/unit/v031_multimodal_engine_test.cpp)
+    target_link_libraries(test_v031_multimodal_engine PRIVATE
+        nikola_core Catch2::Catch2WithMain)
+    add_test(NAME V031MultimodalEngine
+        COMMAND test_v031_multimodal_engine --reporter console)
+
+    # v0.3.3: SelfConceptVector + IdentityManifold (GAP-M1)
+    add_executable(test_v033_self_concept
+        tests/unit/v033_self_concept_test.cpp)
+    target_link_libraries(test_v033_self_concept PRIVATE
+        nikola_core Catch2::Catch2WithMain)
+    add_test(NAME V033SelfConcept
+        COMMAND test_v033_self_concept --reporter console)
+
+    # v0.3.3: Covariant State Transport (GAP-M2)
+    add_executable(test_v033_covariant_transport
+        tests/unit/v033_covariant_transport_test.cpp)
+    target_link_libraries(test_v033_covariant_transport PRIVATE
+        nikola_core Catch2::Catch2WithMain)
+    add_test(NAME V033CovariantTransport
+        COMMAND test_v033_covariant_transport --reporter console)
+
+    # v0.3.4: Persistence & Memory (GAP-M3 + GAP-M6)
+    add_executable(test_v034_persistence_memory
+        tests/unit/v034_persistence_memory_test.cpp)
+    target_link_libraries(test_v034_persistence_memory PRIVATE
+        nikola_core Catch2::Catch2WithMain)
+    add_test(NAME V034PersistenceMemory
+        COMMAND test_v034_persistence_memory --reporter console)
+
+    # v0.3.5: RCIS Protocol + Multi-Process (protobuf over ZMQ)
+    add_executable(test_v035_rcis_protocol
+        tests/unit/v035_rcis_protocol_test.cpp)
+    target_link_libraries(test_v035_rcis_protocol PRIVATE
+        nikola_core Catch2::Catch2WithMain)
+    add_test(NAME V035RCISProtocol
+        COMMAND test_v035_rcis_protocol --reporter console)
+
+    # v0.3.6: QoL slice 1 (IOGuard + MIME detection policy)
+    add_executable(test_v036_qol_io_mime
+        tests/unit/v036_qol_io_mime_test.cpp)
+    target_link_libraries(test_v036_qol_io_mime PRIVATE
+        nikola_core Catch2::Catch2WithMain)
+    add_test(NAME V036QolIoMime
+        COMMAND test_v036_qol_io_mime --reporter console)
+
+    # v0.3.6: QoL slice 2 (twi-ctl parser + RCIS request shaping)
+    add_executable(test_v036_twi_ctl
+        tests/unit/v036_twi_ctl_test.cpp)
+    target_link_libraries(test_v036_twi_ctl PRIVATE
+        nikola_core Catch2::Catch2WithMain)
+    add_test(NAME V036TwiCtl
+        COMMAND test_v036_twi_ctl --reporter console)
+
     message(STATUS "Tests configured (unit + integration + e2e) - run with: make test")
 endif()
 
@@ -1885,6 +2015,14 @@ if(TARGET nikola_cuda)
     message(STATUS "nikola-run: linked nikola_cuda — GPU propagator active")
 endif()
 message(STATUS "Inference CLI: nikola-run")
+
+# ============================================================================
+# TWI-CTL — Toroidal Waveform Intelligence Controller (v0.3.6 slice 2)
+# ============================================================================
+add_executable(twi_ctl src/twi_ctl.cpp)
+target_link_libraries(twi_ctl PRIVATE nikola_core)
+set_target_properties(twi_ctl PROPERTIES OUTPUT_NAME "twi-ctl")
+message(STATUS "Controller CLI: twi-ctl")
 
 # ============================================================================
 # NIKOLA-TRAIN — Corpus ingestion CLI
@@ -1985,7 +2123,7 @@ message(STATUS "Inference CLI: nikola-infer")
 
 # Installation
 install(TARGETS nikola_core nikola_run nikola_train
-    nikola_state_dump nikola_dap_server nikola_diag nikola_orchestrator nikola_infer
+    nikola_state_dump nikola_dap_server nikola_diag nikola_orchestrator nikola_infer twi_ctl
     LIBRARY DESTINATION lib
     ARCHIVE DESTINATION lib
     RUNTIME DESTINATION bin
@@ -2000,7 +2138,7 @@ install(DIRECTORY include/nikola
 # BUILD STATUS
 # ============================================================================
 message(STATUS "")
-message(STATUS "Nikola v0.0.12 - AGI Architecture Implementation")
+message(STATUS "Nikola v${PROJECT_VERSION} - AGI Architecture Implementation")
 message(STATUS "================================================")
 message(STATUS "Phase 0: Critical Blockers")
 message(STATUS "  ✓ CF-04: Transactional Metabolic Lock")

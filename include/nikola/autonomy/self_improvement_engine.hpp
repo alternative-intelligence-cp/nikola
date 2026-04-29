@@ -63,10 +63,14 @@ enum class SIEOutcome : int {
     SIGNING_FAILED       = 5,  ///< Hybrid signature creation failed
     GATE0_REJECTED       = 6,  ///< ShadowSpine Gate 0 (signature) rejected
     GATE1_REJECTED       = 7,  ///< EO Gate 1 (blacklist) rejected
-    GATE2_REJECTED       = 8,  ///< EO Gate 2 (physics) rejected
-    GATE3_REJECTED       = 9,  ///< EO Gate 3 (module load) rejected
-    ATP_DENIED           = 10, ///< Insufficient ATP for the cycle
-    QUALITY_REGRESSION   = 11, ///< Post-deployment quality worse than pre
+    GATE1B_REJECTED      = 8,  ///< EO Gate 1.5 (static analysis) rejected
+    GATE2_REJECTED       = 9,  ///< EO Gate 2 (physics) rejected
+    GATE3_REJECTED       = 10, ///< EO Gate 3 (module load) rejected
+    GATE4_REJECTED       = 11, ///< Gate 4 (Voight-Kampff alignment) rejected
+    GATE5_REJECTED       = 12, ///< Gate 5 (performance benchmarking) rejected
+    RESONANCE_REJECTED   = 13, ///< Resonance Firewall rejected waveform
+    ATP_DENIED           = 14, ///< Insufficient ATP for the cycle
+    QUALITY_REGRESSION   = 15, ///< Post-deployment quality worse than pre
 };
 
 /// Human-readable label for an SIEOutcome.
@@ -80,8 +84,12 @@ enum class SIEOutcome : int {
         case SIEOutcome::SIGNING_FAILED:     return "SIGNING_FAILED";
         case SIEOutcome::GATE0_REJECTED:     return "GATE0_REJECTED";
         case SIEOutcome::GATE1_REJECTED:     return "GATE1_REJECTED";
+        case SIEOutcome::GATE1B_REJECTED:    return "GATE1B_REJECTED";
         case SIEOutcome::GATE2_REJECTED:     return "GATE2_REJECTED";
         case SIEOutcome::GATE3_REJECTED:     return "GATE3_REJECTED";
+        case SIEOutcome::GATE4_REJECTED:     return "GATE4_REJECTED";
+        case SIEOutcome::GATE5_REJECTED:     return "GATE5_REJECTED";
+        case SIEOutcome::RESONANCE_REJECTED: return "RESONANCE_REJECTED";
         case SIEOutcome::ATP_DENIED:         return "ATP_DENIED";
         case SIEOutcome::QUALITY_REGRESSION: return "QUALITY_REGRESSION";
     }
