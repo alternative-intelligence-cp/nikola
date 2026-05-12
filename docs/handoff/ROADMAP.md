@@ -217,7 +217,7 @@ Some things should be treated as settled design decisions:
 If you have access to a transcript of prior development sessions, those
 contain rationale for many architectural decisions that predates this document.
 The META/ workspace (outside the git repo) contains extensive design notes
-in `META/ARIA/` and `META/INFO/ARIA/`.
+in `META/NITPICK/` and `META/INFO/ARIA/`.
 
 The project has no public forum or community list yet. That is something
 the next steward should establish.
