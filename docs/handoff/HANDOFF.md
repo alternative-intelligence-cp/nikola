@@ -87,7 +87,7 @@ If you are reading this as a formal handoff recipient:
    `GOTCHAS.md` §"Do not break these invariants."
 
 3. **Do not discard the module registry.** The file
-   `META/ARIA/NIKOLA_PHASE_REGISTRY.md` (in the parent workspace, outside
+   `META/NITPICK/NIKOLA_PHASE_REGISTRY.md` (in the parent workspace, outside
    the git repo) is the authoritative record of every design decision made
    during implementation. If you gain access to it, treat it as primary
    documentation.
@@ -137,7 +137,7 @@ If you are reading this as a formal handoff recipient:
 If Randy is reachable: ask him directly. He will know things not in any
 document because some decisions were made in the moment and never written down.
 
-If Randy is not reachable: the `META/ARIA/NIKOLA_PHASE_REGISTRY.md` document
+If Randy is not reachable: the `META/NITPICK/NIKOLA_PHASE_REGISTRY.md` document
 (in the workspace outside the git repo) contains the most complete record of
 design decisions, implementation notes, and rationale for every phase of
 development. It is the closest thing to Randy's working memory.

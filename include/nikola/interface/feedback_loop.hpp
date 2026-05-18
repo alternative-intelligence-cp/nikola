@@ -322,16 +322,18 @@ public:
         const bool any_50ms =
             budget_.staleness_us(B::DOPAMINE)       > STALENESS_SOFT_US ||
             budget_.staleness_us(B::NOREPINEPHRINE) > STALENESS_SOFT_US ||
-            budget_.staleness_us(B::SEROTONIN)      > STALENESS_SOFT_US;
+            budget_.staleness_us(B::SEROTONIN)      > STALENESS_SOFT_US ||
+            budget_.staleness_us(B::CORTISOL)       > STALENESS_SOFT_US;
 
         if (any_50ms) return ViolationKind::COGNITIVE_PAUSE;
 
-        // Check SYNC_VIOLATION (D/N hard limit 10 ms, S soft 50 ms already checked)
-        const bool dn_violation =
+        // Check SYNC_VIOLATION (D/N/C hard limit 10 ms, S soft 50 ms already checked)
+        const bool dnc_violation =
             budget_.staleness_us(B::DOPAMINE)       > STALENESS_HARD_US ||
-            budget_.staleness_us(B::NOREPINEPHRINE) > STALENESS_HARD_US;
+            budget_.staleness_us(B::NOREPINEPHRINE) > STALENESS_HARD_US ||
+            budget_.staleness_us(B::CORTISOL)       > STALENESS_HARD_US;
 
-        if (dn_violation) return ViolationKind::SYNC_VIOLATION;
+        if (dnc_violation) return ViolationKind::SYNC_VIOLATION;
 
         return ViolationKind::NONE;
     }

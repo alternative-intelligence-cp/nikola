@@ -194,10 +194,10 @@ The primary architecture documentation lives in `/docs/handoff/ARCHITECTURE.md`.
 
 ### Phase registry is NOT in git
 
-`META/ARIA/NIKOLA_PHASE_REGISTRY.md` is outside the repo root (`REPOS/nikola/`)
+`META/NITPICK/NIKOLA_PHASE_REGISTRY.md` is outside the repo root (`REPOS/nikola/`)
 and is not tracked by git. It lives in the broader workspace at:
 ```
-/home/randy/Workspace/META/ARIA/NIKOLA_PHASE_REGISTRY.md
+/home/randy/Workspace/META/NITPICK/NIKOLA_PHASE_REGISTRY.md
 ```
 
 This is the definitive record of all phases, ctest numbers, commit hashes, and

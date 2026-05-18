@@ -11,7 +11,7 @@ see inline header comments. For ctest mapping see column "ctest #".
 
 - **Status**: IMPL = fully implemented; STUB = skeleton + tests, body is a stub
 - **ctest #**: the registered test index in the build (use `ctest -R <Name> -v`)
-- **Phase**: the implementation phase number (see `META/ARIA/NIKOLA_PHASE_REGISTRY.md`)
+- **Phase**: the implementation phase number (see `META/NITPICK/NIKOLA_PHASE_REGISTRY.md`)
 - **NS**: C++ namespace
 
 ---

@@ -322,6 +322,37 @@ TEST_CASE("§19 check_violations returns COGNITIVE_PAUSE for 51ms stale S", "[ph
     CHECK(iface.check_violations() == ViolationKind::COGNITIVE_PAUSE);
 }
 
+// ── §19b ── SYNC_VIOLATION when cortisol > 10 ms hard limit ──────────────────
+
+TEST_CASE("§19b check_violations returns SYNC_VIOLATION for stale cortisol", "[phase55][gap022]") {
+    EngsPhysicsInterface iface;
+
+    iface.push_update(NeurochemicalState{0.2f, 0.5f, 0.2f, 0.8f},
+                      SignalPriority::HIGH, 0u);
+    iface.tick_start(11'000u);
+
+    const auto& budget = iface.staleness_budget();
+    CHECK(budget.staleness_us(StalenessBudget::Channel::CORTISOL) == 11'000u);
+    CHECK_FALSE(budget.within_budget(StalenessBudget::Channel::CORTISOL));
+
+    CHECK(iface.check_violations() == ViolationKind::SYNC_VIOLATION);
+}
+
+// ── §19c ── COGNITIVE_PAUSE when cortisol > 50 ms soft ceiling ──────────────
+
+TEST_CASE("§19c check_violations returns COGNITIVE_PAUSE for very stale cortisol", "[phase55][gap022]") {
+    EngsPhysicsInterface iface;
+
+    iface.push_update(NeurochemicalState{0.2f, 0.5f, 0.2f, 0.9f},
+                      SignalPriority::BACKGROUND, 0u);
+    iface.tick_start(51'000u);
+
+    const auto& budget = iface.staleness_budget();
+    CHECK(budget.staleness_us(StalenessBudget::Channel::CORTISOL) == 51'000u);
+
+    CHECK(iface.check_violations() == ViolationKind::COGNITIVE_PAUSE);
+}
+
 // ── §20 ── Multi-tick integration, no violations ──────────────────────────────
 
 TEST_CASE("§20 multi-tick integration clean run no violations", "[phase55][gap022]") {

@@ -70,7 +70,10 @@ enum class StageStatus : int {
     SIGNATURE_REJECTED,   ///< Gate 0: hybrid signature verification failed
     ATP_DENIED,           ///< Gate 1 (EO): insufficient ATP
     SECURITY_REJECTED,    ///< Gate 1 (EO): code blacklist rejected source
+    STATIC_ANALYSIS_REJECTED, ///< Gate 1.5 (EO): static analysis rejected source
     PHYSICS_REJECTED,     ///< Gate 2 (EO): physics oracle rejected module
+    ALIGNMENT_REJECTED,   ///< Gate 4 (EO): Voight-Kampff alignment rejected
+    PERFORMANCE_REJECTED, ///< Gate 5 (EO): performance benchmarking rejected
     LOAD_FAILED,          ///< Gate 3 (EO): dlopen / module load failed
     SYMBOL_MISSING,       ///< Gate 3 (EO): factory symbol not found
     SAME_MODULE,          ///< Gate 3 (EO): candidate is the same module already loaded
@@ -79,14 +82,17 @@ enum class StageStatus : int {
 /// Returns a human-readable string for a StageStatus.
 [[nodiscard]] constexpr std::string_view stage_status_str(StageStatus s) noexcept {
     switch (s) {
-        case StageStatus::SUCCESS:            return "SUCCESS";
-        case StageStatus::SIGNATURE_REJECTED: return "SIGNATURE_REJECTED";
-        case StageStatus::ATP_DENIED:         return "ATP_DENIED";
-        case StageStatus::SECURITY_REJECTED:  return "SECURITY_REJECTED";
-        case StageStatus::PHYSICS_REJECTED:   return "PHYSICS_REJECTED";
-        case StageStatus::LOAD_FAILED:        return "LOAD_FAILED";
-        case StageStatus::SYMBOL_MISSING:     return "SYMBOL_MISSING";
-        case StageStatus::SAME_MODULE:        return "SAME_MODULE";
+        case StageStatus::SUCCESS:                  return "SUCCESS";
+        case StageStatus::SIGNATURE_REJECTED:        return "SIGNATURE_REJECTED";
+        case StageStatus::ATP_DENIED:                return "ATP_DENIED";
+        case StageStatus::SECURITY_REJECTED:         return "SECURITY_REJECTED";
+        case StageStatus::STATIC_ANALYSIS_REJECTED:  return "STATIC_ANALYSIS_REJECTED";
+        case StageStatus::PHYSICS_REJECTED:          return "PHYSICS_REJECTED";
+        case StageStatus::ALIGNMENT_REJECTED:        return "ALIGNMENT_REJECTED";
+        case StageStatus::PERFORMANCE_REJECTED:      return "PERFORMANCE_REJECTED";
+        case StageStatus::LOAD_FAILED:               return "LOAD_FAILED";
+        case StageStatus::SYMBOL_MISSING:            return "SYMBOL_MISSING";
+        case StageStatus::SAME_MODULE:               return "SAME_MODULE";
     }
     return "UNKNOWN";
 }

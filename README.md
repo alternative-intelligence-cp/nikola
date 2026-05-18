@@ -1,5 +1,9 @@
 # Nikola AI Architecture
 
+<p align="center">
+    <img src="pics/nikola_logo.png" alt="Nitpick logo: racoon logo" width="280">
+</p>
+
 [![License: AGPL v3](https://img.shields.io/badge/License-AGPL_v3-blue.svg)](https://www.gnu.org/licenses/agpl-3.0)
 [![Commercial License Available](https://img.shields.io/badge/Commercial-License_Available-green.svg)](LICENSE.md)
 [![Tests](https://img.shields.io/badge/tests-112_passing-brightgreen.svg)](#testing)
