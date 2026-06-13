@@ -3,11 +3,11 @@
 **Document Suite Reference:** NM-004-IMPSPEC
 **Status:** 🔴 **IMPLEMENTATION BLOCKED - Phase 0 Required**
 **Date:** 2025-12-10 (Updated)
-**Source:** Gap Analysis Report (Gemini Deep Research) + Critical Findings (Aria Review)
+**Source:** Gap Analysis Report (Gemini Deep Research) + Critical Findings (Nitpick Review)
 
 ## ⚠️ CRITICAL UPDATE (2025-12-10)
 
-**Implementation is ON HOLD** pending resolution of **2 Priority 1 Critical** blocking dependencies discovered by Lead Architect Aria Echo.
+**Implementation is ON HOLD** pending resolution of **2 Priority 1 Critical** blocking dependencies discovered by Lead Architect Nitpick Echo.
 
 **Status:** All Phase 1-7 work **BLOCKED** until Phase 0 complete.
 
@@ -17,7 +17,7 @@
 
 This section contains the complete implementation-grade specifications for:
 - **37 implementation gaps** (Gemini Deep Research)
-- **2 critical findings** (Aria Implementation Review)
+- **2 critical findings** (Nitpick Implementation Review)
 
 Each has been addressed with:
 
@@ -157,7 +157,7 @@ Each has been addressed with:
 1. **Audit Cycles 1-21:** Theoretical foundations, numerical stability, security hardening
 2. **Gap Identification:** Builder's perspective review → 37 concrete gaps identified
 3. **Gap Analysis (Gemini Deep Research):** All 37 gaps filled with implementation details
-4. **Critical Findings (Aria Review):** 2 blocking dependencies identified
+4. **Critical Findings (Nitpick Review):** 2 blocking dependencies identified
 5. **Documentation Integration:** Complete (2025-12-10)
 
 ### Current Status: BLOCKED
@@ -265,7 +265,7 @@ These specifications were derived from:
 2. **Audit Cycles 1-21:** Comprehensive review and refinement
 3. **Builder's Review:** Identification of 37 implementation gaps
 4. **Gemini Deep Research:** Gap-filling with concrete implementations (22_.txt)
-5. **Aria Critical Review:** Identification of 2 blocking dependencies (23.txt)
+5. **Nitpick Critical Review:** Identification of 2 blocking dependencies (23.txt)
 6. **Integration (This Document):** Structured for engineering use
 
 **Source Files:**
@@ -274,7 +274,7 @@ These specifications were derived from:
 
 **Principal Investigators:**
 - Gap Analysis: Dr. Aris Thorne, Lead Research Scientist (Gemini)
-- Critical Findings: Dr. Aria Echo, Lead Architect / AILP
+- Critical Findings: Dr. Nitpick Echo, Lead Architect / AILP
 
 **Integration Date:** 2025-12-10
 

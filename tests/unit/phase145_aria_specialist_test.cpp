@@ -1,9 +1,9 @@
 /**
  * @file tests/unit/phase145_aria_specialist_test.cpp
- * @brief Unit tests for v0.0.19 — Aria Specialist Integration (Phase 145).
+ * @brief Unit tests for v0.0.19 — Nitpick Specialist Integration (Phase 145).
  *
  * Covers:
- *   §A — AriaCompileValidator: tempfile lifecycle, output parsing, timeout
+ *   §A — NitpickCompileValidator: tempfile lifecycle, output parsing, timeout
  *   §B — CodeProposalStore (LMDB): CRUD, serialisation, metrics
  *   §C — extract_code_block(): fenced blocks, raw code, empty
  *   §D — GENERATE_CODE ActionType: enum value, action_name, scoring
@@ -47,23 +47,23 @@ static void cleanup_tmpdir(const std::string& path) {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// §A — AriaCompileValidator
+// §A — NitpickCompileValidator
 // ─────────────────────────────────────────────────────────────────────────────
 
 TEST_CASE("§A-1 CompileValidator — construction with defaults", "[compile_validator][sectionA]") {
-    AriaCompileValidator v;
+    NitpickCompileValidator v;
     CHECK(!v.ariac_path().empty());
     // Default path should contain "ariac"
     CHECK(v.ariac_path().find("ariac") != std::string::npos);
 }
 
 TEST_CASE("§A-2 CompileValidator — custom ariac path", "[compile_validator][sectionA]") {
-    AriaCompileValidator v("/usr/bin/false", 5000);
+    NitpickCompileValidator v("/usr/bin/false", 5000);
     CHECK(v.ariac_path() == "/usr/bin/false");
 }
 
 TEST_CASE("§A-3 CompileValidator — missing compiler returns error", "[compile_validator][sectionA]") {
-    AriaCompileValidator v("/nonexistent/path/ariac_does_not_exist");
+    NitpickCompileValidator v("/nonexistent/path/ariac_does_not_exist");
     auto result = v.validate("func: main() { exit 0; }");
     CHECK(!result.success);
     CHECK(!result.errors.empty());
@@ -71,18 +71,18 @@ TEST_CASE("§A-3 CompileValidator — missing compiler returns error", "[compile
 }
 
 TEST_CASE("§A-4 CompileValidator — compiler_available() with missing path", "[compile_validator][sectionA]") {
-    AriaCompileValidator v("/nonexistent/ariac_nope");
+    NitpickCompileValidator v("/nonexistent/ariac_nope");
     CHECK(!v.compiler_available());
 }
 
 TEST_CASE("§A-5 CompileValidator — compiler_available() with /bin/true", "[compile_validator][sectionA]") {
-    AriaCompileValidator v("/bin/true");
+    NitpickCompileValidator v("/bin/true");
     CHECK(v.compiler_available());
 }
 
 TEST_CASE("§A-6 CompileValidator — validate with /bin/true (always succeeds)", "[compile_validator][sectionA]") {
     // /bin/true exits 0 with no output — simulates successful compile
-    AriaCompileValidator v("/bin/true");
+    NitpickCompileValidator v("/bin/true");
     auto result = v.validate("func: main() { exit 0; }");
     CHECK(result.success);
     CHECK(result.errors.empty());
@@ -90,7 +90,7 @@ TEST_CASE("§A-6 CompileValidator — validate with /bin/true (always succeeds)"
 }
 
 TEST_CASE("§A-7 CompileValidator — validate with /bin/false (always fails)", "[compile_validator][sectionA]") {
-    AriaCompileValidator v("/bin/false");
+    NitpickCompileValidator v("/bin/false");
     auto result = v.validate("invalid source");
     CHECK(!result.success);
 }
@@ -107,7 +107,7 @@ TEST_CASE("§A-8 CompileValidator — output parsing: error lines", "[compile_va
                                        std::filesystem::perms::owner_read |
                                        std::filesystem::perms::owner_write);
 
-    AriaCompileValidator v(tmp.string());
+    NitpickCompileValidator v(tmp.string());
     auto result = v.validate("source code");
     CHECK(!result.success);
     CHECK(result.errors.size() >= 1);
@@ -128,7 +128,7 @@ TEST_CASE("§A-9 CompileValidator — CompileResult bool conversion", "[compile_
 }
 
 TEST_CASE("§A-10 CompileValidator — default_ariac_path contains ariac", "[compile_validator][sectionA]") {
-    auto path = AriaCompileValidator::default_ariac_path();
+    auto path = NitpickCompileValidator::default_ariac_path();
     CHECK(path.find("ariac") != std::string::npos);
 }
 
@@ -136,14 +136,14 @@ TEST_CASE("§A-11 CompileValidator — ARIAC_BIN env var override", "[compile_va
     // Save and set env var
     const char* old = std::getenv("ARIAC_BIN");
     setenv("ARIAC_BIN", "/custom/path/ariac", 1);
-    CHECK(AriaCompileValidator::default_ariac_path() == "/custom/path/ariac");
+    CHECK(NitpickCompileValidator::default_ariac_path() == "/custom/path/ariac");
     // Restore
     if (old) setenv("ARIAC_BIN", old, 1);
     else unsetenv("ARIAC_BIN");
 }
 
 TEST_CASE("§A-12 CompileValidator — tempfile cleanup after validate", "[compile_validator][sectionA]") {
-    AriaCompileValidator v("/bin/true");
+    NitpickCompileValidator v("/bin/true");
     auto before = std::filesystem::temp_directory_path();
     size_t count_before = 0;
     for (auto& p : std::filesystem::directory_iterator(before)) {
@@ -343,7 +343,7 @@ TEST_CASE("§B-10 ProposalStore — persistence across reopen", "[proposal_store
 TEST_CASE("§B-11 ProposalStore — serialization pack/unpack symmetry", "[proposal_store][sectionB]") {
     CodeProposal orig;
     orig.id = 42;
-    orig.instruction = "Write a sorting function in Aria";
+    orig.instruction = "Write a sorting function in Nitpick";
     orig.source_code = "func: bubble_sort(int32: arr[], int32: n) {\n  exit 0;\n}";
     orig.compile_success = false;
     orig.compile_errors = "Error: unknown type 'arr[]' on line 1";
@@ -390,19 +390,19 @@ TEST_CASE("§C-2 extract_code_block — generic fenced block", "[extract_code][s
     CHECK(code.find("func: hello()") != std::string::npos);
 }
 
-TEST_CASE("§C-3 extract_code_block — raw Aria code (func: keyword)", "[extract_code][sectionC]") {
+TEST_CASE("§C-3 extract_code_block — raw Nitpick code (func: keyword)", "[extract_code][sectionC]") {
     std::string response = "func: main() {\n  exit 0;\n}";
     auto code = extract_code_block(response);
     CHECK(code == response);
 }
 
-TEST_CASE("§C-4 extract_code_block — raw Aria code (use keyword)", "[extract_code][sectionC]") {
+TEST_CASE("§C-4 extract_code_block — raw Nitpick code (use keyword)", "[extract_code][sectionC]") {
     std::string response = "use \"io.aria\".*;\nfunc: main() { exit 0; }";
     auto code = extract_code_block(response);
     CHECK(code.find("use ") != std::string::npos);
 }
 
-TEST_CASE("§C-5 extract_code_block — raw Aria code (extern keyword)", "[extract_code][sectionC]") {
+TEST_CASE("§C-5 extract_code_block — raw Nitpick code (extern keyword)", "[extract_code][sectionC]") {
     std::string response = "extern func: puts(string: s) -> int32;";
     auto code = extract_code_block(response);
     CHECK(code.find("extern ") != std::string::npos);

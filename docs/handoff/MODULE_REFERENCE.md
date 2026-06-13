@@ -473,17 +473,17 @@ Quantization, checkpoint persistence, and GGUF model export utilities.
 
 ---
 
-## Aria Namespace — `nikola::aria`
+## Nitpick Namespace — `nikola::nitpick`
 
 ### `compile_validator.hpp`
 | Field | Value |
 |-------|-------|
 | Status | IMPL |
 | Phase | 145 |
-| Key types | `AriaCompileValidator`, `CompileResult` |
+| Key types | `NitpickCompileValidator`, `CompileResult` |
 
-C++ subprocess wrapper for `ariac` compiler. `validate(source_code)` writes
-to tempfile, invokes ariac, parses error/warning lines, returns
+C++ subprocess wrapper for `nitpickc` compiler. `validate(source_code)` writes
+to tempfile, invokes nitpickc, parses error/warning lines, returns
 `CompileResult{success, errors, warnings, raw_output, elapsed_ms}`.
 Also contains `extract_code_block()` for parsing model responses.
 
@@ -494,7 +494,7 @@ Also contains `extract_code_block()` for parsing model responses.
 | Phase | 145 |
 | Key types | `SpecialistInterface`, `SpecialistResult` |
 
-C++ client for aria-specialist Python server. Fork/exec `python3 server.py`,
+C++ client for nitpick-specialist Python server. Fork/exec `python3 server.py`,
 JSON-Lines protocol over stdin/stdout pipes. `start()`, `ask(instruction,
 context, timeout)` → `SpecialistResult{ok, response, error}`, `stop()`.
 
@@ -511,10 +511,10 @@ named database. `store(proposal)`, `load(id)`, `count()`,
 prefix `0x4E50524F` ("NPRO").
 
 ### `compiler.hpp`, `code_generator.hpp`, `interpreter.hpp`
-Aria language bridge modules for code generation and interpretation.
+Nitpick language bridge modules for code generation and interpretation.
 
 ### `metaprogramming.hpp`, `native_interface.hpp`
-Aria metaprogramming support and native FFI interface.
+Nitpick metaprogramming support and native FFI interface.
 
 ---
 
@@ -549,7 +549,7 @@ struct NikolaState {
 | spatial/math | ~5 | 0 | ~5 |
 | memory/core | ~4 | 0 | ~4 |
 | multimodal | 8 | 0 | 8 |
-| aria | 8 | 0 | 8 |
+| nitpick | 8 | 0 | 8 |
 
 *As of Phase 145 — all stubs promoted to IMPL. No remaining stubs.
 **Total public headers: 158.**

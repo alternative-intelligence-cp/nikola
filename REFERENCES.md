@@ -59,13 +59,13 @@ https://doi.org/10.5281/zenodo.18251693
 
 ## Programming Language
 
-### [6] Aria Programming Language
-Hoggard, R. (2026). *Aria Programming Language*. Zenodo (v1).  
+### [6] Nitpick Programming Language
+Hoggard, R. (2026). *Nitpick Programming Language*. Zenodo (v1).  
 https://doi.org/10.5281/zenodo.18240247  
 **Stable DOI (all versions):** https://doi.org/10.5281/zenodo.18240246  
-GitHub: https://github.com/alternative-intelligence-cp/aria
+GitHub: https://github.com/alternative-intelligence-cp/nitpick
 
-> Architectural analysis of Aria: Twisted Balanced Binary (TBB) type system, Limb-Based Integral Model (LBIM), Sentinel Discontinuity Constraint, Appendage Theory of metadata management, dual-memory model (GC/Wild) with Acquire-Convert-Release (ACR). Demonstrates bit-identical determinism and sticky error propagation. Safety Above All Else design philosophy. Includes full `aria_specs.txt` (76.6KB).
+> Architectural analysis of Nitpick: Twisted Balanced Binary (TBB) type system, Limb-Based Integral Model (LBIM), Sentinel Discontinuity Constraint, Appendage Theory of metadata management, dual-memory model (GC/Wild) with Acquire-Convert-Release (ACR). Demonstrates bit-identical determinism and sticky error propagation. Safety Above All Else design philosophy. Includes full `nitpick_specs.txt` (76.6KB).
 
 ---
 
@@ -77,7 +77,7 @@ GitHub: https://github.com/alternative-intelligence-cp/aria
     referenced by
          ↓
 [4] Nikola 9D-TWI ──── requires ────→ [1] T¹³
-[4] Nikola 9D-TWI ──── references ──→ [6] Aria Language
+[4] Nikola 9D-TWI ──── references ──→ [6] Nitpick Language
 [5] Ego-Defensive ──── referenced by → [4] Nikola 9D-TWI
 [2] Critical Eval ──── reviews ──────→ [1] T¹³
 ```

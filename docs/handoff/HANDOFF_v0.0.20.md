@@ -24,7 +24,7 @@ baseline for the v0.1.0 milestone.
 - Tests updated in Phase113 + Phase114 (17 call sites)
 
 ### HIGH: JSON Escape Injection (Fixed)
-- **File**: `include/nikola/aria/specialist_interface.hpp`
+- **File**: `include/nikola/nitpick/specialist_interface.hpp`
 - `extract_json_string()` passed invalid escapes through verbatim
 - Now handles `\b`, `\f`, `\/`, `\uXXXX` per RFC 7159; drops invalid escapes
 
@@ -38,10 +38,10 @@ baseline for the v0.1.0 milestone.
 
 | Document | Changes |
 |----------|---------|
-| ARCHITECTURE.md | Added §8 Multimodal Input, §9 Aria Specialist Integration |
-| BUILD_GUIDE.md | Test count → 163, added Aria SIE build instructions |
-| GOTCHAS.md | 3 new gotchas (Phase142 timeout, ariac -c, LMDB dirs) |
-| MODULE_REFERENCE.md | Added Multimodal + Aria namespaces (158 total headers) |
+| ARCHITECTURE.md | Added §8 Multimodal Input, §9 Nitpick Specialist Integration |
+| BUILD_GUIDE.md | Test count → 163, added Nitpick SIE build instructions |
+| GOTCHAS.md | 3 new gotchas (Phase142 timeout, nitpickc -c, LMDB dirs) |
+| MODULE_REFERENCE.md | Added Multimodal + Nitpick namespaces (158 total headers) |
 | **docs/api/README.md** | **New** — Full API reference: 24 namespaces, core types |
 | **docs/CHANGELOG_v0.0.x.md** | **New** — Complete v0.0.4–v0.0.20 changelog |
 | **docs/AUDIT_v0.0.20.md** | **New** — Comprehensive technical audit report |
@@ -67,16 +67,16 @@ baseline for the v0.1.0 milestone.
 | Cognitive integration | 15.4s |
 | Autonomy integration | 16.2s |
 | Multimodal integration | 11.3s |
-| Aria Specialist integration | 6.8s |
+| Nitpick Specialist integration | 6.8s |
 | `libnikola_core.a` | 21 MB |
 
 ---
 
-## Aria SIE
+## Nitpick SIE
 
-- 15 .aria files: 7 libraries (`ariac -c`) + 8 tests (`ariac -I -L -l`)
+- 15 .npk files: 7 libraries (`nitpickc -c`) + 8 tests (`nitpickc -I -L -l`)
 - **15/15 compile successfully**
-- Gap for v0.1.0: Aria lacks direct PhysicsOracle and ModuleSwapper integration
+- Gap for v0.1.0: Nitpick lacks direct PhysicsOracle and ModuleSwapper integration
 
 ---
 
@@ -93,7 +93,7 @@ baseline for the v0.1.0 milestone.
 | phase113 test | k_safe_source (14 calls) |
 | phase114 test | k_safe_source (3 calls) |
 | ARCHITECTURE.md | §8 + §9 |
-| BUILD_GUIDE.md | Test count + Aria SIE |
+| BUILD_GUIDE.md | Test count + Nitpick SIE |
 | GOTCHAS.md | 3 new entries |
 | MODULE_REFERENCE.md | 2 new namespaces |
 | docs/api/README.md | New API reference |
@@ -120,7 +120,7 @@ series (v0.0.x) established the full architecture:
 - Post-quantum crypto (SPHINCS+, Kyber-768, CurveZMQ)
 - LMDB persistence + observability + telemetry
 - Multimodal input (audio + visual)
-- Aria specialist integration (generate → compile → persist)
+- Nitpick specialist integration (generate → compile → persist)
 
 v0.1.0 will close the loop: specialist generates code → SIE validates →
 module hot-swapped → performance measured → training data fed back →

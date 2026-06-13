@@ -217,7 +217,7 @@ std::vector<std::string> AutoIngestor::chunk_paragraphs(const std::string& conte
 }
 
 // ============================================================================
-// Chunking — code (C++ / Aria)
+// Chunking — code (C++ / Nitpick)
 // ============================================================================
 
 std::vector<std::string> AutoIngestor::chunk_code(const std::string& content) {

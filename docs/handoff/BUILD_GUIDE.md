@@ -12,7 +12,7 @@ failures — many common build issues are documented there.
 
 | Requirement | Minimum | Tested on |
 |-------------|---------|-----------|
-| OS | Linux (Ubuntu 22.04+) | Ubuntu 22.04 / AriaxOS |
+| OS | Linux (Ubuntu 22.04+) | Ubuntu 22.04 / NitpickxOS |
 | Compiler | g++ 13+ or clang++ 17+ | g++ 13.3 |
 | C++ Standard | C++23 required | — |
 | CMake | 3.20+ | 3.28 |
@@ -196,20 +196,20 @@ for verifying the propagator is functional without full pipeline setup.
 
 ---
 
-### Building the Aria SIE tests
+### Building the Nitpick SIE tests
 
-The 15 Aria source files in `aria/sie/` can be compiled with the Aria
-compiler (`ariac`):
+The 15 Nitpick source files in `nitpick/sie/` can be compiled with the Nitpick
+compiler (`nitpickc`):
 
 ```bash
 # Library files (no failsafe required):
-ariac -c aria/sie/nikola_blacklist.aria
+nitpickc -c nitpick/sie/nikola_blacklist.npk
 
 # Test files (need module path + shim library):
-ariac -I aria/sie/ -L aria/sie/shim/ -lnikola_sie aria/sie/tests/test_blacklist.aria -o /tmp/test_blacklist
+nitpickc -I nitpick/sie/ -L nitpick/sie/shim/ -lnikola_sie nitpick/sie/tests/test_blacklist.npk -o /tmp/test_blacklist
 ```
 
-The C FFI shim at `aria/sie/shim/libnikola_sie.a` bridges Aria calls into
+The C FFI shim at `nitpick/sie/shim/libnikola_sie.a` bridges Nitpick calls into
 the Nikola C++ runtime (PhysicsOracle, HybridVerifier, etc.).
 
 ---

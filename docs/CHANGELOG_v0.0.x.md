@@ -22,8 +22,8 @@ v0.1.0.
 ### Documentation
 - Updated all 4 handoff docs (ARCHITECTURE, BUILD_GUIDE, GOTCHAS, MODULE_REFERENCE)
 - Created `docs/api/README.md` — comprehensive API reference (158 headers, 24 namespaces)
-- Added Multimodal and Aria namespace documentation
-- Documented 3 new gotchas (Phase142 timeout, ariac `-c` flag, LMDB directory mode)
+- Added Multimodal and Nitpick namespace documentation
+- Documented 3 new gotchas (Phase142 timeout, nitpickc `-c` flag, LMDB directory mode)
 
 ### Test Fixes
 - Added `TIMEOUT 300` for Phase142 physics calibration tests in CMakeLists.txt
@@ -36,11 +36,11 @@ v0.1.0.
 
 ---
 
-## v0.0.19 — Aria Specialist Integration (2026-04-03)
+## v0.0.19 — Nitpick Specialist Integration (2026-04-03)
 
-Phase 145. Connects the Aria specialist model to the SIE pipeline:
-`SpecialistInterface` (JSON-Lines subprocess), `AriaCompileValidator`
-(ariac subprocess wrapper), `CodeProposalStore` (LMDB persistence).
+Phase 145. Connects the Nitpick specialist model to the SIE pipeline:
+`SpecialistInterface` (JSON-Lines subprocess), `NitpickCompileValidator`
+(nitpickc subprocess wrapper), `CodeProposalStore` (LMDB persistence).
 Added `GENERATE_CODE = 10` to `ActionType`. 74 new tests.
 
 ## v0.0.18 — Multimodal Input (2026-04-02)
@@ -51,7 +51,7 @@ with cymatic transduction, visual frame pipeline with log-polar transform,
 
 ## v0.0.17 — Integration & End-to-End Test Framework (2026-03-28)
 
-5 integration test suites (physics, cognitive, autonomy, multimodal, aria).
+5 integration test suites (physics, cognitive, autonomy, multimodal, nitpick).
 Established end-to-end testing patterns across the full stack.
 
 ## v0.0.16.1 — Mamba S6 SSM Wiring (2026-03-25)
@@ -92,12 +92,12 @@ breakpoint support, variable inspection, watch expressions.
 Training data pipeline for self-improvement. Corpus management, data
 augmentation, training loop integration with the specialist model.
 
-## v0.0.10 — Aria SIE Integration Layer (2026-03-05)
+## v0.0.10 — Nitpick SIE Integration Layer (2026-03-05)
 
 4-gate Self-Improvement Engine pipeline: ShadowSpine (Gate 0, binary
 load + signature), CodePatternBlacklist (Gate 1, source scan),
 PhysicsOracle (Gate 2, drift validation), ModuleSwapper (Gate 3, hot
-swap). FFI bridge between Aria and C++ runtime.
+swap). FFI bridge between Nitpick and C++ runtime.
 
 ## v0.0.9 — Cognitive Tuning & First Conversations (2026-03-01)
 
@@ -120,9 +120,9 @@ toggle. Benchmark suite for CPU vs GPU comparison.
 Phase 137. LMDB-backed persistent memory for cognitive state, episodic
 memory, and module metadata. Survives restarts.
 
-## v0.0.5 — Stabilization & Aria SIE Bootstrap (2026-02-14)
+## v0.0.5 — Stabilization & Nitpick SIE Bootstrap (2026-02-14)
 
-Zero-warning build. 137/137 tests pass. Initial Aria SIE integration
+Zero-warning build. 137/137 tests pass. Initial Nitpick SIE integration
 layer: 3 modules + README.
 
 ## v0.0.4 — Foundation (2026-02-10)

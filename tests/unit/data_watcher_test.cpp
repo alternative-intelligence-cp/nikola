@@ -78,7 +78,7 @@ TEST_CASE("§A-3 classify C++ files", "[data_watcher][classify]") {
     CHECK(DataWatcher::classify("weird.cxx") == FileType::CODE_CPP);
 }
 
-TEST_CASE("§A-4 classify Aria files", "[data_watcher][classify]") {
+TEST_CASE("§A-4 classify Nitpick files", "[data_watcher][classify]") {
     CHECK(DataWatcher::classify("module.aria") == FileType::CODE_ARIA);
 }
 

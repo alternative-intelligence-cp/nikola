@@ -9,7 +9,7 @@
  *   4. run(N) steps → let the waveform propagate and resonate
  *   5. Decode resonance → token sequence → joined response text
  *   6. Print diagnostics: hot nodes, energy, decoded tokens
- *   7. Write resonance JSON snapshot to stdout for Aria hybrid integration
+ *   7. Write resonance JSON snapshot to stdout for Nitpick hybrid integration
  *    (nikola_hello.py can extend its state prompt with the resonance vector)
  *
  * Usage:

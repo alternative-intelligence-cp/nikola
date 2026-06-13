@@ -75,7 +75,7 @@ energy/entropy watchdog (Phase 129), NeuralMarketplace service registry
 | `nikola-run` CLI | ✅ Working | `--prompt`, `--interactive`, `--stream`, `--json`, `--memory` |
 | Test suite | ✅ 135 tests | ~98% pass, 2 pre-existing timing flakes |
 | Real blockchain wallet | 🔲 Planned | Simulated only for now |
-| Aria language port | 🔲 Planned | Long-term |
+| Nitpick language port | 🔲 Planned | Long-term |
 
 ---
 
@@ -143,10 +143,10 @@ interface was designed to allow swapping in a real Ethereum/Layer-2 wallet
 by implementing the virtual interface. The address derivation already happens;
 the signing needs to use real ECDSA.
 
-### ChainNode: Aria community integration
+### ChainNode: Nitpick community integration
 
-The economy module was designed to connect to the Aria community network
-(`REPOS/aria_community/`). The `NeuralMarketplace` lists services; the next
+The economy module was designed to connect to the Nitpick community network
+(`REPOS/nitpick-community/`). The `NeuralMarketplace` lists services; the next
 step is advertising those services to a real peer discovery mechanism.
 
 ### Peer discovery over real network
@@ -159,15 +159,15 @@ rendezvous mechanism — DHT or a known bootstrap node list. The CurveZMQ
 
 ## Long-Term
 
-### Aria language port
+### Nitpick language port
 
-The long-term vision is to port Nikola's cognitive pipeline to the Aria
-language (`REPOS/aria/`), which is under active development as a C-family
-language with first-class physics-simulation primitives. The Aria runtime
+The long-term vision is to port Nikola's cognitive pipeline to the Nitpick
+language (`REPOS/nitpick/`), which is under active development as a C-family
+language with first-class physics-simulation primitives. The Nitpick runtime
 would give Nikola stronger isolation and a more natural substrate.
 
 This is a multi-year effort. The C++ codebase must remain the reference
-implementation while Aria matures.
+implementation while Nitpick matures.
 
 ### Multi-node distributed torus
 

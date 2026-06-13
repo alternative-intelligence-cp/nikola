@@ -1,7 +1,7 @@
 # Nikola Deep Research Tasks - Session Index
 
 **Date Created**: December 25, 2025
-**Created By**: Aria (after fresh-eyes review of research)
+**Created By**: Nitpick (after fresh-eyes review of research)
 **Purpose**: Address issues found in comprehensive documentation review
 
 ---

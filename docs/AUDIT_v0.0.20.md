@@ -35,7 +35,7 @@ _Scope: Full prototype series freeze — v0.0.4 through v0.0.20_
 
 ### Test Breakdown
 - Unit tests: ~120 (Phases 1-145)
-- Integration tests: 5 suites (physics, cognitive, autonomy, multimodal, aria)
+- Integration tests: 5 suites (physics, cognitive, autonomy, multimodal, nitpick)
 - End-to-end: 14 (security), 5 (physics calibration)
 - Framework: Catch2 v3.4.0
 
@@ -49,10 +49,10 @@ _Scope: Full prototype series freeze — v0.0.4 through v0.0.20_
 ### Handoff Docs (all updated)
 | Document | Lines | Status |
 |----------|-------|--------|
-| ARCHITECTURE.md | 345 | Updated: added §8 Multimodal, §9 Aria Specialist |
-| BUILD_GUIDE.md | 262 | Updated: test count 163, Aria SIE build instructions |
+| ARCHITECTURE.md | 345 | Updated: added §8 Multimodal, §9 Nitpick Specialist |
+| BUILD_GUIDE.md | 262 | Updated: test count 163, Nitpick SIE build instructions |
 | GOTCHAS.md | 313 | Updated: 3 new gotchas, fixed docs/architecture/ note |
-| MODULE_REFERENCE.md | 561 | Updated: Multimodal + Aria namespaces, 158 headers |
+| MODULE_REFERENCE.md | 561 | Updated: Multimodal + Nitpick namespaces, 158 headers |
 
 ### New Documentation
 | Document | Lines | Content |
@@ -77,7 +77,7 @@ _Scope: Full prototype series freeze — v0.0.4 through v0.0.20_
 | Cognitive | 15.4s |
 | Autonomy | 16.2s |
 | Multimodal | 11.3s |
-| Aria Specialist | 6.8s |
+| Nitpick Specialist | 6.8s |
 
 ### Unit Test Suites (selected)
 | Suite | Assertions | Cases | Time |
@@ -119,7 +119,7 @@ _Scope: Full prototype series freeze — v0.0.4 through v0.0.20_
 - **Impact**: Prevents loading modules without source code verification
 
 #### HIGH: JSON Escape Injection
-- **File**: `include/nikola/aria/specialist_interface.hpp`
+- **File**: `include/nikola/nitpick/specialist_interface.hpp`
 - **Issue**: `extract_json_string()` passed invalid escape sequences through verbatim (e.g., `\u`, `\x`)
 - **Fix**: Added proper RFC 7159 handling: `\b`, `\f`, `\/` supported; `\uXXXX` consumes 4 hex digits; invalid escapes dropped
 - **Impact**: Prevents malformed JSON from propagating through the specialist pipeline
@@ -141,19 +141,19 @@ Blocked patterns: `system()`, `fork()`, `exec*()`, `popen()`, `__asm__()`, `/pro
 
 ---
 
-## 6. Aria SIE Audit
+## 6. Nitpick SIE Audit
 
 ### Compilation Results
 | Category | Files | Compile | Flags |
 |----------|-------|---------|-------|
-| Libraries | 7 | **7/7 pass** | `ariac -c` (no failsafe) |
-| Tests | 8 | **8/8 pass** | `ariac -I aria/sie/ -L aria/sie/shim/ -lnikola_sie` |
+| Libraries | 7 | **7/7 pass** | `nitpickc -c` (no failsafe) |
+| Tests | 8 | **8/8 pass** | `nitpickc -I nitpick/sie/ -L nitpick/sie/shim/ -lnikola_sie` |
 | **Total** | **15** | **15/15 pass** | |
 
-### Aria SIE vs C++ SIE Coverage
+### Nitpick SIE vs C++ SIE Coverage
 - C++ SIE: Full 4-gate pipeline, evolutionary orchestrator, hybrid verifier
-- Aria SIE: Gate wrappers, blacklist interface, basic module operations
-- Gap: Aria lacks direct PhysicsOracle and ModuleSwapper integration (planned for v0.1.0)
+- Nitpick SIE: Gate wrappers, blacklist interface, basic module operations
+- Gap: Nitpick lacks direct PhysicsOracle and ModuleSwapper integration (planned for v0.1.0)
 
 ---
 
@@ -163,14 +163,14 @@ Blocked patterns: `system()`, `fork()`, `exec*()`, `popen()`, `__asm__()`, `/pro
 |------|--------|
 | CMakeLists.txt | Phase142 timeout properties |
 | src/autonomy/evolutionary_orchestrator.cpp | Gate 1 security fix |
-| include/nikola/aria/specialist_interface.hpp | JSON escape fix |
+| include/nikola/nitpick/specialist_interface.hpp | JSON escape fix |
 | include/nikola/physics/propagator.hpp | SCRAM threshold alignment |
 | tests/unit/phase113_evolutionary_orchestrator_test.cpp | k_safe_source for Gate 1 fix |
 | tests/unit/phase114_hybrid_verifier_test.cpp | k_safe_source for Gate 1 fix |
-| docs/handoff/ARCHITECTURE.md | Multimodal + Aria sections |
-| docs/handoff/BUILD_GUIDE.md | Test count + Aria SIE instructions |
+| docs/handoff/ARCHITECTURE.md | Multimodal + Nitpick sections |
+| docs/handoff/BUILD_GUIDE.md | Test count + Nitpick SIE instructions |
 | docs/handoff/GOTCHAS.md | 3 new gotchas |
-| docs/handoff/MODULE_REFERENCE.md | Multimodal + Aria namespaces |
+| docs/handoff/MODULE_REFERENCE.md | Multimodal + Nitpick namespaces |
 
 **New files**: `docs/api/README.md`, `docs/CHANGELOG_v0.0.x.md`, `docs/AUDIT_v0.0.20.md`
 

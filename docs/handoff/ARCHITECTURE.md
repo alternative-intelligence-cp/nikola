@@ -275,9 +275,9 @@ and tick coordination.
 
 ---
 
-## 9. Aria Specialist Integration (v0.0.19)
+## 9. Nitpick Specialist Integration (v0.0.19)
 
-Nikola can invoke an external Aria language specialist model to generate code
+Nikola can invoke an external Nitpick language specialist model to generate code
 proposals as part of its self-improvement loop:
 
 ### Pipeline
@@ -286,15 +286,15 @@ proposals as part of its self-improvement loop:
 DecisionLoop (GENERATE_CODE action)
   → SpecialistInterface (JSON-Lines over stdin/stdout to specialist server)
   → extract_code_block() (parse model response)
-  → AriaCompileValidator (invoke ariac subprocess)
+  → NitpickCompileValidator (invoke nitpickc subprocess)
   → CodeProposalStore (LMDB persistence, 128MB)
 ```
 
 - **GENERATE_CODE** action fires when boredom > 0.4, ATP ≥ 0.30, and cooldown
   (30s) expired. Score = boredom × ATP × 0.5.
-- **SpecialistInterface** forks `python3 server.py` (aria-specialist repo),
+- **SpecialistInterface** forks `python3 server.py` (nitpick-specialist repo),
   communicates via JSON-Lines protocol.
-- **AriaCompileValidator** writes code to a temp file, invokes `ariac`, parses
+- **NitpickCompileValidator** writes code to a temp file, invokes `nitpickc`, parses
   errors/warnings.
 - **CodeProposalStore** persists proposals in LMDB with compile results,
   enabling iterative improvement tracking.

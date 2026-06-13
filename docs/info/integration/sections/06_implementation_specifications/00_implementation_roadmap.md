@@ -11,7 +11,7 @@ This document provides the definitive implementation roadmap for the Nikola Mode
 
 **Status Update (2025-12-10):** 🔴 **ON HOLD** - Critical blocking dependencies discovered
 
-**Critical Finding:** Aria's implementation review identified 2 Priority 1 blocking issues that must be resolved before Phase 1-7 implementation can begin.
+**Critical Finding:** Nitpick's implementation review identified 2 Priority 1 blocking issues that must be resolved before Phase 1-7 implementation can begin.
 
 **Next Step:** Implement Phase 0 Critical Remediations (CF-04, MEM-04)
 
@@ -25,7 +25,7 @@ This document provides the definitive implementation roadmap for the Nikola Mode
 
 ### Overview
 
-During implementation review, Lead Architect Aria Echo identified 2 **Priority 1 Critical** architectural vulnerabilities that must be remediated before any Phase 1-7 work can proceed. These represent fundamental stability and coherence issues.
+During implementation review, Lead Architect Nitpick Echo identified 2 **Priority 1 Critical** architectural vulnerabilities that must be remediated before any Phase 1-7 work can proceed. These represent fundamental stability and coherence issues.
 
 **Document:** [08_critical_remediations.md](08_critical_remediations.md)
 
@@ -563,7 +563,7 @@ The system specification is complete.
 
 ### Critical Update (2025-12-10)
 
-Aria's review identified 2 **Priority 1 Critical** architectural vulnerabilities:
+Nitpick's review identified 2 **Priority 1 Critical** architectural vulnerabilities:
 - **CF-04:** Thermodynamic race condition (ATP management)
 - **MEM-04:** Spatial discontinuity (Mamba-9D coherence)
 

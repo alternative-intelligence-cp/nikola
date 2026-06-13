@@ -270,10 +270,10 @@ wrong in any script or documentation.
 
 ---
 
-### The `aria/` and `aria_community/` repos are separate projects
+### The `nitpick/` and `nitpick-community/` repos are separate projects
 
-`REPOS/aria/` and `REPOS/aria_community/` contain a different project (the
-Aria language). They share the workspace but are not dependencies of Nikola.
+`REPOS/nitpick/` and `REPOS/nitpick-community/` contain a different project (the
+Nitpick language). They share the workspace but are not dependencies of Nikola.
 Don't confuse them.
 
 ---
@@ -287,11 +287,11 @@ or rely on the CMakeLists.txt `TIMEOUT` property. The quick variant
 
 ---
 
-### Aria SIE library files need `-c` flag
+### Nitpick SIE library files need `-c` flag
 
-The 7 Aria SIE library files (`aria/sie/nikola_*.aria`) are compilation units
-without `failsafe` functions. Compile them with `ariac -c` (library mode).
-The 8 test files need `-I aria/sie/ -L aria/sie/shim/ -lnikola_sie` for
+The 7 Nitpick SIE library files (`nitpick/sie/nikola_*.npk`) are compilation units
+without `failsafe` functions. Compile them with `nitpickc -c` (library mode).
+The 8 test files need `-I nitpick/sie/ -L nitpick/sie/shim/ -lnikola_sie` for
 module resolution and FFI shim linking.
 
 ---

@@ -147,13 +147,13 @@ set(INTERIOR_SOURCES
     src/interior/narrative_growth.cpp      # v0.2.3: NarrativeGrowth
 )
 
-# Genesis Module 7: Code Generation & Self-Improvement (Aria Language)
+# Genesis Module 7: Code Generation & Self-Improvement (Nitpick Language)
 set(ARIA_SOURCES
-    # src/aria/compiler.cpp  # TODO: Phase 5
-    # src/aria/interpreter.cpp
-    # src/aria/code_generator.cpp
-    # src/aria/metaprogramming.cpp
-    # src/aria/native_interface.cpp
+    # src/nitpick/compiler.cpp  # TODO: Phase 5
+    # src/nitpick/interpreter.cpp
+    # src/nitpick/code_generator.cpp
+    # src/nitpick/metaprogramming.cpp
+    # src/nitpick/native_interface.cpp
 )
 
 # v0.3.1: Multimodal subsystem
@@ -1539,13 +1539,13 @@ if(NIKOLA_BUILD_TESTS)
         COMMAND test_phase144_ssm_pipeline "[longsession]")
 
     # -------------------------------------------------------------------------
-    # Phase 145 — v0.0.19 Aria Specialist Integration (Unit Tests)
+    # Phase 145 — v0.0.19 Nitpick Specialist Integration (Unit Tests)
     # -------------------------------------------------------------------------
-    add_executable(test_phase145_aria_specialist
-        tests/unit/phase145_aria_specialist_test.cpp)
-    target_link_libraries(test_phase145_aria_specialist PRIVATE
+    add_executable(test_phase145_nitpick_specialist
+        tests/unit/phase145_nitpick_specialist_test.cpp)
+    target_link_libraries(test_phase145_nitpick_specialist PRIVATE
         nikola_core Catch2::Catch2WithMain)
-    add_test(NAME Phase145AriaSpecialist COMMAND test_phase145_aria_specialist)
+    add_test(NAME Phase145NitpickSpecialist COMMAND test_phase145_nitpick_specialist)
 
     # Phase 146 — SelfImprovementEngine (v0.1.0)
     add_executable(test_phase146_self_improvement_engine
@@ -1729,14 +1729,14 @@ if(NIKOLA_BUILD_TESTS)
         nikola_core Catch2::Catch2WithMain)
     add_test(NAME IntegrationMultimodal COMMAND test_integration_multimodal)
 
-    # Integration: Aria Specialist Pipeline (v0.0.19)
-    add_executable(test_integration_aria_specialist
-        tests/integration/aria_specialist_integration_test.cpp)
-    target_include_directories(test_integration_aria_specialist PRIVATE
+    # Integration: Nitpick Specialist Pipeline (v0.0.19)
+    add_executable(test_integration_nitpick_specialist
+        tests/integration/nitpick_specialist_integration_test.cpp)
+    target_include_directories(test_integration_nitpick_specialist PRIVATE
         ${CMAKE_CURRENT_SOURCE_DIR}/tests/helpers)
-    target_link_libraries(test_integration_aria_specialist PRIVATE
+    target_link_libraries(test_integration_nitpick_specialist PRIVATE
         nikola_core Catch2::Catch2WithMain)
-    add_test(NAME IntegrationAriaSpecialist COMMAND test_integration_aria_specialist)
+    add_test(NAME IntegrationNitpickSpecialist COMMAND test_integration_nitpick_specialist)
 
     # Integration: First Self-Improvement Cycle (v0.1.0)
     add_executable(test_first_cycle

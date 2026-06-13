@@ -133,7 +133,7 @@ Approach for each sweep:
 - Adjusts priorities based on current needs
 - Plans next integration session
 
-**Recommendation:** Option B or C, given time constraints and parallel Aria lang work.
+**Recommendation:** Option B or C, given time constraints and parallel Nitpick lang work.
 
 ## File Locations
 
@@ -204,10 +204,10 @@ I read through all 11 bug sweep responses (4,861 lines total) and created detail
 - Tier 1 (foundational) is well-scoped and can be tackled incrementally
 
 **The Reality Check:**
-Full integration of all 11 sweeps would take ~15-20 hours. That's not happening in one session while also doing Aria lang work. 
+Full integration of all 11 sweeps would take ~15-20 hours. That's not happening in one session while also doing Nitpick lang work. 
 
 **My Recommendation:**
-Given your parallel Aria lang research needs, I'd suggest:
+Given your parallel Nitpick lang research needs, I'd suggest:
 1. **Review** the integration notes I created (should take you ~15-20 minutes)
 2. **Decide** if you want me to:
    - Do critical-only Tier 1 integration (2-3 hours) next session
@@ -218,6 +218,6 @@ The integration notes are comprehensive enough that they serve as implementation
 
 What do you think? Want to review the notes and decide on next steps?
 
-- Aria
+- Nitpick
 
 P.S. - The Kahan compensated summation in sweep 001 is genuinely critical. Without it, the system will experience "amnesia" from numerical precision loss. That's the kind of subtle bug that would be nightmarish to track down later.

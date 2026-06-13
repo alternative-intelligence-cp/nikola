@@ -10,7 +10,7 @@ This file tracks available work for contributors. See [CONTRIBUTING.md](CONTRIBU
 
 **CRITICAL**: Before implementing any consciousness model feature, check for integration dependencies:
 
-📋 **Master Integration Map**: `../aria_ecosystem/INTEGRATION_MAP.md`
+📋 **Master Integration Map**: `../nitpick_ecosystem/INTEGRATION_MAP.md`
 
 **Required Ecosystem Components for Nikola**:
 
@@ -19,21 +19,21 @@ This file tracks available work for contributors. See [CONTRIBUTING.md](CONTRIBU
    - Scope-based timing with hierarchical aggregation
    - Must not perturb 1kHz real-time constraint
    - **BLOCKING**: Cannot validate performance without this
-   - Spec: `../aria_ecosystem/.internal/research/responses/09_ScopeProfiler.txt` (601 lines)
+   - Spec: `../nitpick_ecosystem/.internal/research/responses/09_ScopeProfiler.txt` (601 lines)
    - **Status**: NOT IMPLEMENTED
 
 2. **ecosystem/07_TelemetryDaemon** (HIGH - Real-Time Metrics)
    - Export wave interference metrics via stddbg (FD 3)
    - JSON format for Prometheus/Grafana integration
    - High-frequency metrics (1kHz) require async buffering
-   - Spec: `../aria_ecosystem/.internal/research/responses/07_TelemetryDaemon.txt` (277 lines)
+   - Spec: `../nitpick_ecosystem/.internal/research/responses/07_TelemetryDaemon.txt` (277 lines)
    - **Status**: NOT IMPLEMENTED
 
 3. **ecosystem/08_DebugAdapter** (HIGH - State Inspection)
    - Inspect 9D coordinate space in debugger
    - Custom DAP extensions for tensor visualization
    - Essential for debugging phase interference patterns
-   - Spec: `../aria_ecosystem/.internal/research/responses/08_DebugAdapter.txt` (203 lines)
+   - Spec: `../nitpick_ecosystem/.internal/research/responses/08_DebugAdapter.txt` (203 lines)
    - **Status**: NOT IMPLEMENTED
 
 **Implementation Order**:

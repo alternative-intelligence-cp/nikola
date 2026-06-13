@@ -1,6 +1,6 @@
 /**
  * @file tests/integration/aria_specialist_integration_test.cpp
- * @brief v0.0.19 Integration tests: Aria Specialist → SIE Pipeline.
+ * @brief v0.0.19 Integration tests: Nitpick Specialist → SIE Pipeline.
  *
  * Covers:
  *   §A — CompileValidator + CodeProposalStore: validate → persist round-trip
@@ -52,7 +52,7 @@ static void cleanup_tmpdir(const std::string& path) {
 TEST_CASE("§A-1 validate → store: successful compile persisted",
           "[aria_integ][pipeline]") {
     auto dir = make_tmpdir("integ_a1");
-    AriaCompileValidator validator("/bin/true");  // always succeeds
+    NitpickCompileValidator validator("/bin/true");  // always succeeds
     CodeProposalStore store(dir);
 
     std::string code = "func: main() { exit 0; }";
@@ -90,7 +90,7 @@ TEST_CASE("§A-2 validate → store: failed compile persisted with errors",
     }
     std::filesystem::permissions(script, std::filesystem::perms::owner_all);
 
-    AriaCompileValidator validator(script.string());
+    NitpickCompileValidator validator(script.string());
     CodeProposalStore store(dir);
 
     auto result = validator.validate("bad code");
@@ -119,8 +119,8 @@ TEST_CASE("§A-3 validate → store: mixed success rate tracking",
           "[aria_integ][pipeline]") {
     auto dir = make_tmpdir("integ_a3");
 
-    AriaCompileValidator good_compiler("/bin/true");
-    AriaCompileValidator bad_compiler("/bin/false");
+    NitpickCompileValidator good_compiler("/bin/true");
+    NitpickCompileValidator bad_compiler("/bin/false");
     CodeProposalStore store(dir);
 
     // 3 successful, 7 failed
@@ -230,7 +230,7 @@ TEST_CASE("§C-2 specialist enabled flag set when ariac path provided",
 TEST_CASE("§D-1 Full pipeline: extract → validate → store (success)",
           "[aria_integ][full_pipeline]") {
     auto dir = make_tmpdir("integ_d1");
-    AriaCompileValidator validator("/bin/true");
+    NitpickCompileValidator validator("/bin/true");
     CodeProposalStore store(dir);
 
     // Simulate specialist response
@@ -261,7 +261,7 @@ TEST_CASE("§D-1 Full pipeline: extract → validate → store (success)",
 TEST_CASE("§D-2 Full pipeline: extract → validate → store (failure)",
           "[aria_integ][full_pipeline]") {
     auto dir = make_tmpdir("integ_d2");
-    AriaCompileValidator validator("/bin/false");
+    NitpickCompileValidator validator("/bin/false");
     CodeProposalStore store(dir);
 
     std::string model_response = "```aria\nint32: x = broken;\n```";
@@ -285,8 +285,8 @@ TEST_CASE("§D-2 Full pipeline: extract → validate → store (failure)",
 TEST_CASE("§D-3 Full pipeline: multiple proposals build training corpus",
           "[aria_integ][full_pipeline]") {
     auto dir = make_tmpdir("integ_d3");
-    AriaCompileValidator good_v("/bin/true");
-    AriaCompileValidator bad_v("/bin/false");
+    NitpickCompileValidator good_v("/bin/true");
+    NitpickCompileValidator bad_v("/bin/false");
     CodeProposalStore store(dir);
 
     // Simulate a self-improvement iteration

@@ -1287,7 +1287,7 @@ def generate_world() -> List[str]:
 
 
 # ─────────────────────────────────────────────────────────────────────────────
-# Aria — programming language training data
+# Nitpick — programming language training data
 # ─────────────────────────────────────────────────────────────────────────────
 
 def generate_aria() -> List[str]:
@@ -1318,7 +1318,7 @@ def generate_aria() -> List[str]:
         "the use keyword imports modules in aria",
         "dot star imports all public symbols from a module",
         "aria strings pass as const char pointer in the ABI",
-        "aria string return type is an AriaString struct with pointer and length",
+        "aria string return type is an NitpickString struct with pointer and length",
         "flt32 and flt64 both pass as double in the calling convention",
         "the free keyword is reserved in aria use release or destroy instead",
         "aria has no garbage collector memory is manually managed",
@@ -1359,7 +1359,7 @@ def generate_aria() -> List[str]:
         "shared libraries are loaded at runtime",
         "compilation turns source code into object files",
         "linking combines object files into an executable",
-        # Aria language specific patterns
+        # Nitpick language specific patterns
         "in aria the loop construct replaces while and for loops",
         "aria loop syntax is loop start end step followed by a block",
         "aria uses semicolons to terminate statements",

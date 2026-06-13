@@ -21,7 +21,7 @@ For per-module status and ctest mapping, see `docs/handoff/MODULE_REFERENCE.md`.
 | `nikola::autonomy` | 18 | DecisionLoop, dopamine/TD-learning, SIE orchestration |
 | `nikola::security` | 12 | Post-quantum crypto, Ironhouse, HomeostasisMonitor |
 | `nikola::multimodal` | 8 | Audio/visual input, checkpoint, GGUF export |
-| `nikola::aria` | 8 | Aria specialist integration, compile validation |
+| `nikola::nitpick` | 8 | Nitpick specialist integration, compile validation |
 | `nikola::foundation` | 6 | Complex field, Nit embedding, Vector9D, toroidal grid |
 | `nikola::infrastructure` | 17 | CUDA kernels, ZMQ spine, orchestration, error taxonomy |
 | `nikola::interior` | 6 | Affective state, curiosity, dreams, autobiography |
@@ -75,7 +75,7 @@ enum class ActionType : int {
     SOCIAL_PROBE = 7,    // Peer interaction
     TRADE = 8,           // Marketplace transaction
     NAP = 9,             // Extended consolidation
-    GENERATE_CODE = 10   // Aria specialist code proposal
+    GENERATE_CODE = 10   // Nitpick specialist code proposal
 };
 ```
 
@@ -181,17 +181,17 @@ enum class ActionType : int {
 
 ---
 
-## Aria Integration API (v0.0.19)
+## Nitpick Integration API (v0.0.19)
 
-### `AriaCompileValidator` (`aria/compile_validator.hpp`)
+### `NitpickCompileValidator` (`nitpick/compile_validator.hpp`)
 - `validate(source_code)` → `CompileResult{success, errors, warnings, elapsed_ms}`
-- Uses `ariac` subprocess; path from `$ARIAC_BIN` or default
+- Uses `nitpickc` subprocess; path from `$ARIAC_BIN` or default
 
-### `SpecialistInterface` (`aria/specialist_interface.hpp`)
+### `SpecialistInterface` (`nitpick/specialist_interface.hpp`)
 - `start()` / `ask(instruction, context, timeout)` / `stop()`
-- JSON-Lines protocol to aria-specialist `server.py`
+- JSON-Lines protocol to nitpick-specialist `server.py`
 
-### `CodeProposalStore` (`aria/code_proposal_store.hpp`)
+### `CodeProposalStore` (`nitpick/code_proposal_store.hpp`)
 - LMDB 128MB, `store()` / `load()` / `export_successful()` / `success_rate()`
 
 ---
@@ -225,7 +225,7 @@ enum class ActionType : int {
 ### `LmdbMemoryStore` (`cognitive/lmdb_memory_store.hpp`)
 - 256MB, semantic wave-field memories keyed by Hilbert index
 
-### `CodeProposalStore` (`aria/code_proposal_store.hpp`)
+### `CodeProposalStore` (`nitpick/code_proposal_store.hpp`)
 - 128MB, code proposals with compile results
 
 ---

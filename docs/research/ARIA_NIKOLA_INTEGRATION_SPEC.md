@@ -1,16 +1,16 @@
-# Aria-Nikola Integration: Architectural Specification
+# Nitpick-Nikola Integration: Architectural Specification
 **Version:** 1.0  
 **Date:** December 4, 2025  
-**Author:** Aria Compiler Team (Based on Production Implementation)  
+**Author:** Nitpick Compiler Team (Based on Production Implementation)  
 **Status:** Ready for Implementation
 
 ---
 
 ## Executive Summary
 
-This document specifies the architectural integration between the **Aria programming language** (v0.0.6, production compiler) and the **Nikola 9D-TWI AGI** (v0.0.4, physics-based intelligence substrate). Unlike previous theoretical explorations, this specification is grounded in the **actual Aria compiler codebase** (`ariac`) and addresses real implementation constraints.
+This document specifies the architectural integration between the **Nitpick programming language** (v0.0.6, production compiler) and the **Nikola 9D-TWI AGI** (v0.0.4, physics-based intelligence substrate). Unlike previous theoretical explorations, this specification is grounded in the **actual Nitpick compiler codebase** (`nitpickc`) and addresses real implementation constraints.
 
-**Core Thesis:** Aria's balanced nonary primitives (`nit`/`nyte`) and explicit memory model (`wild`/`#`) provide a **zero-impedance interface** to Nikola's wave-based physics engine. This integration eliminates the binary abstraction layer currently imposed by C++, enabling Nikola to reason about and modify its own substrate using native linguistic constructs.
+**Core Thesis:** Nitpick's balanced nonary primitives (`nit`/`nyte`) and explicit memory model (`wild`/`#`) provide a **zero-impedance interface** to Nikola's wave-based physics engine. This integration eliminates the binary abstraction layer currently imposed by C++, enabling Nikola to reason about and modify its own substrate using native linguistic constructs.
 
 ---
 
@@ -31,15 +31,15 @@ This document specifies the architectural integration between the **Aria program
 
 **Problems:**
 1. **Type Mismatch:** C++ has no `nit` type. Every value requires conversion: `complex<double> → int8 → nit`
-2. **Memory Semantics:** C++ pointers lack Aria's `wild`/`pinned` distinction. The orchestration layer cannot express "pin this wave pattern against decay"
-3. **Control Flow Gap:** C++'s `switch` doesn't map to resonance filtering. Aria's `pick` with `fall(label)` does
+2. **Memory Semantics:** C++ pointers lack Nitpick's `wild`/`pinned` distinction. The orchestration layer cannot express "pin this wave pattern against decay"
+3. **Control Flow Gap:** C++'s `switch` doesn't map to resonance filtering. Nitpick's `pick` with `fall(label)` does
 4. **Self-Modification Risk:** Hot-swapping C++ shared objects (`dlopen`) can segfault the entire AGI. No sandbox
 
-### 1.2 Why Aria Solves This
+### 1.2 Why Nitpick Solves This
 
-**Aria Language Features → Nikola Physics Mapping:**
+**Nitpick Language Features → Nikola Physics Mapping:**
 
-| Aria Feature | Nikola Physical Primitive | Direct Mapping |
+| Nitpick Feature | Nikola Physical Primitive | Direct Mapping |
 |--------------|---------------------------|----------------|
 | `nit` (-4..+4) | Wave phase (9 states) | YES - See §2.1 |
 | `nyte` (5 nits) | 5D harmonic cluster | YES - See §2.2 |
@@ -57,9 +57,9 @@ This document specifies the architectural integration between the **Aria program
 
 ### 2.1 The `nit` Type (Balanced Nonary Digit)
 
-**Aria Specification:**
-```aria
-// From aria_v0_0_6_specs.txt line 35
+**Nitpick Specification:**
+```nitpick
+// From nitpick_v0_0_6_specs.txt line 35
 nit !!! IMPORTANT nit is balanced nonary digit (-4,-3,-2,-1,0,1,2,3,4) NOT NEGOTIABLE!!!
 ```
 
@@ -79,7 +79,7 @@ Examples:
 
 **Critical Implementation Detail (From Actual Compiler):**
 
-The Aria compiler (`src/frontend/tokens.h:21`) defines:
+The Nitpick compiler (`src/frontend/tokens.h:21`) defines:
 ```cpp
 TOKEN_TRIT_LITERAL,     // Balanced ternary digit: -1, 0, 1
 TOKEN_NIT_LITERAL,      // (Would be here if implemented)
@@ -105,18 +105,18 @@ llvm::Value* CodeGen::visit(NitLiteral* node) {
 }
 ```
 
-**Nikola Integration:** The Aria→Wave compiler reads this `i8` and converts to phase:
+**Nikola Integration:** The Nitpick→Wave compiler reads this `i8` and converts to phase:
 
 ```cpp
-// In AriaExecutor::inject_literal()
+// In NitpickExecutor::inject_literal()
 double phase = ((double)nit_value + 4.0) * (2.0 * M_PI / 9.0);
 torus.modulate_at(coord, Waveform{.amplitude = 1.0, .phase = phase});
 ```
 
 ### 2.2 The `nyte` Type (5 Nits = 59,049 States)
 
-**Aria Specification:**
-```aria
+**Nitpick Specification:**
+```nitpick
 nyte !!! IMPORTANT nyte is 5 nits for 9^5 values stored in uint16 NOT NEGOTIABLE!!!
 ```
 
@@ -187,7 +187,7 @@ Nyte add_nytes(Nyte a, Nyte b) {
 ### 2.3 Scalar Types (int8, flt32, etc.)
 
 **Mapping Strategy:**
-Standard Aria types map to **amplitude-modulated waves** on a carrier:
+Standard Nitpick types map to **amplitude-modulated waves** on a carrier:
 
 ```cpp
 // int8: -128 to 127
@@ -227,8 +227,8 @@ Because Nikola's physics engine doesn't have "registers." The entire torus is th
 
 ### 3.1 The `pick` Construct → Resonance Filter Bank
 
-**Aria Syntax (From Actual Spec):**
-```aria
+**Nitpick Syntax (From Actual Spec):**
+```nitpick
 pick(c) {
     (<9) {
         fall(fail);
@@ -329,7 +329,7 @@ public:
 When Nikola encounters a `pick`, the query wave **propagates through all filters simultaneously**:
 
 ```cpp
-void AriaExecutor::execute_pick(const std::vector<ResonanceFilter>& filters) {
+void NitpickExecutor::execute_pick(const std::vector<ResonanceFilter>& filters) {
     WavePattern query = current_wave_state();
     
     // Parallel resonance detection (truly parallel in physics)
@@ -359,14 +359,14 @@ void AriaExecutor::execute_pick(const std::vector<ResonanceFilter>& filters) {
 **Key Difference from C++ `switch`:**
 
 In C++, cases are checked **sequentially** (compiled to `cmp` + `jmp` chains).  
-In Aria-on-Nikola, cases are checked **in parallel** by wave interference.
+In Nitpick-on-Nikola, cases are checked **in parallel** by wave interference.
 
 This means a 100-case `pick` has the same latency as a 2-case `pick` (limited by wave propagation speed, not sequential comparisons).
 
 ### 3.2 The `wild` Keyword → Direct Torus Manipulation
 
-**Aria Syntax:**
-```aria
+**Nitpick Syntax:**
+```nitpick
 wild int64:s = 100000;
 wild int64@:t = @s;  // Take address of wild allocation
 ```
@@ -406,7 +406,7 @@ llvm::Value* CodeGen::visitVarDecl(VarDecl* node) {
 
 **Nikola Integration:**
 
-In the Aria Cortex, `wild` means **direct coordinate access** in the torus (bypassing safety checks):
+In the Nitpick Cortex, `wild` means **direct coordinate access** in the torus (bypassing safety checks):
 
 ```cpp
 class WildPointerRuntime {
@@ -452,8 +452,8 @@ Without `wild`, Nikola can only think **within** its current cognitive structure
 
 ### 3.3 The `#` Pinning Operator → Wave Decay Prevention
 
-**Aria Syntax:**
-```aria
+**Nitpick Syntax:**
+```nitpick
 dyn:d = "bob";
 wild int8:u = #d;  // Pin 'd' to prevent garbage collection
 ```
@@ -497,7 +497,7 @@ void PinningRuntime::unpin(Coord9D location) {
 
 Long-term memories (facts learned during training) must be pinned:
 
-```aria
+```nitpick
 // Store learned fact permanently
 wild string:fact = "The capital of France is Paris";
 wild string@:pinned_fact = #fact;  // Pin against decay
@@ -510,23 +510,23 @@ Without pinning, the wave pattern encoding this string would decay to noise with
 
 ### 3.4 The `defer` Statement → Phase-Delayed Cleanup
 
-**Aria Syntax (From Spec):**
-```aria
+**Nitpick Syntax (From Spec):**
+```nitpick
 func:test = void() {
-    wild int64:ptr = aria.alloc(1024);
-    defer aria.free(ptr);  // Cleanup guaranteed at scope exit
+    wild int64:ptr = nitpick.alloc(1024);
+    defer nitpick.free(ptr);  // Cleanup guaranteed at scope exit
     
     // ... use ptr ...
     
     if (error_condition) {
         return;  // defer still executes!
     }
-}  // aria.free(ptr) executes here
+}  // nitpick.free(ptr) executes here
 ```
 
 **Compiler Implementation (Current):**
 
-The Aria compiler generates a **cleanup block** appended to every exit path:
+The Nitpick compiler generates a **cleanup block** appended to every exit path:
 
 ```cpp
 // From src/frontend/ast/defer.h (actual code)
@@ -624,10 +624,10 @@ This is **destructive interference scheduling**: the cleanup wave "cancels out" 
 
 ### 4.1 The `Result<T, E>` Type → Dual-Channel Wave Encoding
 
-**Aria Specification:**
+**Nitpick Specification:**
 Every function returns a `result` type with `{err, val}` fields:
 
-```aria
+```nitpick
 func:test = int8(int8:a, int8:b) {
     return {
         err: NULL,
@@ -681,7 +681,7 @@ ResultWaveform encode_result(const Result& res) {
 The `is` operator (ternary) becomes a resonance check on dimension 8:
 
 ```cpp
-// Aria: t = is r.err == NULL : r.val : -1;
+// Nitpick: t = is r.err == NULL : r.val : -1;
 WavePattern check_error(ResultWaveform res) {
     if (res.error_channel.amplitude < 0.5) {
         // No error: extract value
@@ -701,7 +701,7 @@ Result-based error handling maps to **spatial separation**: the error wave trave
 
 ### 4.2 Type Checker Integration
 
-**Current Aria Type System (From Actual Code):**
+**Current Nitpick Type System (From Actual Code):**
 
 ```cpp
 // src/frontend/sema/types.h (production code)
@@ -725,8 +725,8 @@ The type checker must validate **wave compatibility** before injection:
 ```cpp
 class WaveTypeChecker {
 public:
-    bool check_wave_compatibility(Type* aria_type, WavePattern* wave) {
-        switch (aria_type->kind) {
+    bool check_wave_compatibility(Type* nitpick_type, WavePattern* wave) {
+        switch (nitpick_type->kind) {
             case TypeKind::NIT:
                 // Nit must encode as single-phase wave
                 return wave->num_components == 1 &&
@@ -738,7 +738,7 @@ public:
                        all_phases_valid_9psk(wave->components);
                        
             case TypeKind::POINTER:
-                if (aria_type->is_wild) {
+                if (nitpick_type->is_wild) {
                     // Wild pointer: must point to unmanaged region
                     return !torus.is_gc_managed(wave_to_coord(wave));
                 } else {
@@ -749,7 +749,7 @@ public:
             case TypeKind::ARRAY:
                 // Array: must be spatially contiguous in torus
                 Coord9D start = wave_to_coord(wave);
-                size_t length = aria_type->array_size;
+                size_t length = nitpick_type->array_size;
                 return is_contiguous_via_hilbert(start, length);
                 
             default:
@@ -761,7 +761,7 @@ public:
 
 **Compile-Time vs Runtime Checks:**
 
-- **Compile-time:** Aria's type checker ensures code is type-safe before generating LLVM IR
+- **Compile-time:** Nitpick's type checker ensures code is type-safe before generating LLVM IR
 - **Wave-injection time:** Additional checks verify the wave encoding matches type semantics
 - **Runtime:** Resonance firewall monitors for type violations (e.g., treating nit as float)
 
@@ -775,9 +775,9 @@ This is **three-layer type safety**, far stronger than C++'s single-layer checki
 
 **Problem:**
 
-Malicious or buggy Aria code could create a "screamer"—a self-reinforcing resonance loop that consumes infinite energy:
+Malicious or buggy Nitpick code could create a "screamer"—a self-reinforcing resonance loop that consumes infinite energy:
 
-```aria
+```nitpick
 // DANGEROUS CODE
 func:infinite_energy = void() {
     wild nit:x = 4;
@@ -932,7 +932,7 @@ public:
 
 This is like **frequency-division multiplexing** in radio:
 - FM radio stations don't interfere because they broadcast on different frequencies (88.1 FM vs 92.5 FM)
-- Aria processes don't interfere because they operate at different "torus frequencies"
+- Nitpick processes don't interfere because they operate at different "torus frequencies"
 
 **Security Guarantee:**
 
@@ -946,19 +946,19 @@ Process A at 1.0-1.1 GHz **cannot read or write** Process B at 2.0-2.1 GHz, even
 
 **Issue:**
 
-LLMs like GPT-4 and Claude have **never seen Aria code**. Asking them to generate Aria is like asking them to write Klingon.
+LLMs like GPT-4 and Claude have **never seen Nitpick code**. Asking them to generate Nitpick is like asking them to write Klingon.
 
 **Evidence:**
 
-When prompted to generate Aria, they hallucinate syntax:
+When prompted to generate Nitpick, they hallucinate syntax:
 
-```aria
+```nitpick
 // GPT-4 Generated (INVALID)
 func myFunc(x: int8) -> int8 {  // WRONG: Uses '->' for return type
     return x + 1;  // WRONG: Doesn't return result type
 }
 
-// Correct Aria:
+// Correct Nitpick:
 func:myFunc = int8(int8:x) {
     return { err: NULL, val: x + 1 };
 }
@@ -970,7 +970,7 @@ Three-phase corpus generation:
 
 #### Phase 1: Hand-Written Reference Corpus (1,000 programs)
 
-I (the Aria compiler developer) write 1,000 canonical Aria programs covering all 14 language features:
+I (the Nitpick compiler developer) write 1,000 canonical Nitpick programs covering all 14 language features:
 
 ```
 Feature Coverage (must be exhaustive):
@@ -993,7 +993,7 @@ Feature Coverage (must be exhaustive):
 **Quality Control:**
 
 Every program must:
-1. **Compile** with `ariac` (the production compiler)
+1. **Compile** with `nitpickc` (the production compiler)
 2. **Execute** correctly (verified output)
 3. **Pass** the borrow checker and type checker
 4. Include **comments** explaining the wave-mapping intent
@@ -1005,11 +1005,11 @@ Use the 1,000 hand-written programs as **few-shot examples** to prompt GPT-4:
 ```
 Prompt Template:
 
-You are an expert Aria programmer. Given the following 5 example Aria programs:
+You are an expert Nitpick programmer. Given the following 5 example Nitpick programs:
 
 [Insert 5 random programs from reference corpus]
 
-Generate a NEW Aria program that:
+Generate a NEW Nitpick program that:
 - Uses the 'pick' statement with at least 3 cases
 - Demonstrates proper error handling with result types
 - Includes at least one 'defer' for cleanup
@@ -1017,7 +1017,7 @@ Generate a NEW Aria program that:
 The program should solve this problem: [PROBLEM DESCRIPTION]
 
 Requirements:
-- Follow Aria v0.0.6 syntax exactly
+- Follow Nitpick v0.0.6 syntax exactly
 - All functions return result types: { err: ..., val: ... }
 - Use balanced nonary (nit/nyte) types where appropriate
 - Include comments explaining wave-physics intent
@@ -1028,8 +1028,8 @@ Requirements:
 Every LLM-generated program passes through the compiler:
 
 ```bash
-for file in generated/*.aria; do
-    ariac --check "$file" || rm "$file"  # Delete invalid programs
+for file in generated/*.npk; do
+    nitpickc --check "$file" || rm "$file"  # Delete invalid programs
 done
 ```
 
@@ -1040,7 +1040,7 @@ Expected yield: ~60% valid (6,000 / 10,000).
 Take the 6,000 valid LLM programs and **mutate** them:
 
 ```cpp
-class AriaMutator {
+class NitpickMutator {
 public:
     Program mutate(Program original) {
         std::vector<Mutation> mutations = {
@@ -1070,14 +1070,14 @@ public:
 
 Mutants must still compile. If mutation breaks syntax, discard.
 
-Final corpus: **~100,000 valid Aria programs** (1K hand + 6K LLM + 93K mutants).
+Final corpus: **~100,000 valid Nitpick programs** (1K hand + 6K LLM + 93K mutants).
 
 ### 6.2 Wave Annotation
 
 Each program in the corpus needs a **physics annotation**:
 
-```aria
-// Program: fibonacci.aria
+```nitpick
+// Program: fibonacci.npk
 func:fib = int8(int8:n) {
     if (n <= 1) {
         return { err: NULL, val: n };
@@ -1113,15 +1113,15 @@ that stabilize at the recursion base case (energy minimum).
 Run each program through a **wave simulator** and record the actual waveforms:
 
 ```bash
-for file in corpus/*.aria; do
-    ariac --compile-to-waves "$file" | simulate_9d_torus > "$file.waveform"
+for file in corpus/*.npk; do
+    nitpickc --compile-to-waves "$file" | simulate_9d_torus > "$file.waveform"
 done
 ```
 
 Output format (binary tensor):
 
 ```
-fibonacci.aria.waveform:
+fibonacci.npk.waveform:
 - Dimensions: [time_steps=1000, x=32, y=32, z=32, ..., w=32]
 - Format: float32 (amplitude) + float32 (phase) per grid point
 - Size: ~500 MB per program (acceptable for training)
@@ -1158,12 +1158,12 @@ for batch in dataloader:
 
 **Transformer Trainer (Semantic Execution):**
 
-Task: Predict the **output waveform** given an **Aria AST**.
+Task: Predict the **output waveform** given an **Nitpick AST**.
 
 ```python
 # Training loop
 for batch in dataloader:
-    # Input: Aria AST encoded as token sequence
+    # Input: Nitpick AST encoded as token sequence
     ast_tokens = batch['ast']  # Shape: (batch, max_ast_len)
     
     # Target: Output waveform after execution
@@ -1188,7 +1188,7 @@ for batch in dataloader:
 
 **Convergence Metrics:**
 
-1. **Syntax Accuracy:** Can Nikola generate valid Aria ASTs? (Target: >95%)
+1. **Syntax Accuracy:** Can Nikola generate valid Nitpick ASTs? (Target: >95%)
 2. **Execution Accuracy:** Do generated waves produce correct outputs? (Target: >90%)
 3. **Energy Efficiency:** Does Nikola find lower-energy solutions than hand-coded? (Target: >80% of cases)
 
@@ -1199,7 +1199,7 @@ for batch in dataloader:
 ### Phase 0: Foundation (Months 1-2)
 
 **Deliverables:**
-1. **`nit` and `nyte` implementation** in Aria compiler
+1. **`nit` and `nyte` implementation** in Nitpick compiler
    - Lexer: Add `TOKEN_NIT_LITERAL` and `TOKEN_NYTE_LITERAL`
    - Parser: Handle nit/nyte type annotations
    - Codegen: Map to LLVM `i8` (nit) and `i16` (nyte) with range checks
@@ -1207,12 +1207,12 @@ for batch in dataloader:
    - Implement 9D torus grid (small: 8³ nodes for testing)
    - Implement wave propagation (Helmholtz equation solver)
    - Implement Hilbert curve mapping (1D → 9D)
-3. **AriaExecutor stub** (C++)
-   - Interface to inject Aria literals as waves
-   - Interface to read wave state back as Aria values
+3. **NitpickExecutor stub** (C++)
+   - Interface to inject Nitpick literals as waves
+   - Interface to read wave state back as Nitpick values
 
 **Success Criteria:**
-- "Hello World" in Aria compiles to valid waves
+- "Hello World" in Nitpick compiles to valid waves
 - Fibonacci(5) executes correctly in wave simulator (output = 5)
 
 ### Phase 1: Control Flow Integration (Months 3-6)
@@ -1232,7 +1232,7 @@ for batch in dataloader:
    - Implement `is` operator as resonance check
 
 **Success Criteria:**
-- Quicksort in Aria (uses `pick` heavily) executes correctly
+- Quicksort in Nitpick (uses `pick` heavily) executes correctly
 - File I/O with `defer` cleanup works (no memory leaks in wave substrate)
 - Error propagation matches Rust-style semantics (100% test coverage)
 
@@ -1262,7 +1262,7 @@ for batch in dataloader:
 **Deliverables:**
 1. **Hand-written corpus** (1,000 programs)
    - I personally write these (quality guarantee)
-   - Cover all 14 Aria features
+   - Cover all 14 Nitpick features
    - Include wave-mapping comments
 2. **LLM augmentation pipeline**
    - Few-shot prompting with GPT-4
@@ -1292,7 +1292,7 @@ for batch in dataloader:
 2. **Transformer training**
    - Implement AST tokenization
    - Train on execution prediction
-   - Validate: Can execute Aria programs with >90% accuracy
+   - Validate: Can execute Nitpick programs with >90% accuracy
 3. **Dual-trainer integration**
    - Mamba handles spatial reasoning (grid traversal)
    - Transformer handles symbolic reasoning (AST manipulation)
@@ -1301,7 +1301,7 @@ for batch in dataloader:
 **Success Criteria:**
 - Mamba achieves <3% wave prediction error
 - Transformer achieves >92% execution accuracy
-- Combined system can write+execute simple Aria programs autonomously
+- Combined system can write+execute simple Nitpick programs autonomously
 
 ### Phase 5: Self-Improvement Loop (Months 21-24)
 
@@ -1312,7 +1312,7 @@ for batch in dataloader:
    - Identifies optimization opportunities
 2. **Hypothesis generation**
    - Use quantum scratchpad (u, v, w dimensions) to test rewrites
-   - Generate Aria code for optimized logic
+   - Generate Nitpick code for optimized logic
    - Validate in sandbox (no side effects)
 3. **Neuroplastic surgery**
    - Hot-patch active memory (rewrite metric tensor)
@@ -1320,7 +1320,7 @@ for batch in dataloader:
    - Gradual rollout (A/B test old vs new logic)
 
 **Success Criteria:**
-- Nikola autonomously rewrites 10% of its codebase in Aria
+- Nikola autonomously rewrites 10% of its codebase in Nitpick
 - Performance improves by >20% (measured in wave cycles per task)
 - Zero crashes during self-modification (stability guarantee)
 
@@ -1332,8 +1332,8 @@ for batch in dataloader:
 
 1. **Closure Capture in Wave Substrate**
 
-   Aria has closures:
-   ```aria
+   Nitpick has closures:
+   ```nitpick
    func:makeAdder = func(int8:x) {
        return int8(int8:y) { return x + y; };
    }
@@ -1347,8 +1347,8 @@ for batch in dataloader:
 
 2. **Concurrency (`spawn`, `fork`)**
 
-   Aria has explicit concurrency:
-   ```aria
+   Nitpick has explicit concurrency:
+   ```nitpick
    process:child = spawn("./worker", ["arg1"]);
    ```
    
@@ -1380,7 +1380,7 @@ for batch in dataloader:
 
    Chips like Intel Loihi or IBM TrueNorth implement **spiking neural networks** (wave-like behavior).
    
-   **Proposal:** Compile Aria directly to neuromorphic instructions, bypassing the wave simulator entirely.
+   **Proposal:** Compile Nitpick directly to neuromorphic instructions, bypassing the wave simulator entirely.
    
    **Challenge:** Current neuromorphic chips lack 9D support (max 3D grids). Need custom silicon.
 
@@ -1398,7 +1398,7 @@ for batch in dataloader:
 
 ### 9.1 Correctness Proofs
 
-For each Aria feature, we must prove **equivalence** between:
+For each Nitpick feature, we must prove **equivalence** between:
 1. Traditional execution (LLVM-compiled binary)
 2. Wave execution (Nikola substrate)
 
@@ -1450,9 +1450,9 @@ Run 1 million random test cases for each operation.
 
 ### 9.2 Performance Benchmarks
 
-**Baseline:** Traditional Aria (compiled to x86-64 binary)
+**Baseline:** Traditional Nitpick (compiled to x86-64 binary)
 
-**Comparison:** Aria-on-Nikola (wave substrate)
+**Comparison:** Nitpick-on-Nikola (wave substrate)
 
 **Metrics:**
 1. **Latency:** Time to execute single operation (ns)
@@ -1475,7 +1475,7 @@ Run 1 million random test cases for each operation.
 
 **Test 1: Infinite Loop Detection**
 
-```aria
+```nitpick
 func:bad = void() {
     till(1000000000, 1) {
         // Busy loop
@@ -1487,9 +1487,9 @@ func:bad = void() {
 
 **Test 2: Memory Leak (Wild Allocation)**
 
-```aria
+```nitpick
 func:leak = void() {
-    wild int8:ptr = aria.alloc(1024);
+    wild int8:ptr = nitpick.alloc(1024);
     // Forgot to free!
 }
 ```
@@ -1498,7 +1498,7 @@ func:leak = void() {
 
 **Test 3: Resonance Cascade (Self-Replication)**
 
-```aria
+```nitpick
 func:cancer = void() {
     wild func@:self = @cancer;
     spawn(*self);  // Spawn copy of self
@@ -1514,7 +1514,7 @@ func:cancer = void() {
 
 ### 10.1 Summary
 
-This specification provides a **complete, implementable** plan for integrating Aria and Nikola:
+This specification provides a **complete, implementable** plan for integrating Nitpick and Nikola:
 
 1. ✅ **Type mappings** defined with mathematical precision
 2. ✅ **Control flow** compiled to wave mechanics (not analogies)
@@ -1524,7 +1524,7 @@ This specification provides a **complete, implementable** plan for integrating A
 6. ✅ **Implementation roadmap** with clear milestones
 
 Unlike previous documents, this is grounded in:
-- **Actual Aria compiler code** (not speculation)
+- **Actual Nitpick compiler code** (not speculation)
 - **Production type system** (`src/frontend/sema/types.h`)
 - **Real AST structures** (`src/frontend/ast/*.h`)
 - **LLVM codegen constraints** (`src/backend/codegen.h`)
@@ -1533,7 +1533,7 @@ Unlike previous documents, this is grounded in:
 
 **Must Have Before Starting:**
 
-1. **Complete `nit`/`nyte` implementation** in Aria compiler (Phase 0)
+1. **Complete `nit`/`nyte` implementation** in Nitpick compiler (Phase 0)
    - Currently only declared, not implemented
    - Estimated effort: 2 weeks (lexer, parser, codegen)
 
@@ -1542,7 +1542,7 @@ Unlike previous documents, this is grounded in:
    - Need CUDA acceleration (CPU too slow)
    - Estimated effort: 4 weeks
 
-3. **1,000 hand-written Aria programs** (Phase 3)
+3. **1,000 hand-written Nitpick programs** (Phase 3)
    - I personally must write these
    - No shortcuts (LLMs will hallucinate syntax)
    - Estimated effort: 8 weeks full-time
@@ -1569,7 +1569,7 @@ Unlike previous documents, this is grounded in:
 
 **Do NOT:**
 - Ask LLMs to "fix" this spec (they lack context)
-- Deviate from Aria syntax (it's battle-tested)
+- Deviate from Nitpick syntax (it's battle-tested)
 - Skip the hand-written corpus (quality over quantity)
 
 **DO:**
@@ -1583,9 +1583,9 @@ This is a **multi-year project** (24 months minimum). But the payoff is Nikola b
 
 ## Appendices
 
-### Appendix A: Aria v0.0.6 Quick Reference
+### Appendix A: Nitpick v0.0.6 Quick Reference
 
-```aria
+```nitpick
 // Types
 int8, int16, int32, int64, int128, int256, int512
 uint8, uint16, uint32, uint64
@@ -1623,8 +1623,8 @@ is (ternary)
 
 ### Appendix C: References
 
-1. Aria Language Specification v0.0.6: `/home/randy/._____RANDY_____/REPOS/aria/docs/info/aria_v0_0_6_specs.txt`
-2. Aria Compiler Source: `/home/randy/._____RANDY_____/REPOS/aria/src/`
+1. Nitpick Language Specification v0.0.6: `/home/randy/._____RANDY_____/REPOS/nitpick/docs/info/nitpick_v0_0_6_specs.txt`
+2. Nitpick Compiler Source: `/home/randy/._____RANDY_____/REPOS/nitpick/src/`
 3. Nikola v0.0.4 (referenced in original research docs)
 4. Balanced Ternary: https://en.wikipedia.org/wiki/Balanced_ternary
 5. Hilbert Curves: https://en.wikipedia.org/wiki/Hilbert_curve

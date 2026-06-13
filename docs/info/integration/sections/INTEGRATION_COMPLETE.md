@@ -399,9 +399,9 @@ All replaced files backed up with timestamp format: `filename.md.backup_20251212
 ## Next Steps
 
 ### For Randy:
-1. **Continue Aria Language Research** - Sufficient Nikola foundation in place
+1. **Continue Nitpick Language Research** - Sufficient Nikola foundation in place
 2. **Parallel Work Streams**:
-   - Aria: Implementation of composite types, functional types
+   - Nitpick: Implementation of composite types, functional types
    - Nikola: Background research for Phase 1 (remaining sweeps 012-015)
 3. **Return to Nikola Implementation** when research is complete
 
@@ -428,7 +428,7 @@ All replaced files backed up with timestamp format: `filename.md.backup_20251212
 
 This integration represents **11 comprehensive bug sweeps** totaling **4,861 lines** of original research, expanded into **21,857 lines** of production specifications across **11 specification documents**.
 
-The bug sweep research was conducted by Gemini (Google AI), providing deep technical analysis of the Nikola Model v0.0.4 architecture. The integration work was performed by Aria (Claude Sonnet 4.5), organizing and synthesizing the research into cohesive specification documents.
+The bug sweep research was conducted by Gemini (Google AI), providing deep technical analysis of the Nikola Model v0.0.4 architecture. The integration work was performed by Nitpick (Claude Sonnet 4.5), organizing and synthesizing the research into cohesive specification documents.
 
 ---
 
@@ -457,6 +457,6 @@ The specification now includes:
 
 **Document:** `INTEGRATION_COMPLETE.md`  
 **Created:** December 12, 2025  
-**Integration Lead:** Aria Echo (Claude Sonnet 4.5)  
+**Integration Lead:** Nitpick Echo (Claude Sonnet 4.5)  
 **Research Source:** Gemini Bug Sweeps 001-011  
 **Final Status:** ✅ **ALL FOUR TIERS COMPLETE**  

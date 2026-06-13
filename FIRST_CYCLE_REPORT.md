@@ -103,12 +103,12 @@ no file I/O, no network access, no inline assembly).
 
 1. **SelfImprovementEngine** (`include/nikola/autonomy/self_improvement_engine.hpp`)
    - Orchestrates the 9-step pipeline: formulate → generate → extract → compile → package → sign → deploy → store → report
-   - Owns: SpecialistInterface, AriaCompileValidator, CodeProposalStore, signing keypairs
+   - Owns: SpecialistInterface, NitpickCompileValidator, CodeProposalStore, signing keypairs
    - Thread-safe via internal mutex
 
 2. **specialist_gemini.py** (`scripts/specialist_gemini.py`)
    - Lightweight Gemini-backed specialist server
-   - Same JSON-Lines protocol as the main Aria specialist
+   - Same JSON-Lines protocol as the main Nitpick specialist
    - Enables first-cycle testing without GPU/Mistral infrastructure
 
 ### Integration Points
@@ -119,7 +119,7 @@ no file I/O, no network access, no inline assembly).
 
 ### Bug Fixes
 
-- **extract_code_block()**: Fixed regex to match any fenced code block language tag (was only matching `aria`, now matches `cpp`, `c++`, etc.)
+- **extract_code_block()**: Fixed regex to match any fenced code block language tag (was only matching `nitpick`, now matches `cpp`, `c++`, etc.)
 - **Circular include**: Resolved `decision_loop.hpp` ↔ `self_improvement_engine.hpp` circular dependency via forward declaration of `NikolaState`
 - **Linker dependencies**: Added `sphincsplus_shake256f`, `ssl`, `crypto`, `sodium`, `${CMAKE_DL_LIBS}` to `nikola_core` PUBLIC link dependencies
 
@@ -134,7 +134,7 @@ no file I/O, no network access, no inline assembly).
 | `tests/integration/first_cycle_test.cpp` | Created | Integration test |
 | `include/nikola/autonomy/decision_loop.hpp` | Modified | SIE integration |
 | `src/autonomy/decision_loop.cpp` | Modified | execute_generate_code() |
-| `include/nikola/aria/compile_validator.hpp` | Modified | extract_code_block() fix |
+| `include/nikola/nitpick/compile_validator.hpp` | Modified | extract_code_block() fix |
 | `CMakeLists.txt` | Modified | New sources + test targets + link deps |
 
 ## Test Counts

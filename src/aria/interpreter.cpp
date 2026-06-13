@@ -3,37 +3,37 @@
 
 namespace nikola::aria {
 
-AriaInterpreter::AriaInterpreter() {
+NitpickInterpreter::NitpickInterpreter() {
     // Phase 0c: Stub only
 }
 
-AriaInterpreter::~AriaInterpreter() {
+NitpickInterpreter::~NitpickInterpreter() {
     // Phase 0c: Stub only
 }
 
-AriaInterpreter::Value AriaInterpreter::eval(const std::string& expression) {
+NitpickInterpreter::Value NitpickInterpreter::eval(const std::string& expression) {
     // Phase 0c: Stub implementation
     // Phase 8: Full expression evaluation
-    throw std::runtime_error("AriaInterpreter::eval() not implemented (Phase 0c stub)");
+    throw std::runtime_error("NitpickInterpreter::eval() not implemented (Phase 0c stub)");
 }
 
-void AriaInterpreter::execute(const std::string& statement) {
+void NitpickInterpreter::execute(const std::string& statement) {
     // Phase 0c: Stub implementation
     // Phase 8: Full statement execution
-    throw std::runtime_error("AriaInterpreter::execute() not implemented (Phase 0c stub)");
+    throw std::runtime_error("NitpickInterpreter::execute() not implemented (Phase 0c stub)");
 }
 
-void AriaInterpreter::load_script(const std::string& script_path) {
+void NitpickInterpreter::load_script(const std::string& script_path) {
     // Phase 0c: Stub implementation
-    throw std::runtime_error("AriaInterpreter::load_script() not implemented (Phase 0c stub)");
+    throw std::runtime_error("NitpickInterpreter::load_script() not implemented (Phase 0c stub)");
 }
 
-void AriaInterpreter::set_variable(const std::string& name, const Value& value) {
+void NitpickInterpreter::set_variable(const std::string& name, const Value& value) {
     // Phase 0c: Store in map for stub purposes
     global_variables_[name] = value;
 }
 
-AriaInterpreter::Value AriaInterpreter::get_variable(const std::string& name) {
+NitpickInterpreter::Value NitpickInterpreter::get_variable(const std::string& name) {
     // Phase 0c: Retrieve from map
     auto it = global_variables_.find(name);
     if (it != global_variables_.end()) {
@@ -42,7 +42,7 @@ AriaInterpreter::Value AriaInterpreter::get_variable(const std::string& name) {
     throw std::runtime_error("Variable not found: " + name);
 }
 
-void AriaInterpreter::register_function(
+void NitpickInterpreter::register_function(
     const std::string& name,
     std::function<Value(const std::vector<Value>&)> fn)
 {
@@ -50,7 +50,7 @@ void AriaInterpreter::register_function(
     functions_[name] = fn;
 }
 
-void AriaInterpreter::reset() {
+void NitpickInterpreter::reset() {
     // Phase 0c: Clear state
     global_variables_.clear();
     functions_.clear();

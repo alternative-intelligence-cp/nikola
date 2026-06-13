@@ -49,7 +49,7 @@ This is the ATPM (Autonomous Toroidal Physics Model). See `ARCHITECTURE.md`.
 Randy built Nikola alone. He had no co-founders, no team, no institutional
 backing. The project is in an advanced but not yet complete state: the
 physics engine works, the cognitive pipeline works, and all module stubs
-have been implemented. What remains is integration, polish, and the Aria
+have been implemented. What remains is integration, polish, and the Nitpick
 language port.
 
 The handoff package exists because:
@@ -92,8 +92,8 @@ If you are reading this as a formal handoff recipient:
    during implementation. If you gain access to it, treat it as primary
    documentation.
 
-4. **The Aria language port is the long-term goal.** Nikola is ultimately
-   intended to run in the Aria runtime, not C++. C++ is the bootstrap vehicle.
+4. **The Nitpick language port is the long-term goal.** Nikola is ultimately
+   intended to run in the Nitpick runtime, not C++. C++ is the bootstrap vehicle.
    Do not treat C++ as the permanent target.
 
 ---
@@ -114,7 +114,7 @@ If you are reading this as a formal handoff recipient:
 | CLI (`nikola-run`) | ✅ Working | `--prompt`, `--interactive`, `--stream`, `--json` |
 | CUDA GPU path | ⚠️ Partial | Compiled but C++20 compat fix pending |
 | Blockchain integration | 🔲 Deferred | Economy/social use SimulatedWallet |
-| Aria port | 🔲 Future | Planned once Aria compiler reaches production |
+| Nitpick port | 🔲 Future | Planned once Nitpick compiler reaches production |
 | Ecosystem integrations | 🔲 Future | ScopeProfiler, TelemetryDaemon, DebugAdapter |
 
 ---

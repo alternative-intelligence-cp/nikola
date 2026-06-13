@@ -116,7 +116,7 @@ All latency budgets and performance targets are documented:
 - ✅ 10-50ms SPHINCS+ verification
 - ✅ 99.9% cache hit rate for module verification
 
-## 4. Recommendations for Aria's Review
+## 4. Recommendations for Nitpick's Review
 
 ### High Priority
 
@@ -159,7 +159,7 @@ The following edge cases may need additional research:
 The Gemini Deep Research Round 2 integration is **substantially complete** with high-quality specifications ready for fabrication. The identified gaps are primarily documentation/organizational issues rather than fundamental technical gaps.
 
 **Recommended Next Steps**:
-1. Aria's independent review pass
+1. Nitpick's independent review pass
 2. Resolution of GAP numbering ambiguities
 3. Documentation of batches 4-15, 28-36 topic coverage
 4. Cross-reference validation pass

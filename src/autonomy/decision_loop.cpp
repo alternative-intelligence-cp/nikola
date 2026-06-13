@@ -113,7 +113,7 @@ DecisionLoop::DecisionLoop(nikola::cognitive::CognitiveTorus& torus,
     last_reason_time_ = now - std::chrono::seconds(60);
     last_generate_time_ = now - std::chrono::seconds(60);  // v0.0.19: allow immediate
 
-    // v0.0.19 — check if Aria specialist integration is configured
+    // v0.0.19 — check if Nitpick specialist integration is configured
     aria_specialist_enabled_ = !cfg_.specialist_server_path.empty()
                              || !cfg_.ariac_path.empty();
 
@@ -592,7 +592,7 @@ float DecisionLoop::score_reason(const NikolaState& s) const noexcept
 float DecisionLoop::score_generate_code(const NikolaState& s) const noexcept
 {
     // GENERATE_CODE fires when:
-    //  - Aria specialist integration is enabled (specialist_server_path set)
+    //  - Nitpick specialist integration is enabled (specialist_server_path set)
     //  - ATP ≥ 0.30 (code generation + compile costs ~550 ATP)
     //  - Curiosity (boredom) is moderate (> 0.4) — Nikola wants to create
     //  - Cooldown satisfied (default 30s between generates)

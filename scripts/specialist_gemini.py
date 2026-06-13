@@ -2,7 +2,7 @@
 """
 Lightweight Gemini-powered specialist server for Nikola SIE.
 
-Same JSON-Lines protocol as the main Aria specialist, but uses Google
+Same JSON-Lines protocol as the main Nitpick specialist, but uses Google
 Gemini instead of the fine-tuned Mistral model.  This makes first-cycle
 testing much faster (no GPU, no 7B model download).
 

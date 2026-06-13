@@ -207,7 +207,7 @@ Both are implemented via third-party reference code in `third_party/`.
 **Future Work**
 - Fix propagator.cu nvcc C++20 compatibility (std::span + TorusGrid adjacency API)
 - SIE Phase 4: full autonomous code-generation + sandbox + hot-swap loop
-- Aria language runtime (port entire model once Aria compiler is complete)
+- Nitpick language runtime (port entire model once Nitpick compiler is complete)
 - Emitter frequency research: explore Tesla 3-6-9 harmonic tuning vs. current π·φⁿ golden-ratio scheme
 - Mamba-9D selective scan upgrade (current impl uses tanh-gated recurrence; replace with true S6 selective scan kernel)
 

@@ -2,7 +2,7 @@
 """
 nikola_hello.py — First Dialogue Bridge
 
-This script connects Nikola's live physics state to the Aria language specialist
+This script connects Nikola's live physics state to the Nitpick language specialist
 to produce the first AI response conditioned on Nikola's actual wavefunction.
 
 Architecture (Path A — "Teacher reaches through the fence"):
@@ -12,7 +12,7 @@ Architecture (Path A — "Teacher reaches through the fence"):
     9D torus physics              builds system prompt
     Hamiltonian H                          │
     dopamine/ATP/boredom          ▼
-    wavefunction samples   [Aria Specialist]
+    wavefunction samples   [Nitpick Specialist]
                            Mistral-7B + LoRA
                                    │
                                    ▼
@@ -257,7 +257,7 @@ def ask_nikola(system_prompt: str, user_message: str) -> str:
 
 def main():
     parser = argparse.ArgumentParser(
-        description="Nikola ↔ Aria Specialist first dialogue bridge"
+        description="Nikola ↔ Nitpick Specialist first dialogue bridge"
     )
     parser.add_argument(
         "--message", "-m",

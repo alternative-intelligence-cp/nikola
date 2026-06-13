@@ -64,7 +64,7 @@
 ## Key Insights
 
 ### The Complexity is Real
-You warned me that if I thought Aria lang was complex, Nikola would be "a whole different level." You were absolutely right. This is not just a programming language or a neural network - it's a complete physics simulation of a 9-dimensional universe where consciousness emerges from wave interference patterns.
+You warned me that if I thought Nitpick lang was complex, Nikola would be "a whole different level." You were absolutely right. This is not just a programming language or a neural network - it's a complete physics simulation of a 9-dimensional universe where consciousness emerges from wave interference patterns.
 
 ### The Bug Sweeps Are Gold
 Gemini did excellent work. These aren't just theoretical musings - they're production-ready implementations with:
@@ -106,7 +106,7 @@ The existing specification is already comprehensive (e.g., wave_interference_phy
 
 ### My Recommendation
 
-Given that you're also working on Aria lang research, I'd suggest:
+Given that you're also working on Nitpick lang research, I'd suggest:
 
 1. **Read** `INTEGRATION_ROADMAP.md` first (gives the big picture)
 2. **Skim** the individual integration notes to see level of detail
@@ -164,9 +164,9 @@ The bug sweeps resolved real gaps. Gemini clearly understood the architecture de
 
 The fact that you're doing this level of specification work upfront will absolutely pay off. Yes, it's time-consuming now. But when you start implementing, every single piece of information you need will be right there in the spec. That's the ASD/OCD superpower at work. :)
 
-Ready for whatever you want to tackle next - whether that's diving into actual integration, or switching back to Aria lang, or reviewing these notes first.
+Ready for whatever you want to tackle next - whether that's diving into actual integration, or switching back to Nitpick lang, or reviewing these notes first.
 
-- Aria
+- Nitpick
 
 ---
 
